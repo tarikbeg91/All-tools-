@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>मेरे सभी एप्लिकेशन</title>
+    <style>
+        /* बुनियादी स्टाइल */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column; /* ऊपर से नीचे लेआउट */
+            height: 100vh; /* पूरी स्क्रीन की ऊंचाई */
+            background-color: #f0f0f0; /* हल्का बैकग्राउंड */
+        }
+
+        /* नेविगेशन बार के लिए स्टाइल */
+        nav {
+            background-color: #333; /* गहरा नेविगेशन बार */
+            padding: 10px 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex; /* बटन को लाइन में रखने के लिए */
+            justify-content: center; /* बटन को बीच में रखने के लिए */
+            flex-wrap: wrap; /* अगर ज्यादा बटन हों तो अगली लाइन में आ जाएं */
+            gap: 5px; /* बटन के बीच गैप */
+        }
+
+        nav button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 1em;
+            color: white;
+            background-color: #555;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        nav button:hover {
+            background-color: #777;
+        }
+
+        nav button.active { /* सक्रिय टैब को दिखाने के लिए */
+            background-color: #007bff; /* नीला */
+            font-weight: bold;
+        }
+
+        /* Iframe कंटेनर के लिए स्टाइल */
+        #appContainer {
+            flex-grow: 1; /* बाकी बची हुई सारी ऊंचाई ले लेगा */
+            overflow: hidden; /* यह सुनिश्चित करता है कि कंटेनर स्क्रॉल न करे, iframe खुद करेगा */
+            border-top: 1px solid #ccc; /* नेविगेशन और iframe के बीच लाइन */
+        }
+
+        /* Iframe के लिए स्टाइल */
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none; /* Iframe का बॉर्डर हटा दें */
+            display: block; /* अतिरिक्त स्पेस हटाने के लिए */
+        }
+    </style>
+</head>
+<body>
+
+    <nav id="appNavigation">
+        <button data-app="land_area_calculator.html" class="nav-button">ज़मीन का क्षेत्रफल</button>
+        <button data-app="attendance_tracker.html" class="nav-button">अटेंडेंस ट्रैकर</button>
+        <button data-app="kharch_tracker.html" class="nav-button">खर्च ट्रैकर</button>
+        <button data-app="combined_calculator.html" class="nav-button">कैलकुलेटर</button>
+    </nav>
+
+    <div id="appContainer">
+        <iframe id="appFrame" title="मुख्य एप्लीकेशन क्षेत्र"></iframe>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const iframe = document.getElementById('appFrame');
+            const navButtons = document.querySelectorAll('.nav-button');
+            const defaultApp = 'land_area_calculator.html'; // डिफ़ॉल्ट रूप से कौन सा ऐप लोड हो
+
+            function loadApp(appUrl) {
+                if (iframe) {
+                    iframe.src = appUrl;
+                    console.log('Loading app:', appUrl);
+                }
+                // सक्रिय बटन को हाइलाइट करें
+                navButtons.forEach(btn => {
+                    if (btn.dataset.app === appUrl) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    loadApp(button.dataset.app);
+                });
+            });
+
+            // पेज लोड होने पर डिफ़ॉल्ट ऐप लोड करें
+            loadApp(defaultApp);
+        });
+    </script>
+
+</body>
+</html>

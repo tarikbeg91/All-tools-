@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ज़मीन का क्षेत्रफल कैलकुलेटर</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* ऊपर से शुरू करें */
+            min-height: 100vh; /* कम से कम पूरी स्क्रीन की ऊँचाई */
+            padding: 20px;
+            background-color: #f4f4f4; /* हल्का ग्रे बैकग्राउंड */
+            color: #333; /* गहरा टेक्स्ट रंग */
+            box-sizing: border-box; /* पैडिंग और बॉर्डर को चौड़ाई में शामिल करें */
+        }
+
+        .container {
+            background-color: #fff; /* सफेद बैकग्राउंड */
+            padding: 25px;
+            border-radius: 10px; /* गोल किनारे */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* हल्का शैडो */
+            width: 100%;
+            max-width: 500px; /* अधिकतम चौड़ाई */
+            display: flex;
+            flex-direction: column; /* एलिमेंट्स को कॉलम में व्यवस्थित करें */
+            gap: 15px; /* एलिमेंट्स के बीच अंतर */
+            box-sizing: border-box;
+        }
+
+        h2 {
+            text-align: center; /* शीर्षक को केंद्र में करें */
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.5em;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column; /* लेबल और इनपुट को कॉलम में रखें */
+            gap: 5px; /* लेबल और इनपुट के बीच अंतर */
+        }
+
+        .input-field-row {
+            display: flex;
+            gap: 10px; /* इनपुट और सेलेक्ट के बीच अंतर */
+            align-items: center; /* वर्टिकली अलाइन करें */
+        }
+
+        .input-field-row input[type="number"] {
+            flex-grow: 1; /* उपलब्ध स्थान लें */
+            padding: 10px;
+            border: 1px solid #ddd; /* हल्का ग्रे बॉर्डर */
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+
+        .input-field-row select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+
+         /* आकार इनपुट सेक्शन के लिए स्टाइल - बाय डिफॉल्ट छिपे हुए (सिवाय डिफ़ॉल्ट वाले के) */
+        .shape-inputs {
+            display: none; /* JS इनको दिखाएगा */
+            flex-direction: column;
+            gap: 15px; /* इनपुट ग्रुप्स के बीच अंतर */
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9; /* हल्का बैकग्राउंड */
+        }
+
+         /* डिफ़ॉल्ट रूप से रेक्टेंगल सेक्शन दिखाएं */
+        #rectangleInputs {
+             display: flex;
+        }
+
+        /* बहुभुज निर्देशांक इनपुट के लिए स्टाइल */
+        #polygonInputs textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1em;
+            min-height: 100px; /* टेक्स्ट एरिया की न्यूनतम ऊँचाई */
+             resize: vertical; /* केवल वर्टिकली रीसाइज़ करने दें */
+        }
+         #polygonInputs p { /* निर्देश टेक्स्ट के लिए */
+             font-size: 0.9em;
+             color: #555;
+             margin-top: 5px;
+             margin-bottom: 0;
+         }
+         /* इनपुट यूनिट सेलेक्ट बहुभुज के लिए */
+         #polygonInputs .input-field-row select {
+              flex-grow: 0; /* यूनिट सेलेक्ट को पूरी चौड़ाई न लेने दें */
+              width: auto; /* चौड़ाई कंटेंट के अनुसार */
+         }
+
+
+        /* औसत भुजाएं इनपुट सेक्शन के लिए स्टाइल */
+        #averageSidesQuadInputs p.disclaimer {
+            font-size: 0.85em; /* अस्वीकरण टेक्स्ट थोड़ा छोटा */
+            color: #c0392b; /* लाल रंग (महत्वपूर्ण) */
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+
+        /* आउटपुट यूनिट सेलेक्ट के लिए स्टाइल */
+        .input-group select#outputUnit {
+             width: 100%; /* पूरी चौड़ाई लें */
+             padding: 10px;
+             border: 1px solid #ddd;
+             border-radius: 5px;
+             box-sizing: border-box;
+             font-size: 1.1em; /* थोड़ा बड़ा फॉन्ट */
+        }
+
+
+        button {
+            width: 100%; /* पूरी चौड़ाई लें */
+            padding: 12px;
+            background-color: #007bff; /* नीला बैकग्राउंड */
+            color: white; /* सफेद टेक्स्ट */
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer; /* कर्सर पॉइंटर */
+            transition: background-color 0.2s ease; /* होवर पर स्मूथ ट्रांज़िशन */
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3; /* होवर पर गहरा नीला */
+        }
+
+        .result-area {
+            margin-top: 20px;
+            font-weight: bold; /* बोल्ड टेक्स्ट */
+            text-align: center;
+            word-break: break-word; /* लंबे टेक्स्ट को ब्रेक करें */
+            font-size: 1.3em; /* रिजल्ट फॉन्ट थोड़ा बड़ा */
+            color: #28a745; /* रिजल्ट के लिए हरा रंग */
+            min-height: 1.5em; /* खाली होने पर भी जगह बनाए रखें */
+            border-top: 1px solid #eee; /* ऊपर बॉर्डर */
+            padding-top: 15px; /* ऊपर पैडिंग */
+        }
+
+        .error-text {
+            color: #dc3545; /* एरर मैसेज के लिए लाल रंग */
+            font-weight: normal; /* एरर टेक्स्ट बोल्ड न हो */
+            font-size: 1em; /* एरर टेक्स्ट सामान्य फॉन्ट */
+        }
+
+
+         /* त्रिभुज इनपुट के लिए स्टाइल - Base/Height या 3 भुजाएं */
+         .triangle-input-type-select {
+             margin-bottom: 10px; /* इनपुट ग्रुप से थोड़ा अलग */
+         }
+         .triangle-input-type-select label {
+             margin-right: 10px; /* लेबल और रेडियो बटन के बीच अंतर */
+         }
+          .triangle-input-type {
+               display: none; /* JS इनको दिखाएगा */
+               flex-direction: column;
+               gap: 15px;
+          }
+           #triangleBaseHeightInputs {
+               display: flex; /* डिफ़ॉल्ट रूप से बेस/ऊंचाई दिखाएं जब त्रिभुज चुना हो */
+           }
+
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>ज़मीन का क्षेत्रफल कैलकुलेटर</h2>
+
+        <div class="input-group">
+            <label for="shapeSelect">आकार चुनें (Select Shape):</label>
+            <select id="shapeSelect">
+                <option value="rectangle">आयताकार (Rectangle)</option>
+                <option value="triangle">त्रिभुजाकार (Triangle)</option>
+                <option value="polygon">बहुभुज (Polygon - Coordinates)</option>
+                 <option value="average_sides_quad">चतुर्भुज (औसत भुजाएं - अनुमानित)</option>
+                </select>
+        </div>
+
+
+        <div id="rectangleInputs" class="shape-inputs">
+             <h4>आयताकार इनपुट</h4>
+            <div class="input-group">
+                <label for="length">लंबाई (Length):</label>
+                <div class="input-field-row">
+                    <input type="number" id="length" min="0" placeholder="लंबाई दर्ज करें">
+                    <select id="lengthUnit">
+                        <option value="meter">मीटर (Meter)</option>
+                        <option value="feet">फीट (Feet)</option>
+                        <option value="yard">गज (Yard)</option>
+                        <option value="angul">अंगुल (Angul)</option>
+                        <option value="gattha">गट्ठा (Gattha)</option>
+                        <option value="chain">चेन (Chain)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="width">चौड़ाई (Width):</label>
+                <div class="input-field-row">
+                    <input type="number" id="width" min="0" placeholder="चौड़ाई दर्ज करें">
+                    <select id="widthUnit">
+                        <option value="meter">मीटर (Meter)</option>
+                        <option value="feet">फीट (Feet)</option>
+                        <option value="yard">गज (Yard)</option>
+                        <option value="angul">अंगुल (Angul)</option>
+                        <option value="gattha">गट्ठा (Gattha)</option>
+                        <option value="chain">चेन (Chain)</option>
+                    </select>
+                </div>
+            </div>
+        </div> <div id="triangleInputs" class="shape-inputs">
+              <h4>त्रिभुजाकार इनपुट</h4>
+              <div class="input-group triangle-input-type-select">
+                 <label>तरीका चुनें:</label>
+                 <input type="radio" name="triangleInputType" value="baseHeight" id="radioBaseHeight" checked>
+                 <label for="radioBaseHeight">आधार और ऊँचाई</label>
+                 <input type="radio" name="triangleInputType" value="threeSides" id="radioThreeSides">
+                 <label for="radioThreeSides">तीनों भुजाएँ</label>
+              </div>
+
+              <div id="triangleBaseHeightInputs" class="triangle-input-type">
+                   <div class="input-group">
+                       <label for="triangleBase">आधार (Base):</label>
+                       <div class="input-field-row">
+                           <input type="number" id="triangleBase" min="0" placeholder="आधार दर्ज करें">
+                           <select id="triangleBaseUnit">
+                               <option value="meter">मीटर</option>
+                               <option value="feet">फीट</option>
+                               <option value="yard">गज</option>
+                                </select>
+                       </div>
+                   </div>
+                   <div class="input-group">
+                        <label for="triangleHeight">ऊँचाई (Height):</label>
+                        <div class="input-field-row">
+                            <input type="number" id="triangleHeight" min="0" placeholder="ऊँचाई दर्ज करें">
+                            <select id="triangleHeightUnit">
+                                <option value="meter">मीटर</option>
+                                <option value="feet">फीट</option>
+                                <option value="yard">गज</option>
+                                 </select>
+                        </div>
+                    </div>
+              </div> <div id="triangleThreeSidesInputs" class="triangle-input-type">
+                    <div class="input-group">
+                        <label for="triangleSideA">भुजा A (Side A):</label>
+                        <div class="input-field-row">
+                            <input type="number" id="triangleSideA" min="0" placeholder="भुजा A दर्ज करें">
+                            <select id="triangleSideAUnit">
+                                <option value="meter">मीटर</option>
+                                <option value="feet">फीत</option>
+                                <option value="yard">गज</option>
+                                 </select>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                         <label for="triangleSideB">भुजा B (Side B):</label>
+                         <div class="input-field-row">
+                             <input type="number" id="triangleSideB" min="0" placeholder="भुजा B दर्ज करें">
+                             <select id="triangleSideBUnit">
+                                 <option value="meter">मीटर</option>
+                                 <option value="feet">फीट</option>
+                                 <option value="yard">गज</option>
+                                  </select>
+                         </div>
+                     </div>
+                     <div class="input-group">
+                         <label for="triangleSideC">भुजा C (Side C):</label>
+                         <div class="input-field-row">
+                             <input type="number" id="triangleSideC" min="0" placeholder="भुजा C दर्ज करें">
+                             <select id="triangleSideCUnit">
+                                 <option value="meter">मीटर</option>
+                                 <option value="feet">फीट</option>
+                                 <option value="yard">गज</option>
+                                  </select>
+                         </div>
+                     </div>
+               </div> </div> <div id="polygonInputs" class="shape-inputs">
+              <h4>बहुभुज इनपुट (निर्देशांक)</h4>
+               <div class="input-group">
+                   <label for="polygonCoordinates">कोनों के निर्देशांक (X, Y) दर्ज करें:</label>
+                    <div class="input-field-row">
+                       <textarea id="polygonCoordinates" placeholder="प्रत्येक पंक्ति पर एक बिंदु दर्ज करें, X और Y को कॉमा से अलग करें, क्रम से लिखें (उदाहरण:&#10;0,0&#10;100,0&#10;100,50&#10;0,50)"></textarea>
+                        <select id="coordinateUnit">
+                           <option value="meter">मीटर (Meter)</option>
+                           <option value="feet">फीट (Feet)</option>
+                           <option value="yard">गज (Yard)</option>
+                           </select>
+                    </div>
+                    <p>कोनों को क्रम से दर्ज करें (दक्षिणावर्त या वामावर्त)। कम से कम 3 कोने आवश्यक हैं।</p>
+               </div>
+         </div> <div id="averageSidesQuadInputs" class="shape-inputs">
+             <h4>चतुर्भुज इनपुट (औसत भुजाएं)</h4>
+             <p class="disclaimer">
+                 यह तरीका आमने-सामने की भुजाओं का औसत निकालकर क्षेत्रफल का **अनुमान** लगाता है। यह केवल वास्तविक आयतों के लिए सटीक परिणाम देता है, अनियमित चतुर्भुजों के लिए नहीं।
+             </p>
+             <div class="input-group">
+                 <label for="avgQuadLength1">लंबाई 1 (Length 1):</label>
+                 <div class="input-field-row">
+                     <input type="number" id="avgQuadLength1" min="0" placeholder="एक लंबाई दर्ज करें">
+                     <select id="avgQuadLength1Unit">
+                         <option value="meter">मीटर</option>
+                         <option value="feet">फीट</option>
+                         <option value="yard">गज</option>
+                         </select>
+                 </div>
+             </div>
+              <div class="input-group">
+                  <label for="avgQuadLength2">लंबाई 2 (Length 2):</label>
+                  <div class="input-field-row">
+                      <input type="number" id="avgQuadLength2" min="0" placeholder="दूसरी लंबाई दर्ज करें">
+                      <select id="avgQuadLength2Unit">
+                          <option value="meter">मीटर</option>
+                          <option value="feet">फीट</option>
+                          <option value="yard">गज</option>
+                          </select>
+                  </div>
+              </div>
+               <div class="input-group">
+                  <label for="avgQuadWidth1">चौड़ाई 1 (Width 1):</label>
+                  <div class="input-field-row">
+                      <input type="number" id="avgQuadWidth1" min="0" placeholder="एक चौड़ाई दर्ज करें">
+                      <select id="avgQuadWidth1Unit">
+                          <option value="meter">मीटर</option>
+                          <option value="feet">फीट</option>
+                          <option value="yard">गज</option>
+                          </select>
+                  </div>
+              </div>
+               <div class="input-group">
+                   <label for="avgQuadWidth2">चौड़ाई 2 (Width 2):</label>
+                   <div class="input-field-row">
+                       <input type="number" id="avgQuadWidth2" min="0" placeholder="दूसरी चौड़ाई दर्ज करें">
+                       <select id="avgQuadWidth2Unit">
+                           <option value="meter">मीटर</option>
+                           <option value="feet">फीट</option>
+                           <option value="yard">गज</option>
+                           </select>
+                   </div>
+               </div>
+         </div> <div class="input-group">
+             <label for="outputUnit">क्षेत्रफल की यूनिट (Area Unit):</label>
+             <select id="outputUnit">
+                  <option value="sq_meter">वर्ग मीटर (Sq Meter)</option>
+                  <option value="sq_feet"> वर्ग फीट (Sq Feet)</option>
+                  <option value="sq_yard">वर्ग गज (Sq Yard)</option>
+                  <option value="are">एयर (Are)</option>         <option value="hectare">हेक्टेयर (Hectare)</option> <option value="acre">एकड़ (Acre)</option>     <option value="bigha_up">बीघा (UP)</option>      <option value="bigha_assam">बीघा (Assam)</option>  <option value="katha_bihar">कट्ठा (Bihar)</option> <option value="katha_bengal">कट्ठा (Bengal)</option><option value="dhur_bihar">धुर (Bihar)</option> </select>
+         </div>
+
+        <button id="calculateAreaBtn">क्षेत्रफल कैलकुलेट करें</button>
+
+        <div id="areaResult" class="result-area"></div>
+    </div>
+
+    <script>
+        // यूनिट कन्वर्ज़न फ़ैक्टर (सभी को एक बेस यूनिट, जैसे मीटर में बदलेंगे)
+        // ये फ़ैक्टर बताते हैं कि 1 यूनिट में कितने मीटर (लंबाई के लिए) या वर्ग मीटर (क्षेत्रफल के लिए) होते हैं।
+        // !!! महत्वपूर्ण !!!
+        // स्थानीय यूनिट्स (बीघा, कट्ठा, धुर, अंगुल, गट्ठा, चेन) के फ़ैक्टर क्षेत्र के हिसाब से भिन्न हो सकते हैं।
+        // आपको अपने क्षेत्र के लिए सटीक फ़ैक्टर खोजने और conversionFactors ऑब्जेक्ट में अपडेट करने होंगे।
+        // नीचे दिए गए मान केवल उदाहरण हैं और हर जगह सही नहीं होंगे!
+        // !!! महत्वपूर्ण !!!
+        const conversionFactors = {
+            // ----- लंबाई यूनिट्स (1 यूनिट = X मीटर) -----
+            meter: 1,
+            feet: 0.3048,       // 1 फीट = 0.3048 मीटर
+            yard: 0.9144,       // 1 गज = 0.9144 मीटर (3 फीट)
+            // स्थानीय यूनिट्स के उदाहरण (आपको सही मान डालने हैं):
+            angul: 0.023168,    // ~0.023168 मीटर (यह सटीक नहीं हो सकता, स्थानीय मान जांचें)
+            gattha: 2.5146,     // ~2.5146 मीटर (लाठी/गट्ठा, 5.5 हाथ या ~8.25 फीट) - स्थानीय मान जांचें
+            chain: 20.1168,     // ~20.1168 मीटर (गुंटर्स चेन, 66 फीट) - स्थानीय मान जांचें
+
+
+            // ----- क्षेत्रफल यूनिट्स (1 यूनिट = X वर्ग मीटर) -----
+            sq_meter: 1,        // 1 वर्ग मीटर = 1 वर्ग मीटर (बेस यूनिट)
+            sq_feet: 0.092903,  // 1 वर्ग फीट = 0.092903 वर्ग मीटर
+            sq_yard: 0.836128,  // 1 वर्ग गज = 0.836128 वर्ग मीटर
+            are: 100,           // 1 एयर = 100 वर्ग मीटर
+            hectare: 10000,     // 1 हेक्टेयर = 10,000 वर्ग मीटर
+            acre: 4046.86,      // 1 एकड़ = 4046.86 वर्ग मीटर
+
+            // ----- स्थानीय यूनिट्स के उदाहरण (1 यूनिट = X वर्ग मीटर) -----
+            // ये मान केवल उदाहरण हैं और अलग-अलग राज्यों/क्षेत्रों में भिन्न हो सकते हैं!
+            // आपको अपने क्षेत्र के लिए सही मान यहाँ डालने होंगे:
+            bigha_up: 2530,      // उदाहरण: उत्तर प्रदेश में लगभग 1 बीघा = 2530 वर्ग मीटर
+            bigha_assam: 1337.8, // उदाहरण: असम में लगभग 1 बीघा = 1337.8 वर्ग मीटर
+            katha_bihar: 69.67,  // उदाहरण: बिहार में लगभग 1 कट्ठा = 750 वर्ग फीट = ~69.67 वर्ग मीटर
+            katha_bengal: 66.89, // उदाहरण: बंगाल में लगभग 1 कट्ठा = ~720 वर्ग फीट = ~66.89 वर्ग मीटर
+            dhur_bihar: 3.4835,  // उदाहरण: बिहार में लगभग 1 धुर = 1 कट्ठा / 20 = ~3.4835 वर्ग मीटर (69.67 / 20)
+            // आपको स्थानीय मान जांचने होंगे!!!
+        };
+
+        // ----- यूनिट कन्वर्ژن फ़ंक्शन -----
+        // किसी मान को दी गई इनपुट यूनिट से मीटर में बदलता है
+        function convertLengthToMeters(value, unit) {
+             const factor = conversionFactors[unit];
+             if (factor === undefined || factor === null || factor <= 0) {
+                  console.error(`Invalid or missing conversion factor for unit: ${unit}`);
+                 return NaN; // अमान्य फ़ैक्टर होने पर NaN रिटर्न करें
+             }
+             return value * factor;
+        }
+
+         // किसी वर्ग मीटर मान को दी गई आउटपुट यूनिट में बदलता है
+        function convertSqMetersToOutputUnit(sqMeters, outputUnit) {
+             const factor = conversionFactors[outputUnit];
+              if (factor === undefined || factor === null || factor <= 0) {
+                 console.error(`Invalid or missing conversion factor for output unit: ${outputUnit}`);
+                 return NaN; // अमान्य फ़ैक्टर होने पर NaN रिटर्न करें
+             }
+            return sqMeters / factor;
+        }
+
+
+        // DOMContentLoaded यह सुनिश्चित करता है कि पेज पूरी तरह से लोड होने के बाद ही स्क्रिप्ट चले
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("ज़मीन कैलकुलेटर स्क्रिप्ट लोड हुई।");
+
+            // HTML एलिमेंट्स के संदर्भ प्राप्त करें
+            const shapeSelect = document.getElementById('shapeSelect'); // आकार चुनने वाला सेलेक्ट
+            const rectangleInputs = document.getElementById('rectangleInputs'); // आयताकार इनपुट div
+            const triangleInputs = document.getElementById('triangleInputs'); // त्रिभुज इनपुट div (मुख्य)
+            const polygonInputs = document.getElementById('polygonInputs'); // बहुभुज इनपुट div
+            const averageSidesQuadInputs = document.getElementById('averageSidesQuadInputs'); // औसत भुजाएं इनपुट div
+
+
+            // त्रिभुज के अंदर के इनपुट तरीके (Base/Height या 3 Sides)
+            const triangleInputTypeRadios = document.getElementsByName('triangleInputType');
+            const triangleBaseHeightInputs = document.getElementById('triangleBaseHeightInputs');
+            const triangleThreeSidesInputs = document.getElementById('triangleThreeSidesInputs');
+
+             // बहुभुज के अंदर के इनपुट (निर्देशांक टेक्स्ट एरिया और यूनिट सेलेक्ट)
+            const polygonCoordinatesTextarea = document.getElementById('polygonCoordinates');
+            const coordinateUnitSelect = document.getElementById('coordinateUnit');
+
+            // औसत भुजाएं चतुर्भुज के इनपुट
+            const avgQuadLength1Input = document.getElementById('avgQuadLength1');
+            const avgQuadLength2Input = document.getElementById('avgQuadLength2');
+            const avgQuadWidth1Input = document.getElementById('avgQuadWidth1');
+            const avgQuadWidth2Input = document.getElementById('avgQuadWidth2');
+            const avgQuadLength1UnitSelect = document.getElementById('avgQuadLength1Unit');
+            const avgQuadLength2UnitSelect = document.getElementById('avgQuadLength2Unit');
+            const avgQuadWidth1UnitSelect = document.getElementById('avgQuadWidth1Unit');
+            const avgQuadWidth2UnitSelect = document.getElementById('avgQuadWidth2Unit'); // ID ठीक की गई है
+
+
+            // इनपुट फ़ील्ड्स (अब आकार के आधार पर प्राप्त होंगे)
+            const outputUnitSelect = document.getElementById('outputUnit'); // आउटपुट यूनिट सेलेक्ट
+            const areaResultDiv = document.getElementById('areaResult'); // रिजल्ट div
+            const calculateButton = document.getElementById('calculateAreaBtn'); // बटन
+
+             // --- एलिमेंट संदर्भ जांचें ---
+             // सुनिश्चित करें कि सभी आवश्यक एलिमेंट्स मिल गए हैं
+             if (!shapeSelect || !rectangleInputs || !triangleInputs || !polygonInputs || !averageSidesQuadInputs ||
+                 triangleInputTypeRadios.length === 0 || !triangleBaseHeightInputs || !triangleThreeSidesInputs ||
+                 !polygonCoordinatesTextarea || !coordinateUnitSelect ||
+                 !avgQuadLength1Input || !avgQuadLength2Input || !avgQuadWidth1Input || !avgQuadWidth2Input ||
+                 !avgQuadLength1UnitSelect || !avgQuadLength2UnitSelect || !avgQuadWidth1UnitSelect || !avgQuadWidth2UnitSelect || // सभी यूनिट सेलेक्ट जोड़े
+                 !outputUnitSelect || !areaResultDiv || !calculateButton) {
+                 console.error("ERROR: एक या अधिक आवश्यक HTML एलिमेंट्स नहीं मिल पाए। कृपया HTML में IDs/Names की दोबारा जांच करें!");
+                 if(areaResultDiv) {
+                      areaResultDiv.textContent = "कैलकुलेटर लोड नहीं हो पाया। कृपया ब्राउज़र कंसोल में एरर देखें।";
+                      areaResultDiv.classList.add('error-text');
+                 }
+                 return; // अगर एलिमेंट्स नहीं मिले तो आगे न बढ़ें
+             } else {
+                  console.log("सभी आवश्यक HTML एलिमेंट्स सफलतापूर्वक मिल गए।");
+             }
+
+
+            // --- इवेंट लिसनर्स ---
+
+            // आकार बदलने पर इनपुट सेक्शन दिखाएं/छिपाएं
+            shapeSelect.addEventListener('change', function() {
+                const selectedShape = this.value; // चुनी गई आकार का मान
+                console.log(`Shape selected: ${selectedShape}`);
+
+                // सभी आकार इनपुट सेक्शंस को छिपाएं
+                document.querySelectorAll('.shape-inputs').forEach(section => {
+                    section.style.display = 'none';
+                });
+
+                // चुने गए आकार के अनुसार सही इनपुट सेक्शन दिखाएं
+                if (selectedShape === 'rectangle') {
+                    rectangleInputs.style.display = 'flex';
+                } else if (selectedShape === 'triangle') {
+                    triangleInputs.style.display = 'flex';
+                     // त्रिभुज के अंदर, चुने गए रेडियो बटन के अनुसार सही इनपुट तरीका दिखाएं
+                     const currentTriangleInputType = document.querySelector('input[name="triangleInputType"]:checked').value;
+                     showTriangleInputType(currentTriangleInputType);
+                } else if (selectedShape === 'polygon') { // बहुभुज इनपुट दिखाएं
+                    polygonInputs.style.display = 'flex';
+                } else if (selectedShape === 'average_sides_quad') { // औसत भुजाएं इनपुट दिखाएं
+                     averageSidesQuadInputs.style.display = 'flex';
+                }
+                // भविष्य में और आकार जोड़ें यहाँ ...
+
+
+                // रिजल्ट एरिया साफ़ करें जब आकार बदला जाए
+                areaResultDiv.textContent = '';
+                areaResultDiv.classList.remove('error-text');
+                 areaResultDiv.style.color = '#333'; // सामान्य रंग
+                 console.log("Input sections updated based on shape selection. Result area cleared.");
+
+                 // TODO: सभी इनपुट फ़ील्ड्स को साफ़ करें जब आकार बदला जाए (वैकल्पिक, कोड लंबा हो जाएगा)
+            });
+
+             // त्रिभुज इनपुट तरीका (आधार/ऊंचाई vs 3 भुजाएं) बदलने पर इनपुट दिखाएं/छिपाएं
+            triangleInputTypeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const selectedType = this.value; // 'baseHeight' या 'threeSides'
+                    console.log(`Triangle input type selected: ${selectedType}`);
+                    showTriangleInputType(selectedType);
+                    // रिजल्ट एरिया साफ़ करें जब तरीका बदला जाए
+                    areaResultDiv.textContent = '';
+                    areaResultDiv.classList.remove('error-text');
+                     areaResultDiv.style.color = '#333'; // सामान्य रंग
+                    console.log("Triangle input type section updated. Result area cleared.");
+                });
+            });
+
+             // त्रिभुज के अंदर सही इनपुट तरीका दिखाने का फ़ंक्शन
+             function showTriangleInputType(type) {
+                  // सभी त्रिभुज इनपुट तरीकों को छिपाएं
+                  document.querySelectorAll('.triangle-input-type').forEach(section => {
+                      section.style.display = 'none';
+                  });
+
+                  // चुने गए तरीके के अनुसार सही इनपुट दिखाएं
+                  if (type === 'baseHeight') {
+                      triangleBaseHeightInputs.style.display = 'flex';
+                  } else if (type === 'threeSides') {
+                      triangleThreeSidesInputs.style.display = 'flex';
+                  }
+             }
+
+
+            // कैलकुलेट बटन पर इवेंट लिसनर जोड़ें
+            calculateButton.addEventListener('click', calculateArea);
+            console.log("Calculate button event listener added.");
+
+
+            // --- मुख्य गणना फ़ंक्शन ---
+            // यह फ़ंक्शन चुने गए आकार के अनुसार सही गणना लॉजिक को कॉल करेगा
+            function calculateArea() {
+                console.log("calculateArea() function called.");
+
+                // पिछला रिजल्ट साफ़ करें और एरर स्टाइल हटा दें
+                areaResultDiv.textContent = '';
+                areaResultDiv.classList.remove('error-text');
+                 areaResultDiv.style.color = '#333'; // सामान्य रंग
+
+                const selectedShape = shapeSelect.value; // चुनी गई आकार प्राप्त करें
+                let areaInSqMeters = NaN; // गणना किया गया क्षेत्रफल वर्ग मीटर में
+
+                 // चुने गए आकार के अनुसार गणना लॉजिक चलाएं
+                if (selectedShape === 'rectangle') {
+                    console.log("Calculating Rectangle Area...");
+                    areaInSqMeters = calculateRectangleArea();
+                } else if (selectedShape === 'triangle') {
+                    console.log("Calculating Triangle Area...");
+                     areaInSqMeters = calculateTriangleArea();
+                } else if (selectedShape === 'polygon') { // बहुभुज गणना
+                     console.log("Calculating Polygon Area (Shoelace Formula)...");
+                    areaInSqMeters = calculatePolygonArea();
+                } else if (selectedShape === 'average_sides_quad') { // औसत भुजाएं गणना
+                     console.log("Calculating Average Sides Quadrilateral Area (Estimate)...");
+                    areaInSqMeters = calculateAverageSidesQuadArea();
+                }
+                // भविष्य में और आकार जोड़ें यहाँ ...
+
+
+                 // जांचें कि क्या किसी भी गणना फ़ंक्शन से मान्य क्षेत्रफल मिला
+                 // NaN, Infinity, या बहुत छोटी नेगेटिव वैल्यू को एरर मानें
+                if (isNaN(areaInSqMeters) || !isFinite(areaInSqMeters) || areaInSqMeters < -1e-9) { // बहुत छोटी नेगेटिव वैल्यू के लिए
+                     // एरर मैसेज पहले ही आकार-विशेष फ़ंक्शन में दिखाया गया होगा।
+                     // यदि कोई एरर मैसेज सेट नहीं है, तो सामान्य एरर दिखाएं:
+                      if (areaResultDiv.textContent === '') {
+                          areaResultDiv.textContent = "क्षेत्रफल गणना में त्रुटि हुई। कृपया मान जांचें।";
+                          areaResultDiv.classList.add('error-text');
+                          areaResultDiv.style.color = '#dc3545'; // एरर रंग
+                          console.error("Unknown error after shape calculation, areaInSqMeters:", areaInSqMeters);
+                      } else {
+                           // एरर मैसेज पहले ही सेट हो चुका है
+                           console.warn("Area calculation failed or resulted in an invalid value:", areaInSqMeters);
+                      }
+                    return; // गणना रोकें
+                } else if (areaInSqMeters < 1e-12 && areaInSqMeters >= -1e-9) { // बहुत छोटी पॉजिटिव वैल्यू (लगभग 0)
+                     areaInSqMeters = 0; // इसे 0 मानें
+                     console.log("Calculated area is effectively zero.");
+                     // गणना जारी रखें ताकि आउटपुट यूनिट में 0 दिखाया जा सके
+                }
+                 // अगर यहाँ तक पहुंचे, तो areaInSqMeters एक मान्य गैर-नकारात्मक संख्या है
+
+                console.log("Area successfully calculated in square meters:", areaInSqMeters.toFixed(4));
+
+
+                // ----- 4. रिजल्ट को वांछित आउटपुट यूनिट में बदलें -----
+                const outputUnit = outputUnitSelect.value;
+                const outputFactor = conversionFactors[outputUnit];
+
+                 console.log(`Converting area to output unit: ${outputUnit} (factor: ${outputFactor})`);
+
+
+                // जांचें कि क्या चुनी गई आउटपुट यूनिट के लिए कन्वर्ज़न फ़ैक्टर उपलब्ध और मान्य है (शून्य नहीं)
+                if (outputFactor === undefined || outputFactor === null || outputFactor <= 0) {
+                     areaResultDiv.textContent = `आउटपुट यूनिट ("${outputUnitSelect.options[outputUnitSelect.selectedIndex].text}") के लिए कन्वर्ज़न फ़ैक्टर परिभाषित नहीं है या अमान्य है। कृपया conversionFactors ऑब्जेक्ट जांचें।`;
+                     areaResultDiv.classList.add('error-text');
+                     areaResultDiv.style.color = '#dc3545'; // एरर रंग
+                     console.error("Conversion factor missing or invalid for output unit.");
+                     return; // गणना रोकें
+                }
+
+                let finalArea = areaInSqMeters / outputFactor;
+
+                 // अगर रिजल्ट 0 के बहुत करीब है तो उसे 0 दिखाएं (फ्लो팅 पॉइंट त्रुटियों के कारण)
+                 if (Math.abs(finalArea) < 1e-9) {
+                     finalArea = 0;
+                 }
+
+
+                 console.log(`Final Area value in selected unit: ${finalArea}`);
+
+
+                // ----- 5. रिजल्ट डिस्प्ले करें -----
+                let unitLabel = outputUnitSelect.options[outputUnitSelect.selectedIndex].text; // ड्रॉपdown से टेक्स्ट लेबल लें
+                let resultText = `क्षेत्रफल: ${finalArea.toFixed(4)} ${unitLabel}`; // 4 दशमलव स्थान तक दिखाएं
+
+                 // अगर अनुमानित गणना है, तो रिजल्ट टेक्स्ट में जोड़ें
+                 if (selectedShape === 'average_sides_quad') {
+                      resultText = `अनुमानित ${resultText}`; // रिजल्ट के आगे "अनुमानित" जोड़ें
+                 }
+
+
+                areaResultDiv.textContent = resultText; // रिजल्ट div में टेक्स्ट सेट करें
+                console.log(`Calculation complete. Displaying: "${resultText}"`);
+
+                // TODO: भविष्य में हिस्ट्री में जोड़ें
+
+            } // calculateArea फ़ंक्शन का अंत
+
+
+            // --- आकार-विशेष गणना फ़ंक्शन ---
+
+            // आयताकार क्षेत्रफल गणना फ़ंक्शन
+            function calculateRectangleArea() {
+                console.log("Inside calculateRectangleArea...");
+                const lengthInput = document.getElementById('length');
+                const widthInput = document.getElementById('width');
+                const lengthUnitSelect = document.getElementById('lengthUnit');
+                const widthUnitSelect = document.getElementById('widthUnit');
+
+                 // इनपुट वैल्यू और चुनी गई यूनिट्स प्राप्त करें
+                const length = parseFloat(lengthInput.value);
+                const width = parseFloat(widthInput.value);
+                const lengthUnit = lengthUnitSelect.value;
+                const widthUnit = widthUnitSelect.value;
+
+                 console.log(`Rectangle Inputs: Length=${length} (${lengthUnit}), Width=${width} (${widthUnit})`);
+
+
+                // इनपुट VALIDATION
+                if (isNaN(length) || isNaN(width) || length <= 0 || width <= 0) {
+                    areaResultDiv.textContent = "आयताकार: कृपया लंबाई और चौड़ाई के लिए मान्य, सकारात्मक संख्या दर्ज करें।";
+                    areaResultDiv.classList.add('error-text');
+                     areaResultDiv.style.color = '#dc3545';
+                    console.warn("Rectangle Validation failed: Invalid input values.");
+                    return NaN; // अमान्य होने पर NaN रिटर्न करें
+                }
+
+                // UNIT CONVERSION (मीटर में)
+                 const lengthInMeters = convertLengthToMeters(length, lengthUnit);
+                 const widthInMeters = convertLengthToMeters(width, widthUnit);
+
+                 // जांचें कि क्या कन्वर्ज़न सफल रहा
+                 if (isNaN(lengthInMeters) || isNaN(widthInMeters)) {
+                      areaResultDiv.textContent = "आयताकार: इनपुट यूनिट कन्वर्ज़न में त्रुटि हुई। कृपया यूनिट जांचें।";
+                      areaResultDiv.classList.add('error-text');
+                       areaResultDiv.style.color = '#dc3545';
+                     console.error("Rectangle Conversion failed.");
+                     return NaN;
+                 }
+                 console.log(`Rectangle Converted to meters: Length=${lengthInMeters.toFixed(4)} m, Width=${widthInMeters.toFixed(4)} m`);
+
+
+                // क्षेत्रफल गणना (वर्ग मीटर में)
+                const areaInSqMeters = lengthInMeters * widthInMeters;
+                 console.log(`Rectangle Area in Sq Meters: ${areaInSqMeters.toFixed(4)} sq m`);
+
+                 return areaInSqMeters; // वर्ग मीटर में क्षेत्रफल रिटर्न करें
+            }
+
+
+            // त्रिभुज क्षेत्रफल गणना फ़ंक्शन
+            function calculateTriangleArea() {
+                 console.log("Inside calculateTriangleArea...");
+                const triangleInputType = document.querySelector('input[name="triangleInputType"]:checked').value;
+
+                let areaInSqMeters = NaN;
+
+                if (triangleInputType === 'baseHeight') {
+                     console.log("Using Base and Height method...");
+                    const baseInput = document.getElementById('triangleBase');
+                    const heightInput = document.getElementById('triangleHeight');
+                    const baseUnitSelect = document.getElementById('triangleBaseUnit');
+                    const heightUnitSelect = document.getElementById('triangleHeightUnit');
+
+                    const base = parseFloat(baseInput.value);
+                    const height = parseFloat(heightInput.value);
+                    const baseUnit = baseUnitSelect.value;
+                    const heightUnit = heightUnitSelect.value;
+
+                     console.log(`Triangle (Base/Height) Inputs: Base=${base} (${baseUnit}), Height=${height} (${heightUnit})`);
+
+                    // इनपुट VALIDATION
+                    if (isNaN(base) || isNaN(height) || base <= 0 || height <= 0) {
+                         areaResultDiv.textContent = "त्रिभुज (आधार/ऊँचाई): कृपया आधार और ऊँचाई के लिए मान्य, सकारात्मक संख्या दर्ज करें।";
+                         areaResultDiv.classList.add('error-text');
+                          areaResultDiv.style.color = '#dc3545';
+                        console.warn("Triangle (Base/Height) Validation failed.");
+                        return NaN;
+                    }
+
+                    // UNIT CONVERSION (मीटर में)
+                    const baseInMeters = convertLengthToMeters(base, baseUnit);
+                    const heightInMeters = convertLengthToMeters(height, heightUnit);
+
+                    // जांचें कि क्या कन्वर्ज़न सफल रहा
+                    if (isNaN(baseInMeters) || isNaN(heightInMeters)) {
+                        areaResultDiv.textContent = "त्रिभुज (आधार/ऊँचाई): इनपुट यूनिट कन्वर्ज़न में त्रुटि हुई। कृपया यूनिट जांचें।";
+                        areaResultDiv.classList.add('error-text');
+                         areaResultDiv.style.color = '#dc3545';
+                        console.error("Triangle (Base/Height) Conversion failed.");
+                        return NaN;
+                    }
+                     console.log(`Triangle (Base/Height) Converted to meters: Base=${baseInMeters.toFixed(4)} m, Height=${heightInMeters.toFixed(4)} m`);
+
+
+                    // क्षेत्रफल गणना (वर्ग मीटर में)
+                    areaInSqMeters = 0.5 * baseInMeters * heightInMeters;
+                    console.log(`Triangle (Base/Height) Area in Sq Meters: ${areaInSqMeters.toFixed(4)} sq m`);
+
+
+                } else if (triangleInputType === 'threeSides') {
+                    console.log("Using Three Sides method (Heron's Formula)...");
+                    const sideAInput = document.getElementById('triangleSideA');
+                    const sideBInput = document.getElementById('triangleSideB');
+                    const sideCInput = document.getElementById('triangleSideC');
+                    const sideAUnitSelect = document.getElementById('triangleSideAUnit');
+                    const sideBUnitSelect = document.getElementById('triangleSideBUnit');
+                    const sideCUnitSelect = document.getElementById('triangleSideCUnit');
+
+
+                    const sideA = parseFloat(sideAInput.value);
+                    const sideB = parseFloat(sideBInput.value);
+                    const sideC = parseFloat(sideCInput.value);
+                    const sideAUnit = sideAUnitSelect.value;
+                    const sideBUnit = sideBUnitSelect.value;
+                    const sideCUnit = sideCUnitSelect.value;
+
+                     console.log(`Triangle (3 Sides) Inputs: SideA=${sideA} (${sideAUnit}), SideB=${sideB} (${sideBUnit}), SideC=${sideC} (${sideCUnit})`);
+
+
+                    // इनपुट VALIDATION
+                    if (isNaN(sideA) || isNaN(sideB) || isNaN(sideC) || sideA <= 0 || sideB <= 0 || sideC <= 0) {
+                         areaResultDiv.textContent = "त्रिभुज (3 भुजाएँ): कृपया तीनों भुजाओं के लिए मान्य, सकारात्मक संख्या दर्ज करें।";
+                         areaResultDiv.classList.add('error-text');
+                          areaResultDiv.style.color = '#dc3545';
+                        console.warn("Triangle (3 Sides) Validation failed: Invalid inputs.");
+                        return NaN;
+                    }
+
+                    // UNIT CONVERSION (मीटर में)
+                    const sideAInMeters = convertLengthToMeters(sideA, sideAUnit);
+                    const sideBInMeters = convertLengthToMeters(sideB, sideBUnit);
+                    const sideCInMeters = convertLengthToMeters(sideC, sideCUnit);
+
+                    // जांचें कि क्या कन्वर्ज़न सफल रहा
+                    if (isNaN(sideAInMeters) || isNaN(sideBInMeters) || isNaN(sideCInMeters)) {
+                        areaResultDiv.textContent = "त्रिभुज (3 भुजाएँ): इनपुट यूनिट कन्वर्ज़न में त्रुटि हुई। कृपया यूनिट जांचें।";
+                        areaResultDiv.classList.add('error-text');
+                         areaResultDiv.style.color = '#dc3545';
+                        console.error("Triangle (3 Sides) Conversion failed.");
+                        return NaN;
+                    }
+                     console.log(`Triangle (3 Sides) Converted to meters: A=${sideAInMeters.toFixed(4)} m, B=${sideBInMeters.toFixed(4)} m, C=${sideCInMeters.toFixed(4)} m`);
+
+
+                    // त्रिभुज असमानता जांचें (Triangle Inequality Theorem)
+                    if (sideAInMeters + sideBInMeters <= sideCInMeters ||
+                        sideAInMeters + sideCInMeters <= sideBInMeters ||
+                        sideBInMeters + sideCInMeters <= sideAInMeters) {
+                         areaResultDiv.textContent = "त्रिभुज (3 भुजाएँ): दी गई भुजाओं से त्रिभुज नहीं बन सकता।";
+                         areaResultDiv.classList.add('error-text');
+                          areaResultDiv.style.color = '#dc3545';
+                        console.warn("Triangle (3 Sides) Validation failed: Triangle inequality.");
+                        return NaN;
+                    }
+                     console.log("Triangle inequality check passed.");
+
+
+                    // क्षेत्रफल गणना (Heron's Formula - वर्ग मीटर में)
+                    const s = (sideAInMeters + sideBInMeters + sideCInMeters) / 2; // अर्ध-परिमाप
+                    // Math.sqrt() के अंदर का मान ऋणात्मक नहीं होना चाहिए (त्रुटियों से बचने के लिए epsilon जोड़ें)
+                    const areaSquared = s * (s - sideAInMeters) * (s - sideBInMeters) * (s - sideCInMeters);
+                    // फ्लोटिंग पॉइंट त्रुटियों के कारण यह बहुत छोटा नकारात्मक मान हो सकता है, इसलिए जांचें
+                    if (areaSquared < -1e-9) { // छोटी नेगेटिव वैल्यू को भी एरर मानें
+                        areaResultDiv.textContent = "त्रिभुज (3 भुजाएँ): क्षेत्रफल गणना में त्रुटि हुई।";
+                        areaResultDiv.classList.add('error-text');
+                         areaResultDiv.style.color = '#dc3545';
+                         console.error("Triangle (3 Sides) Calculation failed: areaSquared is negative.");
+                        return NaN;
+                    }
+                     // बहुत छोटी नेगेटिव वैल्यू को 0 मानें
+                     const safeAreaSquared = Math.max(0, areaSquared);
+
+                    areaInSqMeters = Math.sqrt(safeAreaSquared);
+                     console.log(`Triangle (3 Sides) Area in Sq Meters: ${areaInSqMeters.toFixed(4)} sq m`);
+
+                } // else if (triangleInputType === 'threeSides') अंत
+
+                 return areaInSqMeters; // वर्ग मीटर में क्षेत्रफल रिटर्न करें
+            } // calculateTriangleArea फ़ंक्शन का अंत
+
+
+            // बहुभुज क्षेत्रफल गणना फ़ंक्शन (निर्देशांक के साथ - Shoelace Formula)
+            function calculatePolygonArea() {
+                 console.log("Inside calculatePolygonArea...");
+                 const coordinatesText = polygonCoordinatesTextarea.value.trim(); // टेक्स्ट एरिया से मान लें और स्पेस हटाएं
+                 const coordinateUnit = coordinateUnitSelect.value; // निर्देशांक की यूनिट
+
+                 console.log("Polygon Coordinates Raw Text:", coordinatesText);
+                 console.log("Coordinate Unit:", coordinateUnit);
+
+
+                 if (coordinatesText === '') {
+                      areaResultDiv.textContent = "बहुभुज: कृपया कोनों के निर्देशांक दर्ज करें।";
+                     areaResultDiv.classList.add('error-text');
+                     areaResultDiv.style.color = '#dc3545';
+                     console.warn("Polygon Validation failed: Coordinates textarea is empty.");
+                      return NaN; // खाली होने पर NaN रिटर्न करें
+                 }
+
+
+                 // निर्देशांक को पार्स करें
+                 const lines = coordinatesText.split('\n'); // हर लाइन एक बिंदु है
+                 const vertices = []; // बिंदुओं को स्टोर करने के लिए Array
+
+                 for (let i = 0; i < lines.length; i++) {
+                      const line = lines[i].trim();
+                      if (line === '') continue; // खाली लाइनें छोड़ दें
+
+                      const parts = line.split(','); // X और Y कॉमा से अलग होते हैं
+                      if (parts.length !== 2) {
+                           areaResultDiv.textContent = `बहुभुज: लाइन ${i + 1} में अमान्य प्रारूप। कृपया 'X,Y' प्रारूप में दर्ज करें।`;
+                           areaResultDiv.classList.add('error-text');
+                            areaResultDiv.style.color = '#dc3545';
+                           console.warn(`Polygon Validation failed: Invalid format on line ${i + 1}.`);
+                           return NaN; // अमान्य प्रारूप होने पर NaN रिटर्न करें
+                      }
+
+                      const x = parseFloat(parts[0].trim());
+                      const y = parseFloat(parts[1].trim());
+
+                      if (isNaN(x) || isNaN(y)) {
+                           areaResultDiv.textContent = `बहुभुज: लाइन ${i + 1} में अमान्य संख्याएं। कृपया संख्याएं दर्ज करें।`;
+                           areaResultDiv.classList.add('error-text');
+                            areaResultDiv.style.color = '#dc3545';
+                           console.warn(`Polygon Validation failed: Invalid numbers on line ${i + 1}.`);
+                           return NaN; // अमान्य संख्या होने पर NaN रिटर्न करें
+                      }
+
+                      // निर्देशांक को मीटर में बदलें
+                      const xInMeters = convertLengthToMeters(x, coordinateUnit);
+                      const yInMeters = convertLengthToMeters(y, coordinateUnit);
+
+                      // जांचें कि क्या कन्वर्ज़न सफल रहा
+                      if (isNaN(xInMeters) || isNaN(yInMeters)) {
+                           areaResultDiv.textContent = `बहुभुज: लाइन ${i + 1} में निर्देशांक यूनिट कन्वर्ज़न में त्रुटि। कृपया यूनिट जांचें।`;
+                           areaResultDiv.classList.add('error-text');
+                            areaResultDiv.style.color = '#dc3545';
+                           console.error(`Polygon Conversion failed for coordinates on line ${i + 1}.`);
+                           return NaN; // कन्वर्ज़न विफल होने पर NaN रिटर्न करें
+                      }
+
+                      vertices.push({ x: xInMeters, y: yInMeters });
+                 }
+
+                 console.log("Parsed and converted vertices (in meters):", vertices);
+
+
+                 // VALIDATION: कम से कम 3 कोने होने चाहिए बहुभुज के लिए
+                 if (vertices.length < 3) {
+                      areaResultDiv.textContent = "बहुभुज: क्षेत्रफल के लिए कम से कम 3 कोनों की आवश्यकता होती है।";
+                      areaResultDiv.classList.add('error-text');
+                       areaResultDiv.style.color = '#dc3545';
+                     console.warn("Polygon Validation failed: Less than 3 vertices.");
+                      return NaN; // 3 से कम कोने होने पर NaN रिटर्न करें
+                 }
+                 console.log("Polygon Validation successful: At least 3 vertices found.");
+
+
+                 // --- Shoelace Formula लागू करें (वर्ग मीटर में) ---
+                 let area = 0;
+                 const n = vertices.length; // कोनों की संख्या
+
+                 for (let i = 0; i < n; i++) {
+                     const j = (i + 1) % n; // अगला कोने (आखिरी के लिए पहला)
+                     area += vertices[i].x * vertices[j].y;
+                     area -= vertices[j].x * vertices[i].y;
+                 }
+
+                 area = Math.abs(area) / 2; // निरपेक्ष मान का आधा क्षेत्रफल है
+
+                 console.log(`Polygon Area (calculated in Sq Meters using Shoelace): ${area.toFixed(4)} sq m`);
+
+                 return area; // वर्ग मीटर में क्षेत्रफल रिटर्न करें
+
+            } // calculatePolygonArea फ़ंक्शन का अंत
+
+
+            // औसत भुजाएं चतुर्भुज क्षेत्रफल गणना फ़ंक्शन (अनुमानित)
+            function calculateAverageSidesQuadArea() {
+                console.log("Inside calculateAverageSidesQuadArea...");
+
+                 // HTML एलिमेंट्स के संदर्भ प्राप्त करें (ये ऊपर DOMContentLoaded में मिल गए हैं)
+                 const length1Input = document.getElementById('avgQuadLength1');
+                 const length2Input = document.getElementById('avgQuadLength2');
+                 const width1Input = document.getElementById('avgQuadWidth1');
+                 const width2Input = document.getElementById('avgQuadWidth2');
+                 const length1UnitSelect = document.getElementById('avgQuadLength1Unit');
+                 const length2UnitSelect = document.getElementById('avgQuadLength2Unit');
+                 const width1UnitSelect = document.getElementById('avgQuadWidth1Unit');
+                 const width2UnitSelect = document.getElementById('avgQuadWidth2Unit');
+
+
+                 // इनपुट वैल्यू और चुनी गई यूनिट्स प्राप्त करें
+                 const length1 = parseFloat(length1Input.value);
+                 const length2 = parseFloat(length2Input.value);
+                 const width1 = parseFloat(width1Input.value);
+                 const width2 = parseFloat(width2Input.value);
+
+                 const length1Unit = length1UnitSelect.value;
+                 const length2Unit = length2UnitSelect.value;
+                 const width1Unit = width1UnitSelect.value;
+                 const width2Unit = width2UnitSelect.value;
+
+                 console.log(`Average Sides Quad Inputs: L1=${length1} (${length1Unit}), L2=${length2} (${length2Unit}), W1=${width1} (${width1Unit}), W2=${width2} (${width2Unit})`);
+
+
+                 // इनपुट VALIDATION
+                 if (isNaN(length1) || isNaN(length2) || isNaN(width1) || isNaN(width2) ||
+                     length1 <= 0 || length2 <= 0 || width1 <= 0 || width2 <= 0) {
+                      areaResultDiv.textContent = "चतुर्भुज (औसत भुजाएं): कृपया सभी चारों भुजाओं के लिए मान्य, सकारात्मक संख्या दर्ज करें।";
+                      areaResultDiv.classList.add('error-text');
+                      areaResultDiv.style.color = '#dc3545';
+                     console.warn("Average Sides Quad Validation failed: Invalid input values.");
+                     return NaN; // अमान्य होने पर NaN रिटर्न करें
+                 }
+
+                 // UNIT CONVERSION (सभी को मीटर में)
+                 const length1InMeters = convertLengthToMeters(length1, length1Unit);
+                 const length2InMeters = convertLengthToMeters(length2, length2Unit);
+                 const width1InMeters = convertLengthToMeters(width1, width1Unit);
+                 const width2InMeters = convertLengthToMeters(width2, width2Unit);
+
+                 // जांचें कि क्या कन्वर्ज़न सफल रहा
+                  if (isNaN(length1InMeters) || isNaN(length2InMeters) || isNaN(width1InMeters) || isNaN(width2InMeters)) {
+                       areaResultDiv.textContent = "चतुर्भुज (औसत भुजाएं): इनपुट यूनिट कन्वर्ज़न में त्रुटि हुई। कृपया यूनिट जांचें।";
+                       areaResultDiv.classList.add('error-text');
+                        areaResultDiv.style.color = '#dc3545';
+                      console.error("Average Sides Quad Conversion failed.");
+                      return NaN;
+                  }
+                  console.log(`Average Sides Quad Converted to meters: L1=${length1InMeters.toFixed(4)} m, L2=${length2InMeters.toFixed(4)} m, W1=${width1InMeters.toFixed(4)} m, W2=${width2InMeters.toFixed(4)} m`);
+
+
+                 // --- औसत निकालें और क्षेत्रफल गणना करें (वर्ग मीटर में) ---
+                 const averageLengthInMeters = (length1InMeters + length2InMeters) / 2;
+                 const averageWidthInMeters = (width1InMeters + width2InMeters) / 2;
+
+                 const areaInSqMeters = averageLengthInMeters * averageWidthInMeters;
+
+                  console.log(`Average Sides Quad Calculated Area (Estimate) in Sq Meters: ${areaInSqMeters.toFixed(4)} sq m`);
+
+
+                 return areaInSqMeters; // वर्ग मीटर में क्षेत्रफल रिटर्न करें
+            }
+
+
+            // TODO: भविष्य में अन्य गणना फ़ंक्शन जोड़ें
+
+
+            // --- पेज लोड होने पर प्रारंभिक सेटअप ---
+            // आकार चुनने वाले ड्रॉपडाउन के बदलने पर इनपुट सेक्शन को अपडेट करें
+             // यह सुनिश्चित करने के लिए कि पेज लोड होने पर सही इनपुट सेक्शन दिखे,
+             // 'change' इवेंट को मैन्युअल रूप से ट्रिगर करें।
+            shapeSelect.dispatchEvent(new Event('change'));
+
+
+        }); // DOMContentLoaded का अंत
+    </script>
+
+</body>
+</html>

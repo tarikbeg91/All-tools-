@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-translate-key="combinedCalculatorTitle">Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- CSS Styles --- */
+        /* Variables for theming */
+        :root {
+            --background-color: #e0e5ec; /* Soft light background */
+            --text-color: #333;
+            --container-bg-color: #f0f2f5; /* Slightly lighter container */
+            --border-color: #c8d0d8; /* Soft border */
+            --input-bg: #e3e6eb; /* Sunken input effect */
+            --input-text: #333;
+            --button-bg: #ebf0f3; /* Raised button effect */
+            --button-hover-bg: #dce1e6;
+            --operator-button-bg: #cad1d8; /* Different operator color */
+            --operator-button-hover-bg: #b8c0c8;
+            --equals-button-bg: #4CAF50; /* Green */
+            --equals-button-hover-bg: #45a049;
+            --clear-button-bg: #f44336; /* Red */
+            --clear-button-hover-bg: #da190b;
+            --result-text-color: #333;
+            --error-text-color: #dc3545;
+            --hr-color: #c8d0d8;
+
+             --control-icon-color: #555;
+             --control-icon-hover-color: #000;
+
+             --primary-color: #007bff;
+             --primary-color-hover: #0056b3;
+
+             --toggle-button-bg: #e0e5ec; /* Soft toggle button */
+             --toggle-button-hover-bg: #dce1e6;
+             --toggle-button-text: #333;
+
+             --active-toggle-bg: var(--primary-color);
+             --active-toggle-text: white;
+             --active-toggle-border: var(--primary-color);
+
+             --history-border-color: #dce1e6;
+             --history-item-bg: #ebf0f3;
+
+             --scientific-button-bg: #aabbaa; /* New: Scientific button color */
+             --scientific-button-hover-bg: #98a898;
+        }
+
+        html.dark {
+            --background-color: #222b36;
+            --text-color: #e0e5ec;
+            --container-bg-color: #2d3748;
+            --border-color: #4a5568;
+            --input-bg: #3a4354;
+            --input-text: #e0e5ec;
+            --button-bg: #4a5568;
+            --button-hover-bg: #5a6578;
+            --operator-button-bg: #3a4354;
+            --operator-button-hover-bg: #4a5568;
+            --equals-button-bg: #48bb78;
+            --equals-button-hover-bg: #38a169;
+            --clear-button-bg: #fc8181;
+            --clear-button-hover-bg: #f56565;
+            --result-text-color: #e0e5ec;
+            --error-text-color: #fc8181;
+            --hr-color: #718096;
+
+             --control-icon-color: #a0aec0;
+             --control-icon-hover-color: #e0e5ec;
+
+             --primary-color: #63b3ed;
+             --primary-color-hover: #4299e1;
+
+             --toggle-button-bg: #3a4354;
+             --toggle-button-hover-bg: #4a5568;
+             --toggle-button-text: #a0aec0;
+
+             --active-toggle-bg: var(--primary-color);
+             --active-toggle-text: white;
+             --active-toggle-border: var(--primary-color);
+
+             --history-border-color: #4a5568;
+             --history-item-bg: #2d3748;
+
+             --scientific-button-bg: #556555; /* New: Dark mode scientific color */
+             --scientific-button-hover-bg: #657565;
+        }
+
+
+        body {
+            font-family: 'Roboto', sans-serif; /* Use Roboto font */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            box-sizing: border-box;
+             overflow-y: auto; /* Allow body scroll if content is tall */
+        }
+
+        .calculator-container {
+            background-color: var(--container-bg-color);
+            padding: 25px;
+            border-radius: 15px; /* Slightly more rounded */
+            box-shadow: 8px 8px 15px var(--border-color), -8px -8px 15px var(--container-bg-color); /* Neumorphism effect */
+            width: 100%;
+            max-width: 500px; /* Allow a bit more width on larger screens */
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .controls-header {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px; /* Increased gap */
+            margin-bottom: 0;
+            align-items: center;
+             padding-bottom: 15px;
+             border-bottom: 1px solid var(--border-color);
+        }
+
+        .controls-header .control-icon {
+            background: none;
+            border: none;
+            font-size: 1.4em; /* Slightly larger icons */
+            cursor: pointer;
+            color: var(--control-icon-color);
+            transition: color 0.2s ease;
+            padding: 5px;
+            outline: none; /* Remove focus outline */
+        }
+        .controls-header .control-icon:hover {
+            color: var(--control-icon-hover-color);
+        }
+         .controls-header .control-icon.active {
+             color: var(--primary-color);
+         }
+
+
+        h2 { /* This might be used as a general title above the container if desired */
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--text-color);
+            font-size: 1.8em; /* Larger main title */
+        }
+         /* H3 for section titles inside the container */
+         .calculator-section h3, .history-section h3 {
+             text-align: center;
+             margin-top: 0;
+             margin-bottom: 15px;
+             color: var(--text-color);
+             font-size: 1.4em; /* Slightly larger section titles */
+         }
+          /* H4 for sub-section titles (like CM/Feet diagonal) */
+         .diagonal-sub-calculator h4 {
+             text-align: center;
+             margin-top: 0;
+             margin-bottom: 10px;
+             color: var(--text-color);
+             font-size: 1.2em;
+         }
+
+
+        /* Individual Sections within the container */
+         .calculator-section, .history-section {
+             display: none;
+             flex-direction: column;
+             gap: 15px;
+         }
+
+        /* Standard Calculator Styles */
+        .standard-calculator-section {
+            /* No specific styles needed here */
+        }
+
+        #standardCalculatorDisplay {
+            width: 100%;
+            height: 70px; /* Increased height */
+            text-align: right;
+            padding: 0 20px; /* Increased padding */
+            font-size: 2.5em; /* Increased font size */
+            margin-bottom: 15px;
+            border: none; /* Remove default border */
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            box-sizing: border-box;
+            border-radius: 10px; /* Match container style */
+             box-shadow: inset 2px 2px 5px var(--border-color), inset -5px -5px 10px var(--container-bg-color); /* Sunken effect */
+            cursor: default;
+            overflow-x: auto; /* Add scroll for long expressions */
+             white-space: nowrap; /* Prevent wrapping */
+        }
+
+        .standard-calculator-buttons {
+            display: grid;
+            /* Changed to 5 columns for scientific layout */
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        .standard-calculator-buttons button {
+            padding: 18px 10px; /* Increased padding */
+            font-size: 1.4em; /* Increased font size */
+            border: none;
+            border-radius: 10px; /* Match container style */
+            cursor: pointer;
+            background-color: var(--button-bg);
+            color: var(--text-color);
+            transition: all 0.2s ease; /* Smooth transition for hover/active */
+            box-shadow: 5px 5px 10px var(--border-color), -5px -5px 10px var(--container-bg-color); /* Raised effect */
+            outline: none;
+        }
+
+        .standard-calculator-buttons button:hover {
+            background-color: var(--button-hover-bg);
+            box-shadow: 2px 2px 5px var(--border-color), -2px -2px 5px var(--container-bg-color); /* Pressed effect */
+        }
+         .standard-calculator-buttons button:active {
+             box-shadow: inset 2px 2px 5px var(--border-color), inset -5px -5px 10px var(--container-bg-color); /* Sunken effect on press */
+         }
+
+
+        .standard-calculator-buttons .operator-button {
+            background-color: var(--operator-button-bg);
+        }
+        .standard-calculator-buttons .operator-button:hover {
+            background-color: var(--operator-button-hover-bg);
+        }
+         .standard-calculator-buttons .operator-button:active {
+             box-shadow: inset 2px 2px 5px var(--border-color), inset -5px -5px 10px var(--container-bg-color);
+         }
+
+
+        .standard-calculator-buttons .equals-button {
+            background-color: var(--equals-button-bg);
+            color: white;
+             grid-column: span 2; /* Make equals button wider */
+        }
+        .standard-calculator-buttons .equals-button:hover {
+            background-color: var(--equals-button-hover-bg);
+        }
+         .standard-calculator-buttons .equals-button:active {
+             box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2), inset -5px -5px 10px rgba(255,255,255,0.5); /* Darker inset shadow for equals */
+         }
+
+
+        .standard-calculator-buttons .clear-button {
+            background-color: var(--clear-button-bg);
+            color: white;
+             grid-column: span 3; /* Make clear button wider */
+        }
+        .standard-calculator-buttons .clear-button:hover {
+            background-color: var(--clear-button-hover-bg);
+        }
+         .standard-calculator-buttons .clear-button:active {
+              box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2), inset -5px -5px 10px rgba(255,255,255,0.5); /* Darker inset shadow for clear */
+         }
+
+         /* New Scientific Buttons */
+         .standard-calculator-buttons .scientific-button {
+              background-color: var(--scientific-button-bg);
+              font-size: 1.1em; /* Smaller font for function names */
+         }
+          .standard-calculator-buttons .scientific-button:hover {
+             background-color: var(--scientific-button-hover-bg);
+         }
+          .standard-calculator-buttons .scientific-button:active {
+             box-shadow: inset 2px 2px 5px var(--border-color), inset -5px -5px 10px var(--container-bg-color);
+         }
+
+
+        hr { /* Can be removed if using gap in container */
+            display: none; /* Hide horizontal rule */
+        }
+
+
+         /* New Sub-Calculator Toggle Button styles */
+         .sub-calculator-toggles {
+             display: flex;
+             gap: 10px;
+             margin-bottom: 15px;
+             justify-content: center;
+         }
+
+         .sub-calculator-toggles button {
+             flex-grow: 1;
+             padding: 8px 15px;
+             font-size: 1em;
+             border: 1px solid var(--border-color);
+             border-radius: 5px;
+             background-color: var(--toggle-button-bg);
+             color: var(--toggle-button-text);
+             cursor: pointer;
+             transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+             outline: none;
+         }
+
+         .sub-calculator-toggles button:hover {
+             background-color: var(--toggle-button-hover-bg);
+         }
+
+         .sub-calculator-toggles button.active {
+             background-color: var(--active-toggle-bg);
+             color: var(--active-toggle-text);
+             border-color: var(--active-toggle-border);
+             font-weight: bold;
+         }
+
+
+         /* Styles for the individual diagonal calculator sub-sections */
+         .diagonal-sub-calculator {
+              display: none;
+              flex-direction: column;
+              gap: 15px;
+         }
+
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+         .input-group label {
+             font-size: 0.95em;
+         }
+
+
+         .feet-inches-fields {
+             display: flex;
+             gap: 10px;
+             align-items: center;
+         }
+
+         .feet-inches-fields input[type="number"] {
+             flex-grow: 1;
+             width: 40%; /* Adjust width */
+             padding: 12px; /* Match other inputs */
+             border: 1px solid var(--border-color);
+             background-color: var(--input-bg);
+             color: var(--input-text);
+             box-sizing: border-box;
+             border-radius: 5px;
+             outline: none;
+         }
+
+          .feet-inches-fields label {
+              font-size: 0.95em;
+              margin-bottom: 0;
+              flex-shrink: 0;
+          }
+
+
+        .input-group input[type="number"] { /* Style for CM inputs and other single number inputs */
+            width: 100%;
+            padding: 12px; /* Match other inputs */
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            box-sizing: border-box;
+            border-radius: 5px;
+            outline: none;
+        }
+         .input-group input[type="number"]:focus {
+              border-color: var(--primary-color); /* Highlight on focus */
+              box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
+         }
+
+
+        .calculator-section button { /* Apply to calculate buttons within sections */
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: 10px;
+            outline: none;
+        }
+        .calculator-section button:hover {
+            background-color: var(--primary-color-hover);
+        }
+
+
+        .result-area {
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+            word-break: break-word;
+            font-size: 1.3em; /* Slightly larger result */
+            color: var(--result-text-color);
+            min-height: 1.5em;
+        }
+
+        /* --- History Section Styles --- */
+        .history-section {
+             /* Inherits container styles */
+             gap: 15px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0;
+             padding-bottom: 10px;
+             border-bottom: 1px solid var(--border-color);
+        }
+
+        .history-header h3 {
+            margin: 0;
+            font-size: 1.3em;
+            color: var(--text-color);
+        }
+
+        .history-header button {
+             padding: 5px 10px;
+             font-size: 0.9em;
+             background-color: var(--clear-button-bg);
+             color: white;
+             border: none;
+             border-radius: 5px;
+             cursor: pointer;
+             transition: background-color 0.2s ease;
+             outline: none;
+        }
+        .history-header button:hover {
+             background-color: var(--clear-button-hover-bg);
+        }
+
+
+        #historyList {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+             max-height: 300px;
+             overflow-y: auto;
+        }
+
+        #historyList li {
+            border: 1px solid var(--history-border-color);
+            border-radius: 8px; /* Slightly more rounded */
+            padding: 15px; /* More padding */
+            margin-bottom: 10px;
+            background-color: var(--history-item-bg);
+            word-break: break-word;
+             font-size: 0.95em; /* Slightly larger font */
+             box-shadow: 2px 2px 5px rgba(0,0,0,0.05); /* Subtle shadow */
+        }
+         #historyList li strong {
+             display: block;
+             margin-bottom: 5px; /* More space */
+             font-size: 1.1em; /* Larger input/result text */
+             color: var(--result-text-color); /* Use result color for emphasis */
+         }
+         #historyList li .history-date {
+             display: block;
+             font-size: 0.8em;
+             color: var(--control-icon-color);
+             margin-top: 8px; /* More space */
+         }
+          #historyList li:last-child {
+              margin-bottom: 0;
+          }
+         #historyList li:hover {
+              background-color: var(--toggle-button-hover-bg); /* Highlight on hover */
+         }
+
+         /* Style for "No history yet." message */
+         #historyList li[style*="text-align: center"] {
+              border: none;
+              background-color: transparent;
+              box-shadow: none;
+              font-style: italic;
+              color: var(--text-color); /* Use regular text color */
+              padding: 10px;
+         }
+
+
+    </style>
+</head>
+<body>
+
+    <div class="calculator-container">
+
+        <div class="controls-header">
+             <button id="toggleStandardIcon" class="control-icon" title="Standard Calculator">
+                 <i class="fas fa-calculator"></i>
+             </button>
+
+             <button id="toggleEmiIcon" class="control-icon" title="Show EMI Calculator">
+                 <i class="fas fa-money-bill-wave"></i> </button>
+
+             <button id="toggleDiagonalIcon" class="control-icon" title="Show Diagonal Calculator">
+                 <i class="fas fa-ruler-combined"></i> </button>
+
+              <button id="toggleHistoryIcon" class="control-icon" title="Show History">
+                 <i class="fas fa-history"></i> </button>
+
+             <button id="darkModeToggleBtn" onclick="toggleDarkMode()" class="control-icon" title="Toggle Dark Mode">
+                 <i class="fas fa-moon"></i>
+             </button>
+        </div>
+
+
+        <div id="standardCalculatorSection" class="calculator-section">
+            <h3 data-translate-key="standardCalculatorTitle">Standard Calculator</h3>
+            <input type="text" id="standardCalculatorDisplay" value="0" readonly>
+
+            <div class="standard-calculator-buttons">
+                 <button class="scientific-button" onclick="appendValueStandard('Math.sin(')">sin</button>
+                 <button class="scientific-button" onclick="appendValueStandard('Math.cos(')">cos</button>
+                 <button class="scientific-button" onclick="appendValueStandard('Math.tan(')">tan</button>
+                 <button class="scientific-button" onclick="appendValueStandard('Math.sqrt(')">√</button>
+                 <button class="scientific-button" onclick="appendValueStandard('^')">^</button> <button class="scientific-button" onclick="appendValueStandard('(')">(</button>
+                 <button class="scientific-button" onclick="appendValueStandard(')')">)</button>
+                 <button class="scientific-button" onclick="appendValueStandard('Math.PI')">π</button>
+                 <button class="scientific-button" onclick="appendValueStandard('Math.E')">e</button>
+                 <button class="scientific-button operator-button" onclick="appendValueStandard('/')">/</button> <button onclick="appendValueStandard('7')">7</button>
+                <button onclick="appendValueStandard('8')">8</button>
+                <button onclick="appendValueStandard('9')">9</button>
+                <button onclick="appendValueStandard('*')" class="operator-button">×</button> <button class="scientific-button" onclick="appendValueStandard('Math.log10(')">log</button> <button onclick="appendValueStandard('4')">4</button>
+                <button onclick="appendValueStandard('5')">5</button>
+                <button onclick="appendValueStandard('6')">6</button>
+                <button onclick="appendValueStandard('-')" class="operator-button">-</button> <button class="scientific-button" onclick="appendValueStandard('Math.log(')">ln</button> <button onclick="appendValueStandard('1')">1</button>
+                <button onclick="appendValueStandard('2')">2</button>
+                <button onclick="appendValueStandard('3')">3</button>
+                <button onclick="appendValueStandard('+')" class="operator-button">+</button> <button onclick="appendValueStandard('.')">.</button> <button onclick="appendValueStandard('0')">0</button>
+                 <button onclick="clearStandardDisplay()" class="clear-button" style="grid-column: span 2;">C</button> <button onclick="calculateStandard()" class="equals-button" style="grid-column: span 2;">=</button> </div>
+        </div>
+        <div id="emiCalculatorSection" class="calculator-section">
+            <h3 data-translate-key="emiCalculatorTitle">EMI Calculator</h3>
+            <div class="input-group">
+                <label for="loanPrincipal" data-translate-key="principalAmount">Principal Amount:</label>
+                <input type="number" id="loanPrincipal" min="0" placeholder="₹">
+            </div>
+            <div class="input-group">
+                <label for="loanInterestRate" data-translate-key="interestRate">Interest Rate (% Annual):</label>
+                <input type="number" id="loanInterestRate" min="0" step="0.01" placeholder="%">
+            </div>
+            <div class="input-group">
+                <label for="loanTenureYears" data-translate-key="loanTenure">Tenure (Years):</label>
+                <input type="number" id="loanTenureYears" min="1" placeholder="Years">
+            </div>
+
+            <button onclick="calculateEMI()" data-translate-key="calculateEmi">Calculate EMI</button>
+
+            <div id="emiResult" class="result-area"></div>
+        </div>
+        <div id="diagonalCalculatorSection" class="calculator-section">
+            <h3 data-translate-key="diagonalCalculatorTitle">Diagonal Calculator</h3>
+
+            <div class="sub-calculator-toggles">
+                 <button id="showCmCalcBtn" data-translate-key="cmCalculatorTitle">CM Calculator</button>
+                 <button id="showFeetCalcBtn" data-translate-key="feetCalculatorTitle">Feet/Inches Calculator</button>
+            </div>
+
+
+            <div id="diagonalCmCalculatorSection" class="diagonal-sub-calculator">
+                 <h4 data-translate-key="cmCalculatorTitle">CM Calculator</h4>
+                 <div class="input-group cm-inputs">
+                    <label for="cmSideA" data-translate-key="sideA">Side A:</label>
+                    <input type="number" id="cmSideA" min="0" placeholder="cm">
+                 </div>
+                 <div class="input-group cm-inputs">
+                     <label for="cmSideB" data-translate-key="sideB">Side B:</label>
+                     <input type="number" id="cmSideB" min="0" step="0.01" placeholder="cm">
+                 </div>
+
+                 <button onclick="calculateCmDiagonal()" data-translate-key="calculateDiagonal">Calculate Diagonal</button>
+
+                 <div id="diagonalCmResult" class="result-area"></div>
+            </div>
+
+
+            <div id="diagonalFeetCalculatorSection" class="diagonal-sub-calculator">
+                 <h4 data-translate-key="feetCalculatorTitle">Feet/Inches Calculator</h4>
+                 <div class="input-group">
+                     <label data-translate-key="sideA">Side A:</label>
+                     <div class="feet-inches-fields">
+                         <input type="number" id="feetSideAFeet" min="0" placeholder="Feet">
+                         <label for="feetSideAFeet" data-translate-key="feetShort">ft</label>
+                         <input type="number" id="feetSideAInches" min="0" step="0.01" placeholder="Inches">
+                         <label for="feetSideAInches" data-translate-key="inchesShort">in</label>
+                     </div>
+                 </div>
+                 <div class="input-group">
+                     <label data-translate-key="sideB">Side B:</label>
+                     <div class="feet-inches-fields">
+                         <input type="number" id="feetSideBFeet" min="0" placeholder="Feet">
+                         <label for="feetSideBFeet" data-translate-key="feetShort">ft</label>
+                         <input type="number" id="feetSideBInches" min="0" step="0.01" placeholder="Inches">
+                         <label for="feetSideBInches" data-translate-key="inchesShort">in</label>
+                     </div>
+                 </div>
+
+                 <button onclick="calculateFeetDiagonal()" data-translate-key="calculateDiagonal">Calculate Diagonal</button>
+
+                 <div id="diagonalFeetResult" class="result-area"></div>
+             </div>
+
+
+        </div>
+        <div id="historySection" class="history-section">
+            <div class="history-header">
+                <h3 data-translate-key="historyTitle">Calculation History</h3>
+                <button id="clearHistoryBtn" data-translate-key="clearHistory">Clear History</button>
+            </div>
+            <ul id="historyList">
+                </ul>
+        </div>
+        </div> <script>
+        // --- JavaScript Code ---
+
+        // --- Translations (Only English) ---
+        const translations = {
+            'en': {
+                combinedCalculatorTitle: 'Calculator', // General title (can be removed or used somewhere)
+                standardCalculatorTitle: 'Standard Calculator',
+                emiCalculatorTitle: 'EMI Calculator',
+                principalAmount: 'Principal Amount:',
+                interestRate: 'Interest Rate (% Annual):',
+                loanTenure: 'Tenure (Years):',
+                calculateEmi: 'Calculate EMI',
+                alertEnterValidValues: 'Please enter valid values.',
+                calculationError: 'Calculation error occurred. Please check values.',
+                monthlyEmiResult: 'Monthly EMI: {amount}',
+
+                ToggleDarkMode: 'Toggle Dark Mode',
+
+                StandardCalcError: 'Error',
+
+                // Header Section Toggle Icon Tooltips (New)
+                showStandardTooltip: 'Show Standard Calculator',
+                hideStandardTooltip: 'Hide Standard Calculator',
+                showEmiTooltip: 'Show EMI Calculator',
+                hideEmiTooltip: 'Hide EMI Calculator',
+                showDiagonalTooltip: 'Show Diagonal Calculator',
+                hideDiagonalTooltip: 'Hide Diagonal Calculator',
+                showHistoryTooltip: 'Show History',
+                hideHistoryTooltip: 'Hide History',
+
+
+                // Diagonal Calculator Translations
+                diagonalCalculatorTitle: 'Diagonal Calculator',
+                cmCalculatorTitle: 'CM Calculator',
+                feetCalculatorTitle: 'Feet/Inches Calculator',
+
+                sideA: 'Side A:',
+                sideB: 'Side B:',
+                calculateDiagonal: 'Calculate Diagonal',
+
+                // Output Results (Specific to each calculator)
+                diagonalResultCm: '{amount} cm',
+                diagonalResultFeet: '{amount} feet',
+
+                 // Feet/Inches Labels
+                 feetShort: 'ft',
+                 inchesShort: 'in',
+
+                 // Validation Messages (Specific to each calculator)
+                 alertEnterValidCmSides: 'Please enter valid positive side lengths in cm.',
+                 alertEnterValidFeetInches: 'Please enter valid positive numbers for Feet and Inches.',
+
+                diagonalCalculationError: 'Diagonal calculation error occurred. Please check values.',
+
+
+                // History Translations
+                historyTitle: 'Calculation History',
+                clearHistory: 'Clear History',
+                 historyItemStandard: 'Standard: {input} = {result}',
+                 historyItemEmi: 'EMI: Principal: {principal}, Rate: {rate}%, Tenure: {tenure} yrs = {result}',
+                 historyItemDiagonalCm: 'Diagonal (CM): Sides: {sideA} cm, {sideB} cm = {result}',
+                 historyItemDiagonalFeet: 'Diagonal (Feet): Sides: {sideA} ft {sideAInches} in, {sideB} ft {sideBInches} in = {result}',
+                 noHistory: 'No history yet.'
+            }
+        };
+
+        // Default language is English
+        let currentLanguage = 'en';
+
+        // Variables for element references
+        let standardCalculatorSection; // Standard Section Div
+        let emiCalculatorSection; // EMI Section Div
+        let diagonalCalculatorSection; // Main Diagonal Section Div
+        let historySection; // History Section Div
+
+
+        // Header Icons
+        let toggleStandardIcon;
+        let toggleEmiIcon;
+        let toggleDiagonalIcon;
+        let toggleHistoryIcon;
+
+
+        // Diagonal Sub-Calculator Toggle Buttons (inside main diagonal section)
+        let showCmCalcBtn;
+        let showFeetCalcBtn;
+        // Diagonal Sub-Calculator Section Divs
+        let diagonalCmCalculatorSection;
+        let diagonalFeetCalculatorSection;
+
+        // History Elements
+        let historyList;
+        let clearHistoryBtn;
+
+        // --- Global State ---
+        let currentCalculationStandard = ''; // Standard Calculator state
+
+        // --- History Data ---
+        let calculatorHistory = [];
+
+        // --- Local Storage Keys ---
+        const LS_DARK_MODE = 'calculatorDarkMode';
+        const LS_ACTIVE_CALCULATOR = 'activeCalculator';
+        const LS_ACTIVE_DIAGONAL_SUBCALC = 'activeDiagonalCalculator';
+        const LS_HISTORY = 'calculatorHistory';
+
+
+        // --- Translation Function ---
+        function translate(key, params = {}) {
+            let text = translations[currentLanguage]?.[key] || key;
+            for (const param in params) {
+                const regex = new RegExp(`{${param}}`, 'g');
+                text = text.replace(regex, params[param]);
+            }
+            return text;
+        }
+
+        // --- Apply Translations to UI ---
+        function applyTranslationsToUI() {
+            console.log("Applying translations to UI...");
+            document.querySelectorAll('[data-translate-key]').forEach(element => {
+                const key = element.getAttribute('data-translate-key');
+                 // Check if the element is an input placeholder or value, handle differently
+                 if (element.tagName === 'INPUT') {
+                      // For input placeholders, translate the placeholder attribute
+                      if (element.placeholder) {
+                          // Note: Placeholder translation keys might be different or not needed if placeholder is static text
+                          // For now, we assume textContent translation is sufficient for data-translate-key
+                          // If placeholder needs translation, handle specifically: element.placeholder = translate('somePlaceholderKey');
+                      }
+                 } else {
+                    // For most other elements, translate textContent
+                    element.textContent = translate(key);
+                    // console.log(`Translated key "${key}" to "${element.textContent}"`);
+                 }
+            });
+
+            // Update tooltip titles and active class for header icons
+            if (toggleStandardIcon && standardCalculatorSection) {
+                 const isHidden = standardCalculatorSection.style.display === 'none';
+                 toggleStandardIcon.title = translate(isHidden ? 'showStandardTooltip' : 'hideStandardTooltip');
+                 if (!isHidden) { toggleStandardIcon.classList.add('active'); } else { toggleStandardIcon.classList.remove('active'); }
+            } else { console.warn("Standard toggle or section not found for translations."); }
+
+            if (toggleEmiIcon && emiCalculatorSection) {
+                 const isHidden = emiCalculatorSection.style.display === 'none';
+                 toggleEmiIcon.title = translate(isHidden ? 'showEmiTooltip' : 'hideEmiTooltip');
+                 if (!isHidden) { toggleEmiIcon.classList.add('active'); } else { toggleEmiIcon.classList.remove('active'); }
+            } else { console.warn("EMI toggle or section not found for translations."); }
+
+            if (toggleDiagonalIcon && diagonalCalculatorSection) {
+                 const isHidden = diagonalCalculatorSection.style.display === 'none';
+                 toggleDiagonalIcon.title = translate(isHidden ? 'showDiagonalTooltip' : 'hideDiagonalTooltip');
+                 if (!isHidden) { toggleDiagonalIcon.classList.add('active'); } else { toggleDiagonalIcon.classList.remove('active'); }
+             } else { console.warn("Diagonal toggle or section not found for translations."); }
+
+            if (toggleHistoryIcon && historySection) {
+                 const isHidden = historySection.style.display === 'none';
+                 toggleHistoryIcon.title = translate(isHidden ? 'showHistoryTooltip' : 'hideHistoryTooltip');
+                 if (!isHidden) { toggleHistoryIcon.classList.add('active'); } else { toggleHistoryIcon.classList.remove('active'); }
+            } else { console.warn("History toggle or section not found for translations."); }
+
+
+            // Update sub-calculator toggle button texts based on which one is active
+             if (showCmCalcBtn && showFeetCalcBtn) {
+                  showCmCalcBtn.textContent = translate('cmCalculatorTitle');
+                  showFeetCalcBtn.textContent = translate('feetCalculatorTitle');
+             } else { console.warn("Sub-calculator buttons not found for translations."); }
+
+
+             // Update error/result text if currently displayed and is a translation key
+              const resultAreas = [
+                 document.getElementById('standardCalculatorDisplay'),
+                 document.getElementById('emiResult'),
+                 document.getElementById('diagonalCmResult'),
+                 document.getElementById('diagonalFeetResult')
+              ];
+
+              const errorKeys = [
+                  'StandardCalcError',
+                  'alertEnterValidValues',
+                  'calculationError',
+                  'alertEnterValidCmSides',
+                  'alertEnterValidFeetInches',
+                  'diagonalCalculationError'
+                  ];
+
+              resultAreas.forEach(resultDiv => {
+                  if (resultDiv) {
+                      const currentText = resultDiv.textContent;
+                       let isErrorDisplayed = false;
+                       for (const key of errorKeys) {
+                            const translatedErrorText = translate(key);
+                            if (currentText === translatedErrorText) {
+                                resultDiv.textContent = translatedErrorText;
+                                isErrorDisplayed = true;
+                                break;
+                            }
+                       }
+                  }
+              });
+
+              // History section title and Clear button text handled by data-translate-key
+
+              // Re-display history to apply potential translation updates to history item format strings
+              if (historySection && historySection.style.display !== 'none') {
+                   displayHistory();
+              }
+               console.log("Translations applied.");
+        }
+
+
+        // --- Dark Mode Logic ---
+
+        function setDarkMode(isDark) {
+            const htmlElement = document.documentElement;
+            const toggleIcon = document.getElementById('darkModeToggleBtn')?.querySelector('i');
+            if (isDark) {
+                htmlElement.classList.add('dark');
+                localStorage.setItem(LS_DARK_MODE, 'enabled');
+                if(toggleIcon) { toggleIcon.classList.remove('fa-moon'); toggleIcon.classList.add('fa-sun'); }
+                 console.log("Dark mode enabled.");
+            } else {
+                htmlElement.classList.remove('dark');
+                localStorage.setItem(LS_DARK_MODE, 'disabled');
+                if(toggleIcon) { toggleIcon.classList.remove('fa-sun'); toggleIcon.classList.add('fa-moon'); }
+                 console.log("Dark mode disabled.");
+            }
+        }
+        function toggleDarkMode() {
+            console.log("toggleDarkMode() called.");
+            setDarkMode(!document.documentElement.classList.contains('dark'));
+        }
+
+
+        // --- History Logic ---
+
+        function loadHistory() {
+            console.log("loadHistory() called.");
+            const historyJson = localStorage.getItem(LS_HISTORY);
+            if (historyJson) {
+                try {
+                    calculatorHistory = JSON.parse(historyJson);
+                     console.log(`Loaded ${calculatorHistory.length} history items.`);
+                } catch (e) {
+                    console.error("Failed to parse history from localStorage", e);
+                    calculatorHistory = [];
+                }
+            } else {
+                calculatorHistory = [];
+                 console.log("No history found in localStorage.");
+            }
+             const historyLimit = 50;
+             if (calculatorHistory.length > historyLimit) {
+                  console.log(`History exceeds limit of ${historyLimit}, trimming.`);
+                  calculatorHistory = calculatorHistory.slice(calculatorHistory.length - historyLimit);
+                  saveHistory();
+             }
+             console.log("History loading complete.");
+        }
+
+        function saveHistory() {
+            localStorage.setItem(LS_HISTORY, JSON.stringify(calculatorHistory));
+             console.log(`History saved to localStorage (${calculatorHistory.length} items).`);
+        }
+
+        function addHistoryItem(item) {
+             console.log("addHistoryItem() called with:", item);
+             const historyLimit = 50;
+             if (calculatorHistory.length >= historyLimit) {
+                  const removedItem = calculatorHistory.shift();
+                  console.log("History limit reached, removed oldest item:", removedItem);
+             }
+
+            calculatorHistory.push(item);
+            saveHistory();
+            if (historySection && historySection.style.display !== 'none') {
+                 console.log("History section visible, updating display.");
+                 displayHistory();
+            } else {
+                 console.log("History section hidden, not updating display.");
+            }
+             console.log("History item added. Current history count:", calculatorHistory.length);
+        }
+
+        function displayHistory() {
+            console.log("displayHistory() called.");
+            if (!historyList) { console.error("History list element not found!"); return; }
+
+            historyList.innerHTML = '';
+
+            if (calculatorHistory.length === 0) {
+                console.log("History is empty, displaying 'No history' message.");
+                const listItem = document.createElement('li');
+                listItem.textContent = translate('noHistory');
+                 listItem.style.textAlign = 'center';
+                 listItem.style.fontStyle = 'italic';
+                 listItem.style.borderColor = 'transparent';
+                 listItem.style.backgroundColor = 'transparent';
+                historyList.appendChild(listItem);
+                return;
+            }
+
+            console.log(`Displaying ${calculatorHistory.length} history items.`);
+            for (let i = calculatorHistory.length - 1; i >= 0; i--) {
+                const item = calculatorHistory[i];
+                const listItem = document.createElement('li');
+                let historyText = 'Unknown Calculation';
+
+                const dateSpan = document.createElement('span');
+                dateSpan.classList.add('history-date');
+                try {
+                   dateSpan.textContent = new Date(item.date).toLocaleString();
+                } catch (e) {
+                   dateSpan.textContent = 'Invalid Date';
+                   console.error("Error formatting history item date:", item.date, e);
+                }
+
+
+                if (item.type === 'standard') {
+                    historyText = translate('historyItemStandard', {input: item.input, result: item.result});
+                } else if (item.type === 'emi') {
+                     const principal = item.input?.principal !== undefined ? item.input.principal : 'N/A';
+                     const rate = item.input?.rate !== undefined ? item.input.rate : 'N/A';
+                     const tenure = item.input?.tenure !== undefined ? item.input.tenure : 'N/A';
+                    historyText = translate('historyItemEmi', {principal: principal, rate: rate, tenure: tenure, result: item.result});
+                } else if (item.type === 'diagonal-cm') {
+                      const sideA = item.input?.sideA !== undefined ? item.input.sideA : 'N/A';
+                      const sideB = item.input?.sideB !== undefined ? item.input.sideB : 'N/A';
+                     historyText = translate('historyItemDiagonalCm', {sideA: sideA, sideB: sideB, result: item.result});
+                } else if (item.type === 'diagonal-feet') {
+                      const sideA = item.input?.sideA !== undefined ? item.input.sideA : 'N/A';
+                      const sideAInches = item.input?.sideAInches !== undefined ? item.input.sideAInches : 'N/A';
+                      const sideB = item.input?.sideB !== undefined ? item.input.sideB : 'N/A';
+                      const sideBInches = item.input?.sideBInches !== undefined ? item.input.sideBInches : 'N/A';
+                     historyText = translate('historyItemDiagonalFeet', {sideA: sideA, sideAInches: sideAInches, sideB: sideB, sideBInches: sideBInches, result: item.result});
+                } else {
+                     historyText = `Type: ${item.type}, Result: ${item.result}`;
+                }
+
+                 const textSpan = document.createElement('span');
+                 textSpan.innerHTML = `<strong>${historyText}</strong>`;
+
+                 listItem.appendChild(textSpan);
+                 listItem.appendChild(dateSpan);
+                historyList.appendChild(listItem);
+            }
+             console.log("History displayed.");
+        }
+
+        function clearHistory() {
+            console.log("clearHistory() called.");
+            if (confirm(translate("Are you sure you want to clear the calculation history?"))) {
+                calculatorHistory = [];
+                saveHistory();
+                displayHistory();
+                console.log("Calculation history cleared.");
+            } else {
+                 console.log("History clear cancelled.");
+            }
+        }
+
+
+        // --- Standard Calculator Logic (Updated for scientific functions and history) ---
+        function appendValueStandard(value) {
+            console.log(`appendValueStandard() called with value: ${value}`);
+            if (!standardCalculatorDisplay) { console.error("Standard calculator display not found!"); return; }
+
+             // Special handling for scientific functions and constants
+             if (['Math.sin(', 'Math.cos(', 'Math.tan(', 'Math.sqrt(', 'Math.log10(', 'Math.log(', 'Math.PI', 'Math.E', '('].includes(value)) {
+                  // If display is '0' or empty, replace it, otherwise append
+                  if (currentCalculationStandard === '0' || currentCalculationStandard === '') {
+                       currentCalculationStandard = value;
+                  } else {
+                       // Prevent adding function/constant directly after a digit without an operator
+                       const lastChar = currentCalculationStandard.slice(-1);
+                       if (/[0-9.]/.test(lastChar)) { // If last char is a digit or decimal point
+                            // Add multiplication symbol before the function/constant
+                            currentCalculationStandard += '*' + value;
+                       } else {
+                            currentCalculationStandard += value;
+                       }
+                  }
+             }
+             // Special handling for closing parenthesis
+             else if (value === ')') {
+                 currentCalculationStandard += value;
+             }
+             // Special handling for power symbol (^)
+             else if (value === '^') {
+                  // Replace ^ with ** for eval
+                   const lastChar = currentCalculationStandard.slice(-1);
+                   // Prevent adding ^ at the beginning or after an operator (unless it's part of a number like e^-2) - keeping it simple for now
+                   if ('+-*/('.includes(lastChar) || currentCalculationStandard === '') {
+                        // Do not add ^ immediately after operators or at the start - simplified
+                        console.log("Cannot add ^ after operator or at start.");
+                        return;
+                   }
+                   // Check if the last char is a valid base (digit or closing parenthesis or constant)
+                    if (/[0-9)E]/.test(lastChar)) { // Allow digits, ), and E before ^
+                        currentCalculationStandard += '**';
+                    } else {
+                         console.log("Cannot add ^ after this character:", lastChar);
+                         // Do not add ^ after unsupported characters
+                         return;
+                    }
+             }
+             // If current value is '0' and added value is a digit or '.', replace '0'
+             else if (currentCalculationStandard === '0' && (value >= '0' && value <= '9' || value === '.')) {
+                 currentCalculationStandard = value;
+             }
+             // If '0' is empty string and added value is digit or '.'
+              else if (currentCalculationStandard === '' && (value >= '0' && value <= '9' || value === '.')) {
+                   currentCalculationStandard += value;
+              }
+            // If last char is operator and current is operator (except '.')
+            else if ('+-*/'.includes(currentCalculationStandard.slice(-1)) && '+-*/'.includes(value) && value !== '.') {
+                // Replace last operator with new one
+                currentCalculationStandard = currentCalculationStandard.slice(0, -1) + value;
+            }
+             // If current value is empty and operator is added, do nothing
+             else if (currentCalculationStandard === '' && '+-*/'.includes(value)) {
+                 // Do nothing
+             }
+            // If decimal point is added
+            else if (value === '.') {
+                 // Check if the last number already contains a decimal
+                 // This regex is complex, simplified check: find the last operator or parenthesis
+                 const lastOperatorIndex = Math.max(
+                     currentCalculationStandard.lastIndexOf('+'),
+                     currentCalculationStandard.lastIndexOf('-'),
+                     currentCalculationStandard.lastIndexOf('*'),
+                     currentCalculationStandard.lastIndexOf('/'),
+                     currentCalculationStandard.lastIndexOf('('),
+                     currentCalculationStandard.lastIndexOf(')') // Include parentheses
+                 );
+                 const lastPart = lastOperatorIndex === -1 ? currentCalculationStandard : currentCalculationStandard.substring(lastOperatorIndex + 1);
+
+                 if (lastPart.includes('.')) {
+                     // If last number already has a decimal, do not add another
+                    console.log("Decimal already present in the current number part.");
+                    return;
+                 }
+                 // If string is empty, add "0."
+                 if (currentCalculationStandard === '') {
+                      currentCalculationStandard = '0.';
+                 }
+                 // If last character is an operator or opening parenthesis, add "0."
+                 else if ('+-*/('.includes(currentCalculationStandard.slice(-1))) {
+                      currentCalculationStandard += '0.';
+                 }
+                 // Otherwise, just append the decimal
+                else {
+                    currentCalculationStandard += value;
+                }
+            }
+            // All other valid inputs (digits, operators)
+            else {
+                 // Prevent adding digits directly after closing parenthesis without an operator
+                  const lastChar = currentCalculationStandard.slice(-1);
+                  if (lastChar === ')' && /[0-9]/.test(value)) {
+                       currentCalculationStandard += '*' + value; // Add multiplication
+                  } else {
+                       currentCalculationStandard += value;
+                  }
+            }
+
+             // Limit max length
+             if (currentCalculationStandard.length > 50) { // Increased limit for complex expressions
+                 currentCalculationStandard = currentCalculationStandard.slice(0, 50);
+             }
+
+
+            standardCalculatorDisplay.value = currentCalculationStandard;
+            console.log("Current calculation string:", currentCalculationStandard);
+        }
+
+        function clearStandardDisplay() {
+            currentCalculationStandard = '';
+            if(standardCalculatorDisplay) standardCalculatorDisplay.value = '0';
+             console.log("Standard display cleared.");
+        }
+
+        function calculateStandard() {
+            console.log("calculateStandard() called.");
+            if (!standardCalculatorDisplay) { console.error("Standard calculator display not found!"); return; }
+            let inputExpression = currentCalculationStandard; // Capture input before eval
+            try {
+                 if (inputExpression === '') {
+                     standardCalculatorDisplay.value = '0';
+                     return; // Do nothing if input is empty
+                 }
+
+                // Basic validation for unmatched parentheses (simple count)
+                 const openParentheses = inputExpression.split('(').length - 1;
+                 const closeParentheses = inputExpression.split(')').length - 1;
+                 if (openParentheses !== closeParentheses) {
+                      standardCalculatorDisplay.value = translate('StandardCalcError'); // Or a specific parenthesis error key
+                      console.error("Standard Calculator Error: Unmatched parentheses.");
+                       currentCalculationStandard = ''; // Clear on error
+                       return;
+                 }
+                 // More robust validation would check placement, e.g., operator before (
+
+                // Replace scientific function strings with Math object methods
+                 inputExpression = inputExpression.replace(/sin\(/g, 'Math.sin(');
+                 inputExpression = inputExpression.replace(/cos\(/g, 'Math.cos(');
+                 inputExpression = inputExpression.replace(/tan\(/g, 'Math.tan(');
+                 inputExpression = inputExpression.replace(/sqrt\(/g, 'Math.sqrt('); // √ was appended as Math.sqrt(
+                 inputExpression = inputExpression.replace(/log\(/g, 'Math.log10('); // log base 10
+                 inputExpression = inputExpression.replace(/ln\(/g, 'Math.log('); // natural log
+
+                // Replace constants
+                 inputExpression = inputExpression.replace(/π/g, 'Math.PI'); // π was appended as Math.PI
+                 inputExpression = inputExpression.replace(/e(?![\d.])/g, 'Math.E'); // e, but not if followed by digit/dot (to avoid conflict with scientific notation like 1e-5) - simplified handling
+
+
+                console.log("Evaluating expression:", inputExpression);
+                let result = eval(inputExpression);
+
+                if (isNaN(result) || !isFinite(result)) {
+                    standardCalculatorDisplay.value = translate('StandardCalcError');
+                    currentCalculationStandard = ''; // Clear state on error
+                     console.log("Standard calculation resulted in NaN or Infinity:", result);
+                } else {
+                     // Limit decimal places if necessary, remove trailing zeros
+                     // Use toPrecision for better control over significant digits for very small/large numbers
+                     if (result % 1 !== 0 && Math.abs(result) > 1e-6 && Math.abs(result) < 1e+10) { // Avoid fixing very small/large scientific notation
+                         result = parseFloat(result.toFixed(10)); // Fix decimal places for 'normal' numbers
+                     } else if (Math.abs(result) >= 1e+10 || Math.abs(result) <= 1e-6) { // Use scientific notation for very large/small numbers
+                          result = result.toExponential(5); // Example: 5 decimal places in exponential form
+                     }
+
+
+                    currentCalculationStandard = result.toString();
+                    standardCalculatorDisplay.value = currentCalculationStandard;
+
+                     // Add to history on successful calculation
+                     addHistoryItem({
+                         type: 'standard',
+                         input: inputExpression, // Store the evaluated expression string for history
+                         result: currentCalculationStandard, // Store the displayed result string
+                         date: new Date().toISOString()
+                     });
+                    console.log(`Standard calculation success. Result: ${currentCalculationStandard}. History added.`);
+                }
+
+            } catch (error) {
+                if(standardCalculatorDisplay) standardCalculatorDisplay.value = translate('StandardCalcError');
+                currentCalculationStandard = '';
+                console.error("Standard Calculator Error during evaluation:", error);
+            }
+        }
+
+        // --- EMI Calculator Logic (Updated to add history) ---
+        function calculateEMI() {
+            console.log("calculateEMI() called.");
+            const principalInput = document.getElementById('loanPrincipal');
+            const annualInterestRateInput = document.getElementById('loanInterestRate');
+            const tenureYearsInput = document.getElementById('loanTenureYears');
+            const resultDiv = document.getElementById('emiResult');
+
+            if (!principalInput || !annualInterestRateInput || !tenureYearsInput || !resultDiv) {
+                console.error("EMI Calculator elements not found during calculation.");
+                return;
+            }
+
+            const principal = parseFloat(principalInput.value);
+            const annualInterestRate = parseFloat(annualInterestRateInput.value);
+            const tenureYears = parseFloat(tenureYearsInput.value);
+
+            resultDiv.textContent = '';
+            resultDiv.style.color = 'var(--result-text-color)';
+
+            if (isNaN(principal) || isNaN(annualInterestRate) || isNaN(tenureYears) || principal <= 0 || annualInterestRate < 0 || tenureYears <= 0) {
+                resultDiv.style.color = 'var(--error-text-color)';
+                resultDiv.textContent = translate('alertEnterValidValues');
+                 console.log("EMI calculation: Invalid input values.");
+                return;
+            }
+
+            const monthlyInterestRate = (annualInterestRate / 100) / 12;
+            const tenureMonths = tenureYears * 12;
+
+            let emi = 0;
+            if (monthlyInterestRate === 0) {
+                emi = principal / tenureMonths;
+            } else {
+                const numerator = principal * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, tenureMonths);
+                const denominator = Math.pow(1 + monthlyInterestRate, tenureMonths) - 1;
+                if (denominator === 0 || denominator === -1) {
+                     emi = Infinity;
+                 } else {
+                     emi = numerator / denominator;
+                 }
+            }
+
+            if (isNaN(emi) || !isFinite(emi)) {
+                 resultDiv.style.color = 'var(--error-text-color)';
+                 resultDiv.textContent = translate('calculationError');
+                 console.error("EMI calculation resulted in NaN or Infinity:", emi);
+            } else {
+                 resultDiv.style.color = 'var(--result-text-color)';
+                 const emiResultString = translate('monthlyEmiResult', {amount: emi.toFixed(2)});
+                 resultDiv.textContent = emiResultString;
+
+                 addHistoryItem({
+                     type: 'emi',
+                     input: {principal: principal.toFixed(2), rate: annualInterestRate.toFixed(2), tenure: tenureYears.toFixed(2)},
+                     result: emiResultString,
+                     date: new Date().toISOString()
+                 });
+                 console.log(`EMI calculation success. Result: ${emi.toFixed(2)}. History added.`);
+            }
+        }
+
+
+        // --- Calculator Section Toggle Logic (Updated for ALL sections and Icons) ---
+
+        function hideAllSections() {
+             console.log("hideAllSections() called.");
+             if (standardCalculatorSection) { standardCalculatorSection.style.display = 'none'; console.log("Standard hidden."); } else { console.warn("Standard section not found to hide."); }
+             if (emiCalculatorSection) { emiCalculatorSection.style.display = 'none'; console.log("EMI hidden."); } else { console.warn("EMI section not found to hide."); }
+             if (diagonalCalculatorSection) { diagonalCalculatorSection.style.display = 'none'; console.log("Diagonal hidden."); } else { console.warn("Diagonal section not found to hide."); }
+             if (historySection) { historySection.style.display = 'none'; console.log("History hidden."); } else { console.warn("History section not found to hide."); }
+
+
+             if (toggleStandardIcon) toggleStandardIcon.classList.remove('active'); else { console.warn("Standard toggle icon not found to deactivate."); }
+             if (toggleEmiIcon) toggleEmiIcon.classList.remove('active'); else { console.warn("EMI toggle icon not found to deactivate."); }
+             if (toggleDiagonalIcon) toggleDiagonalIcon.classList.remove('active'); else { console.warn("Diagonal toggle icon not found to deactivate."); }
+             if (toggleHistoryIcon) toggleHistoryIcon.classList.remove('active'); else { console.warn("History toggle icon not found to deactivate."); }
+
+
+             // Update tooltips to 'Show' state (applyTranslationsToUI will handle this for visible icons)
+              if (toggleStandardIcon) toggleStandardIcon.title = translate('showStandardTooltip');
+             if (toggleEmiIcon) toggleEmiIcon.title = translate('showEmiTooltip');
+             if (toggleDiagonalIcon) toggleDiagonalIcon.title = translate('showDiagonalTooltip');
+             if (toggleHistoryIcon) toggleHistoryIcon.title = translate('showHistoryTooltip');
+
+             // Clear inputs and results for ALL calculators when hiding ALL sections
+             clearStandardDisplay();
+             clearEmiInputsAndResult();
+             clearDiagonalInputsAndResult();
+
+
+             console.log("All sections hidden and inputs cleared.");
+        }
+
+        function showStandardCalculator() {
+             console.log("showStandardCalculator() called.");
+             if (standardCalculatorSection && standardCalculatorSection.style.display !== 'none') {
+                  console.log("Standard already visible, hiding.");
+                  hideAllSections();
+                   localStorage.setItem(LS_ACTIVE_CALCULATOR, '');
+                  return;
+             } else if (!standardCalculatorSection) {
+                  console.error("Standard calculator section element not found!");
+                  return;
+             }
+
+             hideAllSections();
+             standardCalculatorSection.style.display = 'flex';
+             console.log("Standard shown.");
+
+             if (toggleStandardIcon) {
+                  toggleStandardIcon.classList.add('active');
+                  toggleStandardIcon.title = translate('hideStandardTooltip');
+                  console.log("Standard icon set to active.");
+             } else { console.warn("Standard toggle icon not found."); }
+
+             localStorage.setItem(LS_ACTIVE_CALCULATOR, 'standard');
+             console.log("Active calculator set to: standard");
+        }
+
+        function showEmiCalculator() {
+            console.log("showEmiCalculator() called.");
+             if (emiCalculatorSection && emiCalculatorSection.style.display !== 'none') {
+                 console.log("EMI already visible, hiding and showing Standard.");
+                 hideAllSections();
+                 clearEmiInputsAndResult();
+                  showStandardCalculator();
+                 return;
+             } else if (!emiCalculatorSection) {
+                   console.error("EMI calculator section element not found!");
+                   return;
+              }
+
+             hideAllSections();
+             emiCalculatorSection.style.display = 'flex';
+             console.log("EMI shown.");
+
+             if (toggleEmiIcon) {
+                  toggleEmiIcon.classList.add('active');
+                  toggleEmiIcon.title = translate('hideEmiTooltip');
+                   console.log("EMI icon set to active.");
+             } else { console.warn("EMI toggle icon not found."); }
+
+             localStorage.setItem(LS_ACTIVE_CALCULATOR, 'emi');
+             console.log("Active calculator set to: emi");
+        }
+
+        function showDiagonalCalculator() {
+            console.log("showDiagonalCalculator() called.");
+            if (diagonalCalculatorSection && diagonalCalculatorSection.style.display !== 'none') {
+                console.log("Diagonal already visible, hiding and showing Standard.");
+                hideAllSections();
+                clearDiagonalInputsAndResult();
+                 showStandardCalculator();
+                return;
+            } else if (!diagonalCalculatorSection) {
+                 console.error("Diagonal calculator section element not found!");
+                 return;
+            }
+
+             hideAllSections();
+             diagonalCalculatorSection.style.display = 'flex';
+             console.log("Diagonal shown.");
+
+              if (toggleDiagonalIcon) {
+                  toggleDiagonalIcon.classList.add('active');
+                  toggleDiagonalIcon.title = translate('hideDiagonalTooltip');
+                   console.log("Diagonal icon set to active.");
+              } else { console.warn("Diagonal toggle icon not found."); }
+
+             const activeSubCalc = localStorage.getItem(LS_ACTIVE_DIAGONAL_SUBCALC) || 'cm';
+              console.log(`Restoring active diagonal sub-calculator to: ${activeSubCalc}`);
+
+             if (activeSubCalc === 'feet') {
+                  showFeetCalculatorSub();
+             } else {
+                  showCmCalculatorSub();
+             }
+
+             localStorage.setItem(LS_ACTIVE_CALCULATOR, 'diagonal');
+             console.log("Active calculator set to: diagonal");
+        }
+
+        function showHistorySection() {
+             console.log("showHistorySection() called.");
+            if (historySection && historySection.style.display !== 'none') {
+                 console.log("History already visible, hiding and showing Standard.");
+                 hideAllSections();
+                 showStandardCalculator();
+                 return;
+            } else if (!historySection) {
+                 console.error("History section element not found!");
+                 return;
+            }
+
+             hideAllSections();
+             historySection.style.display = 'flex';
+             console.log("History shown.");
+
+             if (toggleHistoryIcon) {
+                  toggleHistoryIcon.classList.add('active');
+                  toggleHistoryIcon.title = translate('hideHistoryTooltip');
+                   console.log("History icon set to active.");
+             } else { console.warn("History toggle icon not found."); }
+
+             clearStandardDisplay();
+             clearEmiInputsAndResult();
+             clearDiagonalInputsAndResult();
+
+             displayHistory();
+
+             localStorage.setItem(LS_ACTIVE_CALCULATOR, 'history');
+             console.log("Active calculator set to: history");
+        }
+
+
+        // Helper function to clear EMI inputs and result
+        function clearEmiInputsAndResult() {
+            const principalInput = document.getElementById('loanPrincipal');
+            const annualInterestRateInput = document.getElementById('loanInterestRate');
+            const tenureYearsInput = document.getElementById('loanTenureYears');
+            const resultDiv = document.getElementById('emiResult');
+
+            if (principalInput) principalInput.value = '';
+            if (annualInterestRateInput) annualInterestRateInput.value = '';
+            if (tenureYearsInput) tenureYearsInput.value = '';
+            if (resultDiv) {
+                 resultDiv.textContent = '';
+                 resultDiv.style.color = 'var(--result-text-color)';
+            }
+             console.log("EMI inputs/result cleared.");
+        }
+
+         // Helper function to clear ALL Diagonal inputs and results
+         function clearDiagonalInputsAndResult() {
+              clearCmDiagonalInputsAndResult();
+              clearFeetDiagonalInputsAndResult();
+
+              if (showCmCalcBtn) showCmCalcBtn.classList.remove('active'); else { console.warn("CM sub-calc toggle button not found to deactivate."); }
+              if (showFeetCalcBtn) showFeetCalcBtn.classList.remove('active'); else { console.warn("Feet sub-calc toggle button not found to deactivate."); }
+
+              if (diagonalCmCalculatorSection) diagonalCmCalculatorSection.style.display = 'none'; else { console.warn("CM sub-calc section not found to hide."); }
+              if (diagonalFeetCalculatorSection) diagonalFeetCalculatorSection.style.display = 'none'; else { console.warn("Feet sub-calc section not found to hide."); }
+
+               localStorage.removeItem(LS_ACTIVE_DIAGONAL_SUBCALC);
+                console.log("Diagonal inputs/results and sub-calc state cleared.");
+         }
+
+
+        // --- Diagonal Sub-Calculator Toggle Logic ---
+
+        function showCmCalculatorSub() {
+            console.log("showCmCalculatorSub() called.");
+            if (!diagonalCmCalculatorSection || !diagonalFeetCalculatorSection || !showCmCalcBtn || !showFeetCalcBtn) {
+                 console.error("Diagonal sub-calculator elements not fully found for CM toggle!");
+                 return;
+            }
+
+            diagonalFeetCalculatorSection.style.display = 'none';
+            diagonalCmCalculatorSection.style.display = 'flex';
+
+            showCmCalcBtn.classList.add('active');
+            showFeetCalcBtn.classList.remove('active');
+
+            console.log("Clearing CM sub-calc inputs/result...");
+            clearCmDiagonalInputsAndResult();
+
+            localStorage.setItem(LS_ACTIVE_DIAGONAL_SUBCALC, 'cm');
+            console.log("Showing CM Diagonal Calculator Sub-Section. Active sub-calc set to: cm");
+        }
+
+        function showFeetCalculatorSub() {
+             console.log("showFeetCalculatorSub() called.");
+             if (!diagonalCmCalculatorSection || !diagonalFeetCalculatorSection || !showCmCalcBtn || !showFeetCalcBtn) {
+                 console.error("Diagonal sub-calculator elements not fully found for Feet toggle!");
+                 return;
+            }
+
+            diagonalCmCalculatorSection.style.display = 'none';
+            diagonalFeetCalculatorSection.style.display = 'flex';
+
+            showFeetCalcBtn.classList.add('active');
+            showCmCalcBtn.classList.remove('active');
+
+            console.log("Clearing Feet sub-calc inputs/result...");
+             clearFeetDiagonalInputsAndResult();
+
+             localStorage.setItem(LS_ACTIVE_DIAGONAL_SUBCALC, 'feet');
+             console.log("Showing Feet/Inches Diagonal Calculator Sub-Section. Active sub-calc set to: feet");
+        }
+
+        // --- Helper functions to clear inputs and results (Moved inside sub-calc logic) ---
+        function clearCmDiagonalInputsAndResult() {
+             const sideAInput = document.getElementById('cmSideA');
+             const sideBInput = document.getElementById('cmSideB');
+             const resultDiv = document.getElementById('diagonalCmResult');
+
+             if (sideAInput) sideAInput.value = '';
+             if (sideBInput) sideBInput.value = '';
+             if (resultDiv) {
+                 resultDiv.textContent = '';
+                 resultDiv.style.color = 'var(--result-text-color)';
+             }
+             console.log("CM sub-calc inputs/result cleared.");
+        }
+
+        function clearFeetDiagonalInputsAndResult() {
+             const sideAFeetInput = document.getElementById('feetSideAFeet');
+             const sideAInchesInput = document.getElementById('feetSideAInches');
+             const sideBFeetInput = document.getElementById('feetSideBFeet');
+             const sideBInchesInput = document.getElementById('feetSideBInches');
+             const resultDiv = document.getElementById('diagonalFeetResult');
+
+             if (sideAFeetInput) sideAFeetInput.value = '';
+             if (sideAInchesInput) sideAInchesInput.value = '';
+             if (sideBFeetInput) sideBFeetInput.value = '';
+             if (sideBInchesInput) sideBInchesInput.value = '';
+             if (resultDiv) {
+                  resultDiv.textContent = '';
+                  resultDiv.style.color = 'var(--result-text-color)';
+             }
+             console.log("Feet sub-calc inputs/result cleared.");
+        }
+
+
+        // --- Diagonal Calculator Logic (Updated to add history) ---
+
+        function calculateCmDiagonal() {
+            console.log("calculateCmDiagonal() called.");
+            const sideAInput = document.getElementById('cmSideA');
+            const sideBInput = document.getElementById('cmSideB');
+            const resultDiv = document.getElementById('diagonalCmResult');
+
+            if (!sideAInput || !sideBInput || !resultDiv) {
+                console.error("CM Diagonal Calculator elements not found during calculation.");
+                return;
+            }
+
+            const sideA = parseFloat(sideAInput.value);
+            const sideB = parseFloat(sideBInput.value);
+
+            resultDiv.textContent = '';
+            resultDiv.style.color = 'var(--result-text-color)';
+
+
+            if (isNaN(sideA) || isNaN(sideB) || sideA <= 0 || sideB <= 0) {
+                resultDiv.style.color = 'var(--error-text-color)';
+                resultDiv.textContent = translate('alertEnterValidCmSides');
+                console.log("CM Diagonal calculation: Invalid input.");
+                return;
+            }
+
+            const diagonalSquared = (sideA * sideA) + (sideB * sideB);
+            const diagonal = Math.sqrt(diagonalSquared);
+
+            if (isNaN(diagonal) || !isFinite(diagonal)) {
+                 resultDiv.style.color = 'var(--error-text-color)';
+                 resultDiv.textContent = translate('diagonalCalculationError');
+                 console.error("CM Diagonal calculation resulted in NaN or Infinity:", diagonal);
+            } else {
+                 resultDiv.style.color = 'var(--result-text-color)';
+                 const diagonalResultString = translate('diagonalResultCm', {amount: diagonal.toFixed(2)});
+                 resultDiv.textContent = diagonalResultString;
+
+                 addHistoryItem({
+                     type: 'diagonal-cm',
+                     input: {sideA: sideA.toFixed(2), sideB: sideB.toFixed(2)},
+                     result: diagonalResultString,
+                     date: new Date().toISOString()
+                 });
+                 console.log(`CM Diagonal calculation success. CM: ${diagonal.toFixed(2)}. History added.`);
+            }
+        }
+
+        function calculateFeetDiagonal() {
+            console.log("calculateFeetDiagonal() called.");
+            const sideAFeetInput = document.getElementById('feetSideAFeet');
+            const sideAInchesInput = document.getElementById('feetSideAInches');
+            const sideBFeetInput = document.getElementById('feetSideBFeet');
+            const sideBInchesInput = document.getElementById('feetSideBInches');
+            const resultDiv = document.getElementById('diagonalFeetResult');
+
+             if (!sideAFeetInput || !sideAInchesInput || !sideBFeetInput || !sideBInchesInput || !resultDiv) {
+                console.error("Feet/Inches Diagonal Calculator elements not found during calculation.");
+                return;
+            }
+
+            const sideAFeet = parseFloat(sideAFeetInput.value) || 0;
+            const sideAInches = parseFloat(sideAInchesInput.value) || 0;
+            const sideBFeet = parseFloat(sideBFeetInput.value) || 0;
+            const sideBInches = parseFloat(sideBInchesInput.value) || 0;
+
+            resultDiv.textContent = '';
+            resultDiv.style.color = 'var(--result-text-color)';
+
+
+             if (
+                 (isNaN(sideAFeet) || isNaN(sideAInches) || sideAFeet < 0 || sideAInches < 0) ||
+                 (isNaN(sideBFeet) || isNaN(sideBInches) || sideBFeet < 0 || sideBInches < 0) ||
+                 (sideAFeet === 0 && sideAInches === 0) ||
+                 (sideBFeet === 0 && sideBInches === 0)
+                )
+             {
+                 resultDiv.style.color = 'var(--error-text-color)';
+                 resultDiv.textContent = translate('alertEnterValidFeetInches');
+                 console.log("Feet/Inches Diagonal calculation: Invalid input.");
+                 return;
+             }
+             else
+             {
+                 const sideA_cm = (sideAFeet * 12 + sideAInches) * 2.54;
+                 const sideB_cm = (sideBFeet * 12 + sideBInches) * 2.54;
+
+                 if (sideA_cm <= 0 || sideB_cm <= 0) {
+                      resultDiv.style.color = 'var(--error-text-color)';
+                      resultDiv.textContent = translate('alertEnterValidFeetInches');
+                       console.log("Feet/Inches Diagonal calculation: Converted input resulted in non-positive side.");
+                      return;
+                 }
+
+                const diagonalSquared = (sideA_cm * sideA_cm) + (sideB_cm * sideB_cm);
+                const diagonal_cm = Math.sqrt(diagonalSquared);
+
+                if (isNaN(diagonal_cm) || !isFinite(diagonal_cm)) {
+                     resultDiv.style.color = 'var(--error-text-color)';
+                     resultDiv.textContent = translate('diagonalCalculationError');
+                     console.error("Feet/Inches Diagonal calculation resulted in NaN or Infinity:", diagonal_cm);
+                } else {
+                     const diagonalFeet = diagonal_cm / 30.48;
+                     resultDiv.style.color = 'var(--result-text-color)';
+                     const diagonalResultString = translate('diagonalResultFeet', {amount: diagonalFeet.toFixed(2)});
+                     resultDiv.textContent = diagonalResultString;
+
+                     addHistoryItem({
+                         type: 'diagonal-feet',
+                         input: {sideA: sideAFeet, sideAInches: sideAInches, sideB: sideBFeet, sideBInches: sideBInches},
+                         result: diagonalResultString,
+                         date: new Date().toISOString()
+                     });
+
+                     console.log(`Feet/Inches Diagonal calculation success. CM: ${diagonal_cm.toFixed(2)}, Feet: ${diagonalFeet.toFixed(2)}. History added.`);
+                }
+             }
+        }
+
+
+        // --- Initialization (DOMContentLoaded) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOMContentLoaded fired.");
+            // Get element references for main sections
+            standardCalculatorSection = document.getElementById('standardCalculatorSection');
+            emiCalculatorSection = document.getElementById('emiCalculatorSection');
+            diagonalCalculatorSection = document.getElementById('diagonalCalculatorSection');
+            historySection = document.getElementById('historySection');
+
+
+            // Get references for Header Icons
+            toggleStandardIcon = document.getElementById('toggleStandardIcon');
+            toggleEmiIcon = document.getElementById('toggleEmiIcon');
+            toggleDiagonalIcon = document.getElementById('toggleDiagonalIcon');
+            toggleHistoryIcon = document.getElementById('toggleHistoryIcon');
+
+
+             // Get references for Diagonal Sub-Calculator Toggles and Sections
+            showCmCalcBtn = document.getElementById('showCmCalcBtn');
+            showFeetCalcBtn = document.getElementById('showFeetCalcBtn');
+            diagonalCmCalculatorSection = document.getElementById('diagonalCmCalculatorSection');
+            diagonalFeetCalculatorSection = document.getElementById('diagonalFeetCalculatorSection');
+
+            // Get references for History Elements
+            historyList = document.getElementById('historyList');
+            clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+
+             console.log("Elements found:", {
+                 standardCalculatorSection: !!standardCalculatorSection,
+                 emiCalculatorSection: !!emiCalculatorSection,
+                 diagonalCalculatorSection: !!diagonalCalculatorSection,
+                 historySection: !!historySection,
+
+                 toggleStandardIcon: !!toggleStandardIcon,
+                 toggleEmiIcon: !!toggleEmiIcon,
+                 toggleDiagonalIcon: !!toggleDiagonalIcon,
+                 toggleHistoryIcon: !!toggleHistoryIcon,
+
+                 showCmCalcBtn: !!showCmCalcBtn,
+                 showFeetCalcBtn: !!showFeetCalcBtn,
+                 diagonalCmCalculatorSection: !!diagonalCmCalculatorSection,
+                 diagonalFeetCalculatorSection: !!diagonalFeetCalculatorSection,
+
+                 historyList: !!historyList,
+                 clearHistoryBtn: !!clearHistoryBtn
+            });
+
+            // Apply dark mode preference on load
+            if (localStorage.getItem(LS_DARK_MODE) === 'enabled') {
+                setDarkMode(true);
+            } else {
+                setDarkMode(false);
+            }
+
+            // --- Set initial active section visibility based on localStorage or default (Standard) ---
+             const activeSection = localStorage.getItem(LS_ACTIVE_CALCULATOR) || 'standard';
+             console.log("Initial load, active section preference:", activeSection);
+
+             // Hide all first and clear all inputs/results
+             hideAllSections(); // Also removes 'active' class from header icons
+
+             // Use a small timeout to ensure display: none is applied before showing the correct one
+             // This can sometimes prevent brief flickering
+             setTimeout(() => {
+                 if (activeSection === 'emi' && emiCalculatorSection) {
+                      showEmiCalculator();
+                 } else if (activeSection === 'diagonal' && diagonalCalculatorSection) {
+                      showDiagonalCalculator();
+                 } else if (activeSection === 'history' && historySection) {
+                      showHistorySection();
+                 }
+                 else { // Default to standard (or if preferred section not found)
+                      if (standardCalculatorSection) {
+                           showStandardCalculator();
+                      } else {
+                           console.error("Standard Calculator Section element not found on initial load!");
+                           if (historySection) showHistorySection();
+                           else if (emiCalculatorSection) showEmiCalculator(); // Fallback
+                           else if (diagonalCalculatorSection) showDiagonalCalculator(); // Fallback
+                      }
+                 }
+                  console.log(`Initial section "${activeSection}" shown.`);
+
+                 // Apply translations after initial visibility is set and icons are updated
+                 applyTranslationsToUI();
+
+             }, 50);
+
+
+            // --- Add event listeners ---
+
+            // Header Icon Toggles
+            if (toggleStandardIcon) { toggleStandardIcon.addEventListener('click', showStandardCalculator); console.log("Standard Icon listener added."); } else { console.error("Standard toggle icon not found for listener."); }
+            if (toggleEmiIcon) { toggleEmiIcon.addEventListener('click', showEmiCalculator); console.log("EMI Icon listener added."); } else { console.error("EMI toggle icon not found for listener."); }
+            if (toggleDiagonalIcon) { toggleDiagonalIcon.addEventListener('click', showDiagonalCalculator); console.log("Diagonal Icon listener added."); } else { console.error("Diagonal toggle icon not found for listener."); }
+            if (toggleHistoryIcon) { toggleHistoryIcon.addEventListener('click', showHistorySection); console.log("History Icon listener added."); } else { console.error("History toggle icon not found for listener."); }
+
+
+             // Diagonal Sub-Calculator Toggle Buttons
+             if (showCmCalcBtn) {
+                 showCmCalcBtn.addEventListener('click', showCmCalculatorSub);
+                 console.log("CM Calculator Sub-Toggle Button event listener added.");
+             } else {
+                  console.error("CM Calculator Sub-Toggle Button not found!");
+             }
+
+              if (showFeetCalcBtn) {
+                 showFeetCalcBtn.addEventListener('click', showFeetCalculatorSub);
+                 console.log("Feet Calculator Sub-Toggle Button event listener added.");
+             } else {
+                  console.error("Feet Calculator Sub-Toggle Button not found!");
+             }
+
+            // History Clear Button
+            if (clearHistoryBtn) {
+                clearHistoryBtn.addEventListener('click', clearHistory);
+                console.log("Clear History Button event listener added.");
+            } else {
+                 console.error("Clear History Button not found!");
+            }
+
+            loadHistory();
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,1342 @@
+<!-- START OF FULL SCRIPT (v81.5 - Toggleable Filtered Wallet History) -->
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <title data-key="pageTitle">खर्चों का हिसाब</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 100%; -webkit-text-size-adjust: 100%; }
+        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 16px; margin: 0; padding: 8px; background-color: #f4f4f4; color: #333; transition: background-color 0.3s ease, color 0.3s ease; line-height: 1.5; -webkit-tap-highlight-color: transparent; }
+        body.dark-mode { background-color: #1a1a1a; color: #f4f4f4; }
+        .container { max-width: 900px; margin: 8px auto; background-color: #fff; padding: 15px 20px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+        body.dark-mode .container { background-color: #2c2c2c; }
+        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; position: relative; gap: 10px; }
+        .left-icons, .header-icons { display: flex; align-items: center; gap: 8px; }
+        .left-icons { position: relative; }
+        .header-container h1 { text-align: center; flex: 1 1 auto; margin: 0 5px; padding: 5px 0; color: #444; font-size: 1.25rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        body.dark-mode .header-container h1 { color: #ddd; }
+        .icon { cursor: pointer; font-size: 1.4rem; user-select: none; transition: transform 0.2s ease; padding: 4px; color: #555; }
+        body.dark-mode .icon { color: #ccc;}
+        .icon:hover { transform: scale(1.1); }
+        
+        #currencyModeToggle { font-size: 1rem; padding: 6px 8px; border: 1px solid transparent; border-radius: 4px; line-height: 1; min-width: 55px; text-align: center; font-weight: 500;}
+        body.dark-mode #currencyModeToggle { border-color: #444; background-color: #3a3a3a;}
+        body.light-mode #currencyModeToggle { border-color: #ddd; background-color: #f0f0f0;}
+
+        .header-wallet-display { padding: 4px 8px !important; font-size: 0.9rem; border: 1px solid #ddd; border-radius: 4px; display: flex; align-items: center; gap: 5px; background-color: #f9f9f9; cursor: pointer; }
+        body.dark-mode .header-wallet-display { border-color: #444; background-color: #2e2e2e; }
+        .wallet-icon { font-size: 1.1rem; }
+        #headerWalletBalanceValue { font-weight: 600; }
+
+        #dataActionsMenu { position: absolute; top: calc(100% + 5px); left: 0; background-color: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 6px; z-index: 1000; display: none; flex-direction: column; gap: 4px; min-width: 200px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        body.dark-mode #dataActionsMenu { background-color: #3a3a3a; border-color: #555; }
+        #dataActionsMenu.show-menu { display: flex; }
+        #dataActionsMenu .menu-item { cursor: pointer; padding: 8px 10px; border-radius: 4px; transition: background-color 0.2s ease; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
+        #dataActionsMenu .menu-item:hover { background-color: #eee; }
+        body.dark-mode #dataActionsMenu .menu-item:hover { background-color: #4f4f4f; }
+        #dataActionsMenu .menu-item .icon { font-size: 1rem; margin: 0; padding: 0; color: inherit;}
+        #dataActionsMenu .menu-item span:last-child { flex-grow: 1; color: #333; }
+        body.dark-mode #dataActionsMenu .menu-item span:last-child { color: #eee; }
+        #expenseForm, #incomeForm { margin-bottom: 20px; padding: 0; } 
+        .form-group { margin-bottom: 10px; }
+        #expenseForm input[type="text"], #expenseForm input[type="number"], #expenseForm select, #expenseForm textarea,
+        #incomeForm input[type="number"], #incomeForm select,
+        #walletActionForm input[type="number"], #walletActionForm select { width: 100%; padding: 9px 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 0.95rem; line-height: 1.4; background-color: #fff; color: #333; min-height: 40px; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        #expenseForm input:focus, #expenseForm select:focus, #expenseForm textarea:focus,
+        #incomeForm input:focus, #incomeForm select:focus,
+        #walletActionForm input:focus, #walletActionForm select:focus { border-color: #5cb85c; box-shadow: 0 0 0 2px rgba(92, 184, 92, 0.2); outline: none; }
+        body.dark-mode #expenseForm input, body.dark-mode #expenseForm select, body.dark-mode #expenseForm textarea,
+        body.dark-mode #incomeForm input, body.dark-mode #incomeForm select,
+        body.dark-mode #walletActionForm input, body.dark-mode #walletActionForm select { background-color: #3a3a3a; color: #eee; border-color: #555; }
+        body.dark-mode #expenseForm input:focus, body.dark-mode #expenseForm select:focus, body.dark-mode #expenseForm textarea:focus,
+        body.dark-mode #incomeForm input:focus, body.dark-mode #incomeForm select:focus,
+        body.dark-mode #walletActionForm input:focus, body.dark-mode #walletActionForm select:focus { border-color: #4cae4c; box-shadow: 0 0 0 2px rgba(76, 174, 76, 0.3); }
+        body.dark-mode #expenseForm select option, body.dark-mode #incomeForm select option, body.dark-mode #walletActionForm select option { background-color: #3a3a3a; color: #eee; }
+        #amountCurrencyGroup, #incomeAmountCurrencyGroup, #walletAmountCurrencyGroup { display: flex; gap: 6px; align-items: center; flex-wrap: wrap;}
+        #amountCurrencyGroup input[type="number"], #incomeAmountCurrencyGroup input[type="number"], #walletAmountCurrencyGroup input[type="number"] { flex-grow: 1; min-width: 120px; }
+        #amountCurrencyGroup select#currency, #incomeAmountCurrencyGroup select, #walletAmountCurrencyGroup select { flex-shrink: 0; min-width: 85px; width: auto; min-height: 40px; padding: 9px 10px; font-size: 0.95rem;}
+        #categoryFormGroup { display: flex; gap: 6px; align-items: center; } 
+        #addCategoryIcon { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background-color: #5cb85c; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1.5rem; flex-shrink: 0; }
+        body.dark-mode #addCategoryIcon { background-color: #4cae4c; }
+        #addCategoryIcon:hover { background-color: #4cae4c; }
+        body.dark-mode #addCategoryIcon:hover { background-color: #5cb85c; }
+        #categoryFormGroup select { flex-grow: 1; }
+        #expenseForm button[type="submit"] { display: block; width: 100%; padding: 10px 10px; background-color: #5cb85c; color: white; border: none; border-radius: 5px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background-color 0.3s ease; margin-top: 12px; }
+        #expenseForm button[type="submit"]:hover { background-color: #4cae4c; }
+        body.dark-mode #expenseForm button[type="submit"] { background-color: #4cae4c; }
+        body.dark-mode #expenseForm button[type="submit"]:hover { background-color: #5cb85c; }
+        .table-container { width: 100%; overflow-x: auto; margin-top: 15px; -webkit-overflow-scrolling: touch; border: 1px solid #e0e0e0; border-radius: 4px; }
+        body.dark-mode .table-container { border-color: #3a3a3a; }
+        table { width: 100%; min-width: 620px; border-collapse: collapse; table-layout: fixed; border: 1px solid #ccc; }
+        body.dark-mode table { border-color: #555; }
+        th, td { padding: 7px 5px; font-size: 0.85rem; text-align: left; border: 1px solid #ccc; vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        body.dark-mode th, body.dark-mode td { border-color: #555; }
+        th:nth-child(2), td:nth-child(2), th:nth-child(5), td:nth-child(5) { white-space: normal; word-break: break-word; overflow-wrap: break-word; }
+        th { font-weight: 600; color: #333; font-size: 0.78rem; padding: 8px 4px; background-color: #f0f0f0; position: sticky; top: 0; z-index: 1; text-align: center; line-height: 1.2; }
+        body.dark-mode th { color: #e0e0e0; background-color: #2a2a2a; }
+        td:nth-child(1) { line-height: 1.3; white-space: normal; font-size: 0.75rem; text-align: center; }
+        col.col-datetime { width: 90px; } col.col-item { width: auto; min-width: 120px; } col.col-amount { width: 175px; } col.col-category { width: 100px; } col.col-note { width: 80px; } col.col-action { width: 70px; } 
+        td:nth-child(3) { text-align: right; } td:nth-child(4) { text-align: center; font-size: 0.8rem; } td:nth-child(6) { text-align: center; }
+        tbody tr:nth-child(even) { background-color: #f9f9f9; }
+        body.dark-mode tbody tr:nth-child(even) { background-color: #232323; }
+        tbody tr:hover { background-color: #e8f4ff; }
+        body.dark-mode tbody tr:hover { background-color: #303d49; }
+        .action-buttons { display: flex; justify-content: center; align-items: center; width: 100%; gap: 5px;} 
+        .icon-button { background: none; border: none; cursor: pointer; padding: 0; line-height: 1; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; }
+        .edit-btn-icon { color: #17a2b8; } body.dark-mode .edit-btn-icon { color: #29b6f6; }
+        .edit-btn-icon:hover { color: #138496; } body.dark-mode .edit-btn-icon:hover { color: #4fc3f7; }
+        .delete-btn-icon { color: #d9534f; } body.dark-mode .delete-btn-icon { color: #b8413e; }
+        .delete-btn-icon:hover { color: #c9302c; } body.dark-mode .delete-btn-icon:hover { color: #a13531; }
+
+        #importFile { display: none; }
+        #categoryTotals { margin-top: 20px; padding-top: 12px; border-top: 1px solid #ddd; }
+        body.dark-mode #categoryTotals { border-top-color: #4a4a4a; }
+        #categoryTotals h2 { font-size: 1.05rem; font-weight: 600; margin-bottom: 8px; color: #444;}
+        body.dark-mode #categoryTotals h2 { color: #ddd;}
+        #categoryTotalsList { display: flex; flex-wrap: wrap; gap: 6px; }
+        .category-total-item { flex: 1 1 calc(50% - 3px); display: flex; justify-content: space-between; padding: 7px 9px; background-color: #eee; border-radius: 4px; font-size: 0.85rem; font-weight: 500; }
+        body.dark-mode .category-total-item { background-color: #3a3a3a; }
+        .category-total-item span:first-child { margin-right: 8px; word-break: break-word; color: #333;}
+        .category-total-item span:last-child { white-space: nowrap; flex-shrink: 0; color: #000; font-weight: 600;}
+        body.dark-mode .category-total-item span:first-child { color: #ccc;}
+        body.dark-mode .category-total-item span:last-child { color: #fff;}
+        #categoryTotalsList .no-expenses-message { width: 100%; text-align: center; color: #777; padding: 15px; font-size: 0.9rem;}
+        body.dark-mode #categoryTotalsList .no-expenses-message { color: #aaa; }
+        #filterControls { padding: 8px 0; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;}
+        #filterControls label { font-weight: 600; font-size: 0.85rem; color: #555; margin-right: 4px;}
+        body.dark-mode #filterControls label { color: #bbb;}
+        #filterControls select { min-height: 38px; font-size: 0.9rem; padding: 6px 8px; border-radius: 5px; border: 1px solid #ccc; flex-grow: 1; min-width: 90px; }
+        body.dark-mode #filterControls select { background-color: #3a3a3a; color: #eee; border-color: #555;}
+        #overallSummary { border-top: 1px solid #ddd; margin-top: 20px; padding-top: 15px;}
+        body.dark-mode #overallSummary { border-top-color: #4a4a4a; }
+        #overallSummary h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 10px; color: #444; text-align: center;}
+        body.dark-mode #overallSummary h2 { color: #ddd;}
+        .summary-item { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.9rem; border-bottom: 1px dotted #eee; }
+        .summary-item:last-child { border-bottom: none; }
+        body.dark-mode .summary-item { border-bottom-color: #404040; }
+        .summary-item span:first-child { color: #555; }
+        body.dark-mode .summary-item span:first-child { color: #bbb; }
+        .summary-item span:last-child { font-weight: 600; }
+        #incomeForm h2 { font-size: 1.1rem; margin-bottom: 12px; text-align: center; font-weight: 600; color: #444; } 
+        body.dark-mode #incomeForm h2 { color: #ddd; }
+        #incomeForm button[type="submit"] { display: block; width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background-color 0.3s ease; }
+        #incomeForm button[type="submit"]:hover { background-color: #0056b3; }
+        body.dark-mode #incomeForm button[type="submit"] { background-color: #0056b3; }
+        body.dark-mode #incomeForm button[type="submit"]:hover { background-color: #007bff; }
+        
+        #modalWalletManagement #walletActionForm button[type="submit"] { background-color: #17a2b8; margin-top:10px;}
+        #modalWalletManagement #walletActionForm button[type="submit"]:hover { background-color: #138496;}
+        body.dark-mode #modalWalletManagement #walletActionForm button[type="submit"] { background-color: #138496;}
+        body.dark-mode #modalWalletManagement #walletActionForm button[type="submit"]:hover { background-color: #17a2b8;}
+
+        .chart-container { margin-top: 25px; padding: 15px; background-color: #fff; border-radius: 8px; }
+        body.dark-mode .chart-container { background-color: #2c2c2c; }
+        .chart-container h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; text-align: center; color: #444; }
+        body.dark-mode .chart-container h2 { color: #ddd; }
+        #categoryPieChartApex, #monthlyBarChartApex { min-height: 300px; }
+        .debt-panel { position: fixed; top: 0; right: -350px; width: 320px; height: 100%; background-color: #f9f9f9; border-left: 1px solid #ccc; box-shadow: -2px 0 5px rgba(0,0,0,0.1); z-index: 1001; transition: right 0.3s ease-in-out; display: flex; flex-direction: column; color: #333; }
+        .debt-panel.open { right: 0; }
+        body.dark-mode .debt-panel { background-color: #282828; border-left: 1px solid #444; color: #f0f0f0; }
+        .debt-panel-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background-color: #eee; border-bottom: 1px solid #ddd; }
+        body.dark-mode .debt-panel-header { background-color: #333; border-bottom: 1px solid #444; }
+        .debt-panel-header h2 { margin: 0; font-size: 1.1rem; font-weight: 600; }
+        .debt-panel-header #closeDebtPanel { font-size: 1.5rem; cursor: pointer; padding: 0 5px; }
+        #debtListContainer { flex-grow: 1; overflow-y: auto; padding: 10px; }
+        .debt-item { background-color: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 8px 10px; margin-bottom: 8px; font-size: 0.9rem; }
+        body.dark-mode .debt-item { background-color: #383838; border-color: #555; }
+        .debt-item p { margin-bottom: 4px; }
+        .debt-item strong { color: #337ab7; } body.dark-mode .debt-item strong { color: #79a6d2; }
+        .debt-amount-taken { color: green; font-weight: bold; } .debt-amount-given { color: red; font-weight: bold; }
+        body.dark-mode .debt-amount-taken { color: lightgreen; } body.dark-mode .debt-amount-given { color: lightcoral; }
+        .no-debts-message { text-align: center; padding: 20px; color: #777; } body.dark-mode .no-debts-message { color: #aaa; }
+        .debt-item.debt-item-settled { opacity: 0.65; }
+        .debt-settled-label { font-weight: bold; font-size: 0.85rem; margin-right: 10px; }
+        body.light-mode .debt-settled-label.debt-settled { color: green; }
+        body.dark-mode .debt-settled-label.debt-settled { color: lightgreen; }
+        .debt-item-actions { margin-top: 8px; display: flex; align-items: center; gap: 8px; }
+        .debt-action-button { padding: 5px 10px; font-size: 0.8rem; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; background-color: #f8f8f8; transition: background-color 0.2s; }
+        .debt-action-button:hover { background-color: #e8e8e8; }
+        body.dark-mode .debt-action-button { background-color: #3a3a3a; border-color: #555; color: #eee; }
+        body.dark-mode .debt-action-button:hover { background-color: #4a4a4a; }
+
+        /* Wallet Modal Styles */
+        .modal { display: none; position: fixed; z-index: 1002; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal.show-modal { display: flex; }
+        .modal-content { background-color: #fff; margin: auto; padding: 20px; border: 1px solid #888; border-radius: 8px; width: 90%; max-width: 450px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); position: relative; }
+        body.dark-mode .modal-content { background-color: #2c2c2c; border-color: #555; }
+        .close-modal-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; position: absolute; top: 5px; right: 15px; }
+        .close-modal-btn:hover, .close-modal-btn:focus { color: #333; text-decoration: none; cursor: pointer; }
+        body.dark-mode .close-modal-btn { color: #888; }
+        body.dark-mode .close-modal-btn:hover, body.dark-mode .close-modal-btn:focus { color: #ccc; }
+        #modalWalletManagement h2, #modalWalletManagement h3 { text-align: center; margin-bottom: 15px; }
+        #modalWalletManagement hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
+        body.dark-mode #modalWalletManagement hr { border-top-color: #444; }
+        #walletHistoryContainer { max-height: 150px; overflow-y: auto; border: 1px solid #eee; padding: 5px; border-radius: 4px; font-size: 0.85rem;}
+        body.dark-mode #walletHistoryContainer { border-color: #444; }
+        .wallet-history-item { padding: 4px 2px; border-bottom: 1px dotted #f0f0f0; display: flex; justify-content: space-between; }
+        body.dark-mode .wallet-history-item { border-bottom-color: #3a3a3a; }
+        .wallet-history-item:last-child { border-bottom: none; }
+        .wallet-history-item .date { color: #555; }
+        body.dark-mode .wallet-history-item .date { color: #bbb; }
+        .wallet-history-item .amount { font-weight: 500; }
+        .no-history-message { text-align: center; color: #888; padding:10px; font-size: 0.9em;}
+        body.dark-mode .no-history-message { color: #777; }
+        .simple-btn { padding: 8px 12px; font-size: 0.9rem; border: 1px solid #ccc; border-radius: 4px; background-color: #f0f0f0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+        body.dark-mode .simple-btn { background-color: #3a3a3a; border-color: #555; color: #eee; }
+        .simple-btn:hover { background-color: #e0e0e0; }
+        body.dark-mode .simple-btn:hover { background-color: #4a4a4a; }
+        .simple-btn .icon { font-size: 1em; padding: 0; margin-right: 3px; }
+
+
+        @media (max-width: 768px) {
+            body { font-size: 15px; padding: 5px;}
+            .container { padding: 10px; margin: 5px auto;}
+            .header-container h1 { font-size: 1.1rem; white-space: normal;}
+            .icon { font-size: 1.25rem; }
+            #currencyModeToggle { font-size: 0.9rem; min-width: 45px; padding: 5px 6px;}
+            .header-wallet-display { font-size: 0.8rem; padding: 3px 6px !important;}
+            .wallet-icon { font-size: 1rem;}
+
+            #expenseForm #categoryFormGroup { flex-direction: row; gap: 8px; align-items: center; }
+            #expenseForm #amountCurrencyGroup { flex-direction: column; gap: 8px; align-items: stretch; }
+            #expenseForm #amountCurrencyGroup input[type="number"], #expenseForm #amountCurrencyGroup select#currency { width: 100%; margin-bottom: 0; }
+            #expenseForm #categoryFormGroup #addCategoryIcon { width: 40px; height: 40px; margin-bottom: 0; }
+            #expenseForm #categoryFormGroup select { width: auto; flex-grow: 1; margin-bottom: 0; }
+            #incomeAmountCurrencyGroup, #walletAmountCurrencyGroup { flex-wrap: wrap; }
+            #incomeAmountCurrencyGroup input[type="number"], #walletAmountCurrencyGroup input[type="number"] { flex-grow:1; min-width: 120px; margin-bottom: 5px;}
+            #incomeAmountCurrencyGroup select, #walletAmountCurrencyGroup select { flex-grow:1; min-width: 85px; margin-bottom: 5px;}
+            .category-total-item { flex-basis: 100%; }
+            #filterControls { flex-direction: column; align-items: stretch; gap: 6px;}
+            #filterControls label { margin-bottom: 0; text-align: left; }
+            #filterControls select { width: 100%; }
+            .table-container { box-shadow: inset -8px 0 6px -6px rgba(0,0,0,0.08); }
+            body.dark-mode .table-container { box-shadow: inset -8px 0 6px -6px rgba(255,255,255,0.03); }
+            th, td { font-size: 0.8rem; padding: 5px 3px; }
+            th { font-size: 0.72rem; }
+            .debt-panel { width: 100%; right: -100%; border-left: none; }
+            .debt-panel.open { right: 0; }
+            .modal-content { width: 95%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container header-container">
+        <div class="left-icons">
+            <span id="optionsIcon" class="icon" title="विकल्प">⚙️</span>
+            <span id="currencyModeToggle" class="icon" title="मुद्रा प्रदर्शन मोड बदलें" data-key="currencyModeToggleTitle">₹/KD</span>
+             <span id="headerWalletBalance" class="icon header-wallet-display" title="वॉलेट प्रबंधित करें" data-key="headerWalletBalanceTitle">
+                <span class="wallet-icon">👛</span> <span id="headerWalletBalanceValue">₹0.00</span>
+            </span>
+            <div id="dataActionsMenu">
+                <div id="importMenuItem" class="menu-item"> <span class="icon">📤</span> <span data-key="menuImport">इंपोर्ट डेटा</span> </div>
+                <div id="exportMenuItem" class="menu-item"> <span class="icon">📥</span> <span data-key="menuExport">एक्सपोर्ट डेटा</span> </div>
+                <div id="setRateMenuItem" class="menu-item"> <span class="icon">💹</span> <span data-key="menuSetRate">मुद्रा दर सेट करें</span> </div>
+                <div id="shareSnapshotMenuItem" class="menu-item"> <span class="icon">📸</span> <span data-key="menuShareSnapshot">शेयर स्नैपशॉट</span></div>
+                <div id="clearMenuItem" class="menu-item"> <span class="icon">🗑️</span> <span data-key="menuClear">सारा डेटा साफ़ करें</span> </div>
+            </div>
+        </div>
+        <h1 data-key="mainTitle">मेरे खर्चे</h1>
+        <div class="header-icons">
+            <span id="debtListIcon" class="icon" title="उधार सूची" data-key="debtListTitleIcon">🔄</span>
+            <span id="modeToggle" class="icon" title="डार्क/लाइट मोड">🌙</span>
+            <span id="langToggle" class="icon" title="भाषा बदलें">🌐</span>
+        </div>
+    </div>
+    <div class="container"> 
+        <form id="expenseForm"> 
+            <h2 data-key="formTitle" style="font-size: 1.1rem; margin-bottom: 12px; text-align: center;">नया खर्च/लेनदेन जोड़ें</h2> 
+            <input type="hidden" id="editExpenseId"> 
+            <div class="form-group"> <select id="transactionType" aria-label="लेनदेन का प्रकार" data-key="labelTransactionType"> <option value="expense" data-key="typeExpense" selected>खर्च</option> <option value="debt_taken" data-key="typeDebtTaken">उधार लिया</option> <option value="debt_given" data-key="typeDebtGiven">उधार दिया</option> <option value="repayment_to_me" data-key="typeDebtRepaidToMe">उधार वापस मिला</option> <option value="repayment_by_me" data-key="typeDebtIRepaid">उधार चुकाया</option> </select> </div> 
+            <div class="form-group"> <input type="text" id="item" placeholder="विवरण/आइटम" required data-key="placeholderItem" aria-label="विवरण/सामान"> </div>
+            <div class="form-group" id="amountCurrencyGroup"> <input type="number" id="amount" placeholder="राशि" required data-key="placeholderAmount" step="any" aria-label="राशि"> <select id="currency" data-key="currencySelectorTitle" title="मुद्रा चुनें" aria-label="मुद्रा"> <option value="INR" selected>₹ (INR)</option> <option value="KWD">KD (KWD)</option> </select> </div>
+            <div class="form-group" id="personField" style="display: none;"> <input type="text" id="personName" placeholder="व्यक्ति का नाम (वैकल्पिक)" data-key="placeholderPersonName" aria-label="व्यक्ति का नाम"> </div>
+            <div class="form-group" id="categoryFormGroup"> <span id="addCategoryIcon" title="नई श्रेणी जोड़ें" aria-label="नई श्रेणी जोड़ें">+</span> <select id="category" data-key="labelCategory" aria-label="श्रेणी"> <option value="" data-key="optionDefault">--श्रेणी चुनें--</option> <option value="grocery" data-key="catGrocery" selected>किराना</option> <option value="travel" data-key="catTravel">यात्रा</option> <option value="bills" data-key="catBills">बिल</option> <option value="entertainment" data-key="catEntertainment">मनोरंजन</option> <option value="food" data-key="catFood">खाना-पीना</option> <option value="other" data-key="catOther">अन्य</option> </select> </div>
+            <div class="form-group"> <input type="text" id="note" placeholder="कोई अतिरिक्त जानकारी (वैकल्पिक)" data-key="placeholderNote" aria-label="नोट"> </div>
+            <button type="submit" data-key="buttonAdd">एंट्री जोड़ें</button> 
+        </form>
+    <div id="filterControls"> <label for="filterMonth" data-key="filterLabel">दिखाएँ:</label> <select id="filterMonth"></select> <select id="filterYear"></select> </div>
+    <h2 data-key="listTitle" style="font-size: 1.05rem; margin-bottom: 8px;">लेनदेन सूची</h2>
+    <div class="table-container">
+        <table>
+            <colgroup>
+                <col class="col-datetime"> <col class="col-item"> <col class="col-amount">
+                <col class="col-category"> <col class="col-note"> <col class="col-action">
+            </colgroup>
+            <thead> <tr> <th data-key="tableHeaderDateTime" data-label="तारीख/समय">तारीख<br>समय</th> <th data-key="tableHeaderItem" data-label="विवरण">विवरण</th> <th data-key="tableHeaderAmount" data-label="राशि">राशि</th> <th data-key="tableHeaderCategory" data-label="श्रेणी/प्रकार">श्रेणी/प्रकार</th> <th data-key="tableHeaderNote" data-label="नोट">नोट</th> <th data-key="tableHeaderAction" data-label="कार्य">कार्य</th> </tr></thead>
+            <tbody id="expenseTableBody"></tbody>
+        </table>
+    </div>
+    <div id="categoryTotals"> <h2 data-key="categoryTotalsTitle">श्रेणी के अनुसार कुल खर्च</h2> <div id="categoryTotalsList"></div> </div>
+    <div id="overallSummary" class="container" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #ddd;"> <h2 data-key="summaryTitle">सारांश</h2> <div id="totalIncomeDisplay" class="summary-item"> <span data-key="totalIncomeLabel">कुल कमाई:</span> <span id="totalIncomeValue">₹ 0.00</span> </div> <div id="totalExpensesDisplay" class="summary-item"> <span data-key="totalExpensesLabel">कुल खर्च (चयनित):</span> <span id="totalExpensesValue">₹ 0.00</span> </div> <div id="balanceDisplay" class="summary-item" style="font-weight: bold;"> <span data-key="balanceLabel">शेष राशि:</span> <span id="balanceValue">₹ 0.00</span> </div> </div>
+    
+    <div class="container chart-container"> <h2 data-key="chartCategoryTitle">श्रेणी अनुसार खर्च</h2> <div id="categoryPieChartApex"></div> </div>
+    <div class="container chart-container" style="margin-top: 20px;"> <h2 data-key="chartMonthlyTitle">मासिक कुल खर्च</h2> <div id="monthlyBarChartApex"></div> </div>
+    </div>
+    <div id="debtListPanel" class="debt-panel"> <div class="debt-panel-header"> <h2 data-key="debtListPanelTitle">उधार / लेन-देन सूची</h2> <span id="closeDebtPanel" class="icon">&times;</span> </div> <div id="debtListContainer"> <p class="no-debts-message" data-key="noDebtsMessage">कोई सक्रिय उधार नहीं।</p> </div> </div>
+    <input type="file" id="importFile" accept=".json">
+
+    <!-- Wallet Management Modal -->
+    <div id="walletModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal-btn" id="closeWalletModal">&times;</span>
+            <div id="modalWalletManagement">
+                <h2 data-key="walletTitle">वॉलेट प्रबंधन</h2>
+                <form id="walletActionForm" style="margin-bottom: 15px;">
+                    <div class="form-group" id="walletAmountCurrencyGroup">
+                        <input type="number" id="walletActionAmount" placeholder="जमा करने के लिए राशि" required data-key="placeholderWalletDepositAmount" step="any" aria-label="जमा राशि">
+                        <select id="walletActionCurrency" title="मुद्रा चुनें" aria-label="वॉलेट मुद्रा">
+                            <option value="INR" selected>₹ (INR)</option>
+                            <option value="KWD">KD (KWD)</option>
+                        </select>
+                    </div>
+                    <button type="submit" data-key="buttonDepositToWallet">वॉलेट में जमा करें</button>
+                </form>
+
+                <div id="modalCurrentWalletBalanceDisplay" class="summary-item" style="font-weight: bold; font-size: 1.1rem; margin-top:20px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
+                    <span data-key="currentWalletBalanceLabel">वर्तमान पर्स बैलेंस:</span>
+                    <span id="modalCurrentWalletBalanceValue">₹ 0.00</span>
+                </div>
+                
+                <button type="button" id="toggleWalletHistoryBtn" class="simple-btn" style="margin-top: 15px; width:100%;" data-key="buttonToggleWalletHistory">
+                   <span class="icon">📜</span> <span data-key="showWalletHistory">वॉलेट इतिहास दिखाएं</span>
+                </button>
+
+                <div id="walletHistoryContainerWrapper" style="display: none; margin-top:10px;">
+                   <h3 data-key="walletHistoryTitle" style="margin-bottom:5px; text-align:center; font-size: 1rem; font-weight:600;">वॉलेट जमा इतिहास</h3>
+                   <div id="walletHistoryContainer" style="max-height: 150px; overflow-y: auto; border: 1px solid #eee; padding: 5px; border-radius: 4px;">
+                       <p class="no-history-message" data-key="noWalletHistoryMessage" style="text-align:center; color: #888; padding:10px;">कोई जमा इतिहास नहीं।</p>
+                   </div>
+                </div>
+               
+                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+                
+                <h2 data-key="incomeFormTitle" style="margin-top: 10px;">मासिक कमाई जोड़ें/अपडेट करें</h2>
+                <form id="incomeForm"> 
+                    <div class="form-group" id="incomeAmountCurrencyGroup">
+                        <input type="number" id="incomeAmount" placeholder="जैसे: 50000" required data-key="placeholderIncomeAmount" step="any" aria-label="कमाई राशि">
+                        <select id="incomeCurrency" title="कमाई मुद्रा चुनें" aria-label="कमाई मुद्रा">
+                            <option value="INR" selected>₹ (INR)</option>
+                            <option value="KWD">KD (KWD)</option>
+                        </select>
+                    </div>
+                    <button type="submit" data-key="buttonUpdateIncome">कमाई अपडेट करें</button>
+                </form>
+                 <div id="modalMonthlyIncomeDisplay" class="summary-item" style="font-size: 1rem; margin-top: 15px;"> 
+                    <span data-key="totalIncomeLabel">कुल कमाई:</span>
+                    <span id="modalMonthlyIncomeValue">₹ 0.00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- SCRIPT PART STARTS HERE -->
+    <script>
+        // --- START JAVASCRIPT ---
+        'use strict';
+        console.log("--- Script starts ---");
+
+        const KWD_RATE_STORAGE_KEY = 'kwdToInrConversionRate';
+        const LAST_USED_CURRENCY_KEY = 'expenseTrackerLastCurrency';
+        const LAST_USED_INCOME_CURRENCY_KEY = 'incomeTrackerLastCurrency';
+        const MONTHLY_INCOME_STORAGE_KEY = 'monthlyIncomeData';
+        const LAST_USED_WALLET_CURRENCY_KEY = 'lastUsedWalletCurrency';
+        const CURRENCY_DISPLAY_MODE_KEY = 'expenseTrackerCurrencyDisplayMode';
+        const LAST_SELECTED_MONTH_KEY = 'expenseTrackerLastSelectedMonth';
+        const LAST_SELECTED_YEAR_KEY = 'expenseTrackerLastSelectedYear';
+
+
+        let KWD_TO_INR_RATE = 271.50;
+        let expenses = [];
+        let customCategories = [];
+        let currentLang = 'hi';
+        let currentMode = 'light';
+        let selectedMonth = 'all';
+        let selectedYear = 'all';
+        let monthlyIncome = { originalAmount: 0, originalCurrency: 'INR', inrAmount: 0 };
+        let currencyDisplayMode = 'both'; 
+
+
+        let bodyElem, expenseFormElem, expenseTableBodyElem, categorySelectElem, modeToggleElem, langToggleElem, addCategoryIconElem, categoryTotalsListElem, filterMonthSelectElem, filterYearSelectElem, optionsIconElem, dataActionsMenuElem, importMenuItemElem, exportMenuItemElem, setRateMenuItemElem, shareSnapshotMenuItemElem, clearMenuItemElem, importFileElem, currencySelectElem, incomeFormElem, incomeAmountInputElem, incomeCurrencySelectElem, totalIncomeDisplayValueElem, totalExpensesDisplayValueElem, balanceDisplayValueElem, walletActionFormElem, walletActionAmountElem, walletActionCurrencyElem, transactionTypeSelectElem, personFieldDivElem, personNameInputElem, debtListIconElem, debtListPanelElem, closeDebtPanelElem, debtListContainerElem, currencyModeToggleElem, headerWalletBalanceElem, headerWalletBalanceValueElem, walletModalElem, closeWalletModalBtnElem, modalCurrentWalletBalanceValueElem, modalMonthlyIncomeDisplayElem, modalMonthlyIncomeValueElem, categoryFormGroup, walletHistoryContainerElem, toggleWalletHistoryBtnElem, walletHistoryContainerWrapperElem;
+        let categoryPieChartApexInstance = null;
+        let monthlyBarChartApexInstance = null;
+
+        const translations = {
+            hi: { pageTitle: 'खर्चों का हिसाब', mainTitle: 'मेरे खर्चे', formTitle: 'नया खर्च/लेनदेन जोड़ें', labelItem: 'विवरण/सामान', labelAmount: 'राशि', labelCategory: 'श्रेणी', labelNote: 'नोट', placeholderItem: 'जैसे: किराना, पेट्रोल', placeholderAmount: 'जैसे: 500 या 10.500', placeholderNote: 'कोई अतिरिक्त जानकारी (वैकल्पिक)', buttonAdd: 'एंट्री जोड़ें', listTitle: 'लेनदेन सूची', tableHeaderDateTime: 'तारीख<br>समय', tableHeaderItem: 'विवरण', tableHeaderAmount: 'राशि', tableHeaderCategory: 'श्रेणी/प्रकार', tableHeaderNote: 'नोट', tableHeaderAction: 'कार्य', buttonDelete: 'हटाएँ', buttonEdit: 'संपादित करें', buttonUpdate: 'एंट्री अपडेट करें', optionDefault: '--श्रेणी चुनें--', catGrocery: 'किराना', catTravel: 'यात्रा', catBills: 'बिल', catEntertainment: 'मनोरंजन', catFood: 'खाना-पीना', catOther: 'अन्य', alertAmountInvalid: 'कृपया राशि सही फॉर्मेट में डालें।', alertCategoryEmpty: ' कृपया श्रेणी चुनें।', alertItemEmpty: ' कृपया विवरण/सामान भरें।', alertCurrencyNotSelected: 'कृपया मुद्रा चुनें।', confirmDelete: 'क्या आप वाकई यह खर्च हटाना चाहते हैं?', loadError: 'पिछला डेटा लोड नहीं हो सका।', confirmClear: 'क्या आप वाकई सारा खर्च डेटा साफ़ करना चाहते हैं?', dataCleared: 'सारा खर्च डेटा साफ़ कर दिया गया है।', exportFileName: 'mere_kharche', exportSuccess: 'डेटा सफलतापूर्वक एक्सपोर्ट किया गया।', exportError: 'डेटा एक्सपोर्ट करते समय कोई त्रुटि हुई।', importSuccess: 'डेटा सफलतापूर्वक इंपोर्ट किया गया।', importError: 'डेटा प्रोसेसिंग एरर।', importInvalidData: 'अमान्य डेटा फ़ाइल।', promptNewCategory: 'नई श्रेणी का नाम दर्ज करें:', alertCategoryExists: 'यह श्रेणी पहले से मौजूद है।', alertCategoryInvalid: 'श्रेणी का नाम खाली नहीं हो सकता।', categoryTotalsTitle: 'श्रेणी के अनुसार कुल खर्च', noExpensesMessage: 'कोई खर्च दर्ज नहीं किया गया।', filterLabel: 'दिखाएँ:', filterOptionAll: 'सभी', monthNames: ['जनवरी', 'फरवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'], monthSpecificNoExpenses: ' में कोई खर्च नहीं मिला।', yearSpecificNoExpenses: ' में कोई खर्च नहीं मिला।', menuImport: 'इंपोर्ट डेटा', menuExport: 'एक्सपोर्ट डेटा', menuClear: 'सारा डेटा साफ़ करें', optionsIconTitle: 'विकल्प', currencySelectorTitle: 'मुद्रा चुनें', menuSetRate: "मुद्रा दर सेट करें", promptSetRate: '', alertRateInvalid: "अमान्य दर।", alertRateSetSuccess: "मुद्रा दर अपडेट की गई.", summaryTitle: "सारांश", totalIncomeLabel: "कुल कमाई:", totalExpensesLabel: "कुल खर्च (चयनित):", balanceLabel: "शेष राशि:", incomeFormTitle: "मासिक कमाई जोड़ें/अपडेट करें", labelIncomeAmount: "कमाई राशि:", placeholderIncomeAmount: "जैसे: 50000", buttonUpdateIncome: "कमाई अपडेट करें", alertIncomeUpdated: "कमाई अपडेट हो गई!", menuShareSnapshot: "शेयर स्नैपशॉट", snapshotError: "स्नैपशॉट लेने में त्रुटि हुई।", dataCopied: "डेटा क्लिपबोर्ड पर कॉपी किया गया।", chartCategoryTitle: "श्रेणी अनुसार खर्च", chartMonthlyTitle: "मासिक कुल खर्च", walletTitle: "वॉलेट प्रबंधन", placeholderWalletDepositAmount: "जमा करने के लिए राशि", buttonDepositToWallet: "वॉलेट में जमा करें", transactionWalletDeposit: "वॉलेट में जमा", walletNotSet: "वॉलेट सेट नहीं", labelTransactionType: "लेनदेन का प्रकार", typeExpense: "खर्च", typeDebtTaken: "उधार लिया", typeDebtGiven: "उधार दिया", typeDebtRepaidToMe: "उधार वापस मिला", typeDebtIRepaid: "उधार चुकाया", labelPersonName: "व्यक्ति का नाम", placeholderPersonName: "व्यक्ति का नाम (वैकल्पिक)", alertPersonNameEmpty: "कृपया व्यक्ति का नाम दर्ज करें।", debtListTitleIcon: "उधार सूची", debtListPanelTitle: "उधार / लेन-देन सूची", noDebtsMessage: "कोई सक्रिय उधार नहीं।", debtItem: "विवरण", debtTypeLabel: "प्रकार", debtOriginalAmount: "मूल राशि", debtOutstandingAmount: "बकाया राशि", debtDate: "तारीख", debtPerson: "व्यक्ति", debtSettledLabel: "निपटाया गया", buttonMarkSettled: "निपटाया गया चिह्नित करें", buttonMarkUnsettled: "अधूरा चिह्नित करें", debtAutoSettledBalanceZero: "बैलेंस शून्य", currencyModeToggleTitle: 'मुद्रा प्रदर्शन मोड', currencyModeBoth: 'दोनों दिखाएं (₹/KD)', currencyModeInrOnly: 'केवल ₹ दिखाएं', currencyModeKwdOnly: 'केवल KD दिखाएं', headerWalletBalanceTitle: 'वॉलेट प्रबंधित करें', currentWalletBalanceLabel: "वर्तमान पर्स बैलेंस:", walletHistoryTitle: "वॉलेट जमा इतिहास", noWalletHistoryMessage: "कोई जमा इतिहास नहीं।", buttonToggleWalletHistory: "वॉलेट इतिहास", showWalletHistory: "वॉलेट इतिहास दिखाएं", hideWalletHistory: "वॉलेट इतिहास छिपाएं", monthSpecificNoWalletHistory: " में कोई वॉलेट जमा इतिहास नहीं मिला।", yearSpecificNoWalletHistory: " में कोई वॉलेट जमा इतिहास नहीं मिला।", genericNoWalletHistoryIn: " में कोई वॉलेट जमा इतिहास नहीं मिला।" },
+            en: { pageTitle: 'Expense Tracker', mainTitle: 'My Expenses', formTitle: 'Add New Entry/Transaction', labelItem: 'Description/Item', labelAmount: 'Amount', labelCategory: 'Category', labelNote: 'Note', placeholderItem: 'e.g., Groceries, Fuel', placeholderAmount: 'e.g., 500 or 10.500', placeholderNote: 'Any additional info (optional)', buttonAdd: 'Add Entry', listTitle: 'Transaction List', tableHeaderDateTime: 'Date<br>Time', tableHeaderItem: 'Item', tableHeaderAmount: 'Amount', tableHeaderCategory: 'Category/Type', tableHeaderNote: 'Note:', tableHeaderAction: 'Action', buttonDelete: 'Delete', buttonEdit: 'Edit', buttonUpdate: 'Update Entry', optionDefault: '--Select Category--', catGrocery: 'Grocery', catTravel: 'Travel', catBills: 'Bills', catEntertainment: 'Entertainment', catFood: 'Food', catOther: 'Other', alertAmountInvalid: 'Please enter a valid amount.', alertCategoryEmpty: 'Please select a category.', alertItemEmpty: 'Please enter item description.', alertCurrencyNotSelected: 'Please select a currency.', confirmDelete: 'Are you sure you want to delete this expense?', loadError: 'Previous data could not be loaded.', confirmClear: 'Are you sure you want to clear all data?', dataCleared: 'All expense data has been cleared.', exportFileName: 'my_expenses', exportSuccess: 'Data successfully exported.', exportError: 'An error occurred during export.', importSuccess: 'Data successfully imported.', importError: 'Data processing error.', importInvalidData: 'Invalid data file.', promptNewCategory: 'Enter new category name:', alertCategoryExists: 'This category already exists.', alertCategoryInvalid: 'Category name cannot be empty.', categoryTotalsTitle: 'Total Expenses by Category', noExpensesMessage: 'No expenses recorded.', filterLabel: 'Show:', filterOptionAll: 'All', monthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], monthSpecificNoExpenses: ' no expenses found.', yearSpecificNoExpenses: ' no expenses found.', menuImport: 'Import Data', menuExport: 'Export Data', menuClear: 'Clear All Data', optionsIconTitle: 'Options', currencySelectorTitle: 'Select Currency', menuSetRate: "Set Currency Rate", promptSetRate: '', alertRateInvalid: "Invalid rate.", alertRateSetSuccess: "Rate updated.", summaryTitle: "Summary", totalIncomeLabel: "Total Income:", totalExpensesLabel: "Total Expenses (Selected):", balanceLabel: "Balance:", incomeFormTitle: "Add/Update Monthly Income", labelIncomeAmount: "Income Amount:", placeholderIncomeAmount: "e.g., 50000", buttonUpdateIncome: "Update Income", alertIncomeUpdated: "Income updated!", menuShareSnapshot: "Share Snapshot", snapshotError: "Error taking snapshot.", dataCopied: "Data copied to clipboard.", chartCategoryTitle: "Expenses by Category", chartMonthlyTitle: "Total Monthly Expenses", walletTitle: "Wallet Management", placeholderWalletDepositAmount: "Amount to Deposit", buttonDepositToWallet: "Deposit to Wallet", transactionWalletDeposit: "Deposited to Wallet", walletNotSet: "Wallet Not Set", labelTransactionType: "Transaction Type", typeExpense: "Expense", typeDebtTaken: "Debt Taken", typeDebtGiven: "Debt Given", typeDebtRepaidToMe: "Debt Repaid To Me", typeDebtIRepaid: "Debt I Repaid", labelPersonName: "Person's Name", placeholderPersonName: "Person's Name (Optional)", alertPersonNameEmpty: "Please enter the person's name.", debtListTitleIcon: "Debt List", debtListPanelTitle: "Debt / Transaction List", noDebtsMessage: "No active debts.", debtItem: "Description", debtTypeLabel: "Type", debtOriginalAmount: "Original Amount", debtOutstandingAmount: "Outstanding Amount", debtDate: "Date", debtPerson: "Person", debtSettledLabel: "Settled", buttonMarkSettled: "Mark Settled", buttonMarkUnsettled: "Mark Unsettled", debtAutoSettledBalanceZero: "Balance Zero", currencyModeToggleTitle: 'Currency Display Mode', currencyModeBoth: 'Show Both (₹/KD)', currencyModeInrOnly: 'Show ₹ Only', currencyModeKwdOnly: 'Show KD Only', headerWalletBalanceTitle: 'Manage Wallet', currentWalletBalanceLabel: "Current Wallet Balance:", walletHistoryTitle: "Wallet Deposit History", noWalletHistoryMessage: "No deposit history.", buttonToggleWalletHistory: "Wallet History", showWalletHistory: "Show Wallet History", hideWalletHistory: "Hide Wallet History", monthSpecificNoWalletHistory: "no wallet deposit history found.", yearSpecificNoWalletHistory: "no wallet deposit history found.", genericNoWalletHistoryIn: "no wallet deposit history found in." }
+        };
+
+        // --- Function Definitions ---
+        const formatDateTime = (dateStr) => { try { const d=new Date(dateStr); if(isNaN(d.getTime())) return "?<br>?"; const year=d.getFullYear(),month=`0${d.getMonth()+1}`.slice(-2),day=`0${d.getDate()}`.slice(-2); let hours=d.getHours();const minutes=`0${d.getMinutes()}`.slice(-2);const ampm=hours>=12?'PM':'AM';hours=hours%12;hours=hours?hours:12;const strHours=`0${hours}`.slice(-2); return `${day}-${month}-${year}<br>${strHours}:${minutes} ${ampm}`; } catch(e){ console.warn("Invalid date for formatDateTime:", dateStr, e); return "?<br>?";}};
+        const saveExpensesToLocalStorage = () => { try { localStorage.setItem('expenses', JSON.stringify(expenses));} catch(e) { console.error("Err save expenses:", e); }};
+        const saveCustomCategories = () => { try { const c=[]; categorySelectElem?.querySelectorAll('option:not([data-key])').forEach(o=>{if(o.value)c.push(o.value)}); localStorage.setItem('customCategories',JSON.stringify(c));} catch(e){console.error("Err save cats:",e);}};
+        const loadCustomCategories = () => { try { const s=localStorage.getItem('customCategories'); categorySelectElem?.querySelectorAll('option:not([data-key])').forEach(o=>{if(o.value)o.remove()}); if(s){ customCategories=JSON.parse(s); if(!Array.isArray(customCategories))customCategories=[]; customCategories.forEach(c=>{if(c&&typeof c==='string'&&c.trim()!==''&&!Array.from(categorySelectElem.options).some(opt=>opt.value.toLowerCase()===c.toLowerCase()))addCategoryToSelect(c.trim())})} else customCategories=[]; } catch(e){console.error("Err load cats:",e);customCategories=[]}};
+        const loadExpensesFromLocalStorage = () => { try { const s=localStorage.getItem('expenses'); if(s){ let p=JSON.parse(s);if(!Array.isArray(p))p=[]; expenses=p.map(exp=>{ let i=exp.amount; if(!exp.type) { if (exp.category === 'wallet' || exp.item?.toLowerCase().includes('wallet') || exp.item?.toLowerCase().includes('balance')) { exp.type = "income_to_wallet"; } else if (exp.item?.toLowerCase().includes('उधार') || exp.item?.toLowerCase().includes('debt') || exp.item?.toLowerCase().includes('lent') || exp.item?.toLowerCase().includes('borrowed')) { exp.type = exp.amount > 0 ? "debt_taken" : "debt_given"; } else { exp.type = 'expense';} } if (exp.type === 'initial_balance') {exp.type = 'income_to_wallet'; exp.item = translations[currentLang]?.transactionWalletDeposit || "Deposited to Wallet";} if(typeof exp.originalCurrency==='undefined'||typeof exp.originalAmount==='undefined'){exp = {...exp,originalAmount:i,originalCurrency:'INR',amount:i, type: exp.type}} if(exp.originalCurrency==='KWD'){const ci=parseFloat((exp.originalAmount*KWD_TO_INR_RATE).toFixed(2));if(!isNaN(ci)&&Math.abs(exp.amount-ci)>0.001)exp.amount=ci;}else if(exp.originalCurrency==='INR'&&exp.amount!==exp.originalAmount){exp.amount=exp.originalAmount} if ((exp.type === 'debt_taken' || exp.type === 'debt_given') && typeof exp.isSettled === 'undefined') { exp.isSettled = false; } return exp}); const v=expenses.filter(i=>i&&typeof i.id!=='undefined'&&typeof i.dateTime==='string'&&typeof i.item==='string'&&typeof i.originalAmount==='number'&&typeof i.originalCurrency==='string'&&(i.originalCurrency==='INR'||i.originalCurrency==='KWD')&&typeof i.amount==='number'&&!isNaN(i.amount)&&i.amount>=0&&typeof i.category==='string'&&typeof i.note!=='undefined' && typeof i.type === 'string');if(v.length!==expenses.length)expenses=v; expenses.sort((a,b)=>(new Date(b.dateTime)).getTime()-(new Date(a.dateTime)).getTime()); return expenses}} catch(e){console.error('Err load expenses:',e);expenses=[];localStorage.removeItem('expenses');alert(translations[currentLang]?.loadError||'Err load data.')} expenses=[];return[]};
+        const saveMonthlyIncome = () => { try { localStorage.setItem(MONTHLY_INCOME_STORAGE_KEY, JSON.stringify(monthlyIncome)); } catch (e) { console.error("Error saving income:", e); } };
+        const loadMonthlyIncome = () => { try { const s = localStorage.getItem(MONTHLY_INCOME_STORAGE_KEY); if (s) { const p = JSON.parse(s); if (p && typeof p.originalAmount === 'number' && typeof p.originalCurrency === 'string') { monthlyIncome = p; monthlyIncome.inrAmount = (monthlyIncome.originalCurrency === 'KWD') ? parseFloat((monthlyIncome.originalAmount * KWD_TO_INR_RATE).toFixed(2)) : monthlyIncome.originalAmount; } else { monthlyIncome = { originalAmount: 0, originalCurrency: 'INR', inrAmount: 0 };} } if (incomeAmountInputElem) incomeAmountInputElem.value = monthlyIncome.originalAmount > 0 ? monthlyIncome.originalAmount : ''; const lastIncomeCurr = localStorage.getItem(LAST_USED_INCOME_CURRENCY_KEY); if(lastIncomeCurr && incomeCurrencySelectElem && Array.from(incomeCurrencySelectElem.options).some(o => o.value === lastIncomeCurr)) { incomeCurrencySelectElem.value = lastIncomeCurr;} else if (incomeCurrencySelectElem) { incomeCurrencySelectElem.value = monthlyIncome.originalCurrency || 'INR'; } } catch (e) { console.error("Error loading income:", e); monthlyIncome = { originalAmount: 0, originalCurrency: 'INR', inrAmount: 0 }; } };
+        
+        function formatAmountBasedOnMode(amountInr, originalAmountInput, originalCurrencyInput) {
+            const inrValue = parseFloat(amountInr) || 0;
+            const originalAmount = parseFloat(originalAmountInput) || 0; 
+            const originalCurrency = originalCurrencyInput || 'INR';
+
+            const inrString = `₹ ${inrValue.toFixed(2)}`;
+            let kwdString = ''; 
+            let displayString = inrString;
+
+            if (KWD_TO_INR_RATE > 0) {
+                if (originalCurrency === 'KWD') {
+                    kwdString = `KD ${originalAmount.toFixed(3)}`;
+                } else { 
+                    const kwdEquivalent = inrValue / KWD_TO_INR_RATE;
+                    if (inrValue === 0) {
+                        kwdString = `KD 0.000`;
+                    } else if (Math.abs(kwdEquivalent) > 0.0005) { 
+                        kwdString = `≈ KD ${kwdEquivalent.toFixed(3)}`;
+                    }
+                }
+            }
+
+            if (currencyDisplayMode === 'inr_only') {
+                displayString = inrString;
+            } else if (currencyDisplayMode === 'kwd_only') {
+                if (kwdString) { 
+                    displayString = kwdString;
+                } else { 
+                    displayString = inrString; 
+                }
+            } else { // 'both'
+                 if (kwdString && (originalCurrency === 'KWD' || (inrValue === 0 && kwdString === `KD 0.000`) || (kwdString.startsWith("≈ KD") && kwdString !== `≈ KD 0.000`))) {
+                     displayString = `${inrString} (${kwdString})`;
+                } else if (inrValue === 0 && originalCurrency !== 'KWD' && kwdString === 'KD 0.000') { 
+                    displayString = `${inrString} (KD 0.000)`;
+                }
+            }
+            return displayString;
+        }
+
+        const renderExpenseTable = (exps) => { 
+            if (!expenseTableBodyElem) return; 
+            expenseTableBodyElem.innerHTML = ''; 
+            if (exps.length > 0) { 
+                exps.forEach(expense => { 
+                    try { 
+                        const row = expenseTableBodyElem.insertRow(); 
+                        row.dataset.id = expense.id; 
+                        const dateTimeCell = row.insertCell(0); 
+                        dateTimeCell.innerHTML = formatDateTime(expense.dateTime); 
+                        const itemCell = row.insertCell(1); 
+                        let itemDisplay = expense.item; 
+                        if (expense.person && (expense.type?.startsWith('debt_') || expense.type?.startsWith('repayment_'))) { 
+                            const typeTextKey = `type${expense.type.charAt(0).toUpperCase() + expense.type.slice(1).replace(/_/g, '')}`; 
+                            const typeText = translations[currentLang]?.[typeTextKey] || expense.type.replace(/_/g, ' '); 
+                            itemDisplay = `${typeText} (${expense.person}): ${expense.item}`; 
+                        } 
+                        itemCell.textContent = itemDisplay; 
+                        const amountCell = row.insertCell(2); 
+                        
+                        amountCell.textContent = formatAmountBasedOnMode(expense.amount, expense.originalAmount, expense.originalCurrency);
+
+                        if (expense.type === 'debt_taken' || expense.type === 'repayment_to_me' || expense.type === 'income_to_wallet') { 
+                            amountCell.style.color = bodyElem?.classList.contains('dark-mode') ? 'lightgreen' : 'green'; 
+                        } else if (expense.type === 'debt_given' || expense.type === 'repayment_by_me' || expense.type === 'expense') { 
+                            amountCell.style.color = bodyElem?.classList.contains('dark-mode') ? 'lightcoral' : 'red'; 
+                        } 
+                        amountCell.style.textAlign = 'right'; 
+                        const categoryCell = row.insertCell(3); 
+                        if (expense.type === 'expense') { 
+                            const opt = categorySelectElem?.querySelector(`option[value="${expense.category}"]`); 
+                            categoryCell.textContent = opt ? opt.textContent : expense.category; 
+                        } else { 
+                            const typeTextKey = `type${expense.type.charAt(0).toUpperCase() + expense.type.slice(1).replace(/_/g, '')}`; 
+                            categoryCell.textContent = translations[currentLang]?.[typeTextKey] || expense.type.replace(/_/g, ' '); 
+                        } 
+                        row.insertCell(4).textContent = expense.note; 
+                        
+                        const actionCell = row.insertCell(5);
+                        actionCell.classList.add('action-buttons');
+
+                        const editBtn = document.createElement('button');
+                        editBtn.innerHTML = '✏️'; 
+                        editBtn.classList.add('edit-btn-icon', 'icon-button'); 
+                        editBtn.type = 'button';
+                        editBtn.title = translations[currentLang]?.buttonEdit || 'Edit';
+                        editBtn.setAttribute('aria-label', translations[currentLang]?.buttonEdit || 'Edit');
+                        editBtn.addEventListener('click', handleEditClick);
+                        actionCell.appendChild(editBtn);
+
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.innerHTML = '🗑️';
+                        deleteBtn.classList.add('delete-btn-icon', 'icon-button');
+                        deleteBtn.type = 'button';
+                        deleteBtn.title = translations[currentLang]?.buttonDelete || 'Delete';
+                        deleteBtn.setAttribute('aria-label', translations[currentLang]?.buttonDelete || 'Delete');
+                        deleteBtn.addEventListener('click', handleDeleteClick);
+                        actionCell.appendChild(deleteBtn); 
+                    } catch (err) { console.error("Err render row:", err, expense); } 
+                }); 
+            } 
+        };
+        const renderCategoryTotals = (exps) => { 
+            if(!categoryTotalsListElem) return; 
+            const totals={}; 
+            exps.filter(e => e.type === 'expense').forEach(e=>{
+                const c=e.category,i=e.amount,oA=e.originalAmount,oC=e.originalCurrency;
+                if(!c||typeof i!=='number'||isNaN(i))return;
+                if(!totals[c])totals[c]={inr:0,kwd:0,kwdEntryCount:0};
+                totals[c].inr+=i;
+                if(oC==='KWD'&&typeof oA==='number'&&!isNaN(oA)){totals[c].kwd+=oA;totals[c].kwdEntryCount++}
+            }); 
+            const sC=Object.keys(totals).sort(); 
+            categoryTotalsListElem.innerHTML=''; 
+            if(sC.length===0){
+                const m=document.createElement('div');
+                m.classList.add('no-expenses-message');
+                m.textContent=translations[currentLang]?.noExpensesMessage||'No expenses';
+                categoryTotalsListElem.appendChild(m)
+            }else{
+                sC.forEach(cV=>{
+                    try{
+                        const d=totals[cV];
+                        const oE=categorySelectElem?.querySelector(`option[value="${cV}"]`);
+                        const cDT=oE?oE.textContent:cV;
+                        const tI=document.createElement('div');
+                        tI.classList.add('category-total-item');
+                        
+                        let originalAmountForFormat = d.kwdEntryCount > 0 ? d.kwd : d.inr;
+                        let originalCurrencyForFormat = d.kwdEntryCount > 0 ? 'KWD' : 'INR';
+                         if (currencyDisplayMode === 'kwd_only' && d.kwdEntryCount === 0 && KWD_TO_INR_RATE > 0 && d.inr !== 0) {
+                           originalAmountForFormat = d.inr / KWD_TO_INR_RATE; 
+                           originalCurrencyForFormat = 'KWD'; 
+                        } else if (currencyDisplayMode === 'kwd_only' && d.kwdEntryCount === 0 && d.inr === 0) { 
+                            originalAmountForFormat = 0;
+                            originalCurrencyForFormat = 'KWD'; 
+                        }
+                        tI.innerHTML=`<span>${cDT}</span><span>${formatAmountBasedOnMode(d.inr, originalAmountForFormat, originalCurrencyForFormat)}</span>`;
+                        categoryTotalsListElem.appendChild(tI)
+                    } catch(e){console.error("Err render cat total:",cV,e)}
+                })
+            }
+        };
+        
+        const displayOverallSummary = (expensesToSummarize) => {
+            try {
+                if (!totalIncomeDisplayValueElem || !totalExpensesDisplayValueElem || !balanceDisplayValueElem) return;
+                let currentTotalExpensesInr = expensesToSummarize.filter(e => e.type === 'expense' || e.type === 'debt_given' || e.type === 'repayment_by_me').reduce((sum, exp) => sum + (exp.amount || 0), 0);
+                let currentTotalIncomeInr = monthlyIncome.inrAmount + expensesToSummarize.filter(e => e.type === 'debt_taken' || e.type === 'repayment_to_me' || e.type === 'income_to_wallet').reduce((sum, exp) => sum + (exp.amount || 0), 0); 
+                let currentTotalExpensesKwdOriginal = expensesToSummarize.filter(exp => (exp.type === 'expense' || exp.type === 'debt_given' || exp.type === 'repayment_by_me') && exp.originalCurrency === 'KWD').reduce((sum, exp) => sum + (exp.originalAmount || 0), 0);
+                let hasAnyKwdExpense = currentTotalExpensesKwdOriginal > 0;
+
+                totalIncomeDisplayValueElem.textContent = formatAmountBasedOnMode(monthlyIncome.inrAmount, monthlyIncome.originalAmount, monthlyIncome.originalCurrency);
+                totalExpensesDisplayValueElem.textContent = formatAmountBasedOnMode(currentTotalExpensesInr, currentTotalExpensesKwdOriginal, hasAnyKwdExpense ? 'KWD' : 'INR');
+                
+                const balanceInr = currentTotalIncomeInr - currentTotalExpensesInr;
+                const incomeHasKwd = monthlyIncome.originalCurrency === 'KWD' && monthlyIncome.originalAmount > 0;
+                let balanceKwdEquivalent = 0;
+                let balanceOriginalCurrencyForDisplay = 'INR';
+
+                if ((incomeHasKwd || hasAnyKwdExpense) && KWD_TO_INR_RATE > 0) {
+                    balanceKwdEquivalent = balanceInr / KWD_TO_INR_RATE;
+                    balanceOriginalCurrencyForDisplay = 'KWD'; 
+                } else if (KWD_TO_INR_RATE > 0) { 
+                     balanceKwdEquivalent = balanceInr / KWD_TO_INR_RATE;
+                }
+                
+                balanceDisplayValueElem.textContent = formatAmountBasedOnMode(balanceInr, balanceKwdEquivalent, balanceOriginalCurrencyForDisplay);
+                balanceDisplayValueElem.style.color = balanceInr < 0 ? 'red' : (bodyElem?.classList.contains('dark-mode') ? '#4CAF50' : 'green');
+            } catch (e) {
+                console.error("Error displaying summary:", e);
+            }
+        };
+
+        const displayCurrentWalletBalance = () => {
+            try {
+                if (!headerWalletBalanceValueElem || !modalCurrentWalletBalanceValueElem) {
+                    console.warn("Wallet balance display elements not found for update.");
+                    return;
+                }
+
+                let walletInrValue = 0;
+                let primaryWalletCurrencyUsed = 'INR'; 
+                let hasAnyKwdDeposit = false; 
+
+                const walletAffectingEvents = expenses
+                    .filter(exp => ['income_to_wallet', 'expense', 'debt_taken', 'debt_given', 'repayment_to_me', 'repayment_by_me'].includes(exp.type))
+                    .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
+
+                let walletHasHistory = false;
+                let firstRelevantDepositCurrency = 'INR'; 
+
+                for (const transaction of walletAffectingEvents) {
+                    if (!walletHasHistory && transaction.type === 'income_to_wallet') { 
+                        firstRelevantDepositCurrency = transaction.originalCurrency;
+                    }
+                    walletHasHistory = true;
+                    const amountInr = parseFloat(transaction.amount) || 0;
+
+                    if (transaction.type === 'income_to_wallet') {
+                        if (transaction.originalCurrency === 'KWD') {
+                            hasAnyKwdDeposit = true;
+                        }
+                        if (primaryWalletCurrencyUsed === 'INR') { 
+                           primaryWalletCurrencyUsed = transaction.originalCurrency;
+                        }
+                    }
+                    
+                    if (transaction.type === 'income_to_wallet' || transaction.type === 'debt_taken' || transaction.type === 'repayment_to_me') {
+                        walletInrValue += amountInr;
+                    } else if (transaction.type === 'expense' || transaction.type === 'debt_given' || transaction.type === 'repayment_by_me') {
+                        walletInrValue -= amountInr;
+                    }
+                }
+                
+                if(hasAnyKwdDeposit) {
+                    primaryWalletCurrencyUsed = 'KWD';
+                }
+
+                let formattedBalance;
+                const noWalletText = translations[currentLang]?.walletNotSet || "Wallet Not Set";
+                const noWalletColor = bodyElem?.classList.contains('dark-mode') ? '#aaa' : '#777';
+
+                if (!walletHasHistory) { 
+                    formattedBalance = noWalletText;
+                    if(headerWalletBalanceValueElem) headerWalletBalanceValueElem.style.color = noWalletColor;
+                    if(modalCurrentWalletBalanceValueElem) modalCurrentWalletBalanceValueElem.style.color = noWalletColor;
+                } else {
+                    let originalAmountForMode = 0;
+                    
+                    if (primaryWalletCurrencyUsed === 'KWD' && KWD_TO_INR_RATE > 0) {
+                        originalAmountForMode = walletInrValue / KWD_TO_INR_RATE;
+                    } else { 
+                        originalAmountForMode = walletInrValue; 
+                    }
+                    if(walletInrValue === 0) originalAmountForMode = 0; 
+                    
+                    formattedBalance = formatAmountBasedOnMode(walletInrValue, originalAmountForMode, primaryWalletCurrencyUsed);
+                    const balanceColor = walletInrValue < 0 ? 'red' : (bodyElem?.classList.contains('dark-mode') ? '#5bc0de' : '#337ab7');
+                    if(headerWalletBalanceValueElem) headerWalletBalanceValueElem.style.color = balanceColor;
+                    if(modalCurrentWalletBalanceValueElem) modalCurrentWalletBalanceValueElem.style.color = balanceColor;
+                }
+                
+                if(headerWalletBalanceValueElem) headerWalletBalanceValueElem.textContent = formattedBalance;
+                if(modalCurrentWalletBalanceValueElem) modalCurrentWalletBalanceValueElem.textContent = formattedBalance;
+
+            } catch (e) {
+                console.error("Error displaying current wallet balance:", e);
+                if (headerWalletBalanceValueElem) headerWalletBalanceValueElem.textContent = "Error";
+                if (modalCurrentWalletBalanceValueElem) modalCurrentWalletBalanceValueElem.textContent = "Error";
+            }
+        };
+        
+        function renderWalletHistory(month = selectedMonth, year = selectedYear) {
+            if (!walletHistoryContainerElem) {
+                console.warn("Wallet history container not found.");
+                return;
+            }
+
+            let walletDeposits = expenses.filter(exp => exp.type === 'income_to_wallet');
+
+            if (month !== 'all' || year !== 'all') {
+                walletDeposits = walletDeposits.filter(deposit => {
+                    try {
+                        const d = new Date(deposit.dateTime);
+                        if (isNaN(d.getTime())) return false;
+                        const depositMonth = d.getMonth().toString();
+                        const depositYear = d.getFullYear().toString();
+                        return (month === 'all' || depositMonth === month) && (year === 'all' || depositYear === year);
+                    } catch (er) { return false; }
+                });
+            }
+
+            walletDeposits.sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime());
+
+            walletHistoryContainerElem.innerHTML = ''; 
+
+            if (walletDeposits.length === 0) {
+                let message = translations[currentLang]?.noWalletHistoryMessage || 'कोई जमा इतिहास नहीं।';
+                if(month !== 'all' || year !== 'all'){
+                    const monthName = month !== 'all' ? (translations[currentLang]?.monthNames[parseInt(month)] || '') : '';
+                    const yearName = year !== 'all' ? year : '';
+                    const space = (monthName && yearName) ? ' ' : '';
+                    const inText = translations[currentLang]?.genericNoWalletHistoryIn || ' में कोई वॉलेट जमा इतिहास नहीं मिला।';
+                    
+                    if(monthName && yearName) message = `${monthName}${space}${yearName}${inText}`;
+                    else if (yearName) message = `${yearName}${inText}`;
+                    else if (monthName) message = `${monthName}${inText}`;
+                }
+                walletHistoryContainerElem.innerHTML = `<p class="no-history-message">${message}</p>`;
+                return;
+            }
+
+            walletDeposits.forEach(deposit => {
+                const itemDiv = document.createElement('div');
+                itemDiv.classList.add('wallet-history-item');
+
+                const dateSpan = document.createElement('span');
+                dateSpan.classList.add('date');
+                let formattedDate = formatDateTime(deposit.dateTime).replace('<br>', ' ');
+                formattedDate = formattedDate.replace(/\s+(AM|PM)$/, '$1');
+                dateSpan.textContent = formattedDate;
+
+                const amountSpan = document.createElement('span');
+                amountSpan.classList.add('amount');
+                amountSpan.textContent = formatAmountBasedOnMode(deposit.amount, deposit.originalAmount, deposit.originalCurrency);
+
+                itemDiv.appendChild(dateSpan);
+                itemDiv.appendChild(amountSpan);
+                walletHistoryContainerElem.appendChild(itemDiv);
+            });
+        }
+
+        function toggleWalletHistory() {
+            if (!walletHistoryContainerWrapperElem || !toggleWalletHistoryBtnElem) return;
+            const isHidden = walletHistoryContainerWrapperElem.style.display === 'none' || walletHistoryContainerWrapperElem.style.display === '';
+            
+            if (isHidden) {
+                walletHistoryContainerWrapperElem.style.display = 'block';
+                renderWalletHistory(selectedMonth, selectedYear); 
+                toggleWalletHistoryBtnElem.innerHTML = `<span class="icon">📜</span> <span data-key="hideWalletHistory">${translations[currentLang]?.hideWalletHistory || 'वॉलेट इतिहास छिपाएं'}</span>`;
+            } else {
+                walletHistoryContainerWrapperElem.style.display = 'none';
+                toggleWalletHistoryBtnElem.innerHTML = `<span class="icon">📜</span> <span data-key="showWalletHistory">${translations[currentLang]?.showWalletHistory || 'वॉलेट इतिहास दिखाएं'}</span>`;
+            }
+        }
+
+
+        const applyMode = (mode) => { currentMode = mode; if (mode === 'dark') { bodyElem?.classList.add('dark-mode'); bodyElem?.classList.remove('light-mode'); if (modeToggleElem) modeToggleElem.textContent = '☀️'; localStorage.setItem('expenseTrackerMode', 'dark'); } else { bodyElem?.classList.remove('dark-mode'); bodyElem?.classList.add('light-mode'); if (modeToggleElem) modeToggleElem.textContent = '🌙'; localStorage.setItem('expenseTrackerMode', 'light'); } updateDisplayedData(); };
+        
+        function updateCurrencyModeIcon() {
+            if (!currencyModeToggleElem) return;
+            if (currencyDisplayMode === 'both') {
+                currencyModeToggleElem.textContent = '₹/KD';
+                currencyModeToggleElem.title = translations[currentLang]?.currencyModeBoth || 'Show in ₹/KD';
+            } else if (currencyDisplayMode === 'inr_only') {
+                currencyModeToggleElem.textContent = '₹';
+                currencyModeToggleElem.title = translations[currentLang]?.currencyModeInrOnly || 'Show in ₹ Only';
+            } else { // kwd_only
+                currencyModeToggleElem.textContent = 'KD';
+                currencyModeToggleElem.title = translations[currentLang]?.currencyModeKwdOnly || 'Show in KD Only';
+            }
+        }
+        
+        function setDefaultFormCurrenciesBasedOnMode() {
+            if (currencyDisplayMode === 'inr_only') {
+                if (walletActionCurrencyElem) walletActionCurrencyElem.value = 'INR';
+                if (incomeCurrencySelectElem) incomeCurrencySelectElem.value = 'INR';
+            } else if (currencyDisplayMode === 'kwd_only') {
+                if (walletActionCurrencyElem) walletActionCurrencyElem.value = 'KWD';
+                if (incomeCurrencySelectElem) incomeCurrencySelectElem.value = 'KWD';
+            }
+        }
+
+        function toggleCurrencyDisplayMode() {
+            if (currencyDisplayMode === 'both') {
+                currencyDisplayMode = 'inr_only';
+            } else if (currencyDisplayMode === 'inr_only') {
+                currencyDisplayMode = 'kwd_only';
+            } else { // kwd_only
+                currencyDisplayMode = 'both';
+            }
+            localStorage.setItem(CURRENCY_DISPLAY_MODE_KEY, currencyDisplayMode);
+            updateCurrencyModeIcon();
+            setDefaultFormCurrenciesBasedOnMode(); 
+            updateDisplayedData(); 
+            if (walletModalElem?.classList.contains('show-modal') && walletHistoryContainerWrapperElem?.style.display === 'block') { 
+                renderWalletHistory(selectedMonth, selectedYear);
+            }
+            console.log("Currency display mode changed to:", currencyDisplayMode);
+        }
+
+        function openWalletModal() {
+            if (walletModalElem) {
+                walletModalElem.classList.add('show-modal');
+                displayCurrentWalletBalance(); 
+                setDefaultFormCurrenciesBasedOnMode(); 
+                
+                if (walletHistoryContainerWrapperElem) walletHistoryContainerWrapperElem.style.display = 'none';
+                if (toggleWalletHistoryBtnElem) {
+                     toggleWalletHistoryBtnElem.innerHTML = `<span class="icon">📜</span> <span data-key="showWalletHistory">${translations[currentLang]?.showWalletHistory || 'वॉलेट इतिहास दिखाएं'}</span>`;
+                }
+
+                if (modalMonthlyIncomeDisplayElem && modalMonthlyIncomeValueElem) {
+                    if (monthlyIncome && monthlyIncome.originalAmount > 0) {
+                        modalMonthlyIncomeValueElem.textContent = formatAmountBasedOnMode(monthlyIncome.inrAmount, monthlyIncome.originalAmount, monthlyIncome.originalCurrency);
+                        modalMonthlyIncomeDisplayElem.style.display = 'flex'; 
+                    } else {
+                        modalMonthlyIncomeDisplayElem.style.display = 'none';
+                    }
+                }
+                if (incomeAmountInputElem && incomeCurrencySelectElem) {
+                    if (currencyDisplayMode === 'inr_only') {
+                         incomeCurrencySelectElem.value = 'INR';
+                    } else if (currencyDisplayMode === 'kwd_only') {
+                         incomeCurrencySelectElem.value = 'KWD';
+                    } else { 
+                        incomeCurrencySelectElem.value = monthlyIncome.originalCurrency || localStorage.getItem(LAST_USED_INCOME_CURRENCY_KEY) || 'INR';
+                    }
+                    incomeAmountInputElem.value = monthlyIncome.originalAmount > 0 ? monthlyIncome.originalAmount : '';
+                }
+                if (walletActionCurrencyElem) {
+                     if (currencyDisplayMode === 'inr_only') {
+                         walletActionCurrencyElem.value = 'INR';
+                    } else if (currencyDisplayMode === 'kwd_only') {
+                         walletActionCurrencyElem.value = 'KWD';
+                    } else { 
+                        walletActionCurrencyElem.value = localStorage.getItem(LAST_USED_WALLET_CURRENCY_KEY) || 'INR';
+                    }
+                }
+            }
+        }
+
+        function closeWalletModal() {
+            if (walletModalElem) {
+                walletModalElem.classList.remove('show-modal');
+            }
+        }
+
+        const applyLanguage = (lang) => { 
+            if (!translations[lang]) { console.error(`No translations for ${lang}`); return } 
+            currentLang = lang; 
+            try { 
+                translations.hi.promptSetRate = `वर्तमान KWD दर ${KWD_TO_INR_RATE.toFixed(3)} है।\nनई दर:`; 
+                translations.en.promptSetRate = `Current KWD rate is ${KWD_TO_INR_RATE.toFixed(3)}.\nNew rate:`; 
+                document.querySelectorAll('[data-key]:not(option):not(th)').forEach(el => { 
+                    const k = el.getAttribute('data-key'); 
+                    const t = translations[lang]?.[k]; 
+                    if (t) { 
+                        if (el.tagName === 'INPUT' && el.hasAttribute('placeholder')) el.placeholder = t; 
+                        else if (el.hasAttribute('title') && (k === 'currencySelectorTitle' || k === 'optionsIconTitle' || k === 'debtListTitleIcon' || k === 'currencyModeToggleTitle' || k === 'headerWalletBalanceTitle')) el.title = t; 
+                        else if(el.tagName !== 'INPUT' && el.tagName !== 'SELECT' && el.id !== 'currencyModeToggle' && el.id !== 'headerWalletBalanceValue' && el.id !== 'modalCurrentWalletBalanceValue' && el.id !== 'modalMonthlyIncomeValue' && !el.closest('#toggleWalletHistoryBtn')) { el.textContent = t } // toggleWalletHistoryBtn का टेक्स्ट JS से सेट होता है
+                        const ariaLabelKey = `label${k.charAt(0).toUpperCase() + k.slice(1)}`; 
+                        const ariaLabelText = translations[lang]?.[ariaLabelKey] || translations[lang]?.[k]; 
+                        if ((el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') && ariaLabelText) { el.setAttribute('aria-label', ariaLabelText); } 
+                    } 
+                }); 
+                document.querySelectorAll('#category option[data-key], #transactionType option[data-key], #walletActionForm #walletActionType option[data-key]').forEach(opt => { // walletActionType अब मौजूद नहीं है
+                    const k = opt.getAttribute('data-key'); 
+                    if (translations[lang]?.[k]) opt.textContent = translations[lang][k] 
+                }); 
+                document.querySelectorAll('table thead th[data-key]').forEach(th => { 
+                    const k = th.getAttribute('data-key'); 
+                    const t = translations[lang]?.[k]; 
+                    if (t) { th.innerHTML = t; } 
+                    else { const f = th.getAttribute('data-label') || k; th.innerHTML = f; } 
+                }); 
+                populateMonthDropdown(lang); 
+                const cttEl = document.querySelector('#categoryTotals h2[data-key="categoryTotalsTitle"]'); 
+                if (cttEl) cttEl.textContent = translations[lang]?.categoryTotalsTitle || "Totals"; 
+                const flEl = document.querySelector('#filterControls label[data-key="filterLabel"]'); 
+                if (flEl) flEl.textContent = translations[lang]?.filterLabel || "Show:"; 
+                document.title = translations[lang]?.pageTitle || 'Tracker'; 
+                localStorage.setItem('expenseTrackerLang', lang); 
+                if (langToggleElem) langToggleElem.textContent = (lang === 'hi' ? '🇬🇧' : '🇮🇳'); 
+                document.documentElement.lang = lang; 
+                updateCurrencyModeIcon(); 
+                // वॉलेट इतिहास बटन का टेक्स्ट अपडेट करें
+                if (toggleWalletHistoryBtnElem) {
+                    const isHidden = walletHistoryContainerWrapperElem?.style.display === 'none' || walletHistoryContainerWrapperElem?.style.display === '';
+                    const buttonTextKey = isHidden ? 'showWalletHistory' : 'hideWalletHistory';
+                    const buttonTextDefault = isHidden ? 'वॉलेट इतिहास दिखाएं' : 'वॉलेट इतिहास छिपाएं';
+                    toggleWalletHistoryBtnElem.querySelector('span:last-child').textContent = translations[currentLang]?.[buttonTextKey] || buttonTextDefault;
+                }
+                updateDisplayedData();
+            } catch (e) { console.error("Err apply lang:", e) } 
+        };
+        
+        function handleEditClick(event) {
+            event.stopPropagation();
+            const row = event.target.closest('tr');
+            if (!row || !row.dataset.id) {
+                console.error("Cannot find row/id to edit.");
+                return;
+            }
+            const expenseIdToEdit = parseInt(row.dataset.id);
+            const expenseToEdit = expenses.find(ex => ex.id === expenseIdToEdit);
+
+            if (!expenseToEdit) {
+                console.error("Expense to edit not found in array:", expenseIdToEdit);
+                return;
+            }
+
+            if(document.getElementById('item')) document.getElementById('item').value = expenseToEdit.item;
+            if(document.getElementById('amount')) document.getElementById('amount').value = expenseToEdit.originalAmount; 
+            if(document.getElementById('currency')) document.getElementById('currency').value = expenseToEdit.originalCurrency;
+            if(document.getElementById('note')) document.getElementById('note').value = expenseToEdit.note;
+            if(document.getElementById('category')) document.getElementById('category').value = expenseToEdit.category || ''; 
+            if(document.getElementById('transactionType')) document.getElementById('transactionType').value = expenseToEdit.type;
+            if(document.getElementById('personName')) document.getElementById('personName').value = expenseToEdit.person || '';
+
+            if(transactionTypeSelectElem) {
+                 const changeEvent = new Event('change'); 
+                 transactionTypeSelectElem.dispatchEvent(changeEvent);
+            }
+            
+            if(expenseToEdit.type === 'expense' && document.getElementById('category')) {
+                document.getElementById('category').value = expenseToEdit.category;
+            }
+
+
+            if(document.getElementById('editExpenseId')) document.getElementById('editExpenseId').value = expenseIdToEdit;
+            const submitButton = expenseFormElem?.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.textContent = translations[currentLang]?.buttonUpdate || 'एंट्री अपडेट करें';
+                submitButton.setAttribute('data-key', 'buttonUpdate'); 
+            }
+
+            expenseFormElem?.scrollIntoView({ behavior: 'smooth' });
+            if(document.getElementById('item')) document.getElementById('item').focus();
+        }
+
+        const addExpenseRowToTable = (expense) => { 
+            try { 
+                if (!expenseTableBodyElem) throw new Error("expenseTableBodyElem is null"); 
+                const row = expenseTableBodyElem.insertRow(); 
+                row.dataset.id = expense.id; 
+                const dateTimeCell = row.insertCell(0); 
+                dateTimeCell.innerHTML = formatDateTime(expense.dateTime); 
+                const itemCell = row.insertCell(1); 
+                let itemDisplay = expense.item; 
+                if (expense.person && (expense.type?.startsWith('debt_') || expense.type?.startsWith('repayment_'))) { 
+                    const typeTextKey = `type${expense.type.charAt(0).toUpperCase() + expense.type.slice(1).replace(/_/g, '')}`; 
+                    const typeText = translations[currentLang]?.[typeTextKey] || expense.type.replace(/_/g, ' '); 
+                    itemDisplay = `${typeText} (${expense.person}): ${expense.item}`; 
+                } 
+                itemCell.textContent = itemDisplay; 
+                const amountCell = row.insertCell(2); 
+                amountCell.textContent = formatAmountBasedOnMode(expense.amount, expense.originalAmount, expense.originalCurrency); 
+                if (expense.type === 'debt_taken' || expense.type === 'repayment_to_me' || expense.type === 'income_to_wallet') { 
+                    amountCell.style.color = bodyElem?.classList.contains('dark-mode') ? 'lightgreen' : 'green'; 
+                } else if (expense.type === 'debt_given' || expense.type === 'repayment_by_me' || expense.type === 'expense') { 
+                    amountCell.style.color = bodyElem?.classList.contains('dark-mode') ? 'lightcoral' : 'red'; 
+                } 
+                amountCell.style.textAlign = 'right'; 
+                const categoryCell = row.insertCell(3); 
+                if (expense.type === 'expense') { 
+                    const opt = categorySelectElem?.querySelector(`option[value="${expense.category}"]`); 
+                    categoryCell.textContent = opt ? opt.textContent : expense.category; 
+                } else { 
+                    const typeTextKey = `type${expense.type.charAt(0).toUpperCase() + expense.type.slice(1).replace(/_/g, '')}`; 
+                    categoryCell.textContent = translations[currentLang]?.[typeTextKey] || expense.type.replace(/_/g, ' '); 
+                } 
+                row.insertCell(4).textContent = expense.note; 
+                
+                const actionCell = row.insertCell(5); 
+                actionCell.classList.add('action-buttons'); 
+                const editBtn = document.createElement('button'); 
+                editBtn.innerHTML = '✏️'; 
+                editBtn.classList.add('edit-btn-icon', 'icon-button'); 
+                editBtn.type = 'button'; 
+                editBtn.title = translations[currentLang]?.buttonEdit || 'Edit'; 
+                editBtn.setAttribute('aria-label', translations[currentLang]?.buttonEdit || 'Edit'); 
+                editBtn.addEventListener('click', handleEditClick); 
+                actionCell.appendChild(editBtn); 
+                const deleteBtn = document.createElement('button'); 
+                deleteBtn.innerHTML = '🗑️'; 
+                deleteBtn.classList.add('delete-btn-icon', 'icon-button'); 
+                deleteBtn.type = 'button'; 
+                deleteBtn.title = translations[currentLang]?.buttonDelete || 'Delete'; 
+                deleteBtn.setAttribute('aria-label', translations[currentLang]?.buttonDelete || 'Delete'); 
+                deleteBtn.addEventListener('click', handleDeleteClick); 
+                actionCell.appendChild(deleteBtn); 
+            } catch (e) { console.error("Err add row:", e, expense); } 
+        };
+        const addCategoryToSelect = (name) => { if (!categorySelectElem) return null; if (Array.from(categorySelectElem.options).some(o => o.value.toLowerCase() === name.toLowerCase())) return null; const opt = document.createElement('option'); opt.value = name; opt.textContent = name; categorySelectElem.appendChild(opt); return opt };
+        const exportData = () => { hideDataActionsMenu(); try { const d = { expenses: expenses, customCategories: customCategories, kwdRate: KWD_TO_INR_RATE, monthlyIncome: monthlyIncome, currencyDisplayMode: currencyDisplayMode }; const j = JSON.stringify(d, null, 2); const b = new Blob([j], { type: 'application/json' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `${translations[currentLang]?.exportFileName || 'expenses'}_${new Date().toISOString().slice(0, 10)}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(u); alert(translations[currentLang]?.exportSuccess || "Exported.") } catch (e) { console.error("Export err:", e); alert(translations[currentLang]?.exportError || "Export err.") } };
+        const importData = (file) => { hideDataActionsMenu(); if (!file) return; const reader = new FileReader(); reader.onload = (event) => { try { const imp = JSON.parse(event.target.result); if (imp && typeof imp === 'object' && Array.isArray(imp.expenses)) { if (typeof imp.kwdRate === 'number' && imp.kwdRate > 0) { KWD_TO_INR_RATE = imp.kwdRate; localStorage.setItem(KWD_RATE_STORAGE_KEY, KWD_TO_INR_RATE.toString()); } if (imp.monthlyIncome) { const mi = imp.monthlyIncome; if (mi && typeof mi.originalAmount === 'number' && typeof mi.originalCurrency === 'string') { monthlyIncome.originalAmount = mi.originalAmount; monthlyIncome.originalCurrency = mi.originalCurrency; monthlyIncome.inrAmount = (mi.originalCurrency === 'KWD') ? parseFloat((mi.originalAmount * KWD_TO_INR_RATE).toFixed(2)) : monthlyIncome.originalAmount; saveMonthlyIncome(); if (incomeAmountInputElem) incomeAmountInputElem.value = monthlyIncome.originalAmount > 0 ? monthlyIncome.originalAmount : ''; if (incomeCurrencySelectElem) incomeCurrencySelectElem.value = monthlyIncome.originalCurrency; } } if (imp.currencyDisplayMode && ['both', 'inr_only', 'kwd_only'].includes(imp.currencyDisplayMode)) { currencyDisplayMode = imp.currencyDisplayMode; localStorage.setItem(CURRENCY_DISPLAY_MODE_KEY, currencyDisplayMode); } const pExps = imp.expenses.map(item => { if(!item.type) { if (item.category === 'wallet' || item.item?.toLowerCase().includes('wallet') || item.item?.toLowerCase().includes('balance')) { item.type = "income_to_wallet"; } else if (item.item?.toLowerCase().includes('उधार') || item.item?.toLowerCase().includes('debt') || item.item?.toLowerCase().includes('lent') || item.item?.toLowerCase().includes('borrowed')) { item.type = item.amount > 0 ? "debt_taken" : "debt_given"; } else { item.type = 'expense';} } if (item.type === 'initial_balance') {item.type = 'income_to_wallet'; item.item = translations[currentLang]?.transactionWalletDeposit || "Deposited to Wallet";} let cI = item.amount; if (typeof item.originalCurrency === 'undefined' || typeof item.originalAmount === 'undefined') { item.originalAmount = cI; item.originalCurrency = 'INR'; item.amount = cI } else if (item.originalCurrency === 'KWD') { const ci = parseFloat((item.originalAmount * KWD_TO_INR_RATE).toFixed(2)); if (item.amount !== ci) item.amount = ci } else if (item.originalCurrency === 'INR' && item.amount !== item.originalAmount) { item.amount = item.originalAmount } if ((item.type === 'debt_taken' || item.type === 'debt_given') && typeof item.isSettled === 'undefined') { item.isSettled = false; } return item }); const vExps = pExps.filter(i => i && typeof i.id !== 'undefined' && typeof i.dateTime === 'string' && typeof i.item === 'string' && typeof i.originalAmount === 'number' && typeof i.originalCurrency === 'string' && (i.originalCurrency === 'INR' || i.originalCurrency === 'KWD') && typeof i.amount === 'number' && !isNaN(i.amount) && i.amount >= 0 && typeof i.category==='string' && typeof i.note!=='undefined' && typeof i.type === 'string'); expenses = vExps; customCategories = imp.customCategories ? imp.customCategories.filter(c => c && typeof c === 'string' && c.trim() !== '') : []; saveExpensesToLocalStorage(); saveCustomCategories(); populateYearDropdown(); loadCustomCategories(); const tdy = new Date(); if (filterMonthSelectElem) filterMonthSelectElem.value = localStorage.getItem(LAST_SELECTED_MONTH_KEY) || tdy.getMonth().toString(); if (filterYearSelectElem) filterYearSelectElem.value = localStorage.getItem(LAST_SELECTED_YEAR_KEY) || tdy.getFullYear().toString(); applyLanguage(currentLang); alert(translations[currentLang]?.importSuccess || "Imported.") } else { alert(translations[currentLang]?.importInvalidData || "Invalid file.") } } catch (e) { console.error("Import err:", e); alert(translations[currentLang]?.importError || "Import process err.") } }; reader.onerror = (err) => { console.error("File read err:", err); alert(translations[currentLang]?.importError || "File read err.") }; if (importFileElem && file) reader.readAsText(file) };
+        const clearData = () => { hideDataActionsMenu(); if (confirm(translations[currentLang]?.confirmClear || 'Clear all data?')) { try { expenses = []; customCategories = []; monthlyIncome = { originalAmount: 0, originalCurrency: 'INR', inrAmount: 0 }; currencyDisplayMode = 'both'; localStorage.removeItem('expenses'); localStorage.removeItem('customCategories'); localStorage.removeItem(MONTHLY_INCOME_STORAGE_KEY); localStorage.removeItem(LAST_USED_WALLET_CURRENCY_KEY); localStorage.removeItem(KWD_RATE_STORAGE_KEY); localStorage.removeItem(CURRENCY_DISPLAY_MODE_KEY); localStorage.removeItem(LAST_SELECTED_MONTH_KEY); localStorage.removeItem(LAST_SELECTED_YEAR_KEY); KWD_TO_INR_RATE=271.50; categorySelectElem.innerHTML = ''; const dOpt = document.createElement('option'); dOpt.value = ""; dOpt.setAttribute('data-key', 'optionDefault'); dOpt.textContent = translations[currentLang]?.optionDefault || "--Select--"; categorySelectElem.appendChild(dOpt); ['grocery', 'travel', 'bills', 'entertainment', 'food', 'other'].forEach(k => { const o = document.createElement('option'); o.value = k; const dk = `cat${k.charAt(0).toUpperCase() + k.slice(1)}`; o.setAttribute('data-key', dk); o.textContent = translations[currentLang]?.[dk] || k; if (k === 'grocery') o.selected = true; categorySelectElem.appendChild(o) }); if (incomeAmountInputElem) incomeAmountInputElem.value = ''; if (incomeCurrencySelectElem) incomeCurrencySelectElem.value = 'INR'; if(walletActionAmountElem) walletActionAmountElem.value = ''; if(walletActionCurrencyElem) walletActionCurrencyElem.value = 'INR'; if (modalMonthlyIncomeDisplayElem) modalMonthlyIncomeDisplayElem.style.display = 'none'; populateYearDropdown(); const t = new Date(); selectedMonth = t.getMonth().toString(); selectedYear = t.getFullYear().toString(); localStorage.setItem(LAST_SELECTED_MONTH_KEY, selectedMonth); localStorage.setItem(LAST_SELECTED_YEAR_KEY, selectedYear); if (filterMonthSelectElem) filterMonthSelectElem.value = selectedMonth; if (filterYearSelectElem && Array.from(filterYearSelectElem.options).some(o => o.value === selectedYear)) { filterYearSelectElem.value = selectedYear; } else if (filterYearSelectElem) { filterYearSelectElem.value = 'all'; } updateCurrencyModeIcon(); updateDisplayedData(); alert(translations[currentLang]?.dataCleared || "Data cleared.") } catch (e) { console.error("Err clear data:", e); alert('Err clearing.') } } };
+        const handleAddCategory = () => { const n=prompt(translations[currentLang]?.promptNewCategory||'New category:'); if(n===null)return;const tN=n.trim(); if(tN===''){alert(translations[currentLang]?.alertCategoryInvalid||'Empty name');return} const added=addCategoryToSelect(tN); if(added){if(categorySelectElem)categorySelectElem.value=tN;saveCustomCategories()}else{alert(translations[currentLang]?.alertCategoryExists||'Exists')}};
+        const populateMonthDropdown = (lang = currentLang) => { if (!filterMonthSelectElem || !translations[lang]?.monthNames || !translations[lang]?.filterOptionAll) return; filterMonthSelectElem.innerHTML = ''; const aO = document.createElement('option'); aO.value = 'all'; aO.textContent = translations[lang].filterOptionAll; filterMonthSelectElem.appendChild(aO); for (let i = 0; i < 12; i++) { const o = document.createElement('option'); o.value = i.toString(); o.textContent = translations[lang].monthNames[i] || `M${i + 1}`; filterMonthSelectElem.appendChild(o) } };
+        const populateYearDropdown = () => { if (!filterYearSelectElem || !translations[currentLang]?.filterOptionAll) return; filterYearSelectElem.innerHTML = ''; const aO = document.createElement('option'); aO.value = 'all'; aO.textContent = translations[currentLang].filterOptionAll; filterYearSelectElem.appendChild(aO); const yrs = new Set(); expenses.forEach(e => { try { const d = new Date(e.dateTime); if (!isNaN(d.getTime())) yrs.add(d.getFullYear()) } catch (er) { } }); const currentYr = new Date().getFullYear(); yrs.add(currentYr); const sY = Array.from(yrs).sort((a, b) => b - a); sY.forEach(y => { const o = document.createElement('option'); o.value = y.toString(); o.textContent = y.toString(); filterYearSelectElem.appendChild(o) }) };
+        const filterExpensesByMonthYear = (allExps, mth, yr) => { if (mth === 'all' && yr === 'all') return allExps; return allExps.filter(e => { try { const d = new Date(e.dateTime); if (isNaN(d.getTime())) return false; const eM = d.getMonth().toString(), eY = d.getFullYear().toString(); return (mth === 'all' || eM === mth) && (yr === 'all' || eY === yr) } catch (er) { return false } }) };
+        const updateDisplayedData = () => { if(!filterMonthSelectElem||!filterYearSelectElem)return; try{selectedMonth=filterMonthSelectElem.value;selectedYear=filterYearSelectElem.value; const fExps=filterExpensesByMonthYear(expenses,selectedMonth,selectedYear); renderExpenseTable(fExps); renderCategoryTotals(fExps.filter(e => e.type === 'expense')); displayOverallSummary(fExps); displayCurrentWalletBalance(); renderCategoryPieChartApex(fExps.filter(e=>e.type==='expense')); renderMonthlyBarChartApex(expenses.filter(e=>e.type==='expense')); if (debtListPanelElem?.classList.contains('open')) renderDebtList(); if (walletModalElem?.classList.contains('show-modal') && walletHistoryContainerWrapperElem?.style.display === 'block') { renderWalletHistory(selectedMonth, selectedYear); } } catch(e){console.error("Err update display:",e)}};
+        const toggleDataActionsMenu = () => { dataActionsMenuElem?.classList.toggle('show-menu');};
+        const hideDataActionsMenu = () => { dataActionsMenuElem?.classList.remove('show-menu');};
+        const handleClickOutsideMenu = (event) => { if(dataActionsMenuElem&&dataActionsMenuElem.classList.contains('show-menu')){const iM=dataActionsMenuElem.contains(event.target);const oI=optionsIconElem&&optionsIconElem.contains(event.target);if(!iM&&!oI)hideDataActionsMenu()}};
+        const handleSetCurrencyRate = () => { hideDataActionsMenu(); translations.hi.promptSetRate = `वर्तमान KWD दर ${KWD_TO_INR_RATE.toFixed(3)} है।\nनई दर:`; translations.en.promptSetRate = `Current KWD rate is ${KWD_TO_INR_RATE.toFixed(3)}.\nNew rate:`; const nrs = prompt(translations[currentLang]?.promptSetRate, KWD_TO_INR_RATE.toFixed(3)); if (nrs === null) return; const nrn = parseFloat(nrs); if (isNaN(nrn) || nrn <= 0) { alert(translations[currentLang]?.alertRateInvalid || "Invalid rate."); return } KWD_TO_INR_RATE = nrn; localStorage.setItem(KWD_RATE_STORAGE_KEY, KWD_TO_INR_RATE.toString()); console.log(`New KWD Rate set:${KWD_TO_INR_RATE}`); expenses = expenses.map(exp => { if (exp.originalCurrency === 'KWD') { exp.amount = parseFloat((exp.originalAmount * KWD_TO_INR_RATE).toFixed(2)) } return exp }); if (monthlyIncome.originalCurrency === 'KWD') { monthlyIncome.inrAmount = parseFloat((monthlyIncome.originalAmount * KWD_TO_INR_RATE).toFixed(2)); saveMonthlyIncome() } saveExpensesToLocalStorage(); updateDisplayedData(); alert(translations[currentLang]?.alertRateSetSuccess || "Rate updated."); applyLanguage(currentLang) };
+        async function handleShareSnapshot() { hideDataActionsMenu(); console.log("Sharing text data..."); try { let shareText = `${translations[currentLang]?.mainTitle || 'My Expenses'}\n(${new Date().toLocaleDateString()})\n\n`; const expensesToShare = filterExpensesByMonthYear(expenses, selectedMonth, selectedYear); if (expensesToShare.filter(e=>e.type==='expense' || e.type.startsWith('debt_') || e.type.startsWith('repayment_')).length > 0) { shareText += `--- ${translations[currentLang]?.listTitle || 'Transaction List'} ---\n`; expensesToShare.forEach(exp => { let itemDisplay = exp.item; if (exp.person && (exp.type?.startsWith('debt_') || exp.type?.startsWith('repayment_'))) { const typeTextKey = `type${exp.type.charAt(0).toUpperCase() + exp.type.slice(1).replace(/_/g, '')}`; const typeText = translations[currentLang]?.[typeTextKey] || exp.type.replace(/_/g, ' '); itemDisplay = `${typeText} (${exp.person}): ${exp.item}`; } const categoryText = (exp.type === 'expense') ? (categorySelectElem?.querySelector(`option[value="${exp.category}"]`)?.textContent || exp.category) : (translations[currentLang]?.[`type${exp.type.charAt(0).toUpperCase() + exp.type.slice(1).replace(/_/g, '')}`] || exp.type.replace(/_/g, ' ')); shareText += `${formatDateTime(exp.dateTime).replace('<br>', ' ')} - ${itemDisplay}: ${formatAmountBasedOnMode(exp.amount, exp.originalAmount, exp.originalCurrency)} [${categoryText}]`; if (exp.note) { shareText += ` (Note: ${exp.note})`; } shareText += '\n'; }); shareText += '\n'; } else { shareText += `${translations[currentLang]?.noExpensesMessage || 'No transactions to display.'}\n\n`; } const categoryTotalsData = {}; expensesToShare.filter(e=>e.type==='expense').forEach(exp => { if (!categoryTotalsData[exp.category]) categoryTotalsData[exp.category] = { inr: 0, kwd: 0, kwdCount: 0 }; categoryTotalsData[exp.category].inr += exp.amount; if (exp.originalCurrency === 'KWD') { categoryTotalsData[exp.category].kwd += exp.originalAmount; categoryTotalsData[exp.category].kwdCount++; } }); if (Object.keys(categoryTotalsData).length > 0) { shareText += `--- ${translations[currentLang]?.categoryTotalsTitle || 'Category Totals'} ---\n`; for (const catKey in categoryTotalsData) { const catData = categoryTotalsData[catKey]; const catName = categorySelectElem?.querySelector(`option[value="${catKey}"]`)?.textContent || catKey; let originalAmountForFormat = catData.kwdCount > 0 ? catData.kwd : catData.inr; let originalCurrencyForFormat = catData.kwdCount > 0 ? 'KWD' : 'INR'; if (currencyDisplayMode === 'kwd_only' && catData.kwdCount === 0 && KWD_TO_INR_RATE > 0 && catData.inr !==0) { originalAmountForFormat = catData.inr / KWD_TO_INR_RATE; originalCurrencyForFormat = 'KWD';} else if (currencyDisplayMode === 'kwd_only' && catData.kwdCount === 0 && catData.inr === 0) {originalAmountForFormat = 0; originalCurrencyForFormat = 'KWD';} shareText += `${catName}: ${formatAmountBasedOnMode(catData.inr, originalAmountForFormat, originalCurrencyForFormat)}\n`; } shareText += '\n'; } shareText += `--- ${translations[currentLang]?.summaryTitle || 'Summary'} ---\n`; shareText += `${translations[currentLang]?.totalIncomeLabel || 'Total Income:'} ${formatAmountBasedOnMode(monthlyIncome.inrAmount, monthlyIncome.originalAmount, monthlyIncome.originalCurrency)}\n`; const totalExpensesInr = expensesToShare.filter(e=>e.type === 'expense' || e.type === 'debt_given' || e.type === 'repayment_by_me').reduce((sum, exp) => sum + exp.amount, 0); const totalExpensesKwd = expensesToShare.filter(e => (e.type === 'expense' || e.type === 'debt_given' || e.type === 'repayment_by_me') && e.originalCurrency === 'KWD').reduce((sum, exp) => sum + exp.originalAmount, 0); const hasAnyKwdExpenseForShare = totalExpensesKwd > 0; shareText += `${translations[currentLang]?.totalExpensesLabel || 'Total Expenses:'} ${formatAmountBasedOnMode(totalExpensesInr, totalExpensesKwd, hasAnyKwdExpenseForShare ? 'KWD' : 'INR')}\n`; const balanceInr = monthlyIncome.inrAmount - totalExpensesInr; const incomeHasKwdForShare = monthlyIncome.originalCurrency === 'KWD' && monthlyIncome.originalAmount > 0; const balanceKwdEquivalentForShare = (incomeHasKwdForShare || hasAnyKwdExpenseForShare) && KWD_TO_INR_RATE > 0 ? (balanceInr / KWD_TO_INR_RATE) : 0; const balanceOriginalCurrencyForShare = (incomeHasKwdForShare || hasAnyKwdExpenseForShare) ? 'KWD' : 'INR'; shareText += `${translations[currentLang]?.balanceLabel || 'Balance:'} ${formatAmountBasedOnMode(balanceInr, balanceKwdEquivalentForShare, balanceOriginalCurrencyForShare)}\n`; if (navigator.share) { await navigator.share({ title: translations[currentLang]?.mainTitle || 'Expense Summary', text: shareText, }); } else { await navigator.clipboard.writeText(shareText); alert(translations[currentLang]?.dataCopied || 'Sharing not supported. Data copied to clipboard.'); } } catch (error) { console.error('Error sharing/copying data:', error); if (error.name !== 'AbortError') { alert(translations[currentLang]?.shareError || 'Error sharing data.'); } } }
+        function handleDeleteClick(event) { event.stopPropagation(); const row = this.closest('tr'); if (!row || !row.dataset.id) { console.error("Cannot find row/id to delete."); return; } const expenseId = parseInt(row.dataset.id); if (isNaN(expenseId)) { console.error("Invalid expense ID:", row.dataset.id); return; } if (confirm(translations[currentLang]?.confirmDelete || 'Are you sure?')) { try { expenses = expenses.filter(ex => ex.id !== expenseId); row.remove(); saveExpensesToLocalStorage(); updateDisplayedData(); } catch (delErr) { console.error("Error during delete:", delErr); alert("Error deleting."); } } }
+        function handleExpenseFormSubmit(event) {
+            event.preventDefault();
+            try {
+                const editExpenseIdInput = document.getElementById('editExpenseId');
+                const expenseIdToUpdate = editExpenseIdInput ? parseInt(editExpenseIdInput.value) : null;
+
+                const itemInput = document.getElementById('item');
+                const amountInput = document.getElementById('amount');
+                const currencyInput = document.getElementById('currency');
+                const noteInput = document.getElementById('note');
+                const categoryInput = document.getElementById('category');
+                const transactionTypeInput = document.getElementById('transactionType');
+                const personNameInput = document.getElementById('personName');
+
+                const item = itemInput.value.trim();
+                const amtVal = amountInput.value;
+                const enteredAmt = parseFloat(amtVal);
+                const selCurr = currencyInput.value;
+                const cat = categoryInput.value;
+                const note = noteInput.value.trim() || '';
+                const transactionTypeValue = transactionTypeInput.value;
+                const person = personNameInput.value.trim();
+
+                if (amtVal === '' || isNaN(enteredAmt) || enteredAmt <= 0) {
+                    alert(translations[currentLang]?.alertAmountInvalid || "Amount?");
+                    amountInput.focus();
+                    return;
+                }
+                if (!selCurr) {
+                    alert(translations[currentLang]?.alertCurrencyNotSelected || "Currency?");
+                    currencyInput.focus();
+                    return;
+                }
+
+                const isDebtRelatedSubmit = transactionTypeValue.startsWith('debt_') || transactionTypeValue.startsWith('repayment_');
+
+                if (transactionTypeValue === 'expense') {
+                    if (!item) {
+                        alert(translations[currentLang]?.alertItemEmpty || "Item?");
+                        itemInput.focus();
+                        return;
+                    }
+                    if (!cat) {
+                        alert(translations[currentLang]?.alertCategoryEmpty || "Category?");
+                        categoryInput.focus();
+                        return;
+                    }
+                } else if (isDebtRelatedSubmit) {
+                    if (!person) {
+                        alert(translations[currentLang]?.alertPersonNameEmpty || "कृपया व्यक्ति का नाम दर्ज करें।");
+                        personNameInput.focus();
+                        return;
+                    }
+                } else { 
+                    if (!item) {
+                        alert(translations[currentLang]?.alertItemEmpty || "Item?");
+                        itemInput.focus();
+                        return;
+                    }
+                }
+                
+                let actualItem = item;
+                if (isDebtRelatedSubmit && !item && person) {
+                     const typeKey = `type${transactionTypeValue.charAt(0).toUpperCase() + transactionTypeValue.slice(1).replace(/_/g, '')}`;
+                     let typeText = translations[currentLang]?.[typeKey] || transactionTypeValue.replace(/_/g, ' ');
+                     actualItem = `${typeText} ${person}`; 
+                }
+
+
+                let inrAmt = (selCurr === 'KWD') ? (enteredAmt * KWD_TO_INR_RATE) : enteredAmt;
+                if (isNaN(inrAmt)) throw new Error(`Calculated INR amount is NaN. Rate: ${KWD_TO_INR_RATE}, Entered: ${enteredAmt}`);
+                
+                const currentCategoryValue = (transactionTypeValue === 'expense') ? cat : (isDebtRelatedSubmit ? null : 'transaction'); 
+
+                if (expenseIdToUpdate && !isNaN(expenseIdToUpdate)) {
+                    const expenseIndex = expenses.findIndex(ex => ex.id === expenseIdToUpdate);
+                    if (expenseIndex > -1) {
+                        expenses[expenseIndex] = {
+                            ...expenses[expenseIndex], 
+                            item: actualItem,
+                            originalAmount: parseFloat(enteredAmt.toFixed(selCurr === 'KWD' ? 3 : 2)),
+                            originalCurrency: selCurr,
+                            amount: parseFloat(inrAmt.toFixed(2)),
+                            category: currentCategoryValue,
+                            note: note,
+                            type: transactionTypeValue,
+                            person: isDebtRelatedSubmit ? person : '',
+                        };
+                        console.log("Expense updated:", expenses[expenseIndex]);
+                    }
+                    if(editExpenseIdInput) editExpenseIdInput.value = ''; 
+                } else {
+                    const newEntry = { 
+                        id: Date.now()+Math.floor(Math.random()*1000), 
+                        dateTime: new Date().toISOString(), 
+                        item: actualItem, 
+                        originalAmount: parseFloat(enteredAmt.toFixed(selCurr==='KWD'?3:2)), 
+                        originalCurrency: selCurr, 
+                        amount: parseFloat(inrAmt.toFixed(2)), 
+                        category: currentCategoryValue, 
+                        note: note, 
+                        type: transactionTypeValue, 
+                        person: isDebtRelatedSubmit ? person : '', 
+                        isSettled: (transactionTypeValue === 'debt_taken' || transactionTypeValue === 'debt_given') ? false : undefined, 
+                        debtId: (transactionTypeValue === 'debt_taken' || transactionTypeValue === 'debt_given') ? `debt_${Date.now()}${Math.floor(Math.random()*100)}` : null 
+                    }; 
+                    expenses.unshift(newEntry); 
+                }
+
+                saveExpensesToLocalStorage();
+                if (selCurr) localStorage.setItem(LAST_USED_CURRENCY_KEY, selCurr);
+                populateYearDropdown(); 
+                updateDisplayedData(); 
+                expenseFormElem.reset(); 
+                
+                const submitButton = expenseFormElem?.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.textContent = translations[currentLang]?.buttonAdd || 'एंट्री जोड़ें';
+                    submitButton.setAttribute('data-key', 'buttonAdd');
+                }
+
+                if (transactionTypeSelectElem) {
+                    transactionTypeSelectElem.value = 'expense'; 
+                    const event = new Event('change');
+                    transactionTypeSelectElem.dispatchEvent(event);
+                }
+                if (categorySelectElem) categorySelectElem.value = 'grocery'; 
+
+
+            } catch (error) { 
+                console.error("Error in expense form submission:", error); 
+                alert(`Error adding entry: ${error.message}`); 
+            } 
+        }
+        function handleIncomeFormSubmit(event) { event.preventDefault(); try { const incomeAmtInput = document.getElementById('incomeAmount'); const incomeCurrSelect = document.getElementById('incomeCurrency'); if(!incomeAmtInput || !incomeCurrSelect) throw new Error("Income form elements missing!"); const amountVal = incomeAmtInput.value, amount = parseFloat(amountVal), currency = incomeCurrSelect.value; if (amountVal === '' || isNaN(amount) || amount < 0) { alert(translations[currentLang]?.alertAmountInvalid || "Invalid income amount."); incomeAmtInput.focus(); return; } if (!currency) { alert(translations[currentLang]?.alertCurrencyNotSelected || "Please select income currency."); incomeCurrSelect.focus(); return; } monthlyIncome.originalAmount = parseFloat(amount.toFixed(currency === 'KWD' ? 3 : 2)); monthlyIncome.originalCurrency = currency; monthlyIncome.inrAmount = (currency === 'KWD') ? parseFloat((amount * KWD_TO_INR_RATE).toFixed(2)) : amount; saveMonthlyIncome(); localStorage.setItem(LAST_USED_INCOME_CURRENCY_KEY, currency); updateDisplayedData(); if (walletModalElem?.classList.contains('show-modal')) { if (modalMonthlyIncomeDisplayElem && modalMonthlyIncomeValueElem) { if (monthlyIncome.originalAmount > 0) { modalMonthlyIncomeValueElem.textContent = formatAmountBasedOnMode(monthlyIncome.inrAmount, monthlyIncome.originalAmount, monthlyIncome.originalCurrency); modalMonthlyIncomeDisplayElem.style.display = 'flex'; } else { modalMonthlyIncomeDisplayElem.style.display = 'none'; }}} alert(translations[currentLang]?.alertIncomeUpdated || "Income updated!"); } catch (err) { console.error("Error updating income:", err); alert("Error updating income."); } }
+        function handleWalletActionFormSubmit(event) { event.preventDefault(); try { const amountVal = walletActionAmountElem.value; const amount = parseFloat(amountVal); const currency = walletActionCurrencyElem.value; if (amountVal === '' || isNaN(amount) || amount <= 0 ) { alert(translations[currentLang]?.alertAmountInvalid || "Invalid amount."); walletActionAmountElem.focus(); return; } if (!currency) { alert(translations[currentLang]?.alertCurrencyNotSelected || "Select currency."); walletActionCurrencyElem.focus(); return; } let inrAmount = (currency === 'KWD') ? parseFloat((amount * KWD_TO_INR_RATE).toFixed(2)) : amount; if (isNaN(inrAmount)) throw new Error("Calculated INR for wallet action is NaN"); const transactionType = 'income_to_wallet'; const transactionItem = translations[currentLang]?.transactionWalletDeposit || "Deposited to Wallet"; const walletTransaction = { id: Date.now() + Math.floor(Math.random() * 1000), dateTime: new Date().toISOString(), item: transactionItem, originalAmount: parseFloat(amount.toFixed(currency === 'KWD' ? 3 : 2)), originalCurrency: currency, amount: inrAmount, category: 'wallet', note: `Wallet Deposit`, type: transactionType }; expenses.unshift(walletTransaction); saveExpensesToLocalStorage(); localStorage.setItem(LAST_USED_WALLET_CURRENCY_KEY, currency); updateDisplayedData(); renderWalletHistory(selectedMonth, selectedYear); alert(translations[currentLang]?.alertWalletUpdated || "Wallet updated!"); walletActionFormElem.reset(); const lastWalletCurr = localStorage.getItem(LAST_USED_WALLET_CURRENCY_KEY) || (walletActionCurrencyElem ? walletActionCurrencyElem.value : 'INR'); if (walletActionCurrencyElem) walletActionCurrencyElem.value = lastWalletCurr; /* closeWalletModal(); // Optionally close modal after deposit */ } catch (err) { console.error("Error processing wallet action:", err); alert("Error processing wallet action."); } }
+        function renderCategoryPieChartApex(expensesToChart) { const chartDiv = document.getElementById('categoryPieChartApex'); if (!chartDiv) return; const categoryTotals = {}; expensesToChart.filter(e=>e.type === 'expense').forEach(expense => { const category = expense.category; const amount = expense.amount; if (category && typeof amount === 'number' && !isNaN(amount)) { categoryTotals[category] = (categoryTotals[category] || 0) + amount; } }); const chartSeries = []; const chartLabels = []; const predefinedCategoryKeys = {'grocery':'catGrocery', 'travel':'catTravel', 'bills':'catBills', 'entertainment':'catEntertainment', 'food':'catFood', 'other':'catOther'}; for (const categoryValue in categoryTotals) { let categoryName = categoryValue; const dataKey = predefinedCategoryKeys[categoryValue]; if (dataKey && translations[currentLang]?.[dataKey]) { categoryName = translations[currentLang][dataKey]; } else { const optionElement = categorySelectElem?.querySelector(`option[value="${categoryValue}"]`); if (optionElement) categoryName = optionElement.textContent; } chartLabels.push(categoryName); chartSeries.push(parseFloat(categoryTotals[categoryValue].toFixed(2))); } if (chartSeries.length === 0) { chartDiv.innerHTML = `<p style="text-align:center; padding:20px; color: ${bodyElem?.classList.contains('dark-mode') ? '#aaa' : '#777'};">${translations[currentLang]?.noExpensesMessage || 'No expenses to show in chart.'}</p>`; if (categoryPieChartApexInstance) { categoryPieChartApexInstance.destroy(); categoryPieChartApexInstance = null; } return; } const chartOptions = { chart: { type: 'pie', height: 320, foreColor: bodyElem?.classList.contains('dark-mode') ? '#f0f0f0' : '#373d3f', toolbar: { show: true, tools: { download: true } } }, series: chartSeries, labels: chartLabels, colors: ['#008FFB', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#546E7A', '#26a69a', '#D10CE8'], legend: { position: 'bottom', labels: { colors: bodyElem?.classList.contains('dark-mode') ? '#f0f0f0' : '#373d3f' }, formatter: function(seriesName, opts) { const percent = (opts.w.globals.seriesTotals[opts.seriesIndex] / opts.w.globals.seriesTotals.reduce((a, b) => a + b, 0) * 100).toFixed(1); return `${seriesName} - ${percent}%`; } }, dataLabels: { enabled: true, formatter: function (val, opts) { return `${opts.w.globals.seriesNames[opts.seriesIndex]}: ${val.toFixed(1)}%`; }, style: { fontSize: '10px', colors: ["#304758"] }, dropShadow: { enabled: true, top: 1, left: 1, blur: 1, color: '#000', opacity: 0.25 } }, tooltip: { y: { formatter: function (val, { series, seriesIndex, dataPointIndex, w }) { const total = w.globals.seriesTotals.reduce((a, b) => { return a + b }, 0); const percent = (val / total * 100).toFixed(1); return `₹ ${val.toFixed(2)} (${percent}%)`; } }, theme: bodyElem?.classList.contains('dark-mode') ? 'dark' : 'light' }, responsive: [{ breakpoint: 600, options: { chart: { width: '100%', height: 300 }, legend: { position: 'bottom', offsetY: 0 }, dataLabels: { style: { fontSize: '9px'}} } }] }; if (categoryPieChartApexInstance) categoryPieChartApexInstance.destroy(); categoryPieChartApexInstance = new ApexCharts(chartDiv, chartOptions); categoryPieChartApexInstance.render(); }
+        function renderMonthlyBarChartApex(allExpensesForChart) { const chartDiv = document.getElementById('monthlyBarChartApex'); if (!chartDiv) return; const monthlyTotals = new Array(12).fill(0); let hasData = false; allExpensesForChart.filter(e=>e.type === 'expense').forEach(expense => { try { const date = new Date(expense.dateTime); if (!isNaN(date.getTime())) { const month = date.getMonth(); monthlyTotals[month] += expense.amount; hasData = true; } } catch(e) {} }); if (!hasData || monthlyTotals.every(total => total === 0)) { chartDiv.innerHTML = `<p style="text-align:center; padding:20px; color: ${bodyElem?.classList.contains('dark-mode') ? '#aaa' : '#777'};">${translations[currentLang]?.noExpensesMessage || 'No expenses to show in chart.'}</p>`; if (monthlyBarChartApexInstance) { monthlyBarChartApexInstance.destroy(); monthlyBarChartApexInstance = null; } return; } const monthLabels = (translations[currentLang]?.monthNames || translations.en.monthNames).slice(0, 12); const chartOptions = { chart: { type: 'bar', height: 320, foreColor: bodyElem?.classList.contains('dark-mode') ? '#f0f0f0' : '#373d3f', toolbar: { show: true, tools: { download: true } } }, plotOptions: { bar: { horizontal: false, columnWidth: '60%', borderRadius: 4, dataLabels: { position: 'top', }, } }, dataLabels: { enabled: true, formatter: function (val) { return val > 0 ? "₹" + val.toFixed(0) : ""; }, offsetY: -20, style: { fontSize: '10px', colors: [bodyElem?.classList.contains('dark-mode') ? "#fff" : "#304758"] } }, stroke: { show: true, width: 2, colors: ['transparent'] }, series: [{ name: translations[currentLang]?.totalExpensesLabel || 'Total Expenses', data: monthlyTotals.map(val => parseFloat(val.toFixed(2))) }], xaxis: { categories: monthLabels, labels: { style: { colors: bodyElem?.classList.contains('dark-mode') ? '#f0f0f0' : '#373d3f' }, rotate: -45, trim: true, }, tooltip: { enabled: false } }, yaxis: { title: { text: `राशि (${currentLang === 'hi' ? '₹' : 'INR'})`, style: { color: bodyElem?.classList.contains('dark-mode') ? '#f0f0f0' : '#373d3f', fontWeight: 500 } }, labels: { style: { colors: bodyElem?.classList.contains('dark-mode') ? '#f0f0f0' : '#373d3f' }, formatter: function (val) { return "₹ " + val.toFixed(0); } } }, fill: { opacity: 1 }, tooltip: { y: { formatter: function (val) { return "₹ " + val.toFixed(2) } }, theme: bodyElem?.classList.contains('dark-mode') ? 'dark' : 'light' }, grid: { borderColor: bodyElem?.classList.contains('dark-mode') ? '#444' : '#e7e7e7', row: { colors: ['transparent', 'transparent'], opacity: 0.5 }, yaxis: { lines: { show: true } } }, responsive: [{ breakpoint: 600, options: { chart: { height: 300 }, plotOptions: { bar: { columnWidth: '80%'}}, dataLabels: { style: { fontSize: '9px'}}, xaxis: { labels: { rotate: -65, style: {fontSize: '9px'}}} } }] }; if (monthlyBarChartApexInstance) monthlyBarChartApexInstance.destroy(); monthlyBarChartApexInstance = new ApexCharts(chartDiv, chartOptions); monthlyBarChartApexInstance.render(); }
+        function handleToggleDebtSettlement(event) { const originalDebtId = parseInt(event.target.dataset.debtId); if (isNaN(originalDebtId)) { console.error("Invalid debt ID for toggle settlement:", event.target.dataset.debtId); return; } const debtIndex = expenses.findIndex(exp => exp.id === originalDebtId && (exp.type === 'debt_taken' || exp.type === 'debt_given')); if (debtIndex > -1) { expenses[debtIndex].isSettled = !expenses[debtIndex].isSettled; console.log(`Debt ID ${originalDebtId} settlement status toggled to: ${expenses[debtIndex].isSettled}`); saveExpensesToLocalStorage(); renderDebtList(); } else { console.error("Could not find original debt with ID:", originalDebtId); } }
+        function renderDebtList() { if (!debtListContainerElem) return; debtListContainerElem.innerHTML = ''; const activeDebts = []; expenses.forEach(transaction => { if (transaction.type === 'debt_taken' || transaction.type === 'debt_given') { activeDebts.push({ ...transaction, linkKey: `${transaction.person}:${transaction.item.substring(0, 20)}`, isOriginalDebt: true, outstandingInr: transaction.amount }); } else if (transaction.type === 'repayment_to_me' || transaction.type === 'repayment_by_me') { activeDebts.push({ ...transaction, linkKey: `${transaction.person}:${transaction.item.substring(0, 20)}`, isOriginalDebt: false, outstandingInr: -transaction.amount }); } }); const groupedDebts = {}; activeDebts.forEach(item => { const key = item.linkKey; if (!groupedDebts[key]) { groupedDebts[key] = { person: item.person, originalDebt: null, repayments: [], totalRepaidInr: 0, inrBalance: 0 }; } if (item.isOriginalDebt) { if (!groupedDebts[key].originalDebt || new Date(item.dateTime) > new Date(groupedDebts[key].originalDebt.dateTime)) { groupedDebts[key].originalDebt = item; } groupedDebts[key].inrBalance += item.amount; } else { groupedDebts[key].repayments.push(item); groupedDebts[key].totalRepaidInr += item.amount; groupedDebts[key].inrBalance -= item.amount; } }); const displayItems = []; for (const key in groupedDebts) { const group = groupedDebts[key]; if (group.originalDebt) { displayItems.push({ ...group.originalDebt, outstandingInr: group.inrBalance, displayType: translations[currentLang]?.[`type${group.originalDebt.type.charAt(0).toUpperCase() + group.originalDebt.type.slice(1).replace(/_/g, '')}`] || group.originalDebt.type, associatedRepayments: group.repayments }); } } displayItems.sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()); if (displayItems.length === 0) { debtListContainerElem.innerHTML = `<p class="no-debts-message" data-key="noDebtsMessage">${translations[currentLang]?.noDebtsMessage || 'No active debts.'}</p>`; return; } displayItems.forEach(debtItem => { const itemDiv = document.createElement('div'); itemDiv.classList.add('debt-item'); const isEffectivelyZero = Math.abs(debtItem.outstandingInr) < 0.01; const isManuallyMarkedSettled = debtItem.isSettled === true; if (isManuallyMarkedSettled || (isEffectivelyZero && !isManuallyMarkedSettled) ) { itemDiv.classList.add('debt-item-settled'); } const personText = debtItem.person ? `${translations[currentLang]?.debtPerson || 'व्यक्ति'}: <strong>${debtItem.person}</strong><br>` : ''; let originalAmountDisplay = formatAmountBasedOnMode(debtItem.amount, debtItem.originalAmount, debtItem.originalCurrency); const outstandingKwdEquivalent = debtItem.originalCurrency === 'KWD' && KWD_TO_INR_RATE > 0 ? (debtItem.outstandingInr / KWD_TO_INR_RATE) : (KWD_TO_INR_RATE > 0 ? debtItem.outstandingInr / KWD_TO_INR_RATE : 0) ; let outstandingAmountDisplay = formatAmountBasedOnMode(debtItem.outstandingInr, outstandingKwdEquivalent, debtItem.originalCurrency); const debtDetailsHTML = ` <p>${personText}${translations[currentLang]?.debtItem || 'विवरण'}: <strong>${debtItem.item}</strong></p> <p>${translations[currentLang]?.debtTypeLabel || ' प्रकार'}: <strong>${debtItem.displayType}</strong></p> <p>${translations[currentLang]?.debtOriginalAmount || 'मूल राशि'}: <span class="${debtItem.type === 'debt_taken' ? 'debt-amount-taken' : 'debt-amount-given'}">${originalAmountDisplay}</span></p> <p><strong>${translations[currentLang]?.debtOutstandingAmount || 'बकाया राशि'}: <span class="${debtItem.type === 'debt_taken' ? 'debt-amount-taken' : 'debt-amount-given'}">${outstandingAmountDisplay}</span></strong></p> <p>${translations[currentLang]?.debtDate || 'तारीख'}: ${formatDateTime(debtItem.dateTime).replace('<br>', ' ')}</p> `; itemDiv.innerHTML = debtDetailsHTML; const actionsDiv = document.createElement('div'); actionsDiv.classList.add('debt-item-actions'); if (isManuallyMarkedSettled) { const settledLabel = document.createElement('span'); settledLabel.classList.add('debt-settled-label', 'debt-settled'); settledLabel.textContent = translations[currentLang]?.debtSettledLabel || "Settled"; actionsDiv.appendChild(settledLabel); const unsettleButton = document.createElement('button'); unsettleButton.classList.add('debt-action-button'); unsettleButton.textContent = translations[currentLang]?.buttonMarkUnsettled || "Mark Unsettled"; unsettleButton.dataset.debtId = debtItem.id; unsettleButton.addEventListener('click', handleToggleDebtSettlement); actionsDiv.appendChild(unsettleButton); } else if (isEffectivelyZero) { const settledLabel = document.createElement('span'); settledLabel.classList.add('debt-settled-label', 'debt-settled'); settledLabel.textContent = `${translations[currentLang]?.debtSettledLabel || "Settled"} (${translations[currentLang]?.debtAutoSettledBalanceZero || "Balance Zero"})`; actionsDiv.appendChild(settledLabel); } else { const settleButton = document.createElement('button'); settleButton.classList.add('debt-action-button'); settleButton.textContent = translations[currentLang]?.buttonMarkSettled || "Mark Settled"; settleButton.dataset.debtId = debtItem.id; settleButton.addEventListener('click', handleToggleDebtSettlement); actionsDiv.appendChild(settleButton); } itemDiv.appendChild(actionsDiv); debtListContainerElem.appendChild(itemDiv); }); }
+        
+        function attachEventListeners() {
+            console.log("Attaching event listeners...");
+            try {
+                if(modeToggleElem) modeToggleElem.addEventListener('click', () => applyMode(currentMode === 'light' ? 'dark' : 'light')); else console.warn("modeToggleElem not found for listener");
+                if(langToggleElem) langToggleElem.addEventListener('click', () => applyLanguage(currentLang === 'hi' ? 'en' : 'hi')); else console.warn("langToggleElem not found for listener");
+                if(currencyModeToggleElem) currencyModeToggleElem.addEventListener('click', toggleCurrencyDisplayMode); else console.warn("currencyModeToggleElem not found for listener");
+                if(optionsIconElem) optionsIconElem.addEventListener('click', toggleDataActionsMenu); else console.warn("optionsIconElem not found for listener");
+                if(importMenuItemElem) importMenuItemElem.addEventListener('click', () => { importFileElem?.click(); }); else console.warn("importMenuItemElem not found for listener");
+                if(exportMenuItemElem) exportMenuItemElem.addEventListener('click', exportData); else console.warn("exportMenuItemElem not found for listener");
+                if(setRateMenuItemElem) setRateMenuItemElem.addEventListener('click', handleSetCurrencyRate); else console.warn("setRateMenuItemElem not found for listener");
+                if(shareSnapshotMenuItemElem) shareSnapshotMenuItemElem.addEventListener('click', handleShareSnapshot); else console.warn("shareSnapshotMenuItemElem not found for listener");
+                if(clearMenuItemElem) clearMenuItemElem.addEventListener('click', clearData); else console.warn("clearMenuItemElem not found for listener");
+                
+                if(headerWalletBalanceElem) headerWalletBalanceElem.addEventListener('click', openWalletModal); else console.warn("headerWalletBalanceElem not found for listener");
+                if(closeWalletModalBtnElem) closeWalletModalBtnElem.addEventListener('click', closeWalletModal); else console.warn("closeWalletModalBtnElem not found for listener");
+                if(walletModalElem) walletModalElem.addEventListener('click', (event) => { if (event.target == walletModalElem) closeWalletModal(); }); else console.warn("walletModalElem not found for listener");
+                if(toggleWalletHistoryBtnElem) toggleWalletHistoryBtnElem.addEventListener('click', toggleWalletHistory); else console.warn("toggleWalletHistoryBtnElem not found for listener");
+
+
+                if(debtListIconElem) debtListIconElem.addEventListener('click', () => { debtListPanelElem?.classList.add('open'); renderDebtList(); }); else console.warn("debtListIconElem not found for listener");
+                if(closeDebtPanelElem) closeDebtPanelElem.addEventListener('click', () => { debtListPanelElem?.classList.remove('open'); }); else console.warn("closeDebtPanelElem not found for listener");
+                if(importFileElem) importFileElem.addEventListener('change', (event) => { const f = event.target.files?.[0]; if(f) importData(f); event.target.value = null; }); else console.warn("importFileElem not found for listener");
+                
+                if(filterMonthSelectElem) {
+                    filterMonthSelectElem.addEventListener('change', () => {
+                        selectedMonth = filterMonthSelectElem.value;
+                        localStorage.setItem(LAST_SELECTED_MONTH_KEY, selectedMonth);
+                        updateDisplayedData();
+                    });
+                } else {
+                    console.warn("filterMonthSelectElem not found for listener");
+                }
+
+                if(filterYearSelectElem) {
+                    filterYearSelectElem.addEventListener('change', () => {
+                        selectedYear = filterYearSelectElem.value;
+                        localStorage.setItem(LAST_SELECTED_YEAR_KEY, selectedYear);
+                        updateDisplayedData();
+                    });
+                } else {
+                    console.warn("filterYearSelectElem not found for listener");
+                }
+
+                if(addCategoryIconElem) addCategoryIconElem.addEventListener('click', handleAddCategory); else console.warn("addCategoryIconElem not found for listener");
+                if(expenseFormElem) expenseFormElem.addEventListener('submit', handleExpenseFormSubmit); else console.warn("expenseFormElem not found for listener");
+                if(incomeFormElem) incomeFormElem.addEventListener('submit', handleIncomeFormSubmit); else console.warn("incomeFormElem (in modal) not found for listener");
+                if(walletActionFormElem) walletActionFormElem.addEventListener('submit', handleWalletActionFormSubmit); else console.warn("walletActionFormElem (in modal) not found for listener");
+                
+                if(transactionTypeSelectElem) transactionTypeSelectElem.addEventListener('change', function() {
+                    const itemInput = document.getElementById('item'); 
+                    const personNameInput = document.getElementById('personName'); 
+                    const categorySelect = document.getElementById('category'); 
+                    // categoryFormGroup को DOMContentLoaded में परिभाषित किया गया है
+
+                    if(!itemInput || !personNameInput || !categorySelect || !categoryFormGroup || !personFieldDivElem) {
+                         console.error("Form elements for transaction type change logic not found inside listener.");
+                         return;
+                    }
+
+                    const selectedType = this.value;
+                    const isDebtRelated = selectedType.startsWith('debt_') || selectedType.startsWith('repayment_');
+
+                    personFieldDivElem.style.display = isDebtRelated ? 'block' : 'none';
+                    if (!isDebtRelated) {
+                        personNameInput.value = '';
+                        personNameInput.required = false; 
+                    } else {
+                        personNameInput.required = true; 
+                    }
+
+                    if (isDebtRelated) {
+                        itemInput.required = false; 
+                        categoryFormGroup.style.display = 'none'; 
+                        categorySelect.required = false;
+                        categorySelect.value = ''; 
+                    } else if (selectedType === 'expense') {
+                        itemInput.required = true; 
+                        categoryFormGroup.style.display = 'flex'; 
+                        categorySelect.required = true;
+                        if (categorySelect.value === '' && categorySelect.options.length > 1) { 
+                           let defaultCategorySet = false;
+                           for(let i=0; i < categorySelect.options.length; i++) {
+                               if (categorySelect.options[i].value === 'grocery') { 
+                                   categorySelect.value = 'grocery';
+                                   defaultCategorySet = true;
+                                   break;
+                               }
+                           }
+                           if (!defaultCategorySet && categorySelect.options[1]) { // यदि किराना नहीं है, तो पहला वास्तविक विकल्प
+                                categorySelect.value = categorySelect.options[1].value;
+                           }
+                        } else if (categorySelect.value === '') { 
+                             // कुछ न करें, उपयोगकर्ता को चुनने दें
+                        }
+                    } else { 
+                        itemInput.required = true; 
+                        personNameInput.required = false;
+                        categoryFormGroup.style.display = 'none'; 
+                        categorySelect.required = false;
+                        categorySelect.value = '';
+                    }
+                }); else console.warn("transactionTypeSelectElem not found for listener");
+                
+                document.addEventListener('click', handleClickOutsideMenu);
+                console.log("Event listeners attached successfully.");
+            } catch (e) {
+                console.error("Error during attachEventListeners:", e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOMContentLoaded: Initializing App...");
+            try {
+                bodyElem = document.body;
+                expenseFormElem = document.getElementById('expenseForm');
+                expenseTableBodyElem = document.getElementById('expenseTableBody');
+                categorySelectElem = document.getElementById('category');
+                modeToggleElem = document.getElementById('modeToggle');
+                langToggleElem = document.getElementById('langToggle');
+                currencyModeToggleElem = document.getElementById('currencyModeToggle'); 
+                addCategoryIconElem = document.getElementById('addCategoryIcon');
+                categoryTotalsListElem = document.getElementById('categoryTotalsList');
+                filterMonthSelectElem = document.getElementById('filterMonth');
+                filterYearSelectElem = document.getElementById('filterYear');
+                optionsIconElem = document.getElementById('optionsIcon');
+                dataActionsMenuElem = document.getElementById('dataActionsMenu');
+                importMenuItemElem = document.getElementById('importMenuItem');
+                exportMenuItemElem = document.getElementById('exportMenuItem');
+                setRateMenuItemElem = document.getElementById('setRateMenuItem');
+                shareSnapshotMenuItemElem = document.getElementById('shareSnapshotMenuItem');
+                clearMenuItemElem = document.getElementById('clearMenuItem');
+                importFileElem = document.getElementById('importFile');
+                currencySelectElem = document.getElementById('currency'); 
+                categoryFormGroup = document.getElementById('categoryFormGroup'); 
+                
+                incomeFormElem = document.getElementById('incomeForm'); 
+                incomeAmountInputElem = document.getElementById('incomeAmount');
+                incomeCurrencySelectElem = document.getElementById('incomeCurrency');
+
+                totalIncomeDisplayValueElem = document.getElementById('totalIncomeValue');
+                totalExpensesDisplayValueElem = document.getElementById('totalExpensesValue');
+                balanceDisplayValueElem = document.getElementById('balanceValue');
+                
+                walletModalElem = document.getElementById('walletModal');
+                closeWalletModalBtnElem = document.getElementById('closeWalletModal');
+                walletActionFormElem = document.getElementById('walletActionForm'); 
+                walletActionAmountElem = document.getElementById('walletActionAmount');
+                walletActionCurrencyElem = document.getElementById('walletActionCurrency');
+                modalCurrentWalletBalanceValueElem = document.getElementById('modalCurrentWalletBalanceValue');
+                headerWalletBalanceElem = document.getElementById('headerWalletBalance');
+                headerWalletBalanceValueElem = document.getElementById('headerWalletBalanceValue');
+                modalMonthlyIncomeDisplayElem = document.getElementById('modalMonthlyIncomeDisplay');
+                modalMonthlyIncomeValueElem = document.getElementById('modalMonthlyIncomeValue');
+                walletHistoryContainerElem = document.getElementById('walletHistoryContainer');
+                toggleWalletHistoryBtnElem = document.getElementById('toggleWalletHistoryBtn');
+                walletHistoryContainerWrapperElem = document.getElementById('walletHistoryContainerWrapper');
+
+
+                transactionTypeSelectElem = document.getElementById('transactionType');
+                personFieldDivElem = document.getElementById('personField');
+                personNameInputElem = document.getElementById('personName');
+                debtListIconElem = document.getElementById('debtListIcon');
+                debtListPanelElem = document.getElementById('debtListPanel');
+                closeDebtPanelElem = document.getElementById('closeDebtPanel');
+                debtListContainerElem = document.getElementById('debtListContainer');
+
+                const essentialElements = { bodyElem, expenseFormElem, expenseTableBodyElem, categorySelectElem, modeToggleElem, langToggleElem, currencyModeToggleElem, addCategoryIconElem, categoryTotalsListElem, filterMonthSelectElem, filterYearSelectElem, optionsIconElem, dataActionsMenuElem, importMenuItemElem, exportMenuItemElem, setRateMenuItemElem, shareSnapshotMenuItemElem, clearMenuItemElem, importFileElem, currencySelectElem, incomeFormElem, incomeAmountInputElem, incomeCurrencySelectElem, totalIncomeDisplayValueElem, totalExpensesDisplayValueElem, balanceDisplayValueElem, walletModalElem, closeWalletModalBtnElem, walletActionFormElem, walletActionAmountElem, walletActionCurrencyElem, modalCurrentWalletBalanceValueElem, headerWalletBalanceElem, headerWalletBalanceValueElem, modalMonthlyIncomeDisplayElem, modalMonthlyIncomeValueElem, transactionTypeSelectElem, personFieldDivElem, personNameInputElem, debtListIconElem, debtListPanelElem, closeDebtPanelElem, debtListContainerElem, categoryFormGroup, walletHistoryContainerElem, toggleWalletHistoryBtnElem, walletHistoryContainerWrapperElem };
+                let allEssentialFound = true;
+                for (const key in essentialElements) {
+                    if (!essentialElements[key]) {
+                        console.error(`Essential Element NOT FOUND: "${key}"`);
+                        allEssentialFound = false;
+                    }
+                }
+                if (!allEssentialFound) {
+                     throw new Error("One or more essential DOM elements were not found. Check console for details.");
+                }
+
+
+                try { const savedRate = localStorage.getItem(KWD_RATE_STORAGE_KEY); if (savedRate) { const parsedRate = parseFloat(savedRate); if (!isNaN(parsedRate) && parsedRate > 0) KWD_TO_INR_RATE = parsedRate; } } catch (e) { console.error("Err load rate:", e); }
+                
+                currentLang = localStorage.getItem('expenseTrackerLang') || 'hi';
+                currentMode = localStorage.getItem('expenseTrackerMode') || 'light';
+                const savedCurrencyMode = localStorage.getItem(CURRENCY_DISPLAY_MODE_KEY);
+                if (savedCurrencyMode && ['both', 'inr_only', 'kwd_only'].includes(savedCurrencyMode)) {
+                    currencyDisplayMode = savedCurrencyMode;
+                }
+                
+                attachEventListeners(); 
+
+                applyMode(currentMode); 
+                try { const savedLC=localStorage.getItem(LAST_USED_CURRENCY_KEY); if(savedLC&&currencySelectElem&&Array.from(currencySelectElem.options).some(o=>o.value===savedLC)){currencySelectElem.value=savedLC}else if(currencySelectElem){currencySelectElem.value='INR'} } catch(e){console.error("Err set last expense currency:",e);if(currencySelectElem)currencySelectElem.value='INR'}
+                loadMonthlyIncome();
+                loadCustomCategories();
+                expenses = loadExpensesFromLocalStorage(); 
+                populateMonthDropdown(currentLang); 
+                populateYearDropdown(); 
+                applyLanguage(currentLang); 
+                
+                const today = new Date();
+                let defaultMonth = localStorage.getItem(LAST_SELECTED_MONTH_KEY) || today.getMonth().toString();
+                let defaultYear = localStorage.getItem(LAST_SELECTED_YEAR_KEY) || today.getFullYear().toString();
+                
+                if (filterMonthSelectElem && Array.from(filterMonthSelectElem.options).some(opt => opt.value === defaultMonth)) {
+                    selectedMonth = defaultMonth;
+                } else {
+                    selectedMonth = 'all'; 
+                }
+
+                if (filterYearSelectElem && Array.from(filterYearSelectElem.options).some(opt => opt.value === defaultYear)) {
+                    selectedYear = defaultYear;
+                } else {
+                     selectedYear = 'all'; 
+                     if (filterYearSelectElem && !Array.from(filterYearSelectElem.options).some(opt => opt.value === new Date().getFullYear().toString())) {
+                        selectedYear = 'all';
+                     } else if (filterYearSelectElem) {
+                        selectedYear = new Date().getFullYear().toString();
+                     }
+                }
+                
+                if (filterMonthSelectElem) filterMonthSelectElem.value = selectedMonth;
+                if (filterYearSelectElem) filterYearSelectElem.value = selectedYear;
+
+                if (transactionTypeSelectElem) {
+                    const event = new Event('change');
+                    transactionTypeSelectElem.dispatchEvent(event);
+                }
+                
+                updateDisplayedData(); 
+                console.log("Initial load complete. All elements should be assigned and listeners attached.");
+            } catch (initError) {
+                console.error("FATAL ERROR during initialization:", initError);
+                alert(`क्रिटिकल एरर: ${initError.message}. ऐप सही काम नहीं कर सकता है। कंसोल देखें.`);
+                document.body.innerHTML = `<div style="padding:20px;color:red;">ऐप इनिशियलाइज़ेशन फेल हुआ: ${initError.message}. कृपया रीलोड करें या कंसोल देखें.</div>`;
+            }
+        }); // End DOMContentLoaded
+        console.log("--- End of script file, all functions and event listeners should be defined. ---");
+    </script>
+    <!-- SCRIPT PART ENDS HERE -->
+
+</body>
+</html>
+<!-- END OF FULL SCRIPT -->
