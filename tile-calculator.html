@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang-key="pageTitle">टाइल कैलकुलेटर</title>
+    <style>
+        body {font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; line-height: 1.6;}
+        .header-controls {width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;}
+        .header-controls button {padding: 8px 12px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em;}
+        .header-controls button:hover {background-color: #5a6268;}
+        #unitConverterIcon {background-color: #17a2b8;}
+        #unitConverterIcon:hover {background-color: #138496;}
+        .calculator-container {background-color: #ffffff; padding: 25px 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 600px;}
+        h1 {text-align: center; color: #1a73e8; margin-bottom: 25px; font-size: 1.8em;}
+        fieldset {border: 1px solid #d1d9e6; border-radius: 6px; padding: 15px 20px; margin-bottom: 20px;}
+        legend {font-weight: 600; color: #333; padding: 0 8px; font-size: 1.1em;}
+        .master-unit-selector-group {display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background-color: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px solid #e9ecef;}
+        .master-unit-selector-group label {font-weight: 500; margin-right: 10px;}
+        .master-unit-selector-group select {padding: 8px; border-radius: 4px; border: 1px solid #ced4da; background-color: white;}
+        .input-group {margin-bottom: 18px;}
+        .input-group label {display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.95em; color: #4f4f4f;}
+        .input-group input[type="number"] {width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 5px; box-sizing: border-box; font-size: 1em; transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;}
+        .input-group input[type="number"]:focus, .input-group select:focus {border-color: #80bdff; outline: 0; box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);}
+        #skirtingInputs .input-group select, .popup-content select, #tileVisualizationContainer select {padding: 10px 8px; border: 1px solid #ced4da; border-left: none; border-radius: 0 5px 5px 0; background-color: #e9ecef; font-size: 0.9em; height: calc(2.25rem + 2px + 8px); box-sizing: border-box;}
+        #skirtingInputs .input-group input[type="number"], .popup-content .input-group input[type="number"], #tileVisualizationContainer input[type="number"] {flex-grow: 1; border-radius: 5px 0 0 5px;}
+        #skirtingInputs .input-group, .popup-content .input-group, #tileVisualizationContainer .input-group {display: flex; align-items: center;}
+        .popup-content .input-group {margin-bottom: 15px;}
+        .popup-content .input-group input[type="number"]{width: auto;}
+        .input-group.checkbox-group label {font-weight: normal; display: inline-block; vertical-align: middle; margin-left: 5px;}
+        .input-group input[type="checkbox"] {margin-right: 5px; vertical-align: middle; width: 16px; height: 16px;}
+        button#calculateButton {background-color: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1.05em; font-weight: 500; display: block; width: 100%; margin-top: 20px; transition: background-color 0.2s ease, transform 0.1s ease;}
+        button#calculateButton:hover {background-color: #0056b3;}
+        button#calculateButton:active {transform: translateY(1px);}
+        .results-container {margin-top: 25px; padding: 20px; background-color: #e9f5ff; border: 1px solid #b3d7ff; border-radius: 6px; display: none;}
+        .results-container h2 {margin-top: 0; margin-bottom: 15px; color: #0056b3; font-size: 1.3em;}
+        .results-container div {margin-bottom: 10px; font-size: 1.0em; color: #222;}
+        .results-container strong {color: #111;}
+        #cutListResults { margin-top:15px; padding-top:10px; border-top: 1px dashed #0056b3;}
+        #cutListResults h3 { font-size: 1.1em; color: #0056b3; margin-bottom: 8px;}
+        #cutListResults ul { list-style-type: disc; margin-left: 20px; padding-left: 0;}
+        #cutListResults li { margin-bottom: 5px; font-size: 0.95em;}
+        .error-message {color: #dc3545; margin-top: 15px; font-weight: 500; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 5px; display: none;}
+        .popup-modal {display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center;}
+        .popup-content {background-color: #fff; margin: auto; padding: 20px; border: 1px solid #888; border-radius: 8px; width: 90%; max-width: 450px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3);}
+        .popup-close-button {color: #aaa; float: right; position: absolute; top: 10px; right: 15px; font-size: 28px; font-weight: bold; line-height: 1;}
+        .popup-close-button:hover, .popup-close-button:focus {color: black; text-decoration: none; cursor: pointer;}
+        .popup-content h3 {margin-top: 0; color: #007bff; text-align: center;}
+        #converterResult {margin-top: 15px; font-weight: bold; text-align: center; padding: 10px; background-color: #e9f5ff; border-radius: 4px;}
+        #tileVisualizationContainer { margin-top: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9; display: none; }
+        #tileVisualizationContainer h3 { text-align: center; margin-top: 0; margin-bottom: 15px; color: #333; }
+        #tileCanvas { display: block; margin: 0 auto; border: 1px solid #999; background-color: #e0e0e0; }
+    </style>
+</head>
+<body>
+    <div class="header-controls">
+        <button id="unitConverterIcon" data-lang-key="unitConverterIconText">📏 इकाई परिवर्तक</button>
+        <button id="langToggle" data-lang-key="langToggleText">Switch to English</button>
+    </div>
+
+    <div class="calculator-container">
+        <h1 data-lang-key="mainHeading">टाइल कैलकुलेटर</h1>
+        <div class="master-unit-selector-group"><div><label for="areaMasterUnit" data-lang-key="areaUnitMasterLabel">जगह की इकाई:</label><select id="areaMasterUnit"><option value="feet">फीट (ft)</option><option value="meters">मीटर (m)</option><option value="cm">सेंटीमीटर (cm)</option><option value="mm">मिलीमीटर (mm)</option><option value="inch">इंच (in)</option></select></div><div><label for="tileMasterUnit" data-lang-key="tileUnitMasterLabel">टाइल की इकाई:</label><select id="tileMasterUnit"><option value="inch">इंच (in)</option><option value="cm">सेंटीमीटर (cm)</option><option value="mm">मिलीमीटर (mm)</option><option value="feet">फीट (ft)</option><option value="meters">मीटर (m)</option></select></div></div>
+        <fieldset><legend data-lang-key="areaLegend">जगह का माप</legend><div class="input-group"><label for="areaLength" data-lang-key="areaLengthLabel">लंबाई:</label><input type="number" id="areaLength" data-lang-placeholder-key="exampleTen" step="any"></div><div class="input-group"><label for="areaWidth" data-lang-key="areaWidthLabel">चौड़ाई:</label><input type="number" id="areaWidth" data-lang-placeholder-key="exampleTwelve" step="any"></div></fieldset>
+        <fieldset><legend data-lang-key="tileLegend">टाइल का माप</legend><div class="input-group"><label for="tileLength" data-lang-key="tileLengthLabel">टाइल की लंबाई:</label><input type="number" id="tileLength" data-lang-placeholder-key="exampleTwentyFour" step="any"></div><div class="input-group"><label for="tileWidth" data-lang-key="tileWidthLabel">टाइल की चौड़ाई:</label><input type="number" id="tileWidth" data-lang-placeholder-key="exampleTwentyFour" step="any"></div></fieldset>
+        <div class="input-group"><label for="floorWastage" data-lang-key="floorWastageLabel">फ्लोर टाइल्स के लिए वेस्टेज (%):</label><input type="number" id="floorWastage" value="10" data-lang-placeholder-key="exampleTenPercent" step="any"></div><hr>
+        <div class="input-group checkbox-group"><input type="checkbox" id="calculateSkirting"><label for="calculateSkirting" data-lang-key="calculateSkirtingLabel">स्कर्टिंग की गणना करें?</label></div>
+        <div id="skirtingInputs" style="display:none;"><fieldset><legend data-lang-key="skirtingLegend">स्कर्टिंग का विवरण</legend><div class="input-group"><label for="skirtingHeight" data-lang-key="skirtingHeightLabel">स्कर्टिंग की ऊंचाई:</label><input type="number" id="skirtingHeight" data-lang-placeholder-key="exampleFour" step="any"><select id="skirtingHeightUnit" class="unit-selector"><option value="inch">इंच (in)</option><option value="cm">सेंटीमीटर (cm)</option><option value="mm">मिलीमीटर (mm)</option></select></div><div class="input-group"><label for="doorWidth" data-lang-key="doorWidthLabel">दरवाजों/खुली जगह की कुल चौड़ाई (यह इकाई जगह की इकाई के समान होगी):</label><input type="number" id="doorWidth" value="0" data-lang-placeholder-key="exampleThree" step="any"></div><div class="input-group"><label for="skirtingWastage" data-lang-key="skirtingWastageLabel">स्कर्टिंग टाइल्स के लिए वेस्टेज (%):</label><input type="number" id="skirtingWastage" value="15" data-lang-placeholder-key="exampleFifteenPercent" step="any"></div></fieldset></div>
+        <button id="calculateButton" onclick="calculateTiles()" data-lang-key="calculateButtonText">गणना करें</button>
+        <div id="results" class="results-container">
+            <h2 data-lang-key="resultsHeading">परिणाम:</h2>
+            <div id="floorResults"></div>
+            <div id="skirtingResults"></div>
+            <div id="totalResults"></div>
+            <div id="cutListResults"></div> 
+        </div>
+        <div id="errorMessages" class="error-message"></div>
+        <div id="tileVisualizationContainer"><h3 data-lang-key="visualizationTitle">टाइल विज़ुअलाइज़ेशन</h3><canvas id="tileCanvas"></canvas></div>
+    </div>
+    <div id="unitConverterPopup" class="popup-modal"><div class="popup-content"><span class="popup-close-button" id="closeUnitConverterPopup">&times;</span><h3 data-lang-key="unitConverterTitle">इकाई परिवर्तक (लंबाई)</h3><div class="input-group"><label for="converterValue" data-lang-key="converterValueLabel">मान:</label><input type="number" id="converterValue" step="any" placeholder="0"></div><div class="input-group"><label for="converterFromUnit" data-lang-key="converterFromUnitLabel">से:</label><select id="converterFromUnit"><option value="mm">मिलीमीटर (mm)</option><option value="cm">सेंटीमीटर (cm)</option><option value="inch">इंच (in)</option><option value="feet">फीट (ft)</option><option value="meters">मीटर (m)</option></select></div><div class="input-group"><label for="converterToUnit" data-lang-key="converterToUnitLabel">में:</label><select id="converterToUnit"><option value="mm">मिलीमीटर (mm)</option><option value="cm">सेंटीमीटर (cm)</option><option value="inch">इंच (in)</option><option value="feet">फीट (ft)</option><option value="meters">मीटर (m)</option></select></div><div id="converterResult" data-lang-key="converterResultInitial">परिणाम यहाँ दिखेगा</div></div></div>
+
+    <script>
+        let currentLanguage = 'hi'; 
+        const TRANSLATIONS = {
+            'hi': { 
+                pageTitle: "टाइल कैलकुलेटर", langToggleText: "Switch to English", mainHeading: "टाइल कैलकुलेटर",
+                areaUnitMasterLabel: "जगह की इकाई:", tileUnitMasterLabel: "टाइल की इकाई:", areaLegend: "जगह का माप",
+                areaLengthLabel: "लंबाई:", areaWidthLabel: "चौड़ाई:", tileLegend: "टाइल का माप",
+                tileLengthLabel: "टाइल की लंबाई:", tileWidthLabel: "टाइल की चौड़ाई:",
+                floorWastageLabel: "फ्लोर टाइल्स के लिए वेस्टेज (%):", calculateSkirtingLabel: "स्कर्टिंग की गणना करें?",
+                skirtingLegend: "स्कर्टिंग का विवरण", skirtingHeightLabel: "स्कर्टिंग की ऊंचाई:",
+                doorWidthLabel: "दरवाजों/खुली जगह की कुल चौड़ाई (यह इकाई जगह की इकाई के समान होगी):",
+                skirtingWastageLabel: "स्कर्टिंग टाइल्स के लिए वेस्टेज (%):", calculateButtonText: "गणना करें",
+                resultsHeading: "परिणाम:", exampleTen: "उदा. 10", exampleTwelve: "उदा. 12",
+                exampleTwentyFour: "उदा. 24", exampleFour: "उदा. 4", exampleThree: "उदा. 3",
+                exampleTenPercent: "उदा. 10", exampleFifteenPercent: "उदा. 15",
+                errorNaN: (f) => `"${f}" के लिए एक सही मान दर्ज करें।`, errorNegativeOrZero: (f) => `"${f}" 0 से अधिक होना चाहिए।`,
+                errorNegative: (f) => `"${f}" 0 या अधिक होना चाहिए।`, errorUnknownUnit: (u) => `अज्ञात इकाई: ${u}`,
+                errorTileAreaZero: "टाइल का क्षेत्रफल शून्य नहीं हो सकता। टाइल का माप सही करें।",
+                errorSkirtingHeightZero: "स्कर्टिंग की ऊंचाई 0 से अधिक होनी चाहिए।",
+                floorTilesResultHeading: "फ्लोर टाइल्स:", baseTiles: "मूल टाइलें:", wastage: (p) => `वेस्टेज (${p}%):`,
+                totalFloorTiles: "कुल फ्लोर टाइलें:", skirtingTilesResultHeading: "स्कर्टिंग टाइल्स:",
+                skirtingEffectiveLengthZero: "स्कर्टिंग के लिए प्रभावी लंबाई 0 या उससे कम है। कोई स्कर्टिंग टाइल आवश्यक नहीं।",
+                skirtingDetailsContext: (p, d, u) => `(परिमाप: ${p}, दरवाजे: ${d} ${u})`,
+                skirtingTooSmall: (td, tu, sh, su) => `टाइल (आकार: ${td} ${tu}) इतनी छोटी है कि निर्दिष्ट ऊंचाई (${sh} ${su}) की स्कर्टिंग नहीं काटी जा सकती।`,
+                totalEffectiveSkirtingLength: "स्कर्टिंग की कुल आवश्यक लंबाई:",
+                lengthFromOneTile: (td, tu, sh, su, l, lu) => `एक टाइल (${td} ${tu}) से ${sh} ${su} ऊंची स्कर्टिंग की लंबाई: ${l} ${lu}`,
+                totalSkirtingTiles: "कुल स्कर्टिंग टाइलें:", grandTotalTiles: "कुल मिलाकर आवश्यक टाइलें:",
+                unitNames: {'mm': 'मिमी', 'cm': 'सेमी', 'inch': 'इंच', 'feet': 'फीट', 'meters': 'मीटर'},
+                unitConverterIconText: "📏 इकाई परिवर्तक", unitConverterTitle: "इकाई परिवर्तक (लंबाई)",
+                converterValueLabel: "मान:", converterFromUnitLabel: "से:", converterToUnitLabel: "में:",
+                converterResultInitial: "परिणाम यहाँ दिखेगा",
+                converterResultText: (v,fu,r,tu) => `${v} ${getUnitDisplayName(fu)} = ${r.toFixed(4)} ${getUnitDisplayName(tu)}`,
+                converterErrorInput: "कृपया बदलने के लिए एक संख्यात्मक मान दर्ज करें。",
+                visualizationTitle: "टाइल विज़ुअलाइज़ेशन (फ्लोर)",
+                visualizationTooManyTiles: "बहुत अधिक टाइलें, स्पष्ट रूप से नहीं दिखाया जा सकता।",
+                cutListTitle: "टाइल कटिंग सूची:",
+                floorTilesCutList: "फ्लोर टाइल्स:",
+                fullTiles: "पूरी टाइलें",
+                cutTiles: "कटी टाइलें",
+                skirtingPiecesCutList: "स्कर्टिंग पीस:",
+                fullSkirtingPieces: "पूरे पीस",
+                cutSkirtingPieces: "कटे पीस",
+                skirtingTilesUsedInfo: "उपरोक्त पीस निकालने के लिए आवश्यक मूल स्कर्टिंग टाइलें (बिना वेस्टेज)"
+            },
+            'en': { 
+                pageTitle: "Tile Calculator", langToggleText: "हिंदी में बदलें", mainHeading: "Tile Calculator",
+                areaUnitMasterLabel: "Area Unit:", tileUnitMasterLabel: "Tile Unit:", areaLegend: "Area Measurement",
+                areaLengthLabel: "Length:", areaWidthLabel: "Width:", tileLegend: "Tile Measurement",
+                tileLengthLabel: "Tile Length:", tileWidthLabel: "Tile Width:",
+                floorWastageLabel: "Wastage for Floor Tiles (%):", calculateSkirtingLabel: "Calculate Skirting?",
+                skirtingLegend: "Skirting Details", skirtingHeightLabel: "Skirting Height:",
+                doorWidthLabel: "Total width of Doors/Openings (unit same as area unit):",
+                skirtingWastageLabel: "Wastage for Skirting Tiles (%):", calculateButtonText: "Calculate",
+                resultsHeading: "Results:", exampleTen: "e.g. 10", exampleTwelve: "e.g. 12",
+                exampleTwentyFour: "e.g. 24", exampleFour: "e.g. 4", exampleThree: "e.g. 3",
+                exampleTenPercent: "e.g. 10", exampleFifteenPercent: "e.g. 15",
+                errorNaN: (f) => `Please enter a valid value for "${f}".`, errorNegativeOrZero: (f) => `"${f}" must be greater than 0.`,
+                errorNegative: (f) => `"${f}" must be 0 or greater.`, errorUnknownUnit: (u) => `Unknown unit: ${u}`,
+                errorTileAreaZero: "Tile area cannot be zero. Please correct tile measurements.",
+                errorSkirtingHeightZero: "Skirting height must be greater than 0.",
+                floorTilesResultHeading: "Floor Tiles:", baseTiles: "Base Tiles:", wastage: (p) => `Wastage (${p}%):`,
+                totalFloorTiles: "Total Floor Tiles:", skirtingTilesResultHeading: "Skirting Tiles:",
+                skirtingEffectiveLengthZero: "Effective skirting length is 0 or less. No skirting tiles required.",
+                skirtingDetailsContext: (p, d, u) => `(Perimeter: ${p}, Doors: ${d} ${u})`,
+                skirtingTooSmall: (td, tu, sh, su) => `Tile (size: ${td} ${tu}) is too small to cut skirting of specified height (${sh} ${su}).`,
+                totalEffectiveSkirtingLength: "Total effective skirting length required:",
+                lengthFromOneTile: (td, tu, sh, su, l, lu) => `Length of ${sh} ${su} high skirting from one tile (${td} ${tu}): ${l} ${lu}`,
+                totalSkirtingTiles: "Total Skirting Tiles:", grandTotalTiles: "Grand Total Tiles Required:",
+                unitNames: {'mm': 'mm', 'cm': 'cm', 'inch': 'in', 'feet': 'ft', 'meters': 'm'},
+                unitConverterIconText: "📏 Unit Converter", unitConverterTitle: "Unit Converter (Length)",
+                converterValueLabel: "Value:", converterFromUnitLabel: "From:", converterToUnitLabel: "To:",
+                converterResultInitial: "Result will appear here",
+                converterResultText: (v,fu,r,tu) => `${v} ${getUnitDisplayName(fu)} = ${r.toFixed(4)} ${getUnitDisplayName(tu)}`,
+                converterErrorInput: "Please enter a numeric value to convert.",
+                visualizationTitle: "Tile Visualization (Floor)",
+                visualizationTooManyTiles: "Too many tiles to draw clearly.",
+                cutListTitle: "Tile Cutting List:",
+                floorTilesCutList: "Floor Tiles:",
+                fullTiles: "Full Tiles",
+                cutTiles: "Cut Tiles",
+                skirtingPiecesCutList: "Skirting Pieces:",
+                fullSkirtingPieces: "Full Pieces",
+                cutSkirtingPieces: "Cut Pieces",
+                skirtingTilesUsedInfo: "Base skirting tiles needed to get above pieces (before wastage)"
+            }
+        };
+
+        function updateUIText() { 
+            const S = TRANSLATIONS[currentLanguage];
+            document.querySelectorAll('[data-lang-key]').forEach(el => { 
+                const key = el.dataset.langKey; 
+                if (S[key]) { 
+                    // Check if S[key] is a function (for dynamic text) or string
+                    if (typeof S[key] === 'function') {
+                        // For functions, we might need to call them with default/placeholder args
+                        // or handle them specifically if they are for results that are not yet calculated.
+                        // For now, let's assume they are mostly static labels or simple functions.
+                        // This part might need refinement based on which keys are functions.
+                        try {
+                            el.textContent = S[key](); // Try calling if it's a function
+                        } catch (e) {
+                            el.textContent = S[key]; // Fallback to treating as string
+                        }
+                    } else {
+                        el.textContent = S[key]; 
+                    }
+                }
+            });
+            document.querySelectorAll('[data-lang-placeholder-key]').forEach(el => { 
+                const key = el.dataset.langPlaceholderKey; 
+                if (S[key]) { el.placeholder = S[key]; }
+            });
+            const pTK = document.title.getAttribute('data-lang-key') || 'pageTitle'; 
+            if (S[pTK]) document.title = S[pTK];
+        }
+
+        let unitConverterPopup, unitConverterIcon, closeUnitConverterPopupBtn;
+        let converterValueInput, converterFromUnitSelect, converterToUnitSelect, converterResultDiv;
+        let tileVisualizationContainer, tileCanvas, tileCanvasCtx;
+
+        function setupPopupEventListeners() { 
+            unitConverterPopup = document.getElementById('unitConverterPopup'); 
+            unitConverterIcon = document.getElementById('unitConverterIcon'); 
+            closeUnitConverterPopupBtn = document.getElementById('closeUnitConverterPopup');
+            converterValueInput = document.getElementById('converterValue'); 
+            converterFromUnitSelect = document.getElementById('converterFromUnit'); 
+            converterToUnitSelect = document.getElementById('converterToUnit'); 
+            converterResultDiv = document.getElementById('converterResult');
+
+            if(unitConverterIcon) unitConverterIcon.onclick = function() { if(unitConverterPopup) unitConverterPopup.style.display = "flex"; updateUIText(); } 
+            if(closeUnitConverterPopupBtn) closeUnitConverterPopupBtn.onclick = function() { if(unitConverterPopup) unitConverterPopup.style.display = "none"; } 
+            window.onclick = function(event) { if (event.target == unitConverterPopup) { if(unitConverterPopup) unitConverterPopup.style.display = "none"; } }
+            
+            const convInputs = [converterValueInput, converterFromUnitSelect, converterToUnitSelect];
+            convInputs.forEach(el => { 
+                if(el) { 
+                    el.addEventListener('input', performUnitConversion); 
+                    el.addEventListener('change', performUnitConversion);
+                }
+            }); 
+        }
+        
+        function performUnitConversion() { 
+            const S = TRANSLATIONS[currentLanguage]; 
+            if (!converterValueInput || !converterFromUnitSelect || !converterToUnitSelect || !converterResultDiv) {
+                console.error("Unit converter DOM elements not found in performUnitConversion.");
+                return;
+            }
+            const valStr = converterValueInput.value; const val = parseFloat(valStr);
+            const fromU = converterFromUnitSelect.value; const toU = converterToUnitSelect.value;
+
+            if (valStr.trim() === "" || isNaN(val)) { 
+                converterResultDiv.textContent = S.converterErrorInput; 
+                converterResultDiv.style.color = 'red'; 
+                return; 
+            }
+            if (val === 0) { 
+                converterResultDiv.textContent = S.converterResultText(0, fromU, 0, toU); 
+                converterResultDiv.style.color = ''; 
+                return; 
+            }
+            try { 
+                const vMM = convertToMM(val, fromU); 
+                const res = vMM / CONVERSION_TO_MM[toU]; 
+                converterResultDiv.textContent = S.converterResultText(val, fromU, res, toU); 
+                converterResultDiv.style.color = ''; 
+            }
+            catch (e) { 
+                converterResultDiv.textContent = e.message; 
+                converterResultDiv.style.color = 'red';
+            }
+        }
+
+        function setupVisualization() {
+            tileVisualizationContainer = document.getElementById('tileVisualizationContainer');
+            tileCanvas = document.getElementById('tileCanvas');
+            if (tileCanvas && tileCanvas.getContext) {
+                tileCanvasCtx = tileCanvas.getContext('2d');
+            } else {
+                console.error("Canvas not supported or tileCanvas element not found!");
+                if(tileVisualizationContainer) tileVisualizationContainer.style.display = 'none';
+            }
+        }
+        
+        function drawTileLayout(roomWidthMM, roomHeightMM, tileWidthMM, tileHeightMM, baseFloorTilesCalculated) {
+             if (!tileCanvasCtx) { console.warn("Canvas context not available in drawTileLayout"); return; }
+            const MAX_CANVAS_WIDTH = 500; const MAX_CANVAS_HEIGHT = 400; const PADDING = 10;
+            const MIN_TILE_SIZE_FOR_NUMBER = 15; 
+            if(tileVisualizationContainer) tileVisualizationContainer.style.display = 'block';
+            let scaleX = (MAX_CANVAS_WIDTH - 2 * PADDING) / roomWidthMM; let scaleY = (MAX_CANVAS_HEIGHT - 2 * PADDING) / roomHeightMM;
+            let scale = Math.min(scaleX, scaleY);
+            if (roomWidthMM < 1 || roomHeightMM < 1 || tileWidthMM < 1 || tileHeightMM < 1) {
+                 tileCanvasCtx.clearRect(0, 0, tileCanvas.width, tileCanvas.height);
+                 tileCanvasCtx.fillStyle = 'black'; tileCanvasCtx.font = '12px Arial';
+                 tileCanvasCtx.textAlign = 'center'; 
+                 tileCanvasCtx.fillText(TRANSLATIONS[currentLanguage].errorTileAreaZero, (tileCanvas.width / 2) || 100, (tileCanvas.height / 2) || 20);
+                 return;
+            }
+            scale = Math.min(scale, 5); scale = Math.max(scale, 0.01);
+            const canvasRoomWidth = roomWidthMM * scale; const canvasRoomHeight = roomHeightMM * scale;
+            const canvasTileWidth = tileWidthMM * scale; const canvasTileHeight = tileHeightMM * scale;
+            tileCanvas.width = Math.max(1, canvasRoomWidth + 2 * PADDING); tileCanvas.height = Math.max(1,canvasRoomHeight + 2 * PADDING);
+            tileCanvasCtx.clearRect(0, 0, tileCanvas.width, tileCanvas.height);
+            tileCanvasCtx.fillStyle = '#e0e0e0'; tileCanvasCtx.fillRect(PADDING, PADDING, canvasRoomWidth, canvasRoomHeight);
+            tileCanvasCtx.strokeStyle = '#888'; tileCanvasCtx.lineWidth = Math.max(1, 0.5 * scale); 
+            
+            const numTilesX_visualGrid = Math.ceil(roomWidthMM / tileWidthMM); 
+            const numTilesY_visualGrid = Math.ceil(roomHeightMM / tileHeightMM);
+            const totalTilesInVisualGrid = numTilesX_visualGrid * numTilesY_visualGrid;
+
+            const MAX_DRAW_TILES_WITH_NUMBERS = 200; 
+            const MAX_DRAW_TILES_GRID_ONLY = 5000;  
+            
+            let tileCounter = 0; 
+            const drawNumbers = (totalTilesInVisualGrid <= MAX_DRAW_TILES_WITH_NUMBERS); 
+
+            if (totalTilesInVisualGrid > MAX_DRAW_TILES_GRID_ONLY && scale < 0.1) { 
+                 tileCanvasCtx.fillStyle = 'black'; tileCanvasCtx.font = '12px Arial';
+                 tileCanvasCtx.textAlign = 'center';
+                 tileCanvasCtx.fillText(TRANSLATIONS[currentLanguage].visualizationTooManyTiles || "Too many tiles to draw clearly.", tileCanvas.width / 2, tileCanvas.height / 2);
+                 return;
+            }
+            let fontSize = Math.min(canvasTileHeight * 0.4, canvasTileWidth * 0.4, 12);
+            fontSize = Math.max(fontSize, 6); 
+            tileCanvasCtx.font = `${fontSize}px Arial`; tileCanvasCtx.fillStyle = '#333'; 
+            tileCanvasCtx.textAlign = 'center'; tileCanvasCtx.textBaseline = 'middle';
+
+            for (let y_grid_index = 0; y_grid_index < numTilesY_visualGrid; y_grid_index++) {
+                for (let x_grid_index = 0; x_grid_index < numTilesX_visualGrid; x_grid_index++) {
+                    tileCounter++; 
+                    const tileX_px_on_canvas_grid = PADDING + (x_grid_index * canvasTileWidth);
+                    const tileY_px_on_canvas_grid = PADDING + (y_grid_index * canvasTileHeight);
+                    const x_mm_start_of_tile = x_grid_index * tileWidthMM;
+                    const y_mm_start_of_tile = y_grid_index * tileHeightMM;
+                    const actualTileMaterialDrawWidth = Math.min(tileWidthMM, roomWidthMM - x_mm_start_of_tile) * scale;
+                    const actualTileMaterialDrawHeight = Math.min(tileHeightMM, roomHeightMM - y_mm_start_of_tile) * scale;
+                    
+                    if (canvasTileWidth > 0.1 && canvasTileHeight > 0.1) { 
+                        tileCanvasCtx.strokeRect(tileX_px_on_canvas_grid, tileY_px_on_canvas_grid, canvasTileWidth, canvasTileHeight );
+                    }
+                    if (drawNumbers && canvasTileWidth > MIN_TILE_SIZE_FOR_NUMBER && canvasTileHeight > MIN_TILE_SIZE_FOR_NUMBER) {
+                        if (actualTileMaterialDrawWidth > 0.1 && actualTileMaterialDrawHeight > 0.1) { // Only number if there's actual tile material
+                             tileCanvasCtx.fillText(tileCounter.toString(), tileX_px_on_canvas_grid + canvasTileWidth / 2,  tileY_px_on_canvas_grid + canvasTileHeight / 2 );
+                        }
+                    }
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const calculateSkirtingCheckbox = document.getElementById('calculateSkirting');
+            const skirtingInputsDiv = document.getElementById('skirtingInputs');
+            const langToggleButton = document.getElementById('langToggle');
+
+            if(calculateSkirtingCheckbox) calculateSkirtingCheckbox.addEventListener('change', function() { if(skirtingInputsDiv) skirtingInputsDiv.style.display = this.checked ? 'block' : 'none';}); 
+            
+            if(langToggleButton) langToggleButton.addEventListener('click', function() { 
+                currentLanguage = (currentLanguage === 'hi') ? 'en' : 'hi';
+                updateUIText(); // Update static text first
+                
+                const resultsDisplay = document.getElementById('results');
+                if (resultsDisplay && resultsDisplay.style.display === 'block') { 
+                    try { 
+                        calculateTiles(); // Recalculate to update dynamic result text
+                    } catch(e) { 
+                        console.warn("Error recalculating on language change:", e); 
+                        const errorMessagesDiv = document.getElementById('errorMessages');
+                        if(errorMessagesDiv) {
+                             const S_err = TRANSLATIONS[currentLanguage]; // Get current lang strings for error
+                             errorMessagesDiv.textContent = S_err.errorNaN ? S_err.errorNaN("Inputs") : "Error during recalculation.";
+                             errorMessagesDiv.style.display = 'block';
+                        }
+                    }
+                }
+                
+                if (unitConverterPopup && unitConverterPopup.style.display === "flex" && converterValueInput && converterValueInput.value !== "") { 
+                    performUnitConversion();
+                } else if (unitConverterPopup && unitConverterPopup.style.display === "flex") { 
+                    if(converterResultDiv) converterResultDiv.textContent = TRANSLATIONS[currentLanguage].converterResultInitial;
+                }
+            });
+            
+            setupPopupEventListeners();
+            setupVisualization();
+            updateUIText(); 
+        });
+
+        const CONVERSION_TO_MM = { 'mm': 1, 'cm': 10, 'inch': 25.4, 'feet': 304.8, 'meters': 1000 };
+        function convertToMM(value, unit) { if (!CONVERSION_TO_MM[unit]) { throw new Error(TRANSLATIONS[currentLanguage].errorUnknownUnit(unit)); } return value * CONVERSION_TO_MM[unit]; }
+        function getUnitDisplayName(unitKey) { return TRANSLATIONS[currentLanguage].unitNames[unitKey] || unitKey; }
+        function validateAndParseFloat(elementId, fieldNameKey, isNonNegativeOnly = false) { 
+            const S = TRANSLATIONS[currentLanguage]; 
+            const fN = S[fieldNameKey] || fieldNameKey; 
+            const el = document.getElementById(elementId); 
+            if(!el) { console.error(`Element with ID ${elementId} not found for validation.`); throw new Error(`Configuration error: Element ${elementId} missing.`);}
+            const v = parseFloat(el.value); 
+            if(isNaN(v)) throw new Error(S.errorNaN(fN)); 
+            if(!isNonNegativeOnly&&v<=0) throw new Error(S.errorNegativeOrZero(fN)); 
+            if(isNonNegativeOnly&&v<0) throw new Error(S.errorNegative(fN)); 
+            return v;
+        }
+
+        function calculateTiles() {
+            const S = TRANSLATIONS[currentLanguage]; // Use S for all strings
+            const resultsDiv = document.getElementById('results');
+            const floorResultsDiv = document.getElementById('floorResults');
+            const skirtingResultsDiv = document.getElementById('skirtingResults');
+            const totalResultsDiv = document.getElementById('totalResults');
+            const errorMessagesDiv = document.getElementById('errorMessages');
+            const visualizationContainer = document.getElementById('tileVisualizationContainer');
+            let cutListDiv = document.getElementById('cutListResults');
+
+            if(resultsDiv) resultsDiv.style.display = 'none'; 
+            if(errorMessagesDiv) errorMessagesDiv.style.display = 'none'; 
+            if(visualizationContainer) visualizationContainer.style.display = 'none';
+            
+            if(!cutListDiv && resultsDiv) { 
+                 cutListDiv = document.createElement('div');
+                 cutListDiv.id = 'cutListResults';
+                 resultsDiv.appendChild(cutListDiv); 
+            }
+            if(cutListDiv) cutListDiv.innerHTML = ''; 
+
+            if(errorMessagesDiv) errorMessagesDiv.innerHTML = ''; 
+            if(floorResultsDiv) floorResultsDiv.innerHTML = '';
+            if(skirtingResultsDiv) skirtingResultsDiv.innerHTML = ''; 
+            if(totalResultsDiv) totalResultsDiv.innerHTML = '';
+
+            let baseFloorTiles; 
+            let floorTileCuts = { "full": 0, "cuts": {} }; 
+            let skirtingTileCuts = { "full_pieces": 0, "cut_pieces": {}, "tiles_used_for_skirting_base": 0, pieceLength_mm: 0 };
+
+            try {
+                const area_master_unit_key = document.getElementById('areaMasterUnit').value;
+                const tile_master_unit_key = document.getElementById('tileMasterUnit').value;
+                const areaL_val = validateAndParseFloat('areaLength', "areaLengthLabel");
+                const areaW_val = validateAndParseFloat('areaWidth', "areaWidthLabel");
+                const tileL_val = validateAndParseFloat('tileLength', "tileLengthLabel");
+                const tileW_val = validateAndParseFloat('tileWidth', "tileWidthLabel");
+                const floorWastagePercent = validateAndParseFloat('floorWastage', "floorWastageLabel", true);
+
+                const areaL_mm = convertToMM(areaL_val, area_master_unit_key);
+                const areaW_mm = convertToMM(areaW_val, area_master_unit_key);
+                const tileL_mm_orig = convertToMM(tileL_val, tile_master_unit_key); 
+                const tileW_mm_orig = convertToMM(tileW_val, tile_master_unit_key); 
+                
+                const roomArea_mm2 = areaL_mm * areaW_mm; 
+                const tileArea_mm2 = tileL_mm_orig * tileW_mm_orig;
+
+                if (tileArea_mm2 === 0) throw new Error(S.errorTileAreaZero);
+                
+                baseFloorTiles = Math.ceil(roomArea_mm2 / tileArea_mm2); 
+                
+                const numTilesX_full = Math.floor(areaL_mm / tileL_mm_orig);
+                const lastTileWidth_mm = areaL_mm % tileL_mm_orig;
+                const numTilesY_full = Math.floor(areaW_mm / tileW_mm_orig);
+                const lastTileHeight_mm = areaW_mm % tileW_mm_orig;
+
+                floorTileCuts.full = numTilesX_full * numTilesY_full;
+                if (lastTileWidth_mm > 0.1) {
+                    for (let i = 0; i < numTilesY_full; i++) {
+                        const cutKey = `${lastTileWidth_mm.toFixed(1)}x${tileW_mm_orig.toFixed(1)}`;
+                        floorTileCuts.cuts[cutKey] = (floorTileCuts.cuts[cutKey] || 0) + 1;
+                    }
+                }
+                if (lastTileHeight_mm > 0.1) {
+                    for (let i = 0; i < numTilesX_full; i++) {
+                        const cutKey = `${tileL_mm_orig.toFixed(1)}x${lastTileHeight_mm.toFixed(1)}`;
+                        floorTileCuts.cuts[cutKey] = (floorTileCuts.cuts[cutKey] || 0) + 1;
+                    }
+                }
+                // This condition needs to be careful not to double count the corner if lastTileWidth/Height are full tile dim
+                if (lastTileWidth_mm > 0.1 && lastTileHeight_mm > 0.1 && 
+                    (lastTileWidth_mm < tileL_mm_orig - 0.1 || areaL_mm < tileL_mm_orig ) && // only if it's a real cut
+                    (lastTileHeight_mm < tileW_mm_orig - 0.1 || areaW_mm < tileW_mm_orig) ) { // only if it's a real cut
+                    const cutKey = `${lastTileWidth_mm.toFixed(1)}x${lastTileHeight_mm.toFixed(1)}`;
+                    floorTileCuts.cuts[cutKey] = (floorTileCuts.cuts[cutKey] || 0) + 1;
+                }
+
+
+                const wastageFloorTiles = Math.ceil(baseFloorTiles * (floorWastagePercent / 100));
+                const totalFloorTiles = baseFloorTiles + wastageFloorTiles;
+                if(floorResultsDiv) floorResultsDiv.innerHTML = `<strong>${S.floorTilesResultHeading}</strong><br>${S.baseTiles} ${baseFloorTiles}<br>${S.wastage(floorWastagePercent)} ${wastageFloorTiles}<br>${S.totalFloorTiles} <strong>${totalFloorTiles}</strong>`;
+                let grandTotalTiles = totalFloorTiles;
+
+                const calculateSkirtingCheckbox = document.getElementById('calculateSkirting');
+                if (calculateSkirtingCheckbox && calculateSkirtingCheckbox.checked) {
+                    const skirtingH_val = validateAndParseFloat('skirtingHeight', "skirtingHeightLabel"); 
+                    const skirtingH_unit_key = document.getElementById('skirtingHeightUnit').value; 
+                    const doorW_val = validateAndParseFloat('doorWidth', "doorWidthLabel", true); 
+                    const doorW_unit_key = area_master_unit_key; 
+                    const skirtingWastagePercent = validateAndParseFloat('skirtingWastage', "skirtingWastageLabel", true); 
+                    const skirtingH_mm = convertToMM(skirtingH_val, skirtingH_unit_key); 
+                    const doorW_mm = convertToMM(doorW_val, doorW_unit_key); 
+                    const perimeter_mm = 2 * (areaL_mm + areaW_mm); 
+                    const effectiveSkirtingLength_mm = perimeter_mm - doorW_mm; 
+                    const effectiveSkirtingLength_display = (effectiveSkirtingLength_mm / CONVERSION_TO_MM[area_master_unit_key]).toFixed(2); 
+                    const areaDisplayUnitName = getUnitDisplayName(area_master_unit_key);
+
+                    if (effectiveSkirtingLength_mm <= 0) { const p_disp = (perimeter_mm / CONVERSION_TO_MM[area_master_unit_key]).toFixed(2); const d_disp = doorW_val.toFixed(2); if(skirtingResultsDiv) skirtingResultsDiv.innerHTML = `<strong>${S.skirtingTilesResultHeading}</strong><br>${S.skirtingEffectiveLengthZero} ${S.skirtingDetailsContext(p_disp, d_disp, areaDisplayUnitName)}`;}
+                    else if (skirtingH_mm <= 0) { throw new Error(S.errorSkirtingHeightZero); } 
+                    else {
+                        const piecesPerTile1_count = Math.floor(tileW_mm_orig / skirtingH_mm); 
+                        const lengthFromTile1_mm = piecesPerTile1_count * tileL_mm_orig; 
+                        const piecesPerTile2_count = Math.floor(tileL_mm_orig / skirtingH_mm); 
+                        const lengthFromTile2_mm = piecesPerTile2_count * tileW_mm_orig; 
+                        
+                        let lengthFromOneTileForSkirting_mm = 0; let piecesFromOneTile = 0; let pieceLength_mm_val = 0;
+                        if (piecesPerTile1_count > 0 && lengthFromTile1_mm >= lengthFromTile2_mm) {
+                            lengthFromOneTileForSkirting_mm = lengthFromTile1_mm; piecesFromOneTile = piecesPerTile1_count; pieceLength_mm_val = tileL_mm_orig;
+                        } else if (piecesPerTile2_count > 0) {
+                            lengthFromOneTileForSkirting_mm = lengthFromTile2_mm; piecesFromOneTile = piecesPerTile2_count; pieceLength_mm_val = tileW_mm_orig;
+                        }
+                        skirtingTileCuts.pieceLength_mm = pieceLength_mm_val;
+
+                        if (lengthFromOneTileForSkirting_mm <= 0 || isNaN(lengthFromOneTileForSkirting_mm)) { if(skirtingResultsDiv) skirtingResultsDiv.innerHTML = `<strong>${S.skirtingTilesResultHeading}</strong><br>${S.skirtingTooSmall(`${tileL_val}x${tileW_val}`, getUnitDisplayName(tile_master_unit_key), skirtingH_val, getUnitDisplayName(skirtingH_unit_key))}`; }
+                        else { 
+                            const baseSkTilesNeeded = Math.ceil(effectiveSkirtingLength_mm / lengthFromOneTileForSkirting_mm);
+                            skirtingTileCuts.tiles_used_for_skirting_base = baseSkTilesNeeded; 
+                            let remainingLengthToCover_mm = effectiveSkirtingLength_mm;
+                            if (piecesFromOneTile > 0) {
+                                for(let i=0; i < baseSkTilesNeeded * piecesFromOneTile ; i++){ 
+                                    if(remainingLengthToCover_mm <= 0.1) break; 
+                                    if(remainingLengthToCover_mm >= pieceLength_mm_val - 0.1){ 
+                                        skirtingTileCuts.full_pieces++;
+                                        remainingLengthToCover_mm -= pieceLength_mm_val;
+                                    } else {
+                                        const cutPieceLength = remainingLengthToCover_mm.toFixed(1);
+                                        const pieceKey = `${cutPieceLength}x${skirtingH_mm.toFixed(1)}`; 
+                                        skirtingTileCuts.cut_pieces[pieceKey] = (skirtingTileCuts.cut_pieces[pieceKey] || 0) + 1;
+                                        remainingLengthToCover_mm = 0;
+                                        break; 
+                                    }
+                                }
+                            }
+                            const wastSkTiles = Math.ceil(baseSkTilesNeeded * (skirtingWastagePercent / 100)); 
+                            const totalSkTiles = baseSkTilesNeeded + wastSkTiles; 
+                            const lfos_disp = (lengthFromOneTileForSkirting_mm / CONVERSION_TO_MM[tile_master_unit_key]).toFixed(2); 
+                            const tileDispUnitName = getUnitDisplayName(tile_master_unit_key);
+                            if(skirtingResultsDiv) skirtingResultsDiv.innerHTML = `<strong>${S.skirtingTilesResultHeading}</strong><br>${S.totalEffectiveSkirtingLength} ${effectiveSkirtingLength_display} ${areaDisplayUnitName}<br>${S.lengthFromOneTile(`${tileL_val}x${tileW_val}`, getUnitDisplayName(tile_master_unit_key), skirtingH_val, getUnitDisplayName(skirtingH_unit_key), lfos_disp, tileDispUnitName)}<br>${S.baseTiles} ${baseSkTilesNeeded}<br>${S.wastage(skirtingWastagePercent)} ${wastSkTiles}<br>${S.totalSkirtingTiles} <strong>${totalSkTiles}</strong>`;
+                            grandTotalTiles += totalSkTiles; 
+                        }
+                    }
+                }
+                if(totalResultsDiv) totalResultsDiv.innerHTML = `<strong>${S.grandTotalTiles} ${grandTotalTiles}</strong>`;
+                if(resultsDiv) resultsDiv.style.display = 'block';
+
+                if (cutListDiv) { 
+                    let cutListHTML = `<h3 data-lang-key="cutListTitle">${S.cutListTitle}</h3>`;
+                    cutListHTML += `<strong data-lang-key="floorTilesCutList">${S.floorTilesCutList}</strong><ul>`;
+                    cutListHTML += `<li>${S.fullTiles} (${(tileL_val).toFixed(1)}x${(tileW_val).toFixed(1)} ${getUnitDisplayName(tile_master_unit_key)}): ${floorTileCuts.full}</li>`;
+                    for (const cutKey in floorTileCuts.cuts) {
+                        const dimensions = cutKey.split('x');
+                        const cutWidth_display = (parseFloat(dimensions[0]) / CONVERSION_TO_MM[tile_master_unit_key]).toFixed(1);
+                        const cutHeight_display = (parseFloat(dimensions[1]) / CONVERSION_TO_MM[tile_master_unit_key]).toFixed(1);
+                        cutListHTML += `<li>${S.cutTiles} (${cutWidth_display}x${cutHeight_display} ${getUnitDisplayName(tile_master_unit_key)}): ${floorTileCuts.cuts[cutKey]}</li>`;
+                    }
+                    cutListHTML += `</ul>`;
+
+                    const calculateSkirtingCheckbox = document.getElementById('calculateSkirting');
+                    if (calculateSkirtingCheckbox && calculateSkirtingCheckbox.checked && skirtingTileCuts.tiles_used_for_skirting_base > 0) {
+                        const skirtingH_val_disp = parseFloat(document.getElementById('skirtingHeight').value);
+                        const skirtingH_unit_key_disp = document.getElementById('skirtingHeightUnit').value;
+                        cutListHTML += `<strong data-lang-key="skirtingPiecesCutList">${S.skirtingPiecesCutList}</strong><ul>`;
+                        if (skirtingTileCuts.full_pieces > 0 && skirtingTileCuts.pieceLength_mm > 0) { 
+                             cutListHTML += `<li>${S.fullSkirtingPieces} (${(skirtingTileCuts.pieceLength_mm / CONVERSION_TO_MM[tile_master_unit_key]).toFixed(1)} ${getUnitDisplayName(tile_master_unit_key)} x ${skirtingH_val_disp.toFixed(1)} ${getUnitDisplayName(skirtingH_unit_key_disp)}): ${skirtingTileCuts.full_pieces}</li>`;
+                        }
+                        for (const pieceKey in skirtingTileCuts.cut_pieces) {
+                            const dimensions = pieceKey.split('x'); 
+                            const pieceLength_display = (parseFloat(dimensions[0]) / CONVERSION_TO_MM[tile_master_unit_key]).toFixed(1);
+                            cutListHTML += `<li>${S.cutSkirtingPieces} (${pieceLength_display} ${getUnitDisplayName(tile_master_unit_key)} x ${skirtingH_val_disp.toFixed(1)} ${getUnitDisplayName(skirtingH_unit_key_disp)}): ${skirtingTileCuts.cut_pieces[pieceKey]}</li>`;
+                        }
+                         cutListHTML += `<li><small>(${S.skirtingTilesUsedInfo}: ${skirtingTileCuts.tiles_used_for_skirting_base})</small></li>`;
+                        cutListHTML += `</ul>`;
+                    }
+                    cutListDiv.innerHTML = cutListHTML;
+                }
+                
+                if (tileCanvasCtx) { 
+                    drawTileLayout(areaL_mm, areaW_mm, tileL_mm_orig, tileW_mm_orig, baseFloorTiles);
+                }
+
+            } catch (e) {
+                if(errorMessagesDiv) { errorMessagesDiv.textContent = e.message; errorMessagesDiv.style.display = 'block';}
+                if(resultsDiv) resultsDiv.style.display = 'none'; 
+                if(visualizationContainer) visualizationContainer.style.display = 'none';
+                if(cutListDiv) cutListDiv.innerHTML = ''; 
+            }
+        }
+    </script>
+</body>
+</html>
