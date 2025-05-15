@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="hi"> 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -195,7 +195,7 @@
     <!-- यूनिट सेटिंग्स मोडल -->
     <div id="unitSettingsModal" class="modal">
         <div class="unit-modal-content">
-            <span class="close-button" onclick="closeUnitSettingsModal()">&times;</span>
+            <span class="close-button" onclick="closeUnitSettingsModal()">×</span>
             <h2 data-lang-key="unitSettingsTitle">यूनिट सेटिंग्स</h2>
             <label for="currentUnitSelector" data-lang-key="selectUnitLabel">वर्तमान यूनिट चुनें:</label>
             <select id="currentUnitSelector">
@@ -211,7 +211,7 @@
     
     <div id="sheetSettingsModal" class="modal">
         <div class="sheet-size-modal-content">
-            <span class="close-button" onclick="closeSheetSettingsModal()">&times;</span>
+            <span class="close-button" onclick="closeSheetSettingsModal()">×</span>
             <h2 data-lang-key="sheetSettingsTitle">शीट सेटिंग्स</h2> 
             <label for="modalSheetWidth"><span data-lang-key="sheetWidthLabel">शीट की चौड़ाई</span> (<span class="unit-display">cm</span>):</label>
             <input type="number" id="modalSheetWidth" value="122">
@@ -227,7 +227,7 @@
 
     <div id="historyModal" class="modal">
         <div class="modal-content">
-            <span class="close-button" onclick="closeHistoryModal()">&times;</span>
+            <span class="close-button" onclick="closeHistoryModal()">×</span>
             <h2 data-lang-key="historyTitle">हिस्ट्री</h2>
             <ul id="historyList"></ul>
             <p><small data-lang-key="historyNote">नोट: यह केवल पिछले कुछ बदलावों को दिखाता है। किसी आइटम पर क्लिक करके उसे लोड करें।</small></p>
@@ -236,7 +236,7 @@
     
     <script>
         // --- पिछले उत्तर से पूरा JavaScript कोड यहाँ कॉपी-पेस्ट करें ---
-        // --- भाषा और यूनिट बदलने वाले लॉजिक, KERF, और tryPlacePieceOnSheet के नवीनतम सुधारों के साथ ---
+        // --- भाषा और यूनिट बदलने वाले लॉजिक, KERF (हटाया गया), और tryPlacePieceOnSheet के नवीनतम सुधारों के साथ ---
         // START OF FULL JAVASCRIPT
         let pieces = [];
         let pieceIdCounter = 0; 
@@ -245,7 +245,7 @@
         const MIN_TEXT_PIECE_HEIGHT_LOGICAL_INSIDE = 12 * BASE_CANVAS_SCALE * 0.35;
         const MIN_TEXT_FREE_WIDTH_LOGICAL = 20 * BASE_CANVAS_SCALE * 0.35; 
         const MIN_TEXT_FREE_HEIGHT_LOGICAL = 10 * BASE_CANVAS_SCALE * 0.35;
-        const KERF_WIDTH_CM = 0.3; 
+        const KERF_WIDTH_CM = 0; // Kerf is 0 (removed)
 
         const modalSheetLengthEl = document.getElementById('modalSheetLength');
         const modalSheetWidthEl = document.getElementById('modalSheetWidth');
@@ -265,10 +265,10 @@
         const currentUnitSelectorEl = document.getElementById('currentUnitSelector');
         const unitDisplayElements = document.querySelectorAll('.unit-display');
 
-        const STORAGE_KEY_PIECES = 'sheetLayoutCalculatorPieces_v8'; 
-        const STORAGE_KEY_SETTINGS = 'sheetLayoutCalculatorSettings_v8';
-        const STORAGE_KEY_ID_COUNTER = 'sheetLayoutCalculatorIdCounter_v8';
-        const STORAGE_KEY_HISTORY = 'sheetLayoutCalculatorHistory_v8';
+        const STORAGE_KEY_PIECES = 'sheetLayoutCalculatorPieces_v9'; 
+        const STORAGE_KEY_SETTINGS = 'sheetLayoutCalculatorSettings_v9';
+        const STORAGE_KEY_ID_COUNTER = 'sheetLayoutCalculatorIdCounter_v9';
+        const STORAGE_KEY_HISTORY = 'sheetLayoutCalculatorHistory_v9';
         const STORAGE_KEY_LANGUAGE = 'sheetLayoutCalculatorLanguage_v2';
         const STORAGE_KEY_CURRENT_UNIT = 'sheetLayoutCalculatorCurrentUnit_v2';
         const MAX_HISTORY_STATES = 20; 
@@ -278,81 +278,20 @@
 
         const conversionFactorsToCm = { 'cm': 1, 'mm': 0.1, 'm': 100, 'in': 2.54, 'ft': 30.48 };
         
-        const langStrings = { /* ... (पिछले उत्तर से पूरा langStrings ऑब्जेक्ट) ... */
-            "hi": {
-                "appTitle": "विज़ुअल शीट लेआउट कैलकुलेटर", "headerTitle": "शीट लेआउट",
-                "exportJson": "JSON एक्सपोर्ट करें", "importJson": "JSON इम्पोर्ट करें", "clearSavedData": "सेव डेटा क्लियर करें",
-                "addPieceTitle": "पीस जोड़ें", "pieceNameLabel": "पीस का नाम (वैकल्पिक):",
-                "pieceDefaultName": "पीस-", 
-                "pieceWidthLabel": "पीस की चौड़ाई", "pieceLengthLabel": "पीस की लंबाई (ग्रेन)", 
-                "pieceQuantityLabel": "कितने पीस:", "addPieceBtn": "पीस जोड़ें",
-                "addedPiecesTitle": "जोड़े गए पीस", "tableName": "नाम", "tableWidth": "चौड़ाई",
-                "tableLength": "लंबाई", "tableQuantity": "संख्या", "tableRemove": "हटाएं",
-                "calculateLayoutBtn": "लेआउट की गणना करें और दिखाएं", "resetCurrentBtn": "रीसेट (वर्तमान)",
-                "resultsTitle": "परिणाम", "totalSheetsDefault": "कुल आवश्यक शीट्स: 0",
-                "sheetSettingsTitle": "शीट सेटिंग्स", "sheetWidthLabel": "शीट की चौड़ाई",
-                "sheetLengthGrainLabel": "शीट की लंबाई (ग्रेन)", "respectGrainLabel": "ग्रेन की दिशा का ध्यान रखें",
-                "applyAndSaveBtn": "लागू करें और सेव करें", "historyTitle": "हिस्ट्री",
-                "historyNote": "नोट: यह केवल पिछले कुछ बदलावों को दिखाता है। किसी आइटम पर क्लिक करके उसे लोड करें।",
-                "noHistory": "कोई हिस्ट्री उपलब्ध नहीं है।", "historyStatusPrefix": "स्थिति #", "historyPiecesSuffix": " पीस",
-                "historyNoPieces": "कोई पीस नहीं", "alert_invalidPositiveNumbers": "कृपया सभी पीस के लिए मान्य सकारात्मक संख्याएँ दर्ज करें।",
-                "alert_pieceTooLarge": "पीस \"{name}\" ({width}×{length}) शीट ({sheetW}×{sheetL}){grainText} फिट नहीं हो सकता।",
-                "alert_noDataToExport": "एक्सपोर्ट करने के लिए कोई डेटा नहीं है।", "alert_selectValidJson": "कृपया एक मान्य JSON फ़ाइल चुनें।",
-                "alert_jsonImportSuccess": "डेटा JSON फ़ाइल से सफलतापूर्वक इम्पोर्ट किया गया!",
-                "alert_jsonFormatError": "JSON फ़ाइल का प्रारूप सही नहीं है।", "alert_jsonParseError": "JSON फ़ाइल पार्स करने में त्रुटि हुई।",
-                "alert_confirmClearStorage": "क्या आप वाकई localStorage में सेव किए गए सभी डेटा (हिस्ट्री सहित) को हटाना चाहते हैं?",
-                "alert_storageCleared": "localStorage से सेव किया हुआ डेटा सफलतापूर्वक हटा दिया गया है।",
-                "alert_confirmResetCurrent": "क्या आप वाकई वर्तमान डेटा और लेआउट रीसेट करना चाहते हैं?",
-                "alert_historyLoaded": "हिस्ट्री से स्थिति लोड की गई।", "alert_calculateLayoutFirst": "प्रिंट करने के लिए पहले लेआउट की गणना करें।",
-                "alert_layoutForPrint": "लेआउट देखने के लिए \"लेआउट की गणना करें और दिखाएं\" पर क्लिक करें।",
-                "alert_sheetSettingsUpdated": "शीट सेटिंग्स अपडेट की गईं।", "totalSheetsResult": "कुल आवश्यक शीट्स: {count}",
-                "sheetTitlePrefix": "शीट", "grainedSheetSuffix": "(ग्रेन वाली)", "noGrainSheetSuffix": "(बिना ग्रेन)",
-                "unitSettingsTitle": "यूनिट सेटिंग्स", "selectUnitLabel": "वर्तमान यूनिट चुनें:", "applyBtn":"लागू करें",
-                "alert_unitChanged":"यूनिट {unit} में बदल दी गई है। मौजूदा मान रूपांतरित कर दिए गए हैं。",
-                "alert_invalidSheetSize": "कृपया मान्य शीट साइज़ दर्ज करें।",
-                "alert_pieceTooLargeSheet": "पीस \"{name}\" ({width}{unit} × {length}{unit}) शीट #{sheetNum} पर फिट नहीं हो सका।"
-            },
-            "en": { /* ... (अंग्रेजी स्ट्रिंग्स यहाँ डालें) ... */ 
-                "appTitle": "Visual Sheet Layout Calculator", "headerTitle": "Sheet Layout",
-                "exportJson": "Export JSON", "importJson": "Import JSON", "clearSavedData": "Clear Saved Data",
-                "addPieceTitle": "Add Piece", "pieceNameLabel": "Piece Name (Optional):", "pieceDefaultName": "Piece-",
-                "pieceWidthLabel": "Piece Width", "pieceLengthLabel": "Piece Length (Grain)",
-                "pieceQuantityLabel": "Quantity:", "addPieceBtn": "Add Piece", "addedPiecesTitle": "Added Pieces",
-                "tableName": "Name", "tableWidth": "Width", "tableLength": "Length", "tableQuantity": "Qty",
-                "tableRemove": "Remove", "calculateLayoutBtn": "Calculate & Show Layout", "resetCurrentBtn": "Reset (Current)",
-                "resultsTitle": "Results", "totalSheetsDefault": "Total Sheets Required: 0",
-                "sheetSettingsTitle": "Sheet Settings", "sheetWidthLabel": "Sheet Width",
-                "sheetLengthGrainLabel": "Sheet Length (Grain)", "respectGrainLabel": "Respect Grain Direction",
-                "applyAndSaveBtn": "Apply & Save", "historyTitle": "History",
-                "historyNote": "Note: This only shows recent changes. Click an item to load it.",
-                "noHistory": "No history available.", "historyStatusPrefix": "State #", "historyPiecesSuffix": " pieces",
-                "historyNoPieces": "No pieces", "alert_invalidPositiveNumbers": "Please enter valid positive numbers for all piece dimensions.",
-                "alert_pieceTooLarge": "Piece \"{name}\" ({width}×{length}) cannot fit on sheet ({sheetW}×{sheetL}){grainText}.",
-                "alert_noDataToExport": "No data to export.", "alert_selectValidJson": "Please select a valid JSON file.",
-                "alert_jsonImportSuccess": "Data imported successfully from JSON file!",
-                "alert_jsonFormatError": "JSON file format is incorrect.", "alert_jsonParseError": "Error parsing JSON file.",
-                "alert_confirmClearStorage": "Are you sure you want to delete all saved data (including history) from localStorage?",
-                "alert_storageCleared": "Saved data successfully cleared from localStorage.",
-                "alert_confirmResetCurrent": "Are you sure you want to reset the current data and layout?",
-                "alert_historyLoaded": "State loaded from history.", "alert_calculateLayoutFirst": "Please calculate the layout first to print.",
-                "alert_layoutForPrint": "Click \"Calculate & Show Layout\" to see the layout.",
-                "alert_sheetSettingsUpdated": "Sheet settings updated.", "totalSheetsResult": "Total Sheets Required: {count}",
-                "sheetTitlePrefix": "Sheet", "grainedSheetSuffix": "(Grained)", "noGrainSheetSuffix": "(No Grain)",
-                "unitSettingsTitle": "Unit Settings", "selectUnitLabel": "Select Current Unit:", "applyBtn":"Apply",
-                "alert_unitChanged":"Unit changed to {unit}. Existing values have been converted.",
-                "alert_invalidSheetSize": "Please enter valid sheet dimensions.",
-                "alert_pieceTooLargeSheet": "Piece \"{name}\" ({width}{unit} × {length}{unit}) could not fit on Sheet #{sheetNum}."
-            }
+        const langStrings = { /* ... (langStrings ऑब्जेक्ट पूरा डालें) ... */
+            "hi": {"appTitle":"विज़ुअल शीट लेआउट कैलकुलेटर","headerTitle":"शीट लेआउट","exportJson":"JSON एक्सपोर्ट करें","importJson":"JSON इम्पोर्ट करें","clearSavedData":"सेव डेटा क्लियर करें","addPieceTitle":"पीस जोड़ें","pieceNameLabel":"पीस का नाम (वैकल्पिक):","pieceDefaultName":"पीस-","pieceWidthLabel":"पीस की चौड़ाई","pieceLengthLabel":"पीस की लंबाई (ग्रेन)","pieceQuantityLabel":"कितने पीस:","addPieceBtn":"पीस जोड़ें","addedPiecesTitle":"जोड़े गए पीस","tableName":"नाम","tableWidth":"चौड़ाई","tableLength":"लंबाई","tableQuantity":"संख्या","tableRemove":"हटाएं","calculateLayoutBtn":"लेआउट की गणना करें और दिखाएं","resetCurrentBtn":"रीसेट (वर्तमान)","resultsTitle":"परिणाम","totalSheetsDefault":"कुल आवश्यक शीट्स: 0","sheetSettingsTitle":"शीट सेटिंग्स","sheetWidthLabel":"शीट की चौड़ाई","sheetLengthGrainLabel":"शीट की लंबाई (ग्रेन)","respectGrainLabel":"ग्रेन की दिशा का ध्यान रखें","applyAndSaveBtn":"लागू करें और सेव करें","historyTitle":"हिस्ट्री","historyNote":"नोट: यह केवल पिछले कुछ बदलावों को दिखाता है। किसी आइटम पर क्लिक करके उसे लोड करें।","noHistory":"कोई हिस्ट्री उपलब्ध नहीं है।","historyStatusPrefix":"स्थिति #","historyPiecesSuffix":" पीस","historyNoPieces":"कोई पीस नहीं","alert_invalidPositiveNumbers":"कृपया सभी पीस के लिए मान्य सकारात्मक संख्याएँ दर्ज करें।","alert_pieceTooLarge":"पीस \"{name}\" ({width}×{length}) शीट ({sheetW}×{sheetL}){grainText} फिट नहीं हो सकता।","alert_noDataToExport":"एक्सपोर्ट करने के लिए कोई डेटा नहीं है।","alert_selectValidJson":"कृपया एक मान्य JSON फ़ाइल चुनें।","alert_jsonImportSuccess":"डेटा JSON फ़ाइल से सफलतापूर्वक इम्पोर्ट किया गया!","alert_jsonFormatError":"JSON फ़ाइल का प्रारूप सही नहीं है।","alert_jsonParseError":"JSON फ़ाइल पार्स करने में त्रुटि हुई।","alert_confirmClearStorage":"क्या आप वाकई localStorage में सेव किए गए सभी डेटा (हिस्ट्री सहित) को हटाना चाहते हैं?","alert_storageCleared":"localStorage से सेव किया हुआ डेटा सफलतापूर्वक हटा दिया गया है।","alert_confirmResetCurrent":"क्या आप वाकई वर्तमान डेटा और लेआउट रीसेट करना चाहते हैं?","alert_historyLoaded":"हिस्ट्री से स्थिति लोड की गई।","alert_calculateLayoutFirst":"प्रिंट करने के लिए पहले लेआउट की गणना करें।","printReplace":"प्रिंट करने के लिए पहले ","alert_layoutForPrint":"लेआउट देखने के लिए \"लेआउट की गणना करें और दिखाएं\" पर क्लिक करें।","alert_sheetSettingsUpdated":"शीट सेटिंग्स अपडेट की गईं।","totalSheetsResult":"कुल आवश्यक शीट्स: {count}","sheetTitlePrefix":"शीट","grainedSheetSuffix":"(ग्रेन वाली)","noGrainSheetSuffix":"(बिना ग्रेन)","unitSettingsTitle":"यूनिट सेटिंग्स","selectUnitLabel":"वर्तमान यूनिट चुनें:","applyBtn":"लागू करें","alert_unitChanged":"यूनिट {unit} में बदल दी गई है। मौजूदा मान रूपांतरित कर दिए गए हैं।","alert_invalidSheetSize":"कृपया मान्य शीट साइज़ दर्ज करें।","alert_pieceTooLargeSheet":"पीस \"{name}\" ({width}{unit} × {length}{unit}) शीट #{sheetNum} पर फिट नहीं हो सका।"},
+            "en": {"appTitle":"Visual Sheet Layout Calculator","headerTitle":"Sheet Layout","exportJson":"Export JSON","importJson":"Import JSON","clearSavedData":"Clear Saved Data","addPieceTitle":"Add Piece","pieceNameLabel":"Piece Name (Optional):","pieceDefaultName":"Piece-","pieceWidthLabel":"Piece Width","pieceLengthLabel":"Piece Length (Grain)","pieceQuantityLabel":"Quantity:","addPieceBtn":"Add Piece","addedPiecesTitle":"Added Pieces","tableName":"Name","tableWidth":"Width","tableLength":"Length","tableQuantity":"Qty","tableRemove":"Remove","calculateLayoutBtn":"Calculate & Show Layout","resetCurrentBtn":"Reset (Current)","resultsTitle":"Results","totalSheetsDefault":"Total Sheets Required: 0","sheetSettingsTitle":"Sheet Settings","sheetWidthLabel":"Sheet Width","sheetLengthGrainLabel":"Sheet Length (Grain)","respectGrainLabel":"Respect Grain Direction","applyAndSaveBtn":"Apply & Save","historyTitle":"History","historyNote":"Note: This only shows recent changes. Click an item to load it.","noHistory":"No history available.","historyStatusPrefix":"State #","historyPiecesSuffix":" pieces","historyNoPieces":"No pieces","alert_invalidPositiveNumbers":"Please enter valid positive numbers for all piece dimensions.","alert_pieceTooLarge":"Piece \"{name}\" ({width}×{length}) cannot fit on sheet ({sheetW}×{sheetL}){grainText}.","alert_noDataToExport":"No data to export.","alert_selectValidJson":"Please select a valid JSON file.","alert_jsonImportSuccess":"Data imported successfully from JSON file!","alert_jsonFormatError":"JSON file format is incorrect.","alert_jsonParseError":"Error parsing JSON file.","alert_confirmClearStorage":"Are you sure you want to delete all saved data (including history) from localStorage?","alert_storageCleared":"Saved data successfully cleared from localStorage.","alert_confirmResetCurrent":"Are you sure you want to reset the current data and layout?","alert_historyLoaded":"State loaded from history.","alert_calculateLayoutFirst":"Please calculate the layout first to print.","printReplace":"to print.","alert_layoutForPrint":"Click \"Calculate & Show Layout\" to see the layout.","alert_sheetSettingsUpdated":"Sheet settings updated.","totalSheetsResult":"Total Sheets Required: {count}","sheetTitlePrefix":"Sheet","grainedSheetSuffix":"(Grained)","noGrainSheetSuffix":"(No Grain)","unitSettingsTitle":"Unit Settings","selectUnitLabel":"Select Current Unit:","applyBtn":"Apply","alert_unitChanged":"Unit changed to {unit}. Existing values have been converted.","alert_invalidSheetSize":"Please enter valid sheet dimensions.","alert_pieceTooLargeSheet":"Piece \"{name}\" ({width}{unit} × {length}{unit}) could not fit on Sheet #{sheetNum}."}
         };
 
         // --- बाकी सभी JavaScript फंक्शन्स (भाषा, यूनिट, localStorage, हिस्ट्री, UI, कैलकुलेशन, ड्राइंग) पिछले उत्तरों से यहाँ डालें ---
-        // --- सुनिश्चित करें कि tryPlacePieceOnSheet का नवीनतम "स्कोरिंग सुधारित" संस्करण उपयोग किया जा रहा है ---
+        // --- सुनिश्चित करें कि tryPlacePieceOnSheet का नवीनतम "स्कोरिंग सुधारित" और KERF-रहित संस्करण उपयोग किया जा रहा है ---
         // --- और सभी उपयोगकर्ता को दिखने वाले टेक्स्ट के लिए getLangString() का उपयोग करें ---
+        
         // START OF PREVIOUSLY PROVIDED FULL JAVASCRIPT (MERGED AND MINOR UPDATES)
         function getLangString(key, replacements = {}) { let str = (langStrings[currentLanguage] && langStrings[currentLanguage][key]) || `[[${key}]]`; for (const placeholder in replacements) { str = str.replace(`{${placeholder}}`, replacements[placeholder]); } return str; }
-        function updateUnitDisplaysDOM(unit) { unitDisplayElements.forEach(el => el.textContent = unit); }
+        function updateUnitDisplaysDOM(unit) { unitDisplayElements.forEach(el => el.textContent = unit); const pieceWidthLabel = document.querySelector('label[for="partWidth"] span[data-lang-key="pieceWidthLabel"]'); if(pieceWidthLabel) pieceWidthLabel.parentElement.childNodes[2].textContent = unit; const pieceLengthLabel = document.querySelector('label[for="partLength"] span[data-lang-key="pieceLengthLabel"]'); if(pieceLengthLabel) pieceLengthLabel.parentElement.childNodes[2].textContent = unit; const tableWidthHeader = document.querySelector('#piecesTable th:nth-child(2) span.unit-display'); if(tableWidthHeader) tableWidthHeader.textContent = unit; const tableLengthHeader = document.querySelector('#piecesTable th:nth-child(3) span.unit-display'); if(tableLengthHeader) tableLengthHeader.textContent = unit; const modalSheetWidthLabel = document.querySelector('#sheetSettingsModal label[for="modalSheetWidth"] span.unit-display'); if(modalSheetWidthLabel) modalSheetWidthLabel.textContent = unit; const modalSheetLengthLabel = document.querySelector('#sheetSettingsModal label[for="modalSheetLength"] span.unit-display'); if(modalSheetLengthLabel) modalSheetLengthLabel.textContent = unit; }
         function convertToCm(value, fromUnit) { if (value === "" || value === null || isNaN(parseFloat(value))) return ""; return parseFloat(value) * conversionFactorsToCm[fromUnit]; }
-        function convertFromCm(valueInCm, toUnit) { if (valueInCm === "" || valueInCm === null || isNaN(parseFloat(valueInCm))) return ""; const result = parseFloat(valueInCm) / conversionFactorsToCm[toUnit]; const dp = (toUnit === 'mm' || toUnit === 'cm') ? 0 : 2; return parseFloat(result.toFixed(dp)); }
+        function convertFromCm(valueInCm, toUnit) { if (valueInCm === "" || valueInCm === null || isNaN(parseFloat(valueInCm))) return ""; const result = parseFloat(valueInCm) / conversionFactorsToCm[toUnit]; const dp = (toUnit === 'mm' || toUnit === 'cm') ? 0 : (toUnit === 'm' ? 3 : 2) ; return parseFloat(result.toFixed(dp)); }
         function setLanguage(lang) { currentLanguage = lang; document.documentElement.lang = lang; const elements = document.querySelectorAll('[data-lang-key]'); elements.forEach(el => { const key = el.getAttribute('data-lang-key'); if (langStrings[lang] && langStrings[lang][key]) { if (el.tagName === 'INPUT' && el.placeholder !== undefined && el.hasAttribute('data-lang-placeholder')) { if (key === "pieceDefaultName") { el.placeholder = getLangString(key) + (pieceIdCounter + 1); }  else { el.placeholder = getLangString(key); } } else if (el.tagName === 'TITLE') { document.title = getLangString(key); } else { el.textContent = getLangString(key); } } }); updateUnitDisplaysDOM(currentUnit); renderPiecesTable(); if (historyModalEl.style.display === 'flex') showHistoryModal(); if (sheetsContainerEl.children.length > 0 && !sheetsContainerEl.textContent.includes(getLangString("alert_layoutForPrint"))) { Array.from(sheetsContainerEl.querySelectorAll('.sheet-wrapper h3')).forEach(h3 => { const sheetIdMatch = h3.textContent.match(/#(\d+)/); if (sheetIdMatch) { const id = sheetIdMatch[1]; const isGrain = h3.textContent.includes(langStrings.hi.grainedSheetSuffix) || h3.textContent.includes(langStrings.en.grainedSheetSuffix) || modalSheetHasGrainEl.checked; h3.textContent = `${getLangString("sheetTitlePrefix")} #${id} ${isGrain ? getLangString("grainedSheetSuffix") : getLangString("noGrainSheetSuffix")}`; } }); const summaryText = resultsSummaryEl.textContent; const numMatch = summaryText.match(/\d+/); if(numMatch){ resultsSummaryEl.textContent = getLangString("totalSheetsResult", {count: numMatch[0]}); } else { resultsSummaryEl.textContent = getLangString("totalSheetsDefault"); } } localStorage.setItem(STORAGE_KEY_LANGUAGE, lang); }
         function toggleLanguage() { const newLang = currentLanguage === 'hi' ? 'en' : 'hi'; setLanguage(newLang); }
         function showUnitSettingsModal() { currentUnitSelectorEl.value = currentUnit; unitSettingsModalEl.style.display = 'flex'; }
@@ -384,6 +323,7 @@
         function closeHistoryModal() { historyModalEl.style.display = 'none'; }
         
         document.addEventListener('DOMContentLoaded', () => { 
+            assignDomElements(); 
             const savedLang = localStorage.getItem(STORAGE_KEY_LANGUAGE); 
             const savedUnit = localStorage.getItem(STORAGE_KEY_CURRENT_UNIT);
             currentUnit = savedUnit || 'cm'; 
@@ -401,12 +341,12 @@
             if (savedSettingsStr) {  
                 try { 
                     const settings = JSON.parse(savedSettingsStr); 
-                    modalSheetWidthEl.value = convertFromCm(settings.sheetWidth, currentUnit);  // cm से वर्तमान यूनिट
-                    modalSheetLengthEl.value = convertFromCm(settings.sheetLength, currentUnit); // cm से वर्तमान यूनिट
+                    modalSheetWidthEl.value = convertFromCm(settings.sheetWidth, currentUnit);  
+                    modalSheetLengthEl.value = convertFromCm(settings.sheetLength, currentUnit); 
                     modalSheetHasGrainEl.checked = typeof settings.hasGrain === 'boolean' ? settings.hasGrain : true; 
                     dataLoadedFromStorage = true; 
                 } catch(e) { console.error("localStorage से सेटिंग्स लोड करने में त्रुटि", e); 
-                    modalSheetWidthEl.value = convertFromCm(122, currentUnit); // डिफ़ॉल्ट cm मान को वर्तमान यूनिट में बदलें
+                    modalSheetWidthEl.value = convertFromCm(122, currentUnit); 
                     modalSheetLengthEl.value = convertFromCm(244, currentUnit);
                     modalSheetHasGrainEl.checked = true;
                 } 
@@ -438,8 +378,84 @@
         
         function calculateAndDrawLayout() { if (pieces.length === 0) { alert(getLangString("alert_calculateLayoutFirst").replace(getLangString("printReplace") || "प्रिंट करने के लिए पहले ", "")); return; } const sheetL_cm_internal = convertToCm(modalSheetLengthEl.value, currentUnit); const sheetW_cm_internal = convertToCm(modalSheetWidthEl.value, currentUnit); const sheetHasGrain = modalSheetHasGrainEl.checked; if (isNaN(sheetL_cm_internal) || sheetL_cm_internal <= 0 || isNaN(sheetW_cm_internal) || sheetW_cm_internal <= 0) { alert(getLangString("alert_invalidSheetSize")); return; } let individualPieces = []; let pieceInstanceCounters = {}; pieces.forEach(p_orig => { if (!pieceInstanceCounters[p_orig.id]) pieceInstanceCounters[p_orig.id] = 0; for (let i = 0; i < p_orig.quantity; i++) { pieceInstanceCounters[p_orig.id]++; individualPieces.push({ ...p_orig, uniqueId: `${p_orig.id}-${pieceInstanceCounters[p_orig.id]}`, instanceNum: pieceInstanceCounters[p_orig.id], isPlaced: false, x: 0, y: 0, sheetId: 0, placedLength: 0, placedWidth: 0, isRotated: false }); } }); individualPieces.sort((a, b) => b.area - a.area); let sheetsLayoutData = []; let currentSheetId = 0; while (individualPieces.some(p => !p.isPlaced)) { currentSheetId++; const newSheet = { id: currentSheetId, placedPieces: [], hasGrain: sheetHasGrain, width: sheetW_cm_internal, height: sheetL_cm_internal, freeRects: [{ x: 0, y: 0, width: sheetW_cm_internal, height: sheetL_cm_internal, id: `FR-S${currentSheetId}-0` }]}; sheetsLayoutData.push(newSheet); let piecesPlacedOnThisSheetLoop = true; while(piecesPlacedOnThisSheetLoop){ piecesPlacedOnThisSheetLoop = false; individualPieces.sort((a,b) => a.isPlaced ? 1 : (b.isPlaced ? -1 : b.area - a.area)); for (let piece of individualPieces) { if (piece.isPlaced) continue; if (tryPlacePieceOnSheet(piece, newSheet)) { piecesPlacedOnThisSheetLoop = true; break; } } } if (newSheet.placedPieces.length === 0 && individualPieces.some(p => !p.isPlaced)) { const unplacedExample = individualPieces.find(p => !p.isPlaced); alert(getLangString("alert_pieceTooLargeSheet", {name: unplacedExample.name, width:convertFromCm(unplacedExample.width, currentUnit), length:convertFromCm(unplacedExample.length, currentUnit), sheetNum: currentSheetId, unit: currentUnit})); displayLayout(sheetsLayoutData.filter(s => s.placedPieces.length > 0), sheetL_cm_internal, sheetW_cm_internal); return; } } displayLayout(sheetsLayoutData, sheetL_cm_internal, sheetW_cm_internal); }
         let freeRectIdCounter_layout = 0; 
-        function tryPlacePieceOnSheet(piece, sheet) { sheet.freeRects.sort((a, b) => (a.width * a.height) - (b.width * b.height) || a.y - b.y || a.x - b.x); let bestFitFound = null; for (let i = 0; i < sheet.freeRects.length; i++) { const rect = sheet.freeRects[i]; const pieceOriginalLength = piece.length; const pieceOriginalWidth = piece.width; if (pieceOriginalLength <= rect.height && pieceOriginalWidth <= rect.width) { const requiredWidthWithKerf = pieceOriginalWidth + ((rect.x + pieceOriginalWidth < sheet.width - 0.01) ? KERF_WIDTH_CM : 0); const requiredHeightWithKerf = pieceOriginalLength + ((rect.y + pieceOriginalLength < sheet.height - 0.01) ? KERF_WIDTH_CM : 0); if (requiredWidthWithKerf <= rect.width + 0.01 && requiredHeightWithKerf <= rect.height + 0.01) { const score = (rect.width * rect.height) - (pieceOriginalWidth * pieceOriginalLength); if (!bestFitFound || score < bestFitFound.score) { bestFitFound = { rectIndex: i, x: rect.x, y: rect.y, placedLength: pieceOriginalLength, placedWidth: pieceOriginalWidth, isRotated: false, score: score }; } } } if (!sheet.hasGrain && pieceOriginalWidth <= rect.height && pieceOriginalLength <= rect.width) { const requiredWidthWithKerf_rotated = pieceOriginalLength + ((rect.x + pieceOriginalLength < sheet.width - 0.01) ? KERF_WIDTH_CM : 0); const requiredHeightWithKerf_rotated = pieceOriginalWidth + ((rect.y + pieceOriginalWidth < sheet.height - 0.01) ? KERF_WIDTH_CM : 0); if (requiredWidthWithKerf_rotated <= rect.width + 0.01 && requiredHeightWithKerf_rotated <= rect.height + 0.01) { const score = (rect.width * rect.height) - (pieceOriginalLength * pieceOriginalWidth); if (!bestFitFound || score < bestFitFound.score) { bestFitFound = { rectIndex: i, x: rect.x, y: rect.y, placedLength: pieceOriginalWidth, placedWidth: pieceOriginalLength, isRotated: true, score: score }; } } } } if (bestFitFound) { piece.x = bestFitFound.x; piece.y = bestFitFound.y; piece.placedLength = bestFitFound.placedLength; piece.placedWidth = bestFitFound.placedWidth; piece.isRotated = bestFitFound.isRotated; piece.sheetId = sheet.id; piece.isPlaced = true; sheet.placedPieces.push({...piece}); splitFreeRect(sheet, bestFitFound.rectIndex, piece); return true; } return false;  }
-        function splitFreeRect(sheet, rectIndexBeingUsed, placedPieceDetails) { const oldRect = sheet.freeRects.splice(rectIndexBeingUsed, 1)[0]; let newPotentialRects = []; const widthTaken = placedPieceDetails.placedWidth + ( (oldRect.x + placedPieceDetails.placedWidth < sheet.width - 0.01) ? KERF_WIDTH_CM : 0 ); const heightTaken = placedPieceDetails.placedLength + ( (oldRect.y + placedPieceDetails.placedLength < sheet.height - 0.01) ? KERF_WIDTH_CM : 0 ); if (oldRect.height - heightTaken > 0.01) { newPotentialRects.push({ x: oldRect.x, y: oldRect.y + heightTaken, width: oldRect.width, height: oldRect.height - heightTaken, id: `FR-S${sheet.id}-${++freeRectIdCounter_layout}-B` }); } if (oldRect.width - widthTaken > 0.01) { newPotentialRects.push({ x: oldRect.x + widthTaken, y: oldRect.y, width: oldRect.width - widthTaken, height: placedPieceDetails.placedLength, id: `FR-S${sheet.id}-${++freeRectIdCounter_layout}-R`}); } if (oldRect.width - widthTaken > 0.01 && oldRect.height - heightTaken > 0.01 ) { newPotentialRects.push({ x: oldRect.x + widthTaken, y: oldRect.y + heightTaken, width: oldRect.width - widthTaken, height: oldRect.height - heightTaken, id: `FR-S${sheet.id}-${++freeRectIdCounter_layout}-BR`}); } sheet.freeRects.push(...newPotentialRects.filter(r => r.width > 0.1 && r.height > 0.1)); optimizeFreeRects(sheet.freeRects, sheet.placedPieces); }
+        function tryPlacePieceOnSheet(piece, sheet) {
+            sheet.freeRects.sort((a, b) => (a.width * a.height) - (b.width * b.height) || a.y - b.y || a.x - b.x); 
+            let bestFitCandidate = null; 
+
+            for (let i = 0; i < sheet.freeRects.length; i++) {
+                const rect = sheet.freeRects[i];
+                const pieceOriginalLength = piece.length; // cm में, ग्रेन वाली डायमेंशन
+                const pieceOriginalWidth = piece.width;   // cm में, दूसरी डायमेंशन
+
+                // ओरिएंटेशन 1: सीधा
+                if (pieceOriginalLength <= rect.height && pieceOriginalWidth <= rect.width) {
+                    const score = (rect.width * rect.height) - (pieceOriginalWidth * pieceOriginalLength);
+                    if (!bestFitCandidate || score < bestFitCandidate.score) {
+                        bestFitCandidate = { 
+                            rectIndex: i, x: rect.x, y: rect.y,
+                            placedLength: pieceOriginalLength, placedWidth: pieceOriginalWidth, 
+                            isRotated: false, score: score 
+                        };
+                    }
+                }
+
+                // ओरिएंटेशन 2: घूमा हुआ
+                if (!sheet.hasGrain && pieceOriginalWidth <= rect.height && pieceOriginalLength <= rect.width) {
+                    const score = (rect.width * rect.height) - (pieceOriginalLength * pieceOriginalWidth);
+                     if (!bestFitCandidate || score < bestFitCandidate.score) {
+                        bestFitCandidate = { 
+                            rectIndex: i, x: rect.x, y: rect.y,
+                            placedLength: pieceOriginalWidth, placedWidth: pieceOriginalLength, 
+                            isRotated: true, score: score
+                        };
+                    }
+                }
+            } 
+            
+            if (bestFitCandidate) {
+                piece.x = bestFitCandidate.x; 
+                piece.y = bestFitCandidate.y;
+                piece.placedLength = bestFitCandidate.placedLength; 
+                piece.placedWidth = bestFitCandidate.placedWidth;   
+                piece.isRotated = bestFitCandidate.isRotated; 
+                piece.sheetId = sheet.id; 
+                piece.isPlaced = true;
+                sheet.placedPieces.push({...piece}); 
+                splitFreeRect(sheet, bestFitCandidate.rectIndex, piece); 
+                return true;
+            }
+            return false; 
+        }
+        function splitFreeRect(sheet, rectIndexBeingUsed, placedPieceDetails) {
+            const oldRect = sheet.freeRects.splice(rectIndexBeingUsed, 1)[0]; 
+            let newPotentialRects = [];
+            
+            const pieceActualWidth = placedPieceDetails.placedWidth;
+            const pieceActualLength = placedPieceDetails.placedLength;
+            
+            if (oldRect.height - pieceActualLength > 0.01) {
+                newPotentialRects.push({ x: oldRect.x, y: oldRect.y + pieceActualLength,
+                    width: oldRect.width, height: oldRect.height - pieceActualLength,
+                    id: `FR-S${sheet.id}-${++freeRectIdCounter_layout}-B` });
+            }
+            if (oldRect.width - pieceActualWidth > 0.01) {
+                newPotentialRects.push({ x: oldRect.x + pieceActualWidth, y: oldRect.y,
+                    width: oldRect.width - pieceActualWidth, height: pieceActualLength, 
+                    id: `FR-S${sheet.id}-${++freeRectIdCounter_layout}-R`});
+            }
+            if ((oldRect.width - pieceActualWidth > 0.01) && (oldRect.height - pieceActualLength > 0.01) ) {
+                 const y_br_start = oldRect.y + pieceActualLength;
+                 const x_br_start = oldRect.x + pieceActualWidth;
+                 const width_br = oldRect.width - pieceActualWidth;
+                 const height_br = oldRect.height - pieceActualLength;
+                 if (width_br > 0.01 && height_br > 0.01) {
+                    newPotentialRects.push({ x: x_br_start, y: y_br_start, width: width_br, height: height_br,
+                        id: `FR-S${sheet.id}-${++freeRectIdCounter_layout}-BR` });
+                 }
+            }
+            sheet.freeRects.push(...newPotentialRects.filter(r => r.width > 0.1 && r.height > 0.1));
+            optimizeFreeRects(sheet.freeRects, sheet.placedPieces);
+        }
         function optimizeFreeRects(freeRects, placedPieces) { if (!freeRects || freeRects.length === 0) return; let optimizedIteration; do { optimizedIteration = false; for (let i = freeRects.length - 1; i >= 0; i--) { if (!freeRects[i] || freeRects[i].width < 0.1 || freeRects[i].height < 0.1) { if(freeRects[i]) freeRects.splice(i, 1); optimizedIteration = true; continue; } for (let j = freeRects.length - 1; j >= 0; j--) { if (i === j || !freeRects[i] || !freeRects[j]) continue; if (isRectInside(freeRects[i], freeRects[j])) { freeRects.splice(i, 1); optimizedIteration = true; break; } } } } while (optimizedIteration); freeRects.sort((a, b) => a.y - b.y || a.x - b.x); }
         function isRectInside(rectA, rectB) {  return rectA.x >= rectB.x && rectA.y >= rectB.y && rectA.x + rectA.width <= rectB.x + rectB.width && rectA.y + rectA.height <= rectB.y + rectB.height; }
         function rectanglesOverlap(rect1, rect2) { const tolerance = 0.01;  return !(rect1.x + rect1.width <= rect2.x + tolerance || rect2.x + rect2.width <= rect1.x + tolerance || rect1.y + rect1.height <= rect2.y + tolerance || rect2.y + rect2.height <= rect1.y + tolerance); }
