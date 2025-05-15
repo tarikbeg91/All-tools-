@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="hi"> <!-- डिफ़ॉल्ट भाषा 'hi' या जो भी आप रखना चाहें -->
+<html lang="hi"> <!-- डिफ़ॉल्ट भाषा -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>मेरा टूल हब</title>
+    <title data-translate-key="hubTitle">मेरा टूल हब</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
+        /* --- CSS वेरिएबल्स और स्टाइल्स (पहले जैसे) --- */
         :root {
             --bg-color-light: #f0f0f0;
             --text-color-light: #333;
@@ -14,7 +15,11 @@
             --nav-button-text-light: white;
             --nav-button-active-bg-light: #007bff;
             --iframe-border-light: #ccc;
-            --header-bg-light: #e9ecef; /* हेडर के लिए */
+            --header-bg-light: #e9ecef;
+            --header-text-color-light: #212529;
+            --control-icon-color-light: #495057;
+            --control-icon-hover-bg-light: rgba(0,0,0,0.075);
+
 
             --bg-color-dark: #1a1a1a;
             --text-color-dark: #f0f0f0;
@@ -23,7 +28,10 @@
             --nav-button-text-dark: #f0f0f0;
             --nav-button-active-bg-dark: #0056b3;
             --iframe-border-dark: #444;
-            --header-bg-dark: #343a40; /* हेडर के लिए */
+            --header-bg-dark: #343a40;
+            --header-text-color-dark: #f8f9fa;
+            --control-icon-color-dark: #adb5bd;
+            --control-icon-hover-bg-dark: rgba(255,255,255,0.1);
         }
 
         body {
@@ -44,6 +52,7 @@
 
         .app-header {
             background-color: var(--header-bg-light);
+            color: var(--header-text-color-light);
             padding: 10px 20px;
             display: flex;
             justify-content: space-between;
@@ -52,61 +61,73 @@
         }
         body.dark-mode .app-header {
             background-color: var(--header-bg-dark);
+            color: var(--header-text-color-dark);
         }
 
         .app-header h1 {
             margin: 0;
             font-size: 1.5em;
+            white-space: nowrap; /* Prevent title from wrapping too soon */
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px; /* आइकन के बीच थोड़ा कम गैप */
         }
 
         .header-controls .control-icon {
             background: none;
             border: none;
-            font-size: 1.5em;
+            font-size: 1.4em; /* आइकन का आकार थोड़ा कम */
             cursor: pointer;
-            color: var(--text-color-light); /* डिफ़ॉल्ट रूप से बॉडी टेक्स्ट रंग का उपयोग करें */
-            padding: 5px 8px;
+            color: var(--control-icon-color-light);
+            padding: 6px 8px;
             border-radius: 5px;
             transition: background-color 0.2s, color 0.2s;
+            line-height: 1; /* वर्टिकल अलाइनमेंट में मदद के लिए */
         }
         body.dark-mode .header-controls .control-icon {
-            color: var(--text-color-dark);
+            color: var(--control-icon-color-dark);
         }
         .header-controls .control-icon:hover {
-            background-color: rgba(0,0,0,0.1);
+            background-color: var(--control-icon-hover-bg-light);
         }
         body.dark-mode .header-controls .control-icon:hover {
-             background-color: rgba(255,255,255,0.1);
+             background-color: var(--control-icon-hover-bg-dark);
         }
 
 
         nav {
             background-color: var(--nav-bg-light);
-            padding: 8px 0; /* थोड़ी पैडिंग कम */
+            padding: 8px 0;
             text-align: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
             gap: 5px;
+            transition: background-color 0.3s;
         }
         body.dark-mode nav {
             background-color: var(--nav-bg-dark);
         }
 
         nav button.nav-button {
-            padding: 8px 15px; /* थोड़ी पैडिंग कम */
+            padding: 8px 12px; /* बटन का आकार थोड़ा छोटा */
             margin: 4px;
-            font-size: 0.9em; /* थोड़ा छोटा फॉन्ट */
+            font-size: 0.85em; /* फॉन्ट थोड़ा छोटा */
             color: var(--nav-button-text-light);
             background-color: var(--nav-button-bg-light);
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.2s;
-            display: inline-flex; /* आइकन और टेक्स्ट के लिए */
+            transition: background-color 0.2s, color 0.2s;
+            display: inline-flex;
             align-items: center;
-            gap: 8px; /* आइकन और टेक्स्ट के बीच गैप */
+            gap: 6px;
         }
         body.dark-mode nav button.nav-button {
             color: var(--nav-button-text-dark);
@@ -132,6 +153,7 @@
             flex-grow: 1;
             overflow: hidden;
             border-top: 1px solid var(--iframe-border-light);
+            position: relative; /* लोडिंग संदेश के लिए */
         }
         body.dark-mode #appContainer {
             border-top: 1px solid var(--iframe-border-dark);
@@ -143,123 +165,136 @@
             border: none;
             display: block;
         }
+
+        #homeContent { /* होम कंटेंट पहले जैसा */
+            padding: 20px;
+            display: none; /* शुरू में छिपा हुआ */
+            text-align: center;
+            flex-grow: 1;
+            align-items:center;
+            justify-content:center;
+            display:flex; /* showHomeContent में 'flex' सेट होगा */
+            flex-direction:column;
+        }
+
+        /* वैकल्पिक: iframe लोड होते समय संदेश */
+        .loading-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2em;
+            color: var(--text-color-light);
+            display: none; /* JS द्वारा दिखाया जाएगा */
+        }
+        body.dark-mode .loading-message {
+            color: var(--text-color-dark);
+        }
+
     </style>
 </head>
-<body class=""> <!-- डार्क मोड क्लास JS द्वारा जोड़ी जाएगी -->
+<body class="">
 
     <header class="app-header">
-        <h1>मेरा टूल हब</h1>
+        <h1 data-translate-key="hubMainTitle">मेरा टूल हब</h1>
         <div class="header-controls">
-            <button id="homeButton" class="control-icon" title="होम"><i class="fas fa-home"></i></button>
-            <button id="darkModeToggle" class="control-icon" title="डार्क/लाइट मोड टॉगल करें"><i class="fas fa-moon"></i></button>
+            <button id="homeButton" class="control-icon" data-translate-key-title="titleHome"><i class="fas fa-home"></i></button>
+            <button id="langToggle" class="control-icon" data-translate-key-title="titleLangToggle">🌐</button>
+            <button id="darkModeToggle" class="control-icon" data-translate-key-title="titleThemeToggle"><i class="fas fa-moon"></i></button>
         </div>
     </header>
 
     <nav id="appNavigation">
-        <button data-app="land_area_calculator.html" class="nav-button"><i class="fas fa-ruler-combined"></i> ज़मीन का क्षेत्रफल</button>
-        <button data-app="attendance_tracker.html" class="nav-button"><i class="fas fa-user-check"></i> अटेंडेंस ट्रैकर</button>
-        <button data-app="kharch_tracker.html" class="nav-button"><i class="fas fa-wallet"></i> खर्च ट्रैकर</button>
-        <button data-app="combined_calculator.html" class="nav-button"><i class="fas fa-calculator"></i> कैलकुलेटर</button>
-        <button data-app="unit_converter.html" class="nav-button"><i class="fas fa-exchange-alt"></i> यूनिट कन्वर्टर</button>
+        <button data-app="land_area_calculator.html" class="nav-button"><i class="fas fa-ruler-combined"></i> <span data-translate-key="navLandArea">ज़मीन का क्षेत्रफल</span></button>
+        <button data-app="attendance_tracker.html" class="nav-button"><i class="fas fa-user-check"></i> <span data-translate-key="navAttendance">अटेंडेंस ट्रैकर</span></button>
+        <button data-app="kharch_tracker.html" class="nav-button"><i class="fas fa-wallet"></i> <span data-translate-key="navExpense">खर्च ट्रैकर</span></button>
+        <button data-app="combined_calculator.html" class="nav-button"><i class="fas fa-calculator"></i> <span data-translate-key="navCalculator">कैलकुलेटर</span></button>
+        <button data-app="unit_converter.html" class="nav-button"><i class="fas fa-exchange-alt"></i> <span data-translate-key="navUnitConverter">यूनिट कन्वर्टर</span></button>
     </nav>
 
     <div id="appContainer">
+        <div class="loading-message" id="loadingMessage" data-translate-key="loadingText">लोड हो रहा है...</div>
         <iframe id="appFrame" title="मुख्य एप्लीकेशन क्षेत्र"></iframe>
-        <!-- होम कंटेंट के लिए एक div (शुरू में छिपा हुआ) -->
-        <div id="homeContent" style="padding: 20px; display: none; text-align: center; flex-grow: 1; align-items:center; justify-content:center; display:flex; flex-direction:column;">
-            <h2>टूल हब में आपका स्वागत है!</h2>
-            <p>ऊपर दिए गए नेविगेशन से एक टूल चुनें।</p>
+        <div id="homeContent">
+            <h2 data-translate-key="homeWelcomeTitle">टूल हब में आपका स्वागत है!</h2>
+            <p data-translate-key="homeWelcomeMsg">ऊपर दिए गए नेविगेशन से एक टूल चुनें।</p>
         </div>
     </div>
 
     <script>
+        const translations = {
+            hi: {
+                hubTitle: "मेरा टूल हब",
+                hubMainTitle: "मेरा टूल हब",
+                titleHome: "होम",
+                titleLangToggle: "भाषा बदलें (Change Language)",
+                titleThemeToggle: "थीम बदलें (Toggle Theme)",
+                navLandArea: "ज़मीन का क्षेत्रफल",
+                navAttendance: "अटेंडेंस ट्रैकर",
+                navExpense: "खर्च ट्रैकर",
+                navCalculator: "कैलकुलेटर",
+                navUnitConverter: "यूनिट कन्वर्टर",
+                homeWelcomeTitle: "टूल हब में आपका स्वागत है!",
+                homeWelcomeMsg: "ऊपर दिए गए नेविगेशन से एक टूल चुनें।",
+                loadingText: "लोड हो रहा है...",
+                // त्रुटि संदेश आदि
+                errorLoadingApp: "टूल लोड करने में त्रुटि। कृपया पुनः प्रयास करें।"
+            },
+            en: {
+                hubTitle: "My Tool Hub",
+                hubMainTitle: "My Tool Hub",
+                titleHome: "Home",
+                titleLangToggle: "Change Language (भाषा बदलें)",
+                titleThemeToggle: "Toggle Theme (थीम बदलें)",
+                navLandArea: "Land Area Calculator",
+                navAttendance: "Attendance Tracker",
+                navExpense: "Expense Tracker",
+                navCalculator: "Calculator",
+                navUnitConverter: "Unit Converter",
+                homeWelcomeTitle: "Welcome to the Tool Hub!",
+                homeWelcomeMsg: "Select a tool from the navigation above.",
+                loadingText: "Loading...",
+                errorLoadingApp: "Error loading tool. Please try again."
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             const iframe = document.getElementById('appFrame');
             const navButtons = document.querySelectorAll('.nav-button');
             const homeButton = document.getElementById('homeButton');
+            const langToggle = document.getElementById('langToggle');
             const darkModeToggle = document.getElementById('darkModeToggle');
             const homeContentDiv = document.getElementById('homeContent');
-            const appContainerDiv = document.getElementById('appContainer'); // iframe का मूल कंटेनर
+            const loadingMessageDiv = document.getElementById('loadingMessage');
 
             const lastActiveAppKey = 'hubLastActiveApp';
             const darkModeKey = 'hubDarkMode';
+            const langKey = 'hubLanguage';
 
-            // प्रारंभिक डार्क मोड सेट करें
+            let currentLang = localStorage.getItem(langKey) || 'hi';
             let currentMode = localStorage.getItem(darkModeKey) || 'light';
-            applyDarkMode(currentMode === 'dark');
+            let defaultAppUrl = localStorage.getItem(lastActiveAppKey) || 'HOME';
 
-            // अंतिम सक्रिय ऐप या डिफ़ॉल्ट को होम पर सेट करें
-            let defaultAppUrl = localStorage.getItem(lastActiveAppKey) || 'HOME'; // HOME एक विशेष मान है
-
-            function showHomeContent() {
-                iframe.style.display = 'none';
-                homeContentDiv.style.display = 'flex'; // क्योंकि हमने इसे flex बनाया है ताकि टेक्स्ट सेंटर में हो
-                document.title = "मेरा टूल हब - होम";
-                // सभी nav बटनों से 'active' क्लास हटाएं
-                navButtons.forEach(btn => btn.classList.remove('active'));
-                localStorage.setItem(lastActiveAppKey, 'HOME');
-                console.log('Showing home content');
-            }
-
-            function loadApp(appUrl) {
-                if (appUrl === 'HOME') {
-                    showHomeContent();
-                    return;
-                }
-
-                homeContentDiv.style.display = 'none';
-                iframe.style.display = 'block';
-
-                if (iframe.src !== appUrl) { // केवल तभी लोड करें यदि src अलग है
-                    iframe.src = appUrl;
-                    console.log('Loading app:', appUrl);
-                }
-                localStorage.setItem(lastActiveAppKey, appUrl);
-
-                // iframe लोड होने पर उसका शीर्षक सेट करें (यदि उसमें title टैग है)
-                iframe.onload = () => {
-                    try {
-                        if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.title) {
-                            document.title = "मेरा टूल हब - " + iframe.contentWindow.document.title;
-                        } else {
-                             // फ़ाइल नाम से अनुमानित शीर्षक
-                             const appName = appUrl.split('/').pop().split('.')[0].replace(/_/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-                             document.title = "मेरा टूल हब - " + appName;
-                        }
-                    } catch (e) {
-                        // क्रॉस-ऑरिजिन iframe के लिए title एक्सेस नहीं कर पाएंगे
-                        console.warn("Could not access iframe title (likely cross-origin or no title set).", e);
-                        const appName = appUrl.split('/').pop().split('.')[0].replace(/_/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-                        document.title = "मेरा टूल हब - " + appName;
+            function applyTranslations() {
+                document.querySelectorAll('[data-translate-key]').forEach(el => {
+                    const key = el.getAttribute('data-translate-key');
+                    if (translations[currentLang] && translations[currentLang][key]) {
+                        el.textContent = translations[currentLang][key];
                     }
-                };
-
-
-                navButtons.forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.app === appUrl);
                 });
+                document.querySelectorAll('[data-translate-key-title]').forEach(el => {
+                    const key = el.getAttribute('data-translate-key-title');
+                     if (translations[currentLang] && translations[currentLang][key]) {
+                        el.title = translations[currentLang][key];
+                    }
+                });
+                document.documentElement.lang = currentLang;
+                document.title = translations[currentLang]?.hubTitle || "Tool Hub";
             }
-
-            navButtons.forEach(button => {
-                button.addEventListener('click', (e) => {
-                    e.preventDefault(); // यदि <a href="#"> का उपयोग कर रहे हों तो डिफ़ॉल्ट रोकें
-                    loadApp(button.dataset.app);
-                });
-            });
-
-            homeButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                loadApp('HOME');
-            });
-
-            darkModeToggle.addEventListener('click', () => {
-                const isDark = document.body.classList.toggle('dark-mode');
-                applyDarkMode(isDark);
-                localStorage.setItem(darkModeKey, isDark ? 'dark' : 'light');
-            });
 
             function applyDarkMode(isDark) {
                 const icon = darkModeToggle.querySelector('i');
+                currentMode = isDark ? 'dark' : 'light'; // currentMode को अपडेट करें
                 if (isDark) {
                     document.body.classList.add('dark-mode');
                     icon.classList.remove('fa-moon');
@@ -269,10 +304,115 @@
                     icon.classList.remove('fa-sun');
                     icon.classList.add('fa-moon');
                 }
-                // भविष्य में: iframe को थीम बदलने के लिए postMessage भेज सकते हैं
             }
 
-            // प्रारंभिक ऐप लोड करें
+            function showHomeContent() {
+                iframe.style.display = 'none';
+                loadingMessageDiv.style.display = 'none';
+                homeContentDiv.style.display = 'flex';
+                document.title = translations[currentLang]?.hubMainTitle || "Tool Hub";
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                localStorage.setItem(lastActiveAppKey, 'HOME');
+            }
+
+            function loadApp(appUrl) {
+                if (appUrl === 'HOME') {
+                    showHomeContent();
+                    return;
+                }
+
+                homeContentDiv.style.display = 'none';
+                iframe.style.display = 'none'; // iframe को छिपाएँ जब तक लोड न हो जाए
+                loadingMessageDiv.style.display = 'block'; // लोडिंग संदेश दिखाएँ
+
+                // क्रॉस-ऑरिजिन त्रुटि से बचने के लिए, हम iframe लोड होने से पहले src सेट कर रहे हैं
+                // और यह सुनिश्चित कर रहे हैं कि iframe का src खाली न हो जब वह छिपा हो।
+                if (iframe.src !== (window.location.origin + window.location.pathname + appUrl) && iframe.src !== appUrl ) { // Absolute path to avoid issues
+                    iframe.src = appUrl; // नया src सेट करें
+                    console.log('Loading app:', appUrl);
+                } else if (!iframe.src && appUrl) { // यदि src खाली था
+                    iframe.src = appUrl;
+                     console.log('Loading app for the first time:', appUrl);
+                } else {
+                    // src वही है, केवल UI अपडेट करें
+                    iframe.style.display = 'block';
+                    loadingMessageDiv.style.display = 'none';
+                }
+
+
+                localStorage.setItem(lastActiveAppKey, appUrl);
+
+                navButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.app === appUrl);
+                });
+
+                // iframe के लिए ऑनलोड और onerror हैंडलर
+                iframe.onload = () => {
+                    iframe.style.display = 'block';
+                    loadingMessageDiv.style.display = 'none';
+                    try {
+                        let appTitle = "";
+                        if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.title) {
+                            appTitle = iframe.contentWindow.document.title;
+                        } else {
+                             const appNameParts = appUrl.split('/').pop().split('.');
+                             appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                        }
+                         document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+                    } catch (e) {
+                        console.warn("Could not access iframe title.", e);
+                        const appNameParts = appUrl.split('/').pop().split('.');
+                        const appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                        document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+                    }
+                };
+                iframe.onerror = () => {
+                    loadingMessageDiv.textContent = translations[currentLang]?.errorLoadingApp || "Error loading app.";
+                    iframe.style.display = 'none';
+                    // यहाँ आप iframe का src खाली कर सकते हैं या कोई fallback दिखा सकते हैं
+                    // iframe.src = "about:blank";
+                };
+            }
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loadApp(button.dataset.app);
+                });
+            });
+
+            homeButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                loadApp('HOME');
+            });
+
+            langToggle.addEventListener('click', () => {
+                currentLang = (currentLang === 'hi') ? 'en' : 'hi';
+                localStorage.setItem(langKey, currentLang);
+                applyTranslations();
+                // यदि होम स्क्रीन सक्रिय है, तो उसके टेक्स्ट को भी अपडेट करें
+                if (homeContentDiv.style.display === 'flex') {
+                    showHomeContent(); // यह अनुवाद लागू करेगा
+                }
+                // यदि iframe में कोई ऐप लोड है, तो उसका शीर्षक पुनः अनुवादित हो सकता है (या आप iframe को postMessage भेज सकते हैं)
+                 const activeNavButton = document.querySelector('.nav-button.active');
+                 if (activeNavButton && activeNavButton.dataset.app !== 'HOME') {
+                     // Re-trigger onload logic for iframe to potentially update title with new lang
+                     // Or send postMessage if iframe supports it
+                      loadApp(activeNavButton.dataset.app); // Re-call loadApp to refresh title (might reload iframe)
+                 }
+            });
+
+            darkModeToggle.addEventListener('click', () => {
+                const isDark = !document.body.classList.contains('dark-mode'); // नया मोड क्या होगा
+                applyDarkMode(isDark);
+                localStorage.setItem(darkModeKey, isDark ? 'dark' : 'light');
+                // भविष्य में iframe को थीम बदलने के लिए postMessage भेज सकते हैं
+            });
+
+            // प्रारंभिक सेटअप
+            applyDarkMode(currentMode === 'dark');
+            applyTranslations();
             loadApp(defaultAppUrl);
         });
     </script>
