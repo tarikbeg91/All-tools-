@@ -1,111 +1,279 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="hi"> <!-- डिफ़ॉल्ट भाषा 'hi' या जो भी आप रखना चाहें -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>मेरे सभी एप्लिकेशन</title>
+    <title>मेरा टूल हब</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        /* बुनियादी स्टाइल */
+        :root {
+            --bg-color-light: #f0f0f0;
+            --text-color-light: #333;
+            --nav-bg-light: #333;
+            --nav-button-bg-light: #555;
+            --nav-button-text-light: white;
+            --nav-button-active-bg-light: #007bff;
+            --iframe-border-light: #ccc;
+            --header-bg-light: #e9ecef; /* हेडर के लिए */
+
+            --bg-color-dark: #1a1a1a;
+            --text-color-dark: #f0f0f0;
+            --nav-bg-dark: #222;
+            --nav-button-bg-dark: #444;
+            --nav-button-text-dark: #f0f0f0;
+            --nav-button-active-bg-dark: #0056b3;
+            --iframe-border-dark: #444;
+            --header-bg-dark: #343a40; /* हेडर के लिए */
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             display: flex;
-            flex-direction: column; /* ऊपर से नीचे लेआउट */
-            height: 100vh; /* पूरी स्क्रीन की ऊंचाई */
-            background-color: #f0f0f0; /* हल्का बैकग्राउंड */
+            flex-direction: column;
+            height: 100vh;
+            background-color: var(--bg-color-light);
+            color: var(--text-color-light);
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        /* नेविगेशन बार के लिए स्टाइल */
+        body.dark-mode {
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-dark);
+        }
+
+        .app-header {
+            background-color: var(--header-bg-light);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .app-header {
+            background-color: var(--header-bg-dark);
+        }
+
+        .app-header h1 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+
+        .header-controls .control-icon {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: var(--text-color-light); /* डिफ़ॉल्ट रूप से बॉडी टेक्स्ट रंग का उपयोग करें */
+            padding: 5px 8px;
+            border-radius: 5px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        body.dark-mode .header-controls .control-icon {
+            color: var(--text-color-dark);
+        }
+        .header-controls .control-icon:hover {
+            background-color: rgba(0,0,0,0.1);
+        }
+        body.dark-mode .header-controls .control-icon:hover {
+             background-color: rgba(255,255,255,0.1);
+        }
+
+
         nav {
-            background-color: #333; /* गहरा नेविगेशन बार */
-            padding: 10px 0;
+            background-color: var(--nav-bg-light);
+            padding: 8px 0; /* थोड़ी पैडिंग कम */
             text-align: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            display: flex; /* बटन को लाइन में रखने के लिए */
-            justify-content: center; /* बटन को बीच में रखने के लिए */
-            flex-wrap: wrap; /* अगर ज्यादा बटन हों तो अगली लाइन में आ जाएं */
-            gap: 5px; /* बटन के बीच गैप */
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        body.dark-mode nav {
+            background-color: var(--nav-bg-dark);
         }
 
-        nav button {
-            padding: 10px 20px;
-            margin: 5px;
-            font-size: 1em;
-            color: white;
-            background-color: #555;
+        nav button.nav-button {
+            padding: 8px 15px; /* थोड़ी पैडिंग कम */
+            margin: 4px;
+            font-size: 0.9em; /* थोड़ा छोटा फॉन्ट */
+            color: var(--nav-button-text-light);
+            background-color: var(--nav-button-bg-light);
             border: none;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.2s;
+            display: inline-flex; /* आइकन और टेक्स्ट के लिए */
+            align-items: center;
+            gap: 8px; /* आइकन और टेक्स्ट के बीच गैप */
+        }
+        body.dark-mode nav button.nav-button {
+            color: var(--nav-button-text-dark);
+            background-color: var(--nav-button-bg-dark);
         }
 
-        nav button:hover {
+        nav button.nav-button:hover {
             background-color: #777;
         }
+        body.dark-mode nav button.nav-button:hover {
+            background-color: #666;
+        }
 
-        nav button.active { /* सक्रिय टैब को दिखाने के लिए */
-            background-color: #007bff; /* नीला */
+        nav button.nav-button.active {
+            background-color: var(--nav-button-active-bg-light);
             font-weight: bold;
         }
-
-        /* Iframe कंटेनर के लिए स्टाइल */
-        #appContainer {
-            flex-grow: 1; /* बाकी बची हुई सारी ऊंचाई ले लेगा */
-            overflow: hidden; /* यह सुनिश्चित करता है कि कंटेनर स्क्रॉल न करे, iframe खुद करेगा */
-            border-top: 1px solid #ccc; /* नेविगेशन और iframe के बीच लाइन */
+        body.dark-mode nav button.nav-button.active {
+            background-color: var(--nav-button-active-bg-dark);
         }
 
-        /* Iframe के लिए स्टाइल */
+        #appContainer {
+            flex-grow: 1;
+            overflow: hidden;
+            border-top: 1px solid var(--iframe-border-light);
+        }
+        body.dark-mode #appContainer {
+            border-top: 1px solid var(--iframe-border-dark);
+        }
+
         iframe {
             width: 100%;
             height: 100%;
-            border: none; /* Iframe का बॉर्डर हटा दें */
-            display: block; /* अतिरिक्त स्पेस हटाने के लिए */
+            border: none;
+            display: block;
         }
     </style>
 </head>
-<body>
+<body class=""> <!-- डार्क मोड क्लास JS द्वारा जोड़ी जाएगी -->
+
+    <header class="app-header">
+        <h1>मेरा टूल हब</h1>
+        <div class="header-controls">
+            <button id="homeButton" class="control-icon" title="होम"><i class="fas fa-home"></i></button>
+            <button id="darkModeToggle" class="control-icon" title="डार्क/लाइट मोड टॉगल करें"><i class="fas fa-moon"></i></button>
+        </div>
+    </header>
 
     <nav id="appNavigation">
-        <button data-app="land_area_calculator.html" class="nav-button">ज़मीन का क्षेत्रफल</button>
-        <button data-app="attendance_tracker.html" class="nav-button">अटेंडेंस ट्रैकर</button>
-        <button data-app="kharch_tracker.html" class="nav-button">खर्च ट्रैकर</button>
-        <button data-app="combined_calculator.html" class="nav-button">कैलकुलेटर</button>
+        <button data-app="land_area_calculator.html" class="nav-button"><i class="fas fa-ruler-combined"></i> ज़मीन का क्षेत्रफल</button>
+        <button data-app="attendance_tracker.html" class="nav-button"><i class="fas fa-user-check"></i> अटेंडेंस ट्रैकर</button>
+        <button data-app="kharch_tracker.html" class="nav-button"><i class="fas fa-wallet"></i> खर्च ट्रैकर</button>
+        <button data-app="combined_calculator.html" class="nav-button"><i class="fas fa-calculator"></i> कैलकुलेटर</button>
+        <button data-app="unit_converter.html" class="nav-button"><i class="fas fa-exchange-alt"></i> यूनिट कन्वर्टर</button>
     </nav>
 
     <div id="appContainer">
         <iframe id="appFrame" title="मुख्य एप्लीकेशन क्षेत्र"></iframe>
+        <!-- होम कंटेंट के लिए एक div (शुरू में छिपा हुआ) -->
+        <div id="homeContent" style="padding: 20px; display: none; text-align: center; flex-grow: 1; align-items:center; justify-content:center; display:flex; flex-direction:column;">
+            <h2>टूल हब में आपका स्वागत है!</h2>
+            <p>ऊपर दिए गए नेविगेशन से एक टूल चुनें।</p>
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const iframe = document.getElementById('appFrame');
             const navButtons = document.querySelectorAll('.nav-button');
-            const defaultApp = 'land_area_calculator.html'; // डिफ़ॉल्ट रूप से कौन सा ऐप लोड हो
+            const homeButton = document.getElementById('homeButton');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const homeContentDiv = document.getElementById('homeContent');
+            const appContainerDiv = document.getElementById('appContainer'); // iframe का मूल कंटेनर
+
+            const lastActiveAppKey = 'hubLastActiveApp';
+            const darkModeKey = 'hubDarkMode';
+
+            // प्रारंभिक डार्क मोड सेट करें
+            let currentMode = localStorage.getItem(darkModeKey) || 'light';
+            applyDarkMode(currentMode === 'dark');
+
+            // अंतिम सक्रिय ऐप या डिफ़ॉल्ट को होम पर सेट करें
+            let defaultAppUrl = localStorage.getItem(lastActiveAppKey) || 'HOME'; // HOME एक विशेष मान है
+
+            function showHomeContent() {
+                iframe.style.display = 'none';
+                homeContentDiv.style.display = 'flex'; // क्योंकि हमने इसे flex बनाया है ताकि टेक्स्ट सेंटर में हो
+                document.title = "मेरा टूल हब - होम";
+                // सभी nav बटनों से 'active' क्लास हटाएं
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                localStorage.setItem(lastActiveAppKey, 'HOME');
+                console.log('Showing home content');
+            }
 
             function loadApp(appUrl) {
-                if (iframe) {
+                if (appUrl === 'HOME') {
+                    showHomeContent();
+                    return;
+                }
+
+                homeContentDiv.style.display = 'none';
+                iframe.style.display = 'block';
+
+                if (iframe.src !== appUrl) { // केवल तभी लोड करें यदि src अलग है
                     iframe.src = appUrl;
                     console.log('Loading app:', appUrl);
                 }
-                // सक्रिय बटन को हाइलाइट करें
-                navButtons.forEach(btn => {
-                    if (btn.dataset.app === appUrl) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
+                localStorage.setItem(lastActiveAppKey, appUrl);
+
+                // iframe लोड होने पर उसका शीर्षक सेट करें (यदि उसमें title टैग है)
+                iframe.onload = () => {
+                    try {
+                        if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.title) {
+                            document.title = "मेरा टूल हब - " + iframe.contentWindow.document.title;
+                        } else {
+                             // फ़ाइल नाम से अनुमानित शीर्षक
+                             const appName = appUrl.split('/').pop().split('.')[0].replace(/_/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                             document.title = "मेरा टूल हब - " + appName;
+                        }
+                    } catch (e) {
+                        // क्रॉस-ऑरिजिन iframe के लिए title एक्सेस नहीं कर पाएंगे
+                        console.warn("Could not access iframe title (likely cross-origin or no title set).", e);
+                        const appName = appUrl.split('/').pop().split('.')[0].replace(/_/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                        document.title = "मेरा टूल हब - " + appName;
                     }
+                };
+
+
+                navButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.app === appUrl);
                 });
             }
 
             navButtons.forEach(button => {
-                button.addEventListener('click', () => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault(); // यदि <a href="#"> का उपयोग कर रहे हों तो डिफ़ॉल्ट रोकें
                     loadApp(button.dataset.app);
                 });
             });
 
-            // पेज लोड होने पर डिफ़ॉल्ट ऐप लोड करें
-            loadApp(defaultApp);
+            homeButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                loadApp('HOME');
+            });
+
+            darkModeToggle.addEventListener('click', () => {
+                const isDark = document.body.classList.toggle('dark-mode');
+                applyDarkMode(isDark);
+                localStorage.setItem(darkModeKey, isDark ? 'dark' : 'light');
+            });
+
+            function applyDarkMode(isDark) {
+                const icon = darkModeToggle.querySelector('i');
+                if (isDark) {
+                    document.body.classList.add('dark-mode');
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+                // भविष्य में: iframe को थीम बदलने के लिए postMessage भेज सकते हैं
+            }
+
+            // प्रारंभिक ऐप लोड करें
+            loadApp(defaultAppUrl);
         });
     </script>
 
