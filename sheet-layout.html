@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="hi"> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang-key="appTitle">विज़ुअल शीट लेआउट कैलकुलेटर</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; padding: 0; background-color: #f0f4f8; 
+            color: #333; display: flex; flex-direction: column; align-items: center;
+        }
+        .app-header {
+            background-color: #34495e; color: white; padding: 10px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; box-sizing: border-box; position: fixed; 
+            top: 0; left: 0; z-index: 1001; 
+        }
+        .app-header .title { font-size: 1.3em; font-weight: bold; }
+        .header-icons { display: flex; gap: 10px; }
+        .header-icons button {
+            background: none; border: none; color: white; font-size: 1.4em; 
+            cursor: pointer; padding: 8px; border-radius: 4px; transition: background-color 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .header-icons button:hover { background-color: rgba(255,255,255,0.15); }
+        .container { 
+            margin-top: 60px; 
+            background-color: #fff; padding: 20px; border-radius: 10px; 
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1); width: 95%; max-width: 1000px;
+        }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
+        .input-group, .parts-group, .results-group { 
+            margin-bottom: 25px; padding: 20px; border: 1px solid #dce4ec; 
+            border-radius: 8px; background-color: #fafdff;
+        }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #4a5568; }
+        input[type="number"], input[type="text"] {
+            width: calc(100% - 22px); padding: 10px; margin-bottom: 15px;
+            border: 1px solid #cbd5e0; border-radius: 5px; box-sizing: border-box; font-size: 1em;
+        }
+        input[type="checkbox"] { margin-right: 5px; vertical-align: middle;}
+        input:focus { border-color: #4299e1; box-shadow: 0 0 0 1px #4299e1; outline: none; }
+        button, .button-like-label {
+            background-color: #3498db; color: white; padding: 10px 18px; border: none;
+            border-radius: 5px; cursor: pointer; font-size: 1em; transition: background-color 0.2s;
+            margin-right: 10px; margin-top: 5px; 
+            display: inline-block; text-align: center;
+        }
+        button:hover, .button-like-label:hover { background-color: #2980b9; }
+        #exportJsonButton { background-color: #16a085;} #exportJsonButton:hover { background-color: #117a65;}
+        .button-like-label { background-color: #f39c12; } .button-like-label:hover { background-color: #e67e22; }
+        #showHistoryButton { background-color: #8e44ad;} #showHistoryButton:hover { background-color: #7d3c98;}
+        #clearSavedDataButton { background-color: #c0392b;} #clearSavedDataButton:hover { background-color: #a93226;}
+        #resetButton { background-color: #d35400; } #resetButton:hover { background-color: #b84300; }
+        .delete-btn { background-color: #e74c3c; padding: 5px 10px; font-size: 0.9em; }
+        .delete-btn:hover { background-color: #c0392b; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; }
+        th { background-color: #edf2f7; font-weight: 600; }
+        .sheets-container { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px; justify-content: center;}
+        .sheet-wrapper { border: 1px solid #bdc3c7; padding: 10px; background-color: #ecf0f1; border-radius: 5px; }
+        .sheet-wrapper h3 { margin-top: 0; text-align: center; color: #34495e; font-size: 1.1em; }
+        canvas { border: 1px solid #7f8c8d; background-color: white; }
+        .results-summary { font-size: 1.2em; font-weight: bold; text-align: center; margin-bottom: 15px;}
+        .actions-div button, .actions-div .button-like-label { margin-bottom: 10px;}
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);
+            align-items: center; justify-content: center;
+        }
+        .modal-content, .sheet-size-modal-content, .unit-modal-content {
+            background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; 
+            width: 90%; max-width: 500px; border-radius: 8px; position: relative; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .sheet-size-modal-content { max-width: 400px; }
+        .unit-modal-content { max-width: 300px; }
+        .unit-modal-content label, .sheet-size-modal-content h2, .modal-content h2 { margin-top: 0;}
+        .unit-modal-content select { width: 100%; padding: 8px; margin-top:5px; margin-bottom:15px; border-radius:4px; border:1px solid #ccc; }
+        .close-button {
+            color: #aaa; position: absolute; top: 10px; right: 15px;
+            font-size: 28px; font-weight: bold;
+        }
+        .close-button:hover, .close-button:focus { color: black; text-decoration: none; cursor: pointer; }
+        #historyList {
+            list-style-type: none; padding: 0; max-height: 300px; overflow-y: auto;
+            border-top: 1px solid #eee; margin-top: 15px;
+        }
+        #historyList li {
+            padding: 10px; border-bottom: 1px solid #eee; cursor: pointer;
+            font-size: 0.9em; display: flex; justify-content: space-between; align-items: center;
+        }
+        #historyList li:hover { background-color: #f0f0f0; }
+        #historyList li small { color: #777; margin-left: 10px;}
+        #jsonMenu {
+            display:none; position:absolute; right:5px; top: 45px; 
+            background-color:white; border:1px solid #ccc; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index:1002; 
+            border-radius:4px; min-width:180px;
+        }
+        #jsonMenu a, #jsonMenu label.json-menu-item {
+            display: block; padding: 10px 15px; text-decoration: none;
+            color: #333; cursor: pointer; font-size: 0.95em;
+        }
+        #jsonMenu a:hover, #jsonMenu label.json-menu-item:hover { background-color: #f0f0f0; }
+
+        @media print {
+            body { margin: 0; padding: 10px; font-size: 10pt; }
+            .app-header, .parts-group, 
+            .actions-div button, 
+            .actions-div .button-like-label, 
+            .actions-div #exportJsonButton, 
+            .actions-div #showHistoryButton, 
+            .actions-div #clearSavedDataButton, 
+            .modal, #jsonMenu, 
+            #addedPiecesSection .no-print 
+             { display: none !important; }
+            .container { margin-top: 0; box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0;}
+            .results-group h2, .results-summary { text-align: left; margin-bottom: 5px; page-break-before: auto; page-break-after: avoid;}
+            .input-group#addedPiecesSection { display: block !important; border: none; padding: 0; margin-bottom: 15px;} 
+            .input-group#addedPiecesSection h2 { display: block !important; text-align: left; margin-bottom: 5px; font-size: 12pt;}
+            table { margin-top: 5px; }
+            table th, table td { font-size: 9pt; padding: 4px; border: 1px solid #ccc !important;}
+            .sheets-container { display: block; margin-top: 10px; gap: 0; }
+            .sheet-wrapper {
+                border: 1px solid #ccc; padding: 5px; margin-bottom: 15px; 
+                page-break-inside: avoid; width: 100% !important; box-sizing: border-box;
+            }
+            .sheet-wrapper h3 { font-size: 1.1em; margin-bottom: 5px; }
+            canvas { max-width: 100% !important; height: auto !important; border: 1px solid #aaa; }
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="title" data-lang-key="headerTitle">शीट लेआउट</div>
+        <div class="header-icons">
+            <button id="unitSettingsIcon" title="यूनिट बदलें / Change Unit" onclick="showUnitSettingsModal()">📏</button>
+            <button id="langToggle" title="भाषा बदलें / Change Language" onclick="toggleLanguage()">🌐</button>
+            <button id="printPdfIcon" title="प्रिंट/PDF बनाएं" onclick="prepareForPrint()">📄</button>
+            <button id="sheetSettingsIcon" title="शीट सेटिंग्स" onclick="showSheetSettingsModal()">⚙️</button> 
+            <button id="historyIcon" title="हिस्ट्री" onclick="showHistoryModal()">📜</button>
+            <button id="jsonIcon" title="JSON ऑपरेशन्स" onclick="toggleJsonMenu(event)">💾</button>
+        </div>
+    </header>
+    <div id="jsonMenu"> 
+        <a href="#" onclick="exportDataAsJson(); closeJsonMenu();" data-lang-key="exportJson">JSON एक्सपोर्ट करें</a>
+        <label for="importJsonInputHidden" class="json-menu-item" data-lang-key="importJson">JSON इम्पोर्ट करें</label>
+        <input type="file" id="importJsonInputHidden" accept=".json" style="display: none;" onchange="importDataFromJson(event); closeJsonMenu();">
+        <a href="#" onclick="clearSavedData(); closeJsonMenu();" data-lang-key="clearSavedData">सेव डेटा क्लियर करें</a>
+    </div>
+
+    <div class="container">
+        <div class="parts-group">
+            <h2 data-lang-key="addPieceTitle">पीस जोड़ें</h2>
+            <label for="partName" data-lang-key="pieceNameLabel">पीस का नाम (वैकल्पिक):</label>
+            <input type="text" id="partName" data-lang-placeholder="pieceDefaultName">
+            <label for="partWidth"><span data-lang-key="pieceWidthLabel">पीस की चौड़ाई</span> (<span class="unit-display">cm</span>):</label>
+            <input type="number" id="partWidth" placeholder="0">
+            <label for="partLength"><span data-lang-key="pieceLengthLabel">पीस की लंबाई (ग्रेन)</span> (<span class="unit-display">cm</span>):</label>
+            <input type="number" id="partLength" placeholder="0">
+            <label for="partQuantity" data-lang-key="pieceQuantityLabel">कितने पीस:</label>
+            <input type="number" id="partQuantity" min="1" placeholder="1">
+            <button onclick="addPiece()" data-lang-key="addPieceBtn">पीस जोड़ें</button>
+        </div>
+
+        <div class="input-group" id="addedPiecesSection"> 
+            <h2 data-lang-key="addedPiecesTitle">जोड़े गए पीस</h2>
+            <table id="piecesTable">
+                <thead>
+                    <tr>
+                        <th data-lang-key="tableName">नाम</th>
+                        <th><span data-lang-key="tableWidth">चौड़ाई</span> (<span class="unit-display">cm</span>)</th>
+                        <th><span data-lang-key="tableLength">लंबाई</span> (<span class="unit-display">cm</span>)</th>
+                        <th data-lang-key="tableQuantity">संख्या</th>
+                        <th class="no-print" data-lang-key="tableRemove">हटाएं</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="actions-div">
+            <button onclick="calculateAndDrawLayout()" data-lang-key="calculateLayoutBtn">लेआउट की गणना करें और दिखाएं</button>
+            <button id="resetButton" onclick="resetAll()" data-lang-key="resetCurrentBtn">रीसेट (वर्तमान)</button> 
+        </div>
+
+        <div class="results-group">
+            <h2 data-lang-key="resultsTitle">परिणाम</h2>
+            <div class="results-summary" id="resultsSummary" data-lang-key="totalSheetsDefault">कुल आवश्यक शीट्स: 0</div>
+            <div class="sheets-container" id="sheetsContainer"></div>
+        </div>
+    </div>
+
+    <!-- यूनिट सेटिंग्स मोडल -->
+    <div id="unitSettingsModal" class="modal">
+        <div class="unit-modal-content">
+            <span class="close-button" onclick="closeUnitSettingsModal()">&times;</span>
+            <h2 data-lang-key="unitSettingsTitle">यूनिट सेटिंग्स</h2>
+            <label for="currentUnitSelector" data-lang-key="selectUnitLabel">वर्तमान यूनिट चुनें:</label>
+            <select id="currentUnitSelector">
+                <option value="cm">सेंटीमीटर (cm)</option>
+                <option value="mm">मिलीमीटर (mm)</option>
+                <option value="m">मीटर (m)</option>
+                <option value="ft">फुट (ft)</option>
+                <option value="in">इंच (in)</option>
+            </select>
+            <button onclick="applyUnitChange()" style="width:100%;" data-lang-key="applyBtn">लागू करें</button>
+        </div>
+    </div>
+    
+    <div id="sheetSettingsModal" class="modal">
+        <div class="sheet-size-modal-content">
+            <span class="close-button" onclick="closeSheetSettingsModal()">&times;</span>
+            <h2 data-lang-key="sheetSettingsTitle">शीट सेटिंग्स</h2> 
+            <label for="modalSheetWidth"><span data-lang-key="sheetWidthLabel">शीट की चौड़ाई</span> (<span class="unit-display">cm</span>):</label>
+            <input type="number" id="modalSheetWidth" value="122">
+            <label for="modalSheetLength"><span data-lang-key="sheetLengthGrainLabel">शीट की लंबाई (ग्रेन)</span> (<span class="unit-display">cm</span>):</label>
+            <input type="number" id="modalSheetLength" value="244">
+            <div>
+                <input type="checkbox" id="modalHasGrainDirection" checked>
+                <label for="modalHasGrainDirection" style="display: inline-block; margin-bottom: 0; font-weight:normal;" data-lang-key="respectGrainLabel">ग्रेन की दिशा का ध्यान रखें</label>
+            </div>
+            <button onclick="applySheetSettings()" style="margin-top: 15px; width:100%;" data-lang-key="applyAndSaveBtn">लागू करें और सेव करें</button>
+        </div>
+    </div>
+
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeHistoryModal()">&times;</span>
+            <h2 data-lang-key="historyTitle">हिस्ट्री</h2>
+            <ul id="historyList"></ul>
+            <p><small data-lang-key="historyNote">नोट: यह केवल पिछले कुछ बदलावों को दिखाता है। किसी आइटम पर क्लिक करके उसे लोड करें।</small></p>
+        </div>
+    </div>
+    
+    <script>
+        // --- पिछले उत्तर से पूरा JavaScript कोड यहाँ कॉपी-पेस्ट करें ---
+        // --- भाषा और यूनिट बदलने वाले लॉजिक, KERF, और अन्य सभी सुधारों के साथ ---
+        // --- (यह सुनिश्चित करें कि पिछला उत्तर जिसमें यूनिट्स का प्रारंभिक कार्यान्वयन था, उसका उपयोग करें) ---
+
+        // START OF COPIED JAVASCRIPT (with Unit Logic and other enhancements)
+        let pieces = [];
+        let pieceIdCounter = 0; 
+        const BASE_CANVAS_SCALE = 2.5; 
+        const MIN_TEXT_PIECE_WIDTH_LOGICAL_INSIDE = 25 * BASE_CANVAS_SCALE * 0.35; 
+        const MIN_TEXT_PIECE_HEIGHT_LOGICAL_INSIDE = 12 * BASE_CANVAS_SCALE * 0.35;
+        const MIN_TEXT_FREE_WIDTH_LOGICAL = 20 * BASE_CANVAS_SCALE * 0.35; 
+        const MIN_TEXT_FREE_HEIGHT_LOGICAL = 10 * BASE_CANVAS_SCALE * 0.35;
+        const KERF_WIDTH_CM = 0.3; 
+
+        const modalSheetLengthEl = document.getElementById('modalSheetLength');
+        const modalSheetWidthEl = document.getElementById('modalSheetWidth');
+        const modalSheetHasGrainEl = document.getElementById('modalHasGrainDirection');
+        const sheetSettingsModalEl = document.getElementById('sheetSettingsModal');
+        const partNameEl = document.getElementById('partName');
+        const partLengthEl = document.getElementById('partLength');
+        const partWidthEl = document.getElementById('partWidth');
+        const partQuantityEl = document.getElementById('partQuantity');
+        const piecesTableBodyEl = document.querySelector('#piecesTable tbody');
+        const resultsSummaryEl = document.getElementById('resultsSummary');
+        const sheetsContainerEl = document.getElementById('sheetsContainer');
+        const historyModalEl = document.getElementById('historyModal');
+        const historyListEl = document.getElementById('historyList');
+        const jsonMenuEl = document.getElementById('jsonMenu');
+        const unitSettingsModalEl = document.getElementById('unitSettingsModal');
+        const currentUnitSelectorEl = document.getElementById('currentUnitSelector');
+        const unitDisplayElements = document.querySelectorAll('.unit-display');
+
+
+        const STORAGE_KEY_PIECES = 'sheetLayoutCalculatorPieces_v8'; // वर्शन बढ़ाया
+        const STORAGE_KEY_SETTINGS = 'sheetLayoutCalculatorSettings_v8';
+        const STORAGE_KEY_ID_COUNTER = 'sheetLayoutCalculatorIdCounter_v8';
+        const STORAGE_KEY_HISTORY = 'sheetLayoutCalculatorHistory_v8';
+        const STORAGE_KEY_LANGUAGE = 'sheetLayoutCalculatorLanguage_v2';
+        const STORAGE_KEY_CURRENT_UNIT = 'sheetLayoutCalculatorCurrentUnit_v2';
+        const MAX_HISTORY_STATES = 20; 
+        let historyStack = [];
+        let currentLanguage = 'hi';
+        let currentUnit = 'cm';
+
+        const conversionFactorsToCm = { 'cm': 1, 'mm': 0.1, 'm': 100, 'in': 2.54, 'ft': 30.48 };
+        
+        const langStrings = { /* ... (पिछले उत्तर से पूरा langStrings ऑब्जेक्ट) ... */
+            "hi": {
+                "appTitle": "विज़ुअल शीट लेआउट कैलकुलेटर", "headerTitle": "शीट लेआउट",
+                "exportJson": "JSON एक्सपोर्ट करें", "importJson": "JSON इम्पोर्ट करें", "clearSavedData": "सेव डेटा क्लियर करें",
+                "addPieceTitle": "पीस जोड़ें", "pieceNameLabel": "पीस का नाम (वैकल्पिक):",
+                "pieceDefaultName": "पीस-", 
+                "pieceWidthLabel": "पीस की चौड़ाई", "pieceLengthLabel": "पीस की लंबाई (ग्रेन)", // ({unit}) setLanguage में जोड़ा जाएगा
+                "pieceQuantityLabel": "कितने पीस:", "addPieceBtn": "पीस जोड़ें",
+                "addedPiecesTitle": "जोड़े गए पीस", "tableName": "नाम", "tableWidth": "चौड़ाई",
+                "tableLength": "लंबाई", "tableQuantity": "संख्या", "tableRemove": "हटाएं",
+                "calculateLayoutBtn": "लेआउट की गणना करें और दिखाएं", "resetCurrentBtn": "रीसेट (वर्तमान)",
+                "resultsTitle": "परिणाम", "totalSheetsDefault": "कुल आवश्यक शीट्स: 0",
+                "sheetSettingsTitle": "शीट सेटिंग्स", "sheetWidthLabel": "शीट की चौड़ाई",
+                "sheetLengthGrainLabel": "शीट की लंबाई (ग्रेन)", "respectGrainLabel": "ग्रेन की दिशा का ध्यान रखें",
+                "applyAndSaveBtn": "लागू करें और सेव करें", "historyTitle": "हिस्ट्री",
+                "historyNote": "नोट: यह केवल पिछले कुछ बदलावों को दिखाता है। किसी आइटम पर क्लिक करके उसे लोड करें।",
+                "noHistory": "कोई हिस्ट्री उपलब्ध नहीं है।", "historyStatusPrefix": "स्थिति #", "historyPiecesSuffix": " पीस",
+                "historyNoPieces": "कोई पीस नहीं", "alert_invalidPositiveNumbers": "कृपया सभी पीस के लिए मान्य सकारात्मक संख्याएँ दर्ज करें।",
+                "alert_pieceTooLarge": "पीस \"{name}\" ({width}×{length}) शीट ({sheetW}×{sheetL}){grainText} फिट नहीं हो सकता।",
+                "alert_noDataToExport": "एक्सपोर्ट करने के लिए कोई डेटा नहीं है।", "alert_selectValidJson": "कृपया एक मान्य JSON फ़ाइल चुनें।",
+                "alert_jsonImportSuccess": "डेटा JSON फ़ाइल से सफलतापूर्वक इम्पोर्ट किया गया!",
+                "alert_jsonFormatError": "JSON फ़ाइल का प्रारूप सही नहीं है।", "alert_jsonParseError": "JSON फ़ाइल पार्स करने में त्रुटि हुई।",
+                "alert_confirmClearStorage": "क्या आप वाकई localStorage में सेव किए गए सभी डेटा (हिस्ट्री सहित) को हटाना चाहते हैं?",
+                "alert_storageCleared": "localStorage से सेव किया हुआ डेटा सफलतापूर्वक हटा दिया गया है।",
+                "alert_confirmResetCurrent": "क्या आप वाकई वर्तमान डेटा और लेआउट रीसेट करना चाहते हैं?",
+                "alert_historyLoaded": "हिस्ट्री से स्थिति लोड की गई।", "alert_calculateLayoutFirst": "प्रिंट करने के लिए पहले लेआउट की गणना करें।",
+                "alert_layoutForPrint": "लेआउट देखने के लिए \"लेआउट की गणना करें और दिखाएं\" पर क्लिक करें।",
+                "alert_sheetSettingsUpdated": "शीट सेटिंग्स अपडेट की गईं।", "totalSheetsResult": "कुल आवश्यक शीट्स: {count}",
+                "sheetTitlePrefix": "शीट", "grainedSheetSuffix": "(ग्रेन वाली)", "noGrainSheetSuffix": "(बिना ग्रेन)",
+                "unitSettingsTitle": "यूनिट सेटिंग्स", "selectUnitLabel": "वर्तमान यूनिट चुनें:", "applyBtn":"लागू करें",
+                "alert_unitChanged":"यूनिट {unit} में बदल दी गई है। मौजूदा मान रूपांतरित कर दिए गए हैं।"
+            },
+            "en": { /* ... (अंग्रेजी स्ट्रिंग्स यहाँ डालें) ... */ 
+                "appTitle": "Visual Sheet Layout Calculator", "headerTitle": "Sheet Layout",
+                "exportJson": "Export JSON", "importJson": "Import JSON", "clearSavedData": "Clear Saved Data",
+                "addPieceTitle": "Add Piece", "pieceNameLabel": "Piece Name (Optional):", "pieceDefaultName": "Piece-",
+                "pieceWidthLabel": "Piece Width", "pieceLengthLabel": "Piece Length (Grain)",
+                "pieceQuantityLabel": "Quantity:", "addPieceBtn": "Add Piece", "addedPiecesTitle": "Added Pieces",
+                "tableName": "Name", "tableWidth": "Width", "tableLength": "Length", "tableQuantity": "Qty",
+                "tableRemove": "Remove", "calculateLayoutBtn": "Calculate & Show Layout", "resetCurrentBtn": "Reset (Current)",
+                "resultsTitle": "Results", "totalSheetsDefault": "Total Sheets Required: 0",
+                "sheetSettingsTitle": "Sheet Settings", "sheetWidthLabel": "Sheet Width",
+                "sheetLengthGrainLabel": "Sheet Length (Grain)", "respectGrainLabel": "Respect Grain Direction",
+                "applyAndSaveBtn": "Apply & Save", "historyTitle": "History",
+                "historyNote": "Note: This only shows recent changes. Click an item to load it.",
+                "noHistory": "No history available.", "historyStatusPrefix": "State #", "historyPiecesSuffix": " pieces",
+                "historyNoPieces": "No pieces", "alert_invalidPositiveNumbers": "Please enter valid positive numbers for all piece dimensions.",
+                "alert_pieceTooLarge": "Piece \"{name}\" ({width}×{length}) cannot fit on sheet ({sheetW}×{sheetL}){grainText}.",
+                "alert_noDataToExport": "No data to export.", "alert_selectValidJson": "Please select a valid JSON file.",
+                "alert_jsonImportSuccess": "Data imported successfully from JSON file!",
+                "alert_jsonFormatError": "JSON file format is incorrect.", "alert_jsonParseError": "Error parsing JSON file.",
+                "alert_confirmClearStorage": "Are you sure you want to delete all saved data (including history) from localStorage?",
+                "alert_storageCleared": "Saved data successfully cleared from localStorage.",
+                "alert_confirmResetCurrent": "Are you sure you want to reset the current data and layout?",
+                "alert_historyLoaded": "State loaded from history.", "alert_calculateLayoutFirst": "Please calculate the layout first to print.",
+                "alert_layoutForPrint": "Click \"Calculate & Show Layout\" to see the layout.",
+                "alert_sheetSettingsUpdated": "Sheet settings updated.", "totalSheetsResult": "Total Sheets Required: {count}",
+                "sheetTitlePrefix": "Sheet", "grainedSheetSuffix": "(Grained)", "noGrainSheetSuffix": "(No Grain)",
+                "unitSettingsTitle": "Unit Settings", "selectUnitLabel": "Select Current Unit:", "applyBtn":"Apply",
+                "alert_unitChanged":"Unit changed to {unit}. Existing values have been converted."
+            }
+        };
+
+        // --- बाकी सभी JavaScript फंक्शन्स (भाषा, यूनिट, localStorage, हिस्ट्री, UI, कैलकुलेशन, ड्राइंग) पिछले उत्तरों से यहाँ डालें ---
+        // --- सुनिश्चित करें कि tryPlacePieceOnSheet का नवीनतम "स्कोरिंग सुधारित" संस्करण उपयोग किया जा रहा है ---
+        // --- और सभी उपयोगकर्ता को दिखने वाले टेक्स्ट के लिए getLangString() का उपयोग करें ---
+        
+        // START OF COPIED AND MERGED JAVASCRIPT (FROM PREVIOUS RESPONSES)
+        function getLangString(key, replacements = {}) { let str = (langStrings[currentLanguage] && langStrings[currentLanguage][key]) || `[[${key}]]`; for (const placeholder in replacements) { str = str.replace(`{${placeholder}}`, replacements[placeholder]); } return str; }
+        function updateUnitDisplaysDOM(unit) { unitDisplayElements.forEach(el => el.textContent = unit); }
+        function convertToCm(value, fromUnit) { if (value === "" || value === null || isNaN(parseFloat(value))) return ""; return parseFloat(value) * conversionFactorsToCm[fromUnit]; }
+        function convertFromCm(valueInCm, toUnit) { if (valueInCm === "" || valueInCm === null || isNaN(parseFloat(valueInCm))) return ""; const result = parseFloat(valueInCm) / conversionFactorsToCm[toUnit]; const dp = (toUnit === 'mm' || toUnit === 'cm') ? 0 : 2; return parseFloat(result.toFixed(dp)); }
+        function setLanguage(lang) { currentLanguage = lang; document.documentElement.lang = lang; const elements = document.querySelectorAll('[data-lang-key]'); elements.forEach(el => { const key = el.getAttribute('data-lang-key'); if (langStrings[lang] && langStrings[lang][key]) { if (el.tagName === 'INPUT' && el.placeholder !== undefined) { if (key === "pieceDefaultName") { el.placeholder = getLangString(key) + (pieceIdCounter + 1); }  else { el.placeholder = getLangString(key); } } else { el.textContent = getLangString(key); } } }); updateUnitDisplaysDOM(currentUnit); renderPiecesTable(); if (historyModalEl.style.display === 'flex') showHistoryModal(); if (sheetsContainerEl.children.length > 0 && !sheetsContainerEl.textContent.includes(getLangString("alert_layoutForPrint"))) { Array.from(sheetsContainerEl.querySelectorAll('.sheet-wrapper h3')).forEach(h3 => { const sheetIdMatch = h3.textContent.match(/#(\d+)/); if (sheetIdMatch) { const id = sheetIdMatch[1]; const isGrain = h3.textContent.includes(langStrings.hi.grainedSheetSuffix) || h3.textContent.includes(langStrings.en.grainedSheetSuffix) || modalSheetHasGrainEl.checked; h3.textContent = `${getLangString("sheetTitlePrefix")} #${id} ${isGrain ? getLangString("grainedSheetSuffix") : getLangString("noGrainSheetSuffix")}`; } }); const summaryText = resultsSummaryEl.textContent; const numMatch = summaryText.match(/\d+/); if(numMatch){ resultsSummaryEl.textContent = getLangString("totalSheetsResult", {count: numMatch[0]}); } else { resultsSummaryEl.textContent = getLangString("totalSheetsDefault"); } } localStorage.setItem(STORAGE_KEY_LANGUAGE, lang); }
+        function toggleLanguage() { const newLang = currentLanguage === 'hi' ? 'en' : 'hi'; setLanguage(newLang); }
+        function showUnitSettingsModal() { currentUnitSelectorEl.value = currentUnit; unitSettingsModalEl.style.display = 'flex'; }
+        function closeUnitSettingsModal() { unitSettingsModalEl.style.display = 'none'; }
+        function applyUnitChange() { const newUnit = currentUnitSelectorEl.value; if (newUnit === currentUnit) { closeUnitSettingsModal(); return; } const oldSheetL_cm = convertToCm(modalSheetLengthEl.value, currentUnit); const oldSheetW_cm = convertToCm(modalSheetWidthEl.value, currentUnit); const oldPartL_val = partLengthEl.value; const oldPartW_val = partWidthEl.value; const oldPartL_cm = convertToCm(oldPartL_val, currentUnit); const oldPartW_cm = convertToCm(oldPartW_val, currentUnit); currentUnit = newUnit; localStorage.setItem(STORAGE_KEY_CURRENT_UNIT, currentUnit); updateUnitDisplaysDOM(currentUnit); setLanguage(currentLanguage); modalSheetLengthEl.value = convertFromCm(oldSheetL_cm, currentUnit); modalSheetWidthEl.value = convertFromCm(oldSheetW_cm, currentUnit); if (oldPartL_val) partLengthEl.value = convertFromCm(oldPartL_cm, currentUnit); if (oldPartW_val) partWidthEl.value = convertFromCm(oldPartW_cm, currentUnit); renderPiecesTable(); autoSaveData(); saveStateToHistory(); closeUnitSettingsModal(); alert(getLangString("alert_unitChanged", {unit: currentUnit.toUpperCase()}));}
+        // ... (बाकी सभी फंक्शन्स जैसे addPiece, renderPiecesTable, calculateAndDrawLayout, etc. पिछले पूर्ण स्क्रिप्ट वाले उत्तर से कॉपी करें,
+        //      और सुनिश्चित करें कि यूनिट कंवर्जन और getLangString() सही ढंग से एकीकृत हों।)
+        // --- यहाँ पर आपके पिछले पूर्ण स्क्रिप्ट से कॉपी किए गए बाकी के जावास्क्रिप्ट फंक्शन्स आएंगे ---
+        // (showSheetSettingsModal से लेकर prepareForPrint तक के सभी फंक्शन्स)
+        // START OF COPIED AND MERGED FUNCTIONS (FROM PREVIOUS FULL SCRIPT)
+        function showSheetSettingsModal() { const settingsStr = localStorage.getItem(STORAGE_KEY_SETTINGS); if (settingsStr) { const settings = JSON.parse(settingsStr); modalSheetWidthEl.value = convertFromCm(settings.sheetWidth, currentUnit) || "122"; modalSheetLengthEl.value = convertFromCm(settings.sheetLength, currentUnit) || "244"; modalSheetHasGrainEl.checked = typeof settings.hasGrain === 'boolean' ? settings.hasGrain : true; } else { modalSheetWidthEl.value = convertFromCm(122, currentUnit); modalSheetLengthEl.value = convertFromCm(244, currentUnit); modalSheetHasGrainEl.checked = true; } sheetSettingsModalEl.style.display = 'flex'; }
+        function closeSheetSettingsModal() { sheetSettingsModalEl.style.display = 'none'; }
+        function applySheetSettings() { autoSaveData(); saveStateToHistory(); closeSheetSettingsModal(); if (pieces.length > 0) { resultsSummaryEl.textContent = getLangString("alert_sheetSettingsUpdated"); sheetsContainerEl.innerHTML = `<p style="text-align:center; color: #555;">${getLangString("alert_layoutForPrint")}</p>`; } }
+        function toggleJsonMenu(event) { event.stopPropagation(); jsonMenuEl.style.display = jsonMenuEl.style.display === 'block' ? 'none' : 'block'; }
+        function closeJsonMenu() { jsonMenuEl.style.display = 'none'; }
+        document.body.addEventListener('click', function(event) { if (jsonMenuEl.style.display === 'block' && !jsonMenuEl.contains(event.target) && event.target.id !== 'jsonIcon') closeJsonMenu(); });
+        function addPiece() { const name = partNameEl.value.trim() || getLangString("pieceDefaultName") + (pieceIdCounter + 1); const pieceW_input = parseFloat(partWidthEl.value); const pieceL_input = parseFloat(partLengthEl.value); const quantity = parseInt(partQuantityEl.value) || 1;  if (isNaN(pieceL_input) || pieceL_input <= 0 || isNaN(pieceW_input) || pieceW_input <= 0 || isNaN(quantity) || quantity <= 0) { alert(getLangString("alert_invalidPositiveNumbers")); return; } const pieceL_cm = convertToCm(pieceL_input, currentUnit); const pieceW_cm = convertToCm(pieceW_input, currentUnit); const sheetL_cm_val = convertToCm(modalSheetLengthEl.value, currentUnit);  const sheetW_cm_val = convertToCm(modalSheetWidthEl.value, currentUnit); const hasGrain = modalSheetHasGrainEl.checked; let canFit = false; if (hasGrain) { if (pieceL_cm <= sheetL_cm_val && pieceW_cm <= sheetW_cm_val) canFit = true; } else { if ((pieceL_cm <= sheetL_cm_val && pieceW_cm <= sheetW_cm_val) || (pieceW_cm <= sheetL_cm_val && pieceL_cm <= sheetW_cm_val)) canFit = true; } if (!canFit) { alert(getLangString("alert_pieceTooLarge", {name: name, width: pieceW_input, length: pieceL_input, sheetW: convertFromCm(sheetW_cm_val,currentUnit), sheetL: convertFromCm(sheetL_cm_val,currentUnit), grainText: (hasGrain ? getLangString("grainedSheetSuffix") : getLangString("noGrainSheetSuffix")) })); return; } pieces.push({id: pieceIdCounter, name, length: pieceL_cm, width: pieceW_cm, quantity, area: pieceL_cm * pieceW_cm}); pieceIdCounter++; renderPiecesTable(); clearPieceInputs(); autoSaveData(); saveStateToHistory(); }
+        function clearPieceInputs() { partNameEl.value = ''; partNameEl.placeholder = getLangString("pieceDefaultName") + (pieceIdCounter + 1); partWidthEl.value = ''; partLengthEl.value = ''; partQuantityEl.value = ''; partWidthEl.focus();  }
+        function renderPiecesTable() { piecesTableBodyEl.innerHTML = ''; const headers = piecesTableBodyEl.parentElement.querySelectorAll('thead th'); headers[0].textContent = getLangString("tableName"); headers[1].innerHTML = `${getLangString("tableWidth")} (<span class="unit-display">${currentUnit}</span>)`; headers[2].innerHTML = `${getLangString("tableLength")} (<span class="unit-display">${currentUnit}</span>)`; headers[3].textContent = getLangString("tableQuantity"); headers[4].textContent = getLangString("tableRemove"); pieces.forEach((p, index) => { const row = piecesTableBodyEl.insertRow(); row.insertCell().textContent = p.name; row.insertCell().textContent = convertFromCm(p.width,currentUnit);  row.insertCell().textContent = convertFromCm(p.length,currentUnit); row.insertCell().textContent = p.quantity; const btn = document.createElement('button'); btn.textContent = 'X'; btn.className = 'delete-btn no-print'; btn.onclick = () => removePiece(index); const cell = row.insertCell(); cell.className = 'no-print'; cell.appendChild(btn); cell.style.textAlign = 'center'; }); }
+        function removePiece(index) { pieces.splice(index, 1); renderPiecesTable(); autoSaveData(); saveStateToHistory(); }
+        modalSheetLengthEl.addEventListener('change', () => { autoSaveData(); saveStateToHistory(); });
+        modalSheetWidthEl.addEventListener('change', () => { autoSaveData(); saveStateToHistory(); });
+        modalSheetHasGrainEl.addEventListener('change', () => { autoSaveData(); saveStateToHistory(); });
+        function resetAll() { if (confirm(getLangString("alert_confirmResetCurrent"))) resetAllInternal(true); }
+        function resetAllInternal(saveToHist = false) {  pieces = []; pieceIdCounter = 0; modalSheetWidthEl.value = convertFromCm(122, currentUnit); modalSheetLengthEl.value = convertFromCm(244, currentUnit); modalSheetHasGrainEl.checked = true; renderPiecesTable(); clearPieceInputs(); resultsSummaryEl.textContent = getLangString("totalSheetsDefault"); sheetsContainerEl.innerHTML = ''; autoSaveData(); if (saveToHist) saveStateToHistory(); }
+        function autoSaveData() { try { localStorage.setItem(STORAGE_KEY_PIECES, JSON.stringify(pieces)); const settings = { sheetWidth: convertToCm(modalSheetWidthEl.value, currentUnit), sheetLength: convertToCm(modalSheetLengthEl.value, currentUnit), hasGrain: modalSheetHasGrainEl.checked }; localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings)); localStorage.setItem(STORAGE_KEY_ID_COUNTER, pieceIdCounter.toString()); } catch (e) { console.error("डेटा ऑटो-सेव करने में त्रुटि:", e); } }
+        function exportDataAsJson() {  if (pieces.length === 0 && !modalSheetLengthEl.value && !modalSheetWidthEl.value) { alert(getLangString("alert_noDataToExport")); return; } const dataToExport = { pieces: pieces, settings: { sheetWidth: convertToCm(modalSheetWidthEl.value, currentUnit), sheetLength: convertToCm(modalSheetLengthEl.value, currentUnit), hasGrain: modalSheetHasGrainEl.checked }, pieceIdCounter: pieceIdCounter, savedUnit: currentUnit }; const dataStr = JSON.stringify(dataToExport, null, 2); const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr); const exportFileDefaultName = 'sheet_layout_data.json'; let linkElement = document.createElement('a'); linkElement.setAttribute('href', dataUri); linkElement.setAttribute('download', exportFileDefaultName); linkElement.click(); linkElement.remove(); }
+        function importDataFromJson(event) {  const file = event.target.files[0]; if (!file) return; if (file.type !== "application/json") { alert(getLangString("alert_selectValidJson")); event.target.value = null; return; } const reader = new FileReader(); reader.onload = function(e) { try { const importedData = JSON.parse(e.target.result); if (importedData && importedData.pieces && importedData.settings) { pieces = importedData.pieces || []; const settings = importedData.settings; const importUnit = importedData.savedUnit || 'cm'; modalSheetWidthEl.value = convertFromCm(settings.sheetWidth, currentUnit); modalSheetLengthEl.value = convertFromCm(settings.sheetLength, currentUnit); modalSheetHasGrainEl.checked = typeof settings.hasGrain === 'boolean' ? settings.hasGrain : true; pieceIdCounter = parseInt(importedData.pieceIdCounter) || 0; if (pieces.length > 0 && pieceIdCounter === 0) { const maxId = pieces.reduce((max, p) => (typeof p.id === 'number' && p.id > max ? p.id : max), -1); pieceIdCounter = maxId >= 0 ? maxId + 1 : pieces.length; } pieces.forEach(p => { if(importedData.savedUnit && importedData.savedUnit !== 'cm'){ p.length = convertToCm(p.length, importedData.savedUnit); p.width = convertToCm(p.width, importedData.savedUnit);}}); renderPiecesTable(); clearPieceInputs(); autoSaveData(); saveStateToHistory(); resultsSummaryEl.textContent = getLangString("totalSheetsDefault"); sheetsContainerEl.innerHTML = `<p style="text-align:center; color: #555;">${getLangString("alert_layoutForPrint")}</p>`; alert(getLangString("alert_jsonImportSuccess")); } else { alert(getLangString("alert_jsonFormatError")); } } catch (err) { console.error("JSON फ़ाइल पार्स करने में त्रुटि:", err); alert(getLangString("alert_jsonParseError")); } finally { event.target.value = null; } }; reader.readAsText(file); }
+        function clearSavedData() {  if (confirm(getLangString("alert_confirmClearStorage"))) { localStorage.removeItem(STORAGE_KEY_PIECES); localStorage.removeItem(STORAGE_KEY_SETTINGS); localStorage.removeItem(STORAGE_KEY_ID_COUNTER); localStorage.removeItem(STORAGE_KEY_HISTORY); localStorage.removeItem(STORAGE_KEY_LANGUAGE); localStorage.removeItem(STORAGE_KEY_CURRENT_UNIT); historyStack = []; alert(getLangString("alert_storageCleared")); } }
+        function saveStateToHistory() {  const currentState = { pieces: JSON.parse(JSON.stringify(pieces)),  settings: { sheetWidth: convertToCm(modalSheetWidthEl.value,currentUnit), sheetLength: convertToCm(modalSheetLengthEl.value,currentUnit), hasGrain: modalSheetHasGrainEl.checked }, pieceIdCounter: pieceIdCounter, timestamp: new Date().toLocaleTimeString('hi-IN', { hour: 'numeric', minute: '2-digit'}) + ", " + new Date().toLocaleDateString('hi-IN', {day: 'numeric', month: 'short'}), unit: currentUnit }; if (historyStack.length > 0) { const lastState = historyStack[0]; if (JSON.stringify(lastState.pieces) === JSON.stringify(currentState.pieces) && JSON.stringify(lastState.settings) === JSON.stringify(currentState.settings) && lastState.unit === currentState.unit) return;  } historyStack.unshift(currentState); if (historyStack.length > MAX_HISTORY_STATES) historyStack.pop();  try { localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(historyStack)); } catch (e) { console.error("हिस्ट्री सेव करने में त्रुटि:", e); } }
+        function loadHistoryFromStorage() { try { const savedHistory = localStorage.getItem(STORAGE_KEY_HISTORY); historyStack = savedHistory ? JSON.parse(savedHistory) : []; } catch (e) { console.error("हिस्ट्री लोड करने में त्रुटि:", e); historyStack = []; } }
+        function applyStateFromHistory(historyIndex) { if (historyIndex < 0 || historyIndex >= historyStack.length) return; const stateToLoad = JSON.parse(JSON.stringify(historyStack[historyIndex]));  pieces = stateToLoad.pieces; const settings = stateToLoad.settings; currentUnit = stateToLoad.unit || 'cm'; currentUnitSelectorEl.value = currentUnit; updateUnitDisplaysDOM(currentUnit); modalSheetWidthEl.value = convertFromCm(settings.sheetWidth, currentUnit); modalSheetLengthEl.value = convertFromCm(settings.sheetLength, currentUnit); modalSheetHasGrainEl.checked = settings.hasGrain; pieceIdCounter = stateToLoad.pieceIdCounter; renderPiecesTable(); clearPieceInputs();  resultsSummaryEl.textContent = getLangString("totalSheetsDefault"); sheetsContainerEl.innerHTML = `<p style="text-align:center; color: #555;">${getLangString("alert_layoutForPrint")}</p>`; autoSaveData(); closeHistoryModal(); alert(getLangString("alert_historyLoaded")); setLanguage(currentLanguage); }
+        function showHistoryModal() { historyListEl.innerHTML = '';  if (historyStack.length === 0) { const li = document.createElement('li'); li.textContent = getLangString("noHistory"); historyListEl.appendChild(li); } else { historyStack.forEach((state, index) => { const li = document.createElement('li'); const displayIndex = historyStack.length - index;  let pieceSummary = state.pieces && state.pieces.length > 0 ? state.pieces.slice(0,2).map(p => p.name).join(', ') + (state.pieces.length > 2 ? '...' : '') : getLangString("historyNoPieces"); li.innerHTML = `<span>${getLangString("historyStatusPrefix")}${displayIndex} - ${state.pieces.length} ${getLangString("historyPiecesSuffix")} (${pieceSummary})</span> <small>${state.timestamp} [${state.unit || 'cm'}]</small>`; li.onclick = () => applyStateFromHistory(index); historyListEl.appendChild(li); }); } historyModalEl.style.display = 'flex'; }
+        function closeHistoryModal() { historyModalEl.style.display = 'none'; }
+        
+        function calculateAndDrawLayout() { if (pieces.length === 0) { alert(getLangString("alert_calculateLayoutFirst").replace(getLangString("printReplace"),"")); return; } const sheetL_cm_internal = convertToCm(modalSheetLengthEl.value, currentUnit); const sheetW_cm_internal = convertToCm(modalSheetWidthEl.value, currentUnit); const sheetHasGrain = modalSheetHasGrainEl.checked; if (isNaN(sheetL_cm_internal) || sheetL_cm_internal <= 0 || isNaN(sheetW_cm_internal) || sheetW_cm_internal <= 0) { alert(getLangString("alert_invalidSheetSize")); return; } let individualPieces = []; let pieceInstanceCounters = {}; pieces.forEach(p_orig => { if (!pieceInstanceCounters[p_orig.id]) pieceInstanceCounters[p_orig.id] = 0; for (let i = 0; i < p_orig.quantity; i++) { pieceInstanceCounters[p_orig.id]++; individualPieces.push({ ...p_orig, uniqueId: `${p_orig.id}-${pieceInstanceCounters[p_orig.id]}`, instanceNum: pieceInstanceCounters[p_orig.id], isPlaced: false, x: 0, y: 0, sheetId: 0, placedLength: 0, placedWidth: 0, isRotated: false }); } }); individualPieces.sort((a, b) => b.area - a.area); let sheetsLayoutData = []; let currentSheetId = 0; while (individualPieces.some(p => !p.isPlaced)) { currentSheetId++; const newSheet = { id: currentSheetId, placedPieces: [], hasGrain: sheetHasGrain, width: sheetW_cm_internal, height: sheetL_cm_internal, freeRects: [{ x: 0, y: 0, width: sheetW_cm_internal, height: sheetL_cm_internal, id: `FR-S${currentSheetId}-0` }]}; sheetsLayoutData.push(newSheet); let piecesPlacedOnThisSheetLoop = true; while(piecesPlacedOnThisSheetLoop){ piecesPlacedOnThisSheetLoop = false; individualPieces.sort((a,b) => a.isPlaced ? 1 : (b.isPlaced ? -1 : b.area - a.area)); for (let piece of individualPieces) { if (piece.isPlaced) continue; if (tryPlacePieceOnSheet(piece, newSheet)) { piecesPlacedOnThisSheetLoop = true; break; } } } if (newSheet.placedPieces.length === 0 && individualPieces.some(p => !p.isPlaced)) { const unplacedExample = individualPieces.find(p => !p.isPlaced); alert(getLangString("alert_pieceTooLargeSheet", {name: unplacedExample.name, width:convertFromCm(unplacedExample.width, currentUnit), length:convertFromCm(unplacedExample.length, currentUnit), sheetNum: currentSheetId, unit: currentUnit})); displayLayout(sheetsLayoutData.filter(s => s.placedPieces.length > 0), sheetL_cm_internal, sheetW_cm_internal); return; } } displayLayout(sheetsLayoutData, sheetL_cm_internal, sheetW_cm_internal); }
+        let freeRectIdCounter_layout = 0; 
+        function tryPlacePieceOnSheet(piece, sheet) { sheet.freeRects.sort((a, b) => (a.width * a.height) - (b.width * b.height) || a.y - b.y || a.x - b.x); let bestFitFound = null; for (let i = 0; i < sheet.freeRects.length; i++) { const rect = sheet.freeRects[i]; const pieceOriginalLength = piece.length; const pieceOriginalWidth = piece.width; if (pieceOriginalLength <= rect.height && pieceOriginalWidth <= rect.width) { const score = (rect.width * rect.height) - (pieceOriginalWidth * pieceOriginalLength); if (!bestFitFound || score < bestFitFound.score) { bestFitFound = { rectIndex: i, x: rect.x, y: rect.y, placedLength: pieceOriginalLength, placedWidth: pieceOriginalWidth, isRotated: false, score: score }; } } if (!sheet.hasGrain && pieceOriginalWidth <= rect.height && pieceOriginalLength <= rect.width) { const score = (rect.width * rect.height) - (pieceOriginalLength * pieceOriginalWidth); if (!bestFitFound || score < bestFitFound.score) { bestFitFound = { rectIndex: i, x: rect.x, y: rect.y, placedLength: pieceOriginalWidth, placedWidth: pieceOriginalLength, isRotated: true, score: score }; } } } if (bestFitFound) { const rectForKerfCheck = sheet.freeRects[bestFitFound.rectIndex]; const requiredWidthWithKerf = bestFitFound.placedWidth + ( (bestFitFound.x + bestFitFound.placedWidth < sheet.width - 0.01) ? KERF_WIDTH_CM : 0 ); const requiredHeightWithKerf = bestFitFound.placedLength + ( (bestFitFound.y + bestFitFound.placedLength < sheet.height - 0.01) ? KERF_WIDTH_CM : 0); if (requiredWidthWithKerf <= rectForKerfCheck.width + 0.01 && requiredHeightWithKerf <= rectForKerfCheck.height + 0.01) { piece.x = bestFitFound.x; piece.y = bestFitFound.y; piece.placedLength = bestFitFound.placedLength; piece.placedWidth = bestFitFound.placedWidth; piece.isRotated = bestFitFound.isRotated; piece.sheetId = sheet.id; piece.isPlaced = true; sheet.placedPieces.push({...piece}); splitFreeRect(sheet, bestFitFound.rectIndex, piece); return true; } } return false;  }
+        function splitFreeRect(sheet, rectIndexBeingUsed, placedPieceDetails) { const oldRect = sheet.freeRects.splice(rectIndexBeingUsed, 1)[0]; let newPotentialRects = []; const widthTaken = placedPieceDetails.placedWidth + ( (oldRect.x + placedPieceDetails.placedWidth < sheet.width - 0.01) ? KERF_WIDTH_CM : 0 ); const heightTaken = placedPieceDetails.placedLength + ( (oldRect.y + placedPieceDetails.placedLength < sheet.height - 0.01) ? KERF_WIDTH_CM : 0 ); if (oldRect.height - heightTaken > 0.01) { newPotentialRects.push({ x: oldRect.x, y: oldRect.y + heightTaken, width: oldRect.width, height: oldRect.height - heightTaken, id: `FR-S${sheet.id}-${++freeRectIdCounter_layout}-B` }); } if (oldRect.width - widthTaken > 0.01) { newPotentialRects.push({ x: oldRect.x + widthTaken, y: oldRect.y, width: oldRect.width - widthTaken, height: placedPieceDetails.placedLength, id: `FR-S${sheet.id}-${++freeRectIdCounter_layout}-R`}); } if (oldRect.width - widthTaken > 0.01 && oldRect.height > placedPieceDetails.placedLength && oldRect.height - heightTaken > 0.01 ) { newPotentialRects.push({ x: oldRect.x + widthTaken, y: oldRect.y + placedPieceDetails.placedLength + ((oldRect.y + placedPieceDetails.placedLength < sheet.height - 0.01) ? KERF_WIDTH_CM : 0), width: oldRect.width - widthTaken, height: oldRect.height - heightTaken, id: `FR-S${sheet.id}-${++freeRectIdCounter_layout}-BR`}); } sheet.freeRects.push(...newPotentialRects.filter(r => r.width > 0.1 && r.height > 0.1)); optimizeFreeRects(sheet.freeRects, sheet.placedPieces); }
+        function optimizeFreeRects(freeRects, placedPieces) { if (!freeRects || freeRects.length === 0) return; let optimizedIteration; do { optimizedIteration = false; for (let i = freeRects.length - 1; i >= 0; i--) { if (!freeRects[i] || freeRects[i].width < 0.1 || freeRects[i].height < 0.1) { if(freeRects[i]) freeRects.splice(i, 1); optimizedIteration = true; continue; } for (let j = freeRects.length - 1; j >= 0; j--) { if (i === j || !freeRects[i] || !freeRects[j]) continue; if (isRectInside(freeRects[i], freeRects[j])) { freeRects.splice(i, 1); optimizedIteration = true; break; } } } } while (optimizedIteration); freeRects.sort((a, b) => a.y - b.y || a.x - b.x); }
+        function isRectInside(rectA, rectB) {  return rectA.x >= rectB.x && rectA.y >= rectB.y && rectA.x + rectA.width <= rectB.x + rectB.width && rectA.y + rectA.height <= rectB.y + rectB.height; }
+        function rectanglesOverlap(rect1, rect2) { const tolerance = 0.01;  return !(rect1.x + rect1.width <= rect2.x + tolerance || rect2.x + rect2.width <= rect1.x + tolerance || rect1.y + rect1.height <= rect2.y + tolerance || rect2.y + rect2.height <= rect1.y + tolerance); }
+        function getRandomColor() { const h = Math.floor(Math.random() * 360); return `hsla(${h}, 65%, 70%, 0.75)`; }
+        let pieceColors = {}; 
+        function drawRotatedText(ctx, text, x, y, angleDegrees, font,fillStyle, textAlign = 'center', textBaseline = 'middle') { ctx.save(); ctx.textAlign = textAlign; ctx.textBaseline = textBaseline; ctx.font = font; ctx.fillStyle = fillStyle; ctx.translate(x, y); ctx.rotate(angleDegrees * Math.PI / 180); ctx.fillText(text, 0, 0); ctx.restore();  }
+        function displayLayout(sheets, sheetL_cm_internal, sheetW_cm_internal) { resultsSummaryEl.textContent = getLangString("totalSheetsResult", {count: sheets.length}); sheetsContainerEl.innerHTML = ''; pieceColors = {}; freeRectIdCounter_layout = 0; const dpr = window.devicePixelRatio || 1; sheets.forEach(sheet => { if (!sheet) return; const wrapper = document.createElement('div'); wrapper.className = 'sheet-wrapper'; const title = document.createElement('h3'); title.textContent = `${getLangString("sheetTitlePrefix")} #${sheet.id} ${sheet.hasGrain ? getLangString("grainedSheetSuffix") : getLangString("noGrainSheetSuffix")}`; wrapper.appendChild(title); const canvas = document.createElement('canvas'); const logicalWidth = sheetW_cm_internal * BASE_CANVAS_SCALE; const logicalHeight = sheetL_cm_internal * BASE_CANVAS_SCALE; canvas.width = Math.round(logicalWidth * dpr); canvas.height = Math.round(logicalHeight * dpr); canvas.style.width = `${logicalWidth}px`; canvas.style.height = `${logicalHeight}px`; wrapper.appendChild(canvas); sheetsContainerEl.appendChild(wrapper); const ctx = canvas.getContext('2d'); ctx.scale(dpr, dpr); ctx.clearRect(0, 0, logicalWidth, logicalHeight);  ctx.strokeStyle = '#bdc3c7'; ctx.lineWidth = 1;  ctx.strokeRect(0.5, 0.5, logicalWidth - 1, logicalHeight - 1); sheet.placedPieces.forEach(p => {  if (!pieceColors[p.id]) pieceColors[p.id] = getRandomColor(); ctx.fillStyle = pieceColors[p.id]; const pieceX_logical = p.x * BASE_CANVAS_SCALE; const pieceY_logical = p.y * BASE_CANVAS_SCALE; const pieceWidth_logical = p.placedWidth * BASE_CANVAS_SCALE; const pieceHeight_logical = p.placedLength * BASE_CANVAS_SCALE; ctx.fillRect(pieceX_logical, pieceY_logical, pieceWidth_logical, pieceHeight_logical); ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 0.5;  ctx.strokeRect(pieceX_logical + 0.5, pieceY_logical + 0.5, pieceWidth_logical - 1, pieceHeight_logical - 1); }); sheet.placedPieces.forEach(p => {  ctx.fillStyle = '#101d2c'; const baseFontSizePt = BASE_CANVAS_SCALE * 3.0; let dynamicFontSize;  const minAllowedLogicalFontSize = 4.0; const pieceX_logical = p.x * BASE_CANVAS_SCALE; const pieceY_logical = p.y * BASE_CANVAS_SCALE; const pieceWidth_logical = p.placedWidth * BASE_CANVAS_SCALE; const pieceHeight_logical = p.placedLength * BASE_CANVAS_SCALE; const displayPrecision = (currentUnit === 'mm' || currentUnit === 'cm') ? 0 : 2; const canShowAllThreeInside = pieceWidth_logical >= (MIN_TEXT_PIECE_WIDTH_LOGICAL_INSIDE) && pieceHeight_logical >= (MIN_TEXT_PIECE_HEIGHT_LOGICAL_INSIDE * 1.7);  const canShowDimAndInstanceInside = pieceWidth_logical >= (MIN_TEXT_PIECE_WIDTH_LOGICAL_INSIDE * 0.75) && pieceHeight_logical >= (MIN_TEXT_PIECE_HEIGHT_LOGICAL_INSIDE * 1.25); const canShowDimOnlyInside = pieceWidth_logical >= (MIN_TEXT_PIECE_WIDTH_LOGICAL_INSIDE * 0.55) && pieceHeight_logical >= (MIN_TEXT_PIECE_HEIGHT_LOGICAL_INSIDE * 0.55); const canShowDimVerticalInside = pieceWidth_logical < (MIN_TEXT_PIECE_WIDTH_LOGICAL_INSIDE * 0.55) && pieceHeight_logical >= (MIN_TEXT_PIECE_HEIGHT_LOGICAL_INSIDE * 1.4) && pieceWidth_logical >= (minAllowedLogicalFontSize * 1.8); const text1_name = `${p.name}`; const text2_dim = `${convertFromCm(p.width, currentUnit).toFixed(displayPrecision)}×${convertFromCm(p.length, currentUnit).toFixed(displayPrecision)}${p.isRotated ? '(R)' : ''}`; const text3_instance = `#${p.instanceNum}`; let textX, textY; let textAlign = 'center'; let textBaseline = 'middle'; let leaderLine = null; let textAngle = 0; let fontStyle; let currentFontSize; if (canShowAllThreeInside) { const maxChars = Math.max(p.name.length, text2_dim.length, text3_instance.length, 3); dynamicFontSize = Math.min(baseFontSizePt, pieceHeight_logical / 5, pieceWidth_logical / (maxChars * 0.62) );  currentFontSize = Math.max(minAllowedLogicalFontSize, Math.round(dynamicFontSize)); fontStyle = `bold ${currentFontSize}px Arial`;  textX = pieceX_logical + pieceWidth_logical / 2; const lineHeight = currentFontSize * 1.3;  drawRotatedText(ctx, text1_name, textX, pieceY_logical + pieceHeight_logical / 2 - lineHeight, 0, fontStyle, ctx.fillStyle); drawRotatedText(ctx, text2_dim,  textX, pieceY_logical + pieceHeight_logical / 2, 0, fontStyle, ctx.fillStyle); drawRotatedText(ctx, text3_instance,textX, pieceY_logical + pieceHeight_logical / 2 + lineHeight, 0, fontStyle, ctx.fillStyle); } else if (canShowDimAndInstanceInside) {  const maxChars = Math.max(text2_dim.length, text3_instance.length, 3); dynamicFontSize = Math.min(baseFontSizePt * 1.05, pieceHeight_logical / 3, pieceWidth_logical / (maxChars * 0.58) ); currentFontSize = Math.max(minAllowedLogicalFontSize, Math.round(dynamicFontSize)); fontStyle = `bold ${currentFontSize}px Arial`; textX = pieceX_logical + pieceWidth_logical / 2; const lineHeight = currentFontSize * 0.8; drawRotatedText(ctx, text2_dim,  textX, pieceY_logical + pieceHeight_logical / 2 - lineHeight, 0, fontStyle, ctx.fillStyle); drawRotatedText(ctx, text3_instance,textX, pieceY_logical + pieceHeight_logical / 2 + lineHeight, 0, fontStyle, ctx.fillStyle); } else if (canShowDimOnlyInside) {  dynamicFontSize = Math.min(baseFontSizePt * 1.15, pieceHeight_logical / 2.2, pieceWidth_logical / (text2_dim.length * 0.58) ); currentFontSize = Math.max(minAllowedLogicalFontSize, Math.round(dynamicFontSize)); fontStyle = `bold ${currentFontSize}px Arial`; textX = pieceX_logical + pieceWidth_logical / 2; drawRotatedText(ctx, text2_dim, textX, pieceY_logical + pieceHeight_logical / 2, 0, fontStyle, ctx.fillStyle); } else if (canShowDimVerticalInside) {  dynamicFontSize = Math.min(baseFontSizePt * 0.95, pieceWidth_logical / 2.0, pieceHeight_logical / (text2_dim.length * 0.58) );  currentFontSize = Math.max(minAllowedLogicalFontSize, Math.round(dynamicFontSize)); fontStyle = `bold ${currentFontSize}px Arial`; textX = pieceX_logical + pieceWidth_logical / 2; textY = pieceY_logical + pieceHeight_logical / 2;  textAngle = -90; drawRotatedText(ctx, text2_dim, textX, textY, textAngle, fontStyle, ctx.fillStyle); } else {  const combinedTextOutside = `${text2_dim} ${text3_instance}`;  currentFontSize = Math.round(baseFontSizePt * 0.75); currentFontSize = Math.max(minAllowedLogicalFontSize, currentFontSize); fontStyle = `bold ${currentFontSize}px Arial`; ctx.font = fontStyle;  const metrics = ctx.measureText(combinedTextOutside); const textWidthMeasured = metrics.width; const textHeightEstimated = currentFontSize; const gap = 3; textAngle = 0; let foundSpotOutside = false; if (pieceY_logical - textHeightEstimated - gap*2 > 0) { textX = pieceX_logical + pieceWidth_logical / 2; textY = pieceY_logical - gap - textHeightEstimated / 2; textAlign = 'center'; textBaseline = 'middle'; leaderLine = {startX: textX, startY: pieceY_logical, endX: textX, endY: textY + textHeightEstimated/2 +1}; foundSpotOutside = true; } else if (!foundSpotOutside && pieceY_logical + pieceHeight_logical + textHeightEstimated + gap * 2 < logicalHeight) { textX = pieceX_logical + pieceWidth_logical / 2; textY = pieceY_logical + pieceHeight_logical + gap + textHeightEstimated / 2; textAlign = 'center'; textBaseline = 'middle'; leaderLine = {startX: textX, startY: pieceY_logical + pieceHeight_logical, endX: textX,endY: textY - textHeightEstimated / 2 - 1}; foundSpotOutside = true; } else if (!foundSpotOutside && pieceX_logical + pieceWidth_logical + textWidthMeasured + gap * 2 < logicalWidth) { textX = pieceX_logical + pieceWidth_logical + gap; textY = pieceY_logical + pieceHeight_logical / 2; textAlign = 'left'; textBaseline = 'middle'; leaderLine = {startX: pieceX_logical + pieceWidth_logical, startY: textY, endX: textX - 1, endY: textY }; foundSpotOutside = true; } else if (!foundSpotOutside && pieceX_logical - textWidthMeasured - gap * 2 > 0) { textX = pieceX_logical - gap - textWidthMeasured; textY = pieceY_logical + pieceHeight_logical / 2; textAlign = 'left'; textBaseline = 'middle'; leaderLine = {startX: pieceX_logical, startY: textY, endX: textX + textWidthMeasured + 1, endY: textY}; foundSpotOutside = true; } else { currentFontSize = 0; } if (currentFontSize > 0 && foundSpotOutside) { drawRotatedText(ctx, combinedTextOutside, textX, textY, 0, fontStyle, ctx.fillStyle, textAlign, textBaseline); if (leaderLine) { ctx.beginPath(); ctx.moveTo(leaderLine.startX, leaderLine.startY); ctx.lineTo(leaderLine.endX, leaderLine.endY); ctx.strokeStyle = '#333'; ctx.lineWidth = 0.4; ctx.stroke(); } } } }); ctx.strokeStyle = 'rgba(52, 152, 219, 0.5)'; ctx.lineWidth = 0.3;  sheet.freeRects.forEach(rect => {  if (rect.width > 0.5 && rect.height > 0.5) {  const rectX_logical = rect.x * BASE_CANVAS_SCALE; const rectY_logical = rect.y * BASE_CANVAS_SCALE; const rectWidth_logical = rect.width * BASE_CANVAS_SCALE; const rectHeight_logical = rect.height * BASE_CANVAS_SCALE;  ctx.strokeRect(rectX_logical + 0.5, rectY_logical + 0.5, rectWidth_logical - 1, rectHeight_logical - 1); if (rectWidth_logical >= MIN_TEXT_FREE_WIDTH_LOGICAL && rectHeight_logical >= MIN_TEXT_FREE_HEIGHT_LOGICAL) { ctx.fillStyle = 'rgba(41, 128, 185, 0.7)'; const baseFontSizePt = 5.5;  let dynamicFontSize = Math.min(baseFontSizePt, rectHeight_logical / 3, rectWidth_logical / 5 ); dynamicFontSize = Math.max(baseFontSizePt * 0.5, dynamicFontSize); ctx.font = `${Math.round(dynamicFontSize)}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; const displayPrecision = (currentUnit === 'mm' || currentUnit === 'cm') ? 0 : 2; const text = `${convertFromCm(rect.width, currentUnit).toFixed(displayPrecision)}×${convertFromCm(rect.height, currentUnit).toFixed(displayPrecision)}`;  ctx.fillText(text, rectX_logical + rectWidth_logical / 2, rectY_logical + rectHeight_logical / 2); } } }); }); }
+        function prepareForPrint() { if (sheetsContainerEl.innerHTML === '' || sheetsContainerEl.textContent.includes(getLangString("alert_layoutForPrint"))) { alert(getLangString("alert_calculateLayoutFirst")); return; } window.print(); }
+        
+        clearPieceInputs(); 
+        renderPiecesTable();
+
+    </script>
+</body>
+</html>
