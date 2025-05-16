@@ -343,7 +343,7 @@
          #reportFooter {
              margin-top: 10px; padding: 10px;
              background-color: var(--container-bg-color); border: 1px solid var(--border-color);
-             border-radius: 5 impressive; white-space: pre-wrap; font-size: 0.9em;
+             border-radius: 5px; white-space: pre-wrap; font-size: 0.9em;
          }
 
          #dataManagementButtons {
@@ -2177,10 +2177,13 @@
                   const isCurrentDayRow = formattedDayDateString === todayDateString;
                   const rowClass = isCurrentDayRow ? 'current-day-row' : '';
 
-                  const overtimeValue = currentDay.overtime == 0 ? '' : currentDay.overtime;
-                  const rentValue = currentDay.rent == 0 ? '' : currentDay.rent;
-                  const foodValue = currentDay.food == 0 ? '' : currentDay.food;
-                  const receivedValue = currentDay.received == 0 ? '' : currentDay.received;
+                  // Display "0" if value is 0, empty otherwise. For consistency with previous behavior (if preferred).
+                  // Or, always display the number as String(value) if 0 should also be shown.
+                  const overtimeValue = Number(currentDay.overtime) === 0 ? '' : String(currentDay.overtime);
+                  const rentValue = Number(currentDay.rent) === 0 ? '' : String(currentDay.rent);
+                  const foodValue = Number(currentDay.food) === 0 ? '' : String(currentDay.food);
+                  const receivedValue = Number(currentDay.received) === 0 ? '' : String(currentDay.received);
+
 
                   const formattedEdited = currentDay.updated ? new Date(currentDay.updated).toLocaleString(currentLanguage==='hi'?'hi-IN':'en-GB', {year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : "-"; // Added date formatting
 
@@ -2190,10 +2193,11 @@
 
                   html += `<tr class="${rowClass}">
                        <td>${currentDay.date || '-'}</td>
-                       <td><input type="text" data-month="${monthKey}" data-index="${i}" data-field="status" value="${currentDay.status || ''}" maxlength="3"></td> <td><input type="number" data-month="${monthKey}" data-index="${i}" data-field="overtime" value="${overtimeValue}" min="0"></td>
-                       <td class="${rentTdClass}"><input type="number" data-month="${monthKey}" data-index="${i}" data-field="rent" value="${rentValue}" min="0"></td>
-                       <td class="${foodTdClass}"><input type="number" data-month="${monthKey}" data-index="${i}" data-field="food" value="${foodValue}" min="0"></td>
-                       <td class="${receivedTdClass}"><input type="number" data-month="${monthKey}" data-index="${i}" data-field="received" value="${receivedValue}" min="0"></td>
+                       <td><input type="text" data-month="${monthKey}" data-index="${i}" data-field="status" value="${currentDay.status || ''}" maxlength="3"></td>
+                       <td><input type="number" step="0.1" data-month="${monthKey}" data-index="${i}" data-field="overtime" value="${overtimeValue}" min="0"></td>
+                       <td class="${rentTdClass}"><input type="number" step="any" data-month="${monthKey}" data-index="${i}" data-field="rent" value="${rentValue}" min="0"></td>
+                       <td class="${foodTdClass}"><input type="number" step="any" data-month="${monthKey}" data-index="${i}" data-field="food" value="${foodValue}" min="0"></td>
+                       <td class="${receivedTdClass}"><input type="number" step="any" data-month="${monthKey}" data-index="${i}" data-field="received" value="${receivedValue}" min="0"></td>
                        <td><input type="text" data-month="${monthKey}" data-index="${i}" data-field="notes" value="${currentDay.notes || ''}" placeholder="${translate('notesPlaceholder')}"></td>
                        <td id="edited-${monthKey}-${i}">${formattedEdited}</td>
                    </tr>`;
@@ -2243,205 +2247,125 @@
         }
 
         function handleTableInput(event) {
-             // console.log("handleTableInput called", event.target); // Debugging - can be noisy
              const target = event.target;
-             // Ensure the target is an input and is inside a table cell with data attributes
              if (target.tagName === 'INPUT' && target.dataset.field && target.parentElement.tagName === 'TD') {
                  const { month, index, field } = target.dataset;
-                 let value = target.value.trim(); // Get trimmed value first
+                 let valueToStore;
+                 let rawValue = target.value; // Keep raw value for potential display preservation
 
-                 // Handle placeholder icon class toggle for specific fields
-                 if (['rent', 'food', 'received'].includes(field)) {
+                 if (['rent', 'food', 'received', 'overtime'].includes(field)) {
                      const td = target.parentElement;
-                     if (value !== '') td.classList.add('input-has-value'); else td.classList.remove('input-has-value');
-                 }
+                     if (rawValue.trim() !== '') td.classList.add('input-has-value');
+                     else td.classList.remove('input-has-value');
 
-                 if (field === 'status') {
-                      value = value.toUpperCase(); // Convert to uppercase for status
+                     if (rawValue.trim() === '' || rawValue.trim() === '-') { // Allow '-' for negative numbers if needed, though min="0"
+                         valueToStore = 0;
+                     } else {
+                         valueToStore = parseFloat(rawValue);
+                         if (isNaN(valueToStore)) {
+                             valueToStore = 0; // Default to 0 if parsing fails
+                             // Potentially clear target.value if it's truly garbage like "abc"
+                             // but be careful not to disrupt "0." or "12." typing
+                             if (!/^-?\d*\.?\d*$/.test(rawValue)) { // If not a valid start of a number
+                                 // target.value = ''; // This might be too aggressive
+                             }
+                         } else if (valueToStore < 0 && field !== 'manualCarriedOverBalance') { // Allow negative for balance
+                             valueToStore = 0; // Enforce non-negative for these specific fields
+                         }
+                     }
+                     update(month, parseInt(index), field, valueToStore, target);
 
-                       // --- NEW VALIDATION FOR STATUS ---
-                       // Valid formats: '', 'P', 'H', 'A', 'L', or 'number' + 'P' (e.g., "1P", "2P", "5P")
-                       const isValidStatus = value === '' || // Empty is valid
-                                             value === 'P' || // Standard P is valid
-                                             value === 'H' || // H is valid
-                                             value === 'A' || // A is valid
-                                             value === 'L' || // L is valid
-                                             /^(\d+)P$/.test(value); // Checks if input is 'some digits' + 'P'
-
+                 } else if (field === 'status') {
+                      valueToStore = rawValue.trim().toUpperCase();
+                       const isValidStatus = valueToStore === '' || valueToStore === 'P' || valueToStore === 'H' || valueToStore === 'A' || valueToStore === 'L' || /^(\d+)P$/.test(valueToStore);
                        if (!isValidStatus) {
-                            console.warn(`Invalid status input: "${target.value}". Reverting to empty.`);
-                            target.value = ''; // Revert the display in the input field
-                            value = ''; // Set the value variable to empty string
-                             // Call update with the empty string value
-                             update(month, parseInt(index), field, value, target);
-                             return; // Stop processing for this input if invalid
+                            target.value = data[currentUser]?.months?.[month]?.days?.[parseInt(index)]?.[field] || ''; // Revert to old value
+                            return; // Stop processing
                        }
-                       // --- END NEW VALIDATION ---
-
-                       // If valid, proceed to update with the (potentially upper-cased and trimmed) string value
-                       update(month, parseInt(index), field, value, target);
-
-
-                 } else if (['overtime', 'rent', 'food', 'received'].includes(field)) {
-                      const trimmedValue = target.value.trim();
-                      if (trimmedValue === '') {
-                           value = 0; // Internal value is 0 for empty input
-                      } else {
-                           value = parseFloat(trimmedValue);
-                           if (isNaN(value) || value < 0) { // Treat NaN or negative as 0
-                                console.warn(`Invalid number input for ${field}: "${trimmedValue}". Setting to 0.`);
-                                value = 0; // Treat invalid/negative numbers as 0 internally
-                                // Do NOT update target.value here, let the update function handle display based on saved data
-                            }
-                      }
-                       // Call update with the determined numeric value
-                       update(month, parseInt(index), field, value, target);
-
+                       update(month, parseInt(index), field, valueToStore, target);
                  } else if (field === 'notes') {
-                     // Value is already trimmed string from the start of the function
-                      update(month, parseInt(index), field, value, target);
-                 } else {
-                     console.log("Unhandled field:", field); // Debugging
-                     return; // Ignore other fields
+                     valueToStore = rawValue.trim();
+                      update(month, parseInt(index), field, valueToStore, target);
                  }
-
-                 // The update function is now called inside the respective if/else blocks
-             } else {
-                 // console.log("Input event ignored, not a data field input in a TD.", target); // Debugging - can be noisy
              }
         }
 
 
-        function update(month, i, field, value, inputElement) {
-            console.log("update called for:", {month, i, field, value}); // Debugging
-
-            // Handle user-level properties like rate and overtimeRate
+        function update(month, i, field, value, inputElement) { // inputElement is the target from handleTableInput
+            // User-level properties (rate, overtimeRate)
             if (i === -1 && currentUser && data[currentUser]) {
                  const user = data[currentUser];
-                 let currentValue;
                  let valueChanged = false;
-
                  if (field === 'overtimeRate') {
-                      currentValue = user.overtimeRate || 8;
-                      // Compare against default 8 if missing/invalid
-                      valueChanged = Math.abs((value || 8) - (currentValue || 8)) > 0.001;
-                      if (valueChanged) {
-                           user.overtimeRate = value;
-                      }
+                      const oldVal = user.overtimeRate || 8;
+                      user.overtimeRate = (value === '' || isNaN(parseFloat(value)) || parseFloat(value) <=0 ) ? 8 : parseFloat(value);
+                      valueChanged = user.overtimeRate !== oldVal;
                  } else if (field === 'rate') {
-                      currentValue = user.rate || 0;
-                      valueChanged = Math.abs((value || 0) - (currentValue || 0)) > 0.001;
-                       if (valueChanged) {
-                           user.rate = value;
-                       }
-                 } else {
-                     console.warn(`Unhandled user-level update for field: ${field}`);
-                     return; // Ignore other user-level fields for now
+                      const oldVal = user.rate || 0;
+                      user.rate = (value === '' || isNaN(parseFloat(value))) ? 0 : parseFloat(value);
+                      valueChanged = user.rate !== oldVal;
                  }
+                 if (valueChanged) saveData();
 
-
-                 if (valueChanged) {
-                      saveData();
-                      // Update visible summary (monthly or overall)
-                      if (document.getElementById('summarySection').style.display === 'block') showSummary(activeReportType);
-                      if (document.getElementById('overallSummarySection').style.display === 'block') displayOverallReport();
-
-                      console.log(`User-level property ${field} updated for ${currentUser}:`, value); // Debugging
-                 } else {
-                      console.log(`User-level property ${field} unchanged for ${currentUser}.`); // Debugging
-                 }
-                  // Ensure input element reflects the saved value (empty for 8 for otRate, empty for 0 for rate)
+                 // Update display for user-level inputs
                  if (inputElement) {
-                      if (field === 'overtimeRate') {
-                           const savedOtRate = Number(user.overtimeRate) || 8;
-                           inputElement.value = savedOtRate === 8 ? '' : savedOtRate;
-                      } else if (field === 'rate') {
-                            const savedRate = Number(user.rate) || 0;
-                            inputElement.value = savedRate === 0 ? '' : savedRate;
-                      }
+                     if (field === 'overtimeRate') inputElement.value = (user.overtimeRate === 8) ? '' : user.overtimeRate;
+                     else if (field === 'rate') inputElement.value = (user.rate === 0) ? '' : user.rate;
                  }
-                 return; // Exit if it was a user-level update
+                 // Update summaries if visible
+                if (document.getElementById('summarySection').style.display === 'block') showSummary(activeReportType);
+                if (document.getElementById('overallSummarySection').style.display === 'block') displayOverallReport();
+                return;
             }
 
-
-            // Check if user, month data, and day data exist for day-level updates
+            // Day-level properties
             if (!currentUser || !data[currentUser]?.months?.[month]?.days?.[i]) {
-                    console.warn("Update failed: Data path invalid for", {currentUser, month, i}); // Debugging
-                   // Revert input element value if data structure is invalid
-                   // This might need more robust handling depending on how invalid state is reached
-                   if(inputElement) {
-                       // Attempt to revert to a default or empty state if data is truly broken
-                       // For status/notes, default to empty string. For numbers, default to empty string display (which means 0 internally).
-                       const defaultValue = (field === 'status' || field === 'notes') ? '' : ''; // Use empty string for number input display too
-                        inputElement.value = defaultValue;
-                   }
-                   return;
-              }
+                console.warn("Update failed: Data path invalid for day update.", {currentUser, month, i});
+                return;
+            }
 
-              const day = data[currentUser].months[month].days[i];
-              const currentValue = day[field];
-              let valueChanged = false;
+            const day = data[currentUser].months[month].days[i];
+            const currentValueInData = day[field];
+            let valueChanged = false;
 
-              // Compare values based on type
-              if (typeof value === 'number') {
-                   // Compare numbers. Treat 0 and empty string/null/undefined as equivalent for change detection.
-                   const numericCurrentValue = Number(currentValue) || 0; // Treat non-numbers/empty as 0
-                   const numericValue = value || 0; // Treat null/undefined/falsey value as 0
+            if (typeof value === 'number') { // For rent, food, received, overtime
+                valueChanged = Math.abs(value - (Number(currentValueInData) || 0)) > 0.0001; // Compare numbers
+            } else { // For status, notes (strings)
+                valueChanged = value !== (currentValueInData || '');
+            }
 
-                   // Check if the numeric values are meaningfully different
-                   valueChanged = Math.abs(numericValue - numericCurrentValue) > 0.001;
+            if (valueChanged) {
+                day[field] = value; // Save the new value (parsed number or trimmed string)
+                if (field !== 'updated') {
+                    day.updated = new Date().toISOString();
+                    const editedCell = document.getElementById(`edited-${month}-${i}`);
+                    if(editedCell) editedCell.textContent = new Date(day.updated).toLocaleString(currentLanguage==='hi'?'hi-IN':'en-GB', {year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+                }
+                saveData();
+                 if (document.getElementById('summarySection').style.display === 'block') showSummary(activeReportType);
+                 if (document.getElementById('overallSummarySection').style.display === 'block') displayOverallReport();
+            }
 
-              } else if (typeof value === 'string') {
-                   // Compare strings, trimming whitespace (although value is already trimmed for status/notes in handleTableInput)
-                   valueChanged = value !== (currentValue || ''); // Compare trimmed value against saved value (defaulting null/undefined to '')
-              } else {
-                    // Handle cases where types might differ unexpectedly
-                    console.warn(`Type mismatch during update comparison for field ${field}. Value type: ${typeof value}, Current value type: ${typeof currentValue}`);
-                    valueChanged = value !== currentValue; // Fallback comparison
-              }
+            // --- Display logic for the input field ---
+            if (inputElement && ['overtime', 'rent', 'food', 'received'].includes(field)) {
+                // If the field is focused, we want to preserve the user's exact input if it's a valid start
+                // (e.g., "0", "0.", "123.").
+                // Otherwise (not focused, or input doesn't match a partial valid number),
+                // format based on the saved data (show empty for 0, or the number itself).
+                const savedNumericValue = Number(day[field]) || 0;
 
-
-              // Only update if the value has actually changed and the field exists on the day object
-              if (valueChanged && Object.prototype.hasOwnProperty.call(day, field)) {
-                  day[field] = value; // Save the new value (0 if number input was empty, or the validated string for status/notes)
-                  console.log(`Value changed for ${field} at index ${i} in month ${month}:`, value); // Debugging
-
-                  // Update timestamp only if a meaningful field changed (not 'updated' itself)
-                  if (field !== 'updated') {
-                      day.updated = new Date().toISOString();
-                      const editedCell = document.getElementById(`edited-${month}-${i}`);
-                       // Update the displayed "Edited" timestamp with formatting
-                      if(editedCell) editedCell.textContent = new Date(day.updated).toLocaleString(currentLanguage==='hi'?'hi-IN':'en-GB', {year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
-                      console.log("Updated timestamp for day:", day.updated); // Debugging
-                  }
-                  saveData();
-                   // Update visible summary (monthly or overall) after saving data
-                   if (document.getElementById('summarySection').style.display === 'block') showSummary(activeReportType);
-                   if (document.getElementById('overallSummarySection').style.display === 'block') displayOverallReport();
-              } else {
-                  // Value unchanged based on comparison. If it's a number field and the input was cleared
-                  // but the saved value was already 0, the input needs to be set to '' for display.
-                  // The display handling below takes care of this regardless of valueChanged.
-                   console.log(`Value unchanged for ${field} at index ${i} in month ${month}, not saving.`, {field, value, currentValue, valueChanged}); // Debugging
-              }
-
-               // Ensure input element reflects the SAVED value after update attempt
-               if (inputElement) {
-                   const savedValue = day[field]; // Get the value that was actually saved (or not saved)
-                   if (['overtime', 'rent', 'food', 'received'].includes(field)) {
-                       // For number fields, display empty string if the saved value is 0
-                       inputElement.value = (Number(savedValue) || 0) === 0 ? '' : savedValue;
-                       // Also manually ensure placeholder icon class is correct after updating input value
-                        const td = inputElement.parentElement;
-                       if (td) { // Check if parent td exists
-                            if (inputElement.value.trim() !== '') td.classList.add('input-has-value'); else td.classList.remove('input-has-value');
-                       }
-
-                   } else if (field === 'status' || field === 'notes') {
-                       // For text fields, display the saved value (or empty string if null/undefined)
-                       inputElement.value = savedValue || '';
-                   }
-               }
+                if (document.activeElement === inputElement) {
+                    // User is actively typing.
+                    // If they typed "0", keep "0". If "0.", keep "0.". If "123.", keep "123."
+                    // The `target.value` (which is `inputElement.value`) already reflects this.
+                    // We just need to ensure it doesn't get reformatted away if it's a valid partial input.
+                    // This `if` block being empty means we don't override user's partial valid input.
+                } else {
+                    // Not focused: display empty for 0, or the number.
+                    inputElement.value = (savedNumericValue === 0) ? '' : String(savedNumericValue);
+                }
+            }
+            // For status and notes, inputElement.value is already correct from handleTableInput or previous state.
         }
 
 
@@ -2692,9 +2616,16 @@
                 let displayValue = input.value;
 
                 // Format display value based on field type
-                if(['overtime','rent','food','received'].includes(field)){
+                if (['overtime', 'rent', 'food', 'received'].includes(field)) {
                     const num = parseFloat(displayValue);
-                    displayValue = (isNaN(num)||num===0)?'':num.toFixed(0); // Use fixed(0) for whole numbers
+                    if (isNaN(num) || num === 0) {
+                        displayValue = '';
+                    } else {
+                        let precision = (field === 'overtime') ? 1 : 2;
+                        // Convert to string with specified precision, then Number() to remove trailing zeros for whole numbers, then String()
+                        displayValue = String(Number(num.toFixed(precision)));
+                        if (displayValue === "0") displayValue = ""; // ensure 0 is also empty string after formatting
+                    }
                 } else if(field==='status') {
                      // Keep the status text as entered by the user (like "2P")
                     displayValue=displayValue.trim().toUpperCase();
@@ -3297,5 +3228,4 @@
     </script>
 
 </body>
-</html>
-
+</html
