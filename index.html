@@ -1,231 +1,496 @@
 <!DOCTYPE html>
-<html lang="hi">
-<head>
+<html lang="hi"> <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-lang-key="appTitle">विज़ुअल शीट लेआउट कैलकुलेटर</title>
-    <!-- CSS को style.css में माना गया है -->
-    <link rel="stylesheet" href="style.css">
-    <!-- html2canvas अभी भी ब्राउज़र में विज़ुअल डिस्प्ले के लिए उपयोग किया जा सकता है -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <title data-translate-key="hubTitle">मेरा टूल हब</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* --- CSS वेरिएबल्स और स्टाइल्स (पहले जैसे) --- */
+        :root {
+            --bg-color-light: #f0f0f0;
+            --text-color-light: #333;
+            --nav-bg-light: #333;
+            --nav-button-bg-light: #555;
+            --nav-button-text-light: white;
+            --nav-button-active-bg-light: #007bff;
+            --iframe-border-light: #ccc;
+            --header-bg-light: #e9ecef;
+            --header-text-color-light: #212529;
+            --control-icon-color-light: #495057;
+            --control-icon-hover-bg-light: rgba(0,0,0,0.075);
+
+
+            --bg-color-dark: #1a1a1a;
+            --text-color-dark: #f0f0f0;
+            --nav-bg-dark: #222;
+            --nav-button-bg-dark: #444;
+            --nav-button-text-dark: #f0f0f0;
+            --nav-button-active-bg-dark: #0056b3;
+            --iframe-border-dark: #444;
+            --header-bg-dark: #343a40;
+            --header-text-color-dark: #f8f9fa;
+            --control-icon-color-dark: #adb5bd;
+            --control-icon-hover-bg-dark: rgba(255,255,255,0.1);
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: var(--bg-color-light);
+            color: var(--text-color-light);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-dark);
+        }
+
+        .app-header {
+            background-color: var(--header-bg-light);
+            color: var(--header-text-color-light);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .app-header {
+            background-color: var(--header-bg-dark);
+            color: var(--header-text-color-dark);
+        }
+
+        .app-header h1 {
+            margin: 0;
+            font-size: 1.5em;
+            white-space: nowrap; /* Prevent title from wrapping too soon */
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px; /* आइकन के बीच थोड़ा कम गैप */
+        }
+
+        .header-controls .control-icon {
+            background: none;
+            border: none;
+            font-size: 1.4em; /* आइकन का आकार थोड़ा कम */
+            cursor: pointer;
+            color: var(--control-icon-color-light);
+            padding: 6px 8px;
+            border-radius: 5px;
+            transition: background-color 0.2s, color 0.2s;
+            line-height: 1; /* वर्टिकल अलाइनमेंट में मदद के लिए */
+        }
+        body.dark-mode .header-controls .control-icon {
+            color: var(--control-icon-color-dark);
+        }
+        .header-controls .control-icon:hover {
+            background-color: var(--control-icon-hover-bg-light);
+        }
+        body.dark-mode .header-controls .control-icon:hover {
+             background-color: var(--control-icon-hover-bg-dark);
+        }
+
+
+        nav {
+            background-color: var(--nav-bg-light);
+            padding: 8px 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 5px;
+            transition: background-color 0.3s;
+        }
+        body.dark-mode nav {
+            background-color: var(--nav-bg-dark);
+        }
+
+        nav button.nav-button {
+            padding: 8px 12px; /* बटन का आकार थोड़ा छोटा */
+            margin: 4px;
+            font-size: 0.85em; /* फॉन्ट थोड़ा छोटा */
+            color: var(--nav-button-text-light);
+            background-color: var(--nav-button-bg-light);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        body.dark-mode nav button.nav-button {
+            color: var(--nav-button-text-dark);
+            background-color: var(--nav-button-bg-dark);
+        }
+
+        nav button.nav-button:hover {
+            background-color: #777;
+        }
+        body.dark-mode nav button.nav-button:hover {
+            background-color: #666;
+        }
+
+        nav button.nav-button.active {
+            background-color: var(--nav-button-active-bg-light);
+            font-weight: bold;
+        }
+        body.dark-mode nav button.nav-button.active {
+            background-color: var(--nav-button-active-bg-dark);
+        }
+
+        #appContainer {
+            flex-grow: 1;
+            overflow: hidden;
+            border-top: 1px solid var(--iframe-border-light);
+            position: relative; /* लोडिंग संदेश के लिए */
+        }
+        body.dark-mode #appContainer {
+            border-top: 1px solid var(--iframe-border-dark);
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        #homeContent { /* होम कंटेंट पहले जैसा */
+            padding: 20px;
+            display: none; /* शुरू में छिपा हुआ */
+            text-align: center;
+            flex-grow: 1;
+            align-items:center;
+            justify-content:center;
+            display:flex; /* showHomeContent में 'flex' सेट होगा */
+            flex-direction:column;
+        }
+
+        /* वैकल्पिक: iframe लोड होते समय संदेश */
+        .loading-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2em;
+            color: var(--text-color-light);
+            display: none; /* JS द्वारा दिखाया जाएगा */
+        }
+        body.dark-mode .loading-message {
+            color: var(--text-color-dark);
+        }
+
+    </style>
 </head>
-<body>
-    <div id="loadingIndicator">
-        <div data-lang-key="loadingPdf">PDF बन रहा है, कृपया प्रतीक्षा करें...</div>
-    </div>
+<body class="">
+
     <header class="app-header">
-        <div class="title" data-lang-key="headerTitle">शीट लेआउट</div>
-        <div class="header-icons">
-            <button id="manageProjectsIcon" title="प्रोजेक्ट मैनेज करें / Manage Projects">🗂️</button>
-            <button id="showOffcutsLibraryIcon" title="ऑफकट लाइब्रेरी / Offcut Library">🧩</button>
-            <button id="unitSettingsIcon" title="यूनिट बदलें / Change Unit">📏</button>
-            <button id="langToggle" title="भाषा बदलें / Change Language">🌐</button>
-            <button id="printToPdfButton" title="PDF के रूप में प्रिंट करें / Print as PDF">📄 <small data-lang-key="printPdfBtn">प्रिंट/PDF</small></button>
-            <button id="sheetSettingsIcon" title="शीट सेटिंग्स">⚙️</button>
-            <button id="historyIcon" title="हिस्ट्री">📜</button>
-            <button id="jsonIcon" title="JSON ऑपरेशन्स">💾</button>
+        <h1 data-translate-key="hubMainTitle">मेरा टूल हब</h1>
+        <div class="header-controls">
+            <button id="homeButton" class="control-icon" data-translate-key-title="titleHome"><i class="fas fa-home"></i></button>
+            <button id="langToggle" class="control-icon" data-translate-key-title="titleLangToggle">🌐</button>
+            <button id="darkModeToggle" class="control-icon" data-translate-key-title="titleThemeToggle"><i class="fas fa-moon"></i></button>
         </div>
     </header>
-    <div id="jsonMenu">
-        <a href="#" id="exportJsonLink" data-lang-key="exportJson">JSON एक्सपोर्ट करें</a>
-        <label for="importJsonInputHidden" class="json-menu-item" data-lang-key="importJson">JSON इम्पोर्ट करें</label>
-        <input type="file" id="importJsonInputHidden" accept=".json" style="display: none;">
-        <a href="#" id="clearSavedDataLink" data-lang-key="clearSavedData">सेव डेटा क्लियर करें</a>
-    </div>
 
-    <div class="container">
-        <div class="parts-group">
-            <h2 data-lang-key="addPieceTitle">पीस जोड़ें</h2>
-            <label for="partName" data-lang-key="pieceNameLabel">पीस का नाम (वैकल्पिक):</label>
-            <input type="text" id="partName" data-lang-placeholder="pieceDefaultName">
-            <label for="partWidth"><span data-lang-key="pieceWidthLabel">पीस की चौड़ाई</span> (<span class="unit-display">cm</span>):</label>
-            <input type="number" id="partWidth" placeholder="0" step="any">
-            <label for="partLength"><span data-lang-key="pieceLengthLabel">पीस की लंबाई (ग्रेन)</span> (<span class="unit-display">cm</span>):</label>
-            <input type="number" id="partLength" placeholder="0" step="any">
-            <label for="partQuantity" data-lang-key="pieceQuantityLabel">कितने पीस:</label>
-            <input type="number" id="partQuantity" min="1" placeholder="1">
-            <button id="addPieceButton" data-lang-key="addPieceBtn">पीस जोड़ें</button>
-        </div>
+    <nav id="appNavigation">
+        <button data-app="land_area_calculator.html" class="nav-button"><i class="fas fa-ruler-combined"></i> <span data-translate-key="navLandArea">ज़मीन का क्षेत्रफल</span></button>
+        <button data-app="attendance_tracker.html" class="nav-button"><i class="fas fa-user-check"></i> <span data-translate-key="navAttendance">अटेंडेंस ट्रैकर</span></button>
+        <button data-app="kharch_tracker.html" class="nav-button"><i class="fas fa-wallet"></i> <span data-translate-key="navExpense">खर्च ट्रैcker</span></button>
+        <button data-app="combined_calculator.html" class="nav-button"><i class="fas fa-calculator"></i> <span data-translate-key="navCalculator">कैलकुलेटर</span></button>
+        <button data-app="unit_converter.html" class="nav-button"><i class="fas fa-exchange-alt"></i> <span data-translate-key="navUnitConverter">यूनिट कन्वर्टर</span></button>
+        <button data-app="Sheet-layout.html" class="nav-button"><i class="fas fa-table"></i> <span data-translate-key="navSheetLayout">Sheet layout</span></button>
+        <button data-app="Tile-calculator.html" class="nav-button"><i class="fas fa-border-all"></i> <span data-translate-key="navTileCalculator">टाइल कैलकुलेटर</span></button>
+        </nav>
 
-        <div class="input-group" id="addedPiecesSection">
-            <h2 data-lang-key="addedPiecesTitle">जोड़े गए पीस</h2>
-            <table id="piecesTable">
-                <thead>
-                    <tr>
-                        <th data-lang-key="tableName">नाम</th>
-                        <th><span data-lang-key="tableWidth">चौड़ाई</span> (<span class="unit-display">cm</span>)</th>
-                        <th><span data-lang-key="tableLength">लंबाई</span> (<span class="unit-display">cm</span>)</th>
-                        <th data-lang-key="tableQuantity">संख्या</th>
-                        <th class="no-print" data-lang-key="tableRemove">हटाएं</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-                <tfoot>
-                    <tr id="piecesTableSummaryRow" class="table-summary-row" style="display: none;">
-                        <td colspan="3" data-lang-key="totalPiecesInList">कुल पीस लिस्ट में:</td>
-                        <td id="totalPiecesInListCount">0</td>
-                        <td class="no-print"></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-
-        <div class="fitting-strategy-group">
-            <label for="fittingStrategySelector" data-lang-key="fittingStrategyLabel">फिटिंग रणनीति चुनें:</label>
-            <select id="fittingStrategySelector">
-                <option value="defaultScore" data-lang-key="strategyDefaultScore">डिफ़ॉल्ट स्कोर आधारित (बड़े पीस पहले)</option>
-                <option value="minWastageArea" data-lang-key="strategyMinWastage">न्यूनतम व्यर्थ क्षेत्र</option>
-                <option value="firstFit" data-lang-key="strategyFirstFit">फर्स्ट फिट (सबसे तेज़)</option>
-                <option value="worstFit" data-lang-key="strategyWorstFit">वर्स्ट फिट (अधिक व्यर्थ क्षेत्र)</option>
-                <option value="bottomLeftFreeRect" data-lang-key="strategyBottomLeftFree">खाली आयत (बॉटम-लेफ्ट प्राथमिकता)</option>
-                <option value="sortPiecesByPerimeterDesc" data-lang-key="strategySortPiecePerimeterDesc">पीस: परिधि (बड़े पहले)</option>
-                <option value="sortPiecesByLongestSideDesc" data-lang-key="strategySortPieceLongestSideDesc">पीस: सबसे लंबी भुजा पहले</option>
-                <option value="sortPiecesByShortestSideAsc" data-lang-key="strategySortPieceShortestSideAsc">पीस: सबसे छोटी भुजा पहले</option>
-                <option value="sortPiecesByWidthDesc" data-lang-key="strategySortPieceWidthDesc">पीस: चौड़ाई (बड़े पहले)</option>
-                <option value="sortPiecesByHeightDesc" data-lang-key="strategySortPieceHeightDesc">पीस: ऊंचाई/लंबाई (बड़े पहले)</option>
-                <option value="sortPiecesByAreaAsc" data-lang-key="strategySortPieceAreaAsc">पीस: क्षेत्रफल (छोटे पहले)</option>
-            </select>
-             <div style="margin-top: 10px;">
-                <input type="checkbox" id="useOffcutsCheckbox" style="margin-right: 5px;">
-                <label for="useOffcutsCheckbox" data-lang-key="useSavedOffcutsLabel" style="display:inline-block; font-weight:normal;">सहेजे गए ऑफकट्स का उपयोग करें</label>
-            </div>
-            <button id="calculateWithStrategyButton" data-lang-key="calculateWithStrategyBtn" style="margin-top:10px;">चयनित रणनीति से गणना करें</button>
-        </div>
-
-
-        <div class="actions-div" id="mainActionButtons">
-            <button id="calculateLayoutDefaultButton" data-lang-key="calculateLayoutBtn">लेआउट की गणना करें (डिफ़ॉल्ट)</button>
-            <button id="resetButton" data-lang-key="resetCurrentBtn">रीसेट (वर्तमान)</button>
-        </div>
-
-        <div class="results-group">
-            <h2 data-lang-key="resultsTitle">परिणाम</h2>
-            <div class="results-summary" id="resultsSummary" data-lang-key="totalSheetsDefault">कुल आवश्यक शीट्स: 0</div>
-            <div class="sheets-container" id="sheetsContainer">
-            </div>
-            <div class="wastage-section" id="wastageSection" style="display:none;">
-                 <h3 data-lang-key="wastageReportTitle">वेस्टेज रिपोर्ट</h3>
-                 <ul id="wastageOverallStats" style="list-style-type: none; padding-left: 0; margin-top:0;"></ul>
-                 <hr style="margin: 10px 0; border-color: #eee;">
-                 <div class="useful-offcuts-summary" id="usefulOffcutsSummary" style="display:none; margin-bottom: 5px;"></div>
-                 <div class="wastage-list" id="usefulOffcutsDisplayListContainer" style="max-height: 150px; overflow-y:auto; border: 1px solid #eee; padding:5px; margin-bottom:10px;">
-                 </div>
-                 <div id="otherSmallWastageContainer">
-                 </div>
-                 <div class="wastage-list-summary" id="totalWastagePiecesSummary" style="display:none; margin-top:10px;"></div>
-            </div>
+    <div id="appContainer">
+        <div class="loading-message" id="loadingMessage" data-translate-key="loadingText">लोड हो रहा है...</div>
+        <iframe id="appFrame" title="मुख्य एप्लीकेशन क्षेत्र"></iframe>
+        <div id="homeContent">
+            <h2 data-translate-key="homeWelcomeTitle">टूल हब में आपका स्वागत है!</h2>
+            <p data-translate-key="homeWelcomeMsg">ऊपर दिए गए नेविगेशन से एक टूल चुनें।</p>
         </div>
     </div>
 
-    <!-- Modals -->
-    <div id="unitSettingsModal" class="modal">
-        <div class="unit-modal-content">
-            <span class="close-button" id="closeUnitSettingsModalBtn">×</span>
-            <h2 data-lang-key="unitSettingsTitle">यूनिट सेटिंग्स</h2>
-            <label for="currentUnitSelector" data-lang-key="selectUnitLabel">वर्तमान यूनिट चुनें:</label>
-            <select id="currentUnitSelector">
-                <option value="cm">सेंटीमीटर (cm)</option>
-                <option value="mm">मिलीमीटर (mm)</option>
-                <option value="m">मीटर (m)</option>
-                <option value="ft">फुट (ft)</option>
-                <option value="in">इंच (in)</option>
-            </select>
-            <button id="applyUnitChangeButton" style="width:100%;" data-lang-key="applyBtn">लागू करें</button>
-        </div>
-    </div>
+    <script>
+        const translations = {
+            hi: {
+                hubTitle: "मेरा टूल हब",
+                hubMainTitle: "मेरा टूल हब",
+                titleHome: "होम",
+                titleLangToggle: "भाषा बदलें (Change Language)",
+                titleThemeToggle: "थीम बदलें (Toggle Theme)",
+                navLandArea: "ज़मीन का क्षेत्रफल",
+                navAttendance: "अटेंडेंस ट्रैकर",
+                navExpense: "खर्च ट्रैकर",
+                navCalculator: "कैलकुलेटर",
+                navUnitConverter: "यूनिट कन्वर्टर",
+                navSheetLayout: "Sheet layout", // जोड़ा गया अनुवाद
+                navTileCalculator: "टाइल कैलकुलेटर", // जोड़ा गया अनुवाद
+                homeWelcomeTitle: "टूल हब में आपका स्वागत है!",
+                homeWelcomeMsg: "ऊपर दिए गए नेविगेशन से एक टूल चुनें।",
+                loadingText: "लोड हो रहा है...",
+                // त्रुटि संदेश आदि
+                errorLoadingApp: "टूल लोड करने में त्रुटि। कृपया पुनः प्रयास करें।"
+            },
+            en: {
+                hubTitle: "My Tool Hub",
+                hubMainTitle: "My Tool Hub",
+                titleHome: "Home",
+                titleLangToggle: "Change Language (भाषा बदलें)",
+                titleThemeToggle: "Toggle Theme (थीम बदलें)",
+                navLandArea: "Land Area Calculator",
+                navAttendance: "Attendance Tracker",
+                navExpense: "Expense Tracker",
+                navCalculator: "Calculator",
+                navUnitConverter: "Unit Converter",
+                navSheetLayout: "Sheet layout", // जोड़ा गया अनुवाद
+                navTileCalculator: "Tile Calculator", // जोड़ा गया अनुवाद
+                homeWelcomeTitle: "Welcome to the Tool Hub!",
+                homeWelcomeMsg: "Select a tool from the navigation above.",
+                loadingText: "Loading...",
+                errorLoadingApp: "Error loading app. Please try an."
+            }
+        };
 
-    <div id="sheetSettingsModal" class="modal">
-        <div class="sheet-size-modal-content">
-            <span class="close-button" id="closeSheetSettingsModalBtn">×</span>
-            <h2 data-lang-key="sheetSettingsTitle">शीट सेटिंग्स</h2>
-            <label for="modalSheetName" data-lang-key="sheetNameLabel">शीट का नाम (वैकल्पिक):</label>
-            <input type="text" id="modalSheetName" data-lang-placeholder="sheetNamePlaceholder" style="margin-bottom: 15px;">
-            <label for="modalSheetWidth"><span data-lang-key="sheetWidthLabel">शीट की चौड़ाई</span> (<span class="unit-display">cm</span>):</label>
-            <input type="number" id="modalSheetWidth" value="122" step="any">
-            <label for="modalSheetLength"><span data-lang-key="sheetLengthGrainLabel">शीट की लंबाई (ग्रेन)</span> (<span class="unit-display">cm</span>):</label>
-            <input type="number" id="modalSheetLength" value="244" step="any">
-            <div>
-                <input type="checkbox" id="modalHasGrainDirection" checked>
-                <label for="modalHasGrainDirection" style="display: inline-block; margin-bottom: 0; font-weight:normal;" data-lang-key="respectGrainLabel">ग्रेन की दिशा का ध्यान रखें</label>
-            </div>
-            <div style="margin-top:15px;">
-                <label for="modalGrainColor" data-lang-key="grainColorLabel">ग्रेन का रंग:</label>
-                <select id="modalGrainColor">
-                    <option value="rgba(0,0,0,0.08)" data-lang-key="grainGray">हल्का ग्रे</option>
-                    <option value="rgba(160,82,45,0.1)" data-lang-key="grainLightBrown">हल्का भूरा</option>
-                    <option value="rgba(139,69,19,0.1)" data-lang-key="grainDarkBrown">गहरा भूरा</option>
-                    <option value="rgba(210,180,140,0.1)" data-lang-key="grainTan">टैन</option>
-                    <option value="none" data-lang-key="grainNone">कोई ग्रेन नहीं</option>
-                </select>
-            </div>
-            <div class="offcut-settings-group" style="margin-top:15px; padding: 10px 0 0 0; border:none; background:none;">
-                <h4 data-lang-key="offcutSettingsTitle" style="margin-bottom:5px; font-size:1em;">ऑफकट सेटिंग्स</h4>
-                <label for="minOffcutWidth" data-lang-key="minOffcutWidthLabel">न्यूनतम ऑफकट चौड़ाई (<span class="unit-display">cm</span>):</label>
-                <input type="number" id="minOffcutWidth" value="10" step="any">
-                <label for="minOffcutLength" data-lang-key="minOffcutLengthLabel">न्यूनतम ऑफकट लंबाई (<span class="unit-display">cm</span>):</label>
-                <input type="number" id="minOffcutLength" value="45" step="any">
-            </div>
-            <button id="applySheetSettingsButton" style="margin-top: 15px; width:100%;" data-lang-key="applyAndSaveBtn">लागू करें और सेव करें</button>
-        </div>
-    </div>
+        document.addEventListener('DOMContentLoaded', () => {
+            const iframe = document.getElementById('appFrame');
+            const navButtons = document.querySelectorAll('.nav-button');
+            const homeButton = document.getElementById('homeButton');
+            const langToggle = document.getElementById('langToggle');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const homeContentDiv = document.getElementById('homeContent');
+            const loadingMessageDiv = document.getElementById('loadingMessage');
 
-    <div id="historyModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" id="closeHistoryModalBtn">×</span>
-            <h2 data-lang-key="historyTitle">हिस्ट्री</h2>
-            <ul id="historyList"></ul>
-            <p><small data-lang-key="historyNote">नोट: यह केवल पिछले कुछ बदलावों को दिखाता है। किसी आइटम पर क्लिक करके उसे लोड करें।</small></p>
-        </div>
-    </div>
+            const lastActiveAppKey = 'hubLastActiveApp';
+            const darkModeKey = 'hubDarkMode';
+            const langKey = 'hubLanguage';
 
-    <div id="projectManagementModal" class="modal">
-        <div class="project-modal-content">
-            <span class="close-button" id="closeProjectManagementModalBtn">×</span>
-            <h2 data-lang-key="projectManagementTitle">प्रोजेक्ट मैनेजमेंट</h2>
-            <div class="projects-group">
-                <h3 data-lang-key="saveCurrentProjectTitle">वर्तमान प्रोजेक्ट सेव करें</h3>
-                <label for="projectNameInput" data-lang-key="projectNameLabel">प्रोजेक्ट का नाम:</label>
-                <input type="text" id="projectNameInput" data-lang-placeholder="projectNamePlaceholder">
-                <button id="saveCurrentProjectButton" data-lang-key="saveProjectBtn">प्रोजेक्ट सेव करें</button>
-            </div>
-            <div class="projects-group">
-                <h3 data-lang-key="savedProjectsTitle">सेव किए गए प्रोजेक्ट्स</h3>
-                <ul id="projectList"></ul>
-                <p id="noProjectsMessage" style="display:none;" data-lang-key="noProjectsSaved">कोई प्रोजेक्ट सेव नहीं किया गया है।</p>
-            </div>
-        </div>
-    </div>
+            let currentLang = localStorage.getItem(langKey) || 'hi';
+            let currentMode = localStorage.getItem(darkModeKey) || 'light';
+            let defaultAppUrl = localStorage.getItem(lastActiveAppKey) || 'HOME';
 
-    <div id="offcutsLibraryModal" class="modal">
-        <div class="offcuts-library-modal-content">
-            <span class="close-button" id="closeOffcutsLibraryModalBtn">×</span>
-            <h2 data-lang-key="offcutsLibraryTitle">ऑफकट लाइब्रेरी</h2>
-            <div class="offcut-add-manual-group" style="padding: 10px; border: 1px solid #e0e0e0; border-radius: 5px; margin-bottom: 15px;">
-                <h4 data-lang-key="addManualOffcutTitle" style="margin-top:0; margin-bottom:10px;">मैन्युअल ऑफकट जोड़ें</h4>
-                <div style="display:flex; gap:10px; align-items: flex-end;">
-                    <div style="flex-grow:1;">
-                        <label for="manualOffcutWidth"><span data-lang-key="offcutWidthLabel">चौड़ाई</span> (<span class="unit-display">cm</span>):</label>
-                        <input type="number" id="manualOffcutWidth" placeholder="0" step="any" style="margin-bottom:5px;">
-                    </div>
-                    <div style="flex-grow:1;">
-                        <label for="manualOffcutLength"><span data-lang-key="offcutLengthLabel">लंबाई</span> (<span class="unit-display">cm</span>):</label>
-                        <input type="number" id="manualOffcutLength" placeholder="0" step="any" style="margin-bottom:5px;">
-                    </div>
-                    <div style="flex-grow:1;">
-                        <label for="manualOffcutSourceName" data-lang-key="offcutSourceNameLabel">स्रोत (वैकल्पिक):</label>
-                        <input type="text" id="manualOffcutSourceName" data-lang-placeholder="offcutSourcePlaceholder" style="margin-bottom:5px;">
-                    </div>
-                    <button id="addManualOffcutButton" data-lang-key="addManualOffcutBtn" style="padding: 10px 15px; height: 40px; margin-bottom:5px;">जोड़ें</button>
-                </div>
-            </div>
-            <hr style="margin: 15px 0;">
-            <div id="offcutsListContainer">
-            </div>
-            <p id="noOffcutsMessageModal" style="display:none;"></p>
-        </div>
-    </div>
+            function applyTranslations() {
+                document.querySelectorAll('[data-translate-key]').forEach(el => {
+                    const key = el.getAttribute('data-translate-key');
+                    if (translations[currentLang] && translations[currentLang][key]) {
+                        el.textContent = translations[currentLang][key];
+                    }
+                });
+                document.querySelectorAll('[data-translate-key-title]').forEach(el => {
+                    const key = el.getAttribute('data-translate-key-title');
+                     if (translations[currentLang] && translations[currentLang][key]) {
+                        el.title = translations[currentLang][key];
+                    }
+                });
+                document.documentElement.lang = currentLang;
+                document.title = translations[currentLang]?.hubTitle || "Tool Hub";
+            }
 
-    <!-- जावास्क्रिप्ट फाइलों को यहाँ लोड करें -->
-    <script type="module" src="js/main.js"></script> 
+            function applyDarkMode(isDark) {
+                const icon = darkModeToggle.querySelector('i');
+                currentMode = isDark ? 'dark' : 'light'; // currentMode को अपडेट करें
+                if (isDark) {
+                    document.body.classList.add('dark-mode');
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            }
+
+            function showHomeContent() {
+                iframe.style.display = 'none';
+                loadingMessageDiv.style.display = 'none';
+                homeContentDiv.style.display = 'flex';
+                document.title = translations[currentLang]?.hubMainTitle || "Tool Hub";
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                localStorage.setItem(lastActiveAppKey, 'HOME');
+            }
+
+            function loadApp(appUrl) {
+                if (appUrl === 'HOME') {
+                    showHomeContent();
+                    return;
+                }
+
+                homeContentDiv.style.display = 'none';
+                iframe.style.display = 'none'; // iframe को छिपाएँ जब तक लोड न हो जाए
+                loadingMessageDiv.style.display = 'block'; // लोडिंग संदेश दिखाएँ
+
+                // क्रॉस-ऑरिजिन त्रुटि से बचने के लिए, हम iframe लोड होने से पहले src सेट कर रहे हैं
+                // और यह सुनिश्चित कर रहे हैं कि iframe का src खाली न हो जब वह छिपा हो।
+                 const currentIframeSrc = iframe.src.split('/').pop(); // केवल फ़ाइल नाम की तुलना करें
+                 const newAppFileName = appUrl.split('/').pop();
+
+                 if (currentIframeSrc !== newAppFileName || !iframe.src) {
+                     iframe.src = appUrl; // नया src सेट करें
+                     console.log('Loading app:', appUrl);
+                 } else {
+                    // src वही है और iframe पहले से लोड है, केवल UI अपडेट करें
+                    console.log('App already loaded, showing iframe:', appUrl);
+                    iframe.style.display = 'block';
+                    loadingMessageDiv.style.display = 'none';
+                 }
+
+
+                localStorage.setItem(lastActiveAppKey, appUrl);
+
+                navButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.app === appUrl);
+                });
+
+                // iframe के लिए ऑनलोड और onerror हैंडलर
+                iframe.onload = () => {
+                    iframe.style.display = 'block';
+                    loadingMessageDiv.style.display = 'none';
+                    try {
+                        let appTitle = "";
+                        // Check if contentWindow is accessible and document is ready
+                        if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.readyState === 'complete') {
+                             appTitle = iframe.contentWindow.document.title;
+                        } else {
+                             // Fallback: use filename to create title
+                             const appNameParts = appUrl.split('/').pop().split('.');
+                             appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                        }
+                         document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+
+                         // Optional: Send a message to the iframe if it needs to know the current theme or language
+                         if (iframe.contentWindow) {
+                             iframe.contentWindow.postMessage({
+                                 theme: currentMode,
+                                 lang: currentLang
+                             }, '*'); // Replace '*' with iframe's origin for better security
+                         }
+
+                    } catch (e) {
+                        console.warn("Could not access iframe title or postMessage.", e);
+                        // Fallback title using filename
+                        const appNameParts = appUrl.split('/').pop().split('.');
+                        const appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                        document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+                    }
+                };
+                iframe.onerror = () => {
+                    loadingMessageDiv.textContent = translations[currentLang]?.errorLoadingApp || "Error loading app.";
+                    loadingMessageDiv.style.display = 'block'; // Show error message
+                    iframe.style.display = 'none';
+                    console.error("Failed to load iframe:", appUrl);
+                    // यहाँ आप iframe का src खाली कर सकते हैं या कोई fallback दिखा सकते हैं
+                     iframe.src = "about:blank"; // Clear the src on error
+                };
+                 iframe.onbeforeunload = () => { // Optional: Show loading on navigation *within* iframe
+                     loadingMessageDiv.style.display = 'block';
+                 };
+            }
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loadApp(button.dataset.app);
+                });
+            });
+
+            homeButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                loadApp('HOME');
+            });
+
+            langToggle.addEventListener('click', () => {
+                currentLang = (currentLang === 'hi') ? 'en' : 'hi';
+                localStorage.setItem(langKey, currentLang);
+                applyTranslations();
+                // यदि होम स्क्रीन सक्रिय है, तो उसके टेक्स्ट को भी अपडेट करें
+                if (homeContentDiv.style.display === 'flex') {
+                    showHomeContent(); // यह अनुवाद लागू करेगा
+                }
+                // यदि iframe में कोई ऐप लोड है, तो उसका शीर्षक पुनः अनुवादित हो सकता है (या आप iframe को postMessage भेज सकते हैं)
+                 const activeNavButton = document.querySelector('.nav-button.active');
+                 if (activeNavButton && activeNavButton.dataset.app !== 'HOME') {
+                      // Optionally send a postMessage to the iframe indicating language change
+                      // If the iframe handles messages, it can update its own content
+                       if (iframe.contentWindow) {
+                           iframe.contentWindow.postMessage({
+                               lang: currentLang
+                           }, '*'); // Replace '*' with iframe's origin
+                       }
+                      // Note: Re-calling loadApp(activeNavButton.dataset.app) here would reload the iframe, which might not be desired.
+                      // It's better if the iframe itself listens for messages to change language dynamically.
+                      // For now, we just update the main frame's title if possible.
+                       try {
+                           let appTitle = "";
+                            if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.readyState === 'complete') {
+                                 appTitle = iframe.contentWindow.document.title;
+                            } else {
+                                 const appNameParts = activeNavButton.dataset.app.split('/').pop().split('.');
+                                 appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                            }
+                            document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+                       } catch (e) {
+                            console.warn("Could not access iframe title after lang change.", e);
+                            const appNameParts = activeNavButton.dataset.app.split('/').pop().split('.');
+                            const appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                            document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+                       }
+                 }
+            });
+
+            darkModeToggle.addEventListener('click', () => {
+                const isDark = !document.body.classList.contains('dark-mode'); // नया मोड क्या होगा
+                applyDarkMode(isDark);
+                localStorage.setItem(darkModeKey, isDark ? 'dark' : 'light');
+                // Send a postMessage to the iframe indicating theme change
+                 if (iframe.contentWindow) {
+                     iframe.contentWindow.postMessage({
+                         theme: currentMode
+                     }, '*'); // Replace '*' with iframe's origin
+                 }
+            });
+
+            // प्रारंभिक सेटअप
+            applyDarkMode(currentMode === 'dark');
+            applyTranslations();
+
+             // Handle initial load or refresh - check if an app URL is stored
+             const initialApp = localStorage.getItem(lastActiveAppKey);
+             if (initialApp && initialApp !== 'HOME') {
+                 // Use window.location.origin + window.location.pathname + initialApp to ensure correct relative path if needed
+                 // For simplicity assuming initialApp is a direct filename in the same dir
+                 loadApp(initialApp);
+             } else {
+                 showHomeContent(); // Show home content by default or if last app was HOME
+             }
+
+             // Listen for messages *from* iframes (optional, if iframes send messages back)
+            window.addEventListener('message', (event) => {
+                // Check origin for security: event.origin should match the expected origin of your iframes
+                // if (event.origin !== 'YOUR_EXPECTED_ORIGIN') return;
+
+                const message = event.data;
+                // Handle messages from iframe, e.g., iframe is loaded, iframe needs data, etc.
+                // console.log("Message from iframe:", message);
+                 if (message && message.type === 'appLoaded') {
+                     // An iframe could send this message when it's fully interactive
+                     console.log(message.appName + ' inside iframe reported loaded.');
+                     // You could hide the main hub's loading message here if you rely on iframe reporting its load state
+                 }
+            });
+
+        });
+    </script>
+
 </body>
 </html>
