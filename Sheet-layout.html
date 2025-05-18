@@ -4,16 +4,266 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-lang-key="appTitle">विज़ुअल शीट लेआउट कैलकुलेटर</title>
-    <!-- CSS फ़ाइल को लिंक करें -->
-    <link rel="stylesheet" href="css/sheet-layout-styles.css"> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; padding: 0; background-color: #f0f4f8;
+            color: #333; display: flex; flex-direction: column; align-items: center;
+        }
+        .app-header {
+            background-color: #34495e; color: white; padding: 10px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; box-sizing: border-box; position: fixed;
+            top: 0; left: 0; z-index: 1001;
+        }
+        .app-header .title { font-size: 1.3em; font-weight: bold; }
+        .header-icons { display: flex; gap: 8px; flex-wrap: nowrap; }
+        .header-icons button {
+            background: none; border: none; color: white; font-size: 1.4em;
+            cursor: pointer; padding: 8px; border-radius: 4px; transition: background-color 0.2s;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; 
+        }
+        .header-icons button:hover { background-color: rgba(255,255,255,0.15); }
+        .container {
+            margin-top: 70px;
+            background-color: #fff; padding: 20px; border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1); width: 95%; max-width: 1000px;
+            margin-bottom: 20px;
+        }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
+        .input-group, .parts-group, .results-group, .projects-group, .fitting-strategy-group, .offcut-settings-group {
+            margin-bottom: 25px; padding: 20px; border: 1px solid #dce4ec;
+            border-radius: 8px; background-color: #fafdff;
+        }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #4a5568; }
+        input[type="number"], input[type="text"], select {
+            width: calc(100% - 22px); padding: 10px; margin-bottom: 15px;
+            border: 1px solid #cbd5e0; border-radius: 5px; box-sizing: border-box; font-size: 1em;
+        }
+        select { width: 100%; } 
+        input[type="checkbox"] { margin-right: 5px; vertical-align: middle;}
+        input:focus, select:focus { border-color: #4299e1; box-shadow: 0 0 0 1px #4299e1; outline: none; }
+        button, .button-like-label {
+            background-color: #3498db; color: white; padding: 10px 18px; border: none;
+            border-radius: 5px; cursor: pointer; font-size: 1em; transition: background-color 0.2s;
+            margin-right: 10px; margin-top: 5px;
+            display: inline-block; text-align: center;
+        }
+        button:hover, .button-like-label:hover { background-color: #2980b9; }
+        #printToPdfButton { background-color: #27ae60; } 
+        #printToPdfButton:hover { background-color: #229954; }
+        #showOffcutsLibraryIcon { background-color: #f39c12;} #showOffcutsLibraryIcon:hover { background-color: #e67e22;}
+        #exportJsonButton { background-color: #16a085;} #exportJsonButton:hover { background-color: #117a65;}
+        .button-like-label { background-color: #f39c12; } .button-like-label:hover { background-color: #e67e22; }
+        #showHistoryButton { background-color: #8e44ad;} #showHistoryButton:hover { background-color: #7d3c98;}
+        #clearSavedDataButton { background-color: #c0392b;} #clearSavedDataButton:hover { background-color: #a93226;}
+        #resetButton { background-color: #d35400; } #resetButton:hover { background-color: #b84300; }
+        .delete-btn, .project-delete-btn, .offcut-delete-btn { background-color: #e74c3c; padding: 5px 10px; font-size: 0.9em; }
+        .delete-btn:hover, .project-delete-btn:hover, .offcut-delete-btn:hover { background-color: #c0392b; }
+        .history-delete-btn {
+            background-color: #e74c3c; color: white; border: none; padding: 4px 8px;
+            font-size: 0.8em; border-radius: 3px; cursor: pointer; margin-left: 10px;
+            flex-shrink: 0;
+        }
+        .history-delete-btn:hover { background-color: #c0392b; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; }
+        th { background-color: #edf2f7; font-weight: 600; }
+        .table-summary-row { font-weight: bold; background-color: #f9fafb; }
+        .sheets-container { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px; justify-content: center;}
+        .sheet-wrapper { border: 1px solid #bdc3c7; padding: 10px; background-color: #ecf0f1; border-radius: 5px; margin-bottom:20px; }
+        .sheet-wrapper h3 { margin-top: 0; text-align: center; color: #34495e; font-size: 1.1em; }
+        canvas { border: 1px solid #7f8c8d; background-color: white; }
+        .results-summary { font-size: 1.2em; font-weight: bold; text-align: center; margin-bottom: 15px;}
+        .actions-div button, .actions-div .button-like-label { margin-bottom: 10px;}
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);
+            align-items: center; justify-content: center;
+        }
+        .modal-content, .sheet-size-modal-content, .unit-modal-content, .project-modal-content, .offcuts-library-modal-content {
+            background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888;
+            width: 90%; max-width: 500px; border-radius: 8px; position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .offcuts-library-modal-content { max-width: 700px; }
+        .sheet-size-modal-content { max-width: 400px; }
+        .unit-modal-content { max-width: 300px; }
+        .project-modal-content { max-width: 600px; }
+        .unit-modal-content label, .sheet-size-modal-content h2, .modal-content h2, .project-modal-content h2, .offcuts-library-modal-content h2 { margin-top: 0;}
+        .unit-modal-content select { width: 100%; padding: 8px; margin-top:5px; margin-bottom:15px; border-radius:4px; border:1px solid #ccc; }
+        .close-button {
+            color: #aaa; position: absolute; top: 10px; right: 15px;
+            font-size: 28px; font-weight: bold;
+        }
+        .close-button:hover, .close-button:focus { color: black; text-decoration: none; cursor: pointer; }
+        #historyList, #projectList, #offcutsListContainer ul, #usefulOffcutsDisplayListContainer ul, #otherSmallWastageContainer ul { 
+            list-style-type: none; padding: 0; margin-top: 5px;
+        }
+        #historyList, #projectList, #offcutsListContainer { 
+             max-height: 300px; overflow-y: auto; border-top: 1px solid #eee; margin-top: 15px;
+        }
+         #usefulOffcutsDisplayListContainer, #otherSmallWastageContainer { 
+            max-height: 150px; overflow-y:auto; 
+        }
+
+        #historyList li, #projectList li, #offcutsListContainer li, #usefulOffcutsDisplayListContainer li, #otherSmallWastageContainer li { 
+            padding: 8px 10px; border-bottom: 1px solid #eee;
+            font-size: 0.9em; display: flex; justify-content: space-between; align-items: center;
+        }
+         #offcutsListContainer table td, #offcutsListContainer table th { 
+            padding: 6px 8px;
+            font-size: 0.85em;
+        }
+
+        #usefulOffcutsDisplayListContainer li, #otherSmallWastageContainer li {
+            background-color: #fef6f6; border: 1px solid #f5c6cb; border-radius: 4px; margin-bottom: 5px;
+        }
+        #usefulOffcutsDisplayListContainer li { background-color: #f0fdf0; border-color: #ddeedd; }
+
+
+        #historyList li .history-item-content, #projectList li .project-item-content, #offcutsListContainer li span:first-child {
+            flex-grow: 1; cursor: default; 
+        }
+        #historyList li .history-item-content:hover, #projectList li .project-item-content:hover { background-color: #f0f0f0; }
+        #historyList li small, #projectList li small { color: #777; margin-left: 10px;}
+        #jsonMenu {
+            display:none; position:absolute; right:5px; top: 50px;
+            background-color:white; border:1px solid #ccc;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index:1002;
+            border-radius:4px; min-width:180px;
+        }
+        #jsonMenu a, #jsonMenu label.json-menu-item {
+            display: block; padding: 10px 15px; text-decoration: none;
+            color: #333; cursor: pointer; font-size: 0.95em;
+        }
+        #jsonMenu a:hover, #jsonMenu label.json-menu-item:hover { background-color: #f0f0f0; }
+
+        .cutting-list { margin-top: 10px; font-size: 0.9em; }
+        .cutting-list ul { list-style-type: none; padding-left: 0; }
+        .cutting-list li { margin-bottom: 5px; display: flex; align-items: center; }
+        .cutting-list li input[type="checkbox"] { margin-right: 8px; }
+        .cutting-list li label { font-weight: normal; margin-bottom: 0;}
+        .cutting-list li span { flex-grow: 1; }
+        .cutting-list-summary { font-weight: bold; margin-top: 8px; }
+
+        .wastage-section { margin-top: 30px; padding-top: 20px; border-top: 2px dashed #bdc3c7;}
+        .wastage-section h3 { text-align: center; color: #c0392b; }
+        #wastageOverallStats { list-style-type: none; padding-left: 0; margin-top:0; margin-bottom: 10px;}
+        #wastageOverallStats li { margin-bottom: 5px; }
+        .wastage-list .free-rect-dim { font-weight: bold; color: #721c24; } 
+        .wastage-list-summary { font-weight: bold; margin-top: 10px; text-align: right; } 
+        .useful-offcuts-summary { font-weight: bold; text-align: left; padding: 5px 0; margin-top: 5px; margin-bottom: 5px; display:flex; align-items:center; justify-content:space-between;}
+
+
+        #loadingIndicator {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5); z-index: 2000;
+            justify-content: center; align-items: center;
+        }
+        #loadingIndicator div {
+            background-color: white; padding: 20px 30px; border-radius: 5px;
+            font-size: 1.2em; color: #333; box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        /* Mobile Header Icon Adjustments */
+        @media (max-width: 700px) { 
+            .app-header .title { font-size: 1.1em; }
+            .header-icons { gap: 1px; flex-wrap: nowrap; }
+            .header-icons button { font-size: 1.1em; padding: 5px; }
+            .header-icons button small { display: none; }
+        }
+        @media (max-width: 480px) { 
+            .app-header { padding: 8px 10px; }
+            .app-header .title { font-size: 1.0em; }
+            .header-icons button { font-size: 1.0em; padding: 4px; }
+        }
+
+
+        @media print {
+            body {
+                margin: 15mm; padding: 0; font-size: 10pt;
+                color: #000 !important; background-color: #fff !important; 
+            }
+            html, body { height: auto; overflow: visible; }
+            .app-header, .parts-group, #mainActionButtons, .modal, #jsonMenu, .no-print,
+            #manageProjectsIcon, #unitSettingsIcon, #langToggle, #printToPdfButton, 
+            #sheetSettingsIcon, #historyIcon, #jsonIcon, #loadingIndicator, #showOffcutsLibraryIcon,
+            .fitting-strategy-group, .offcut-settings-group
+             {
+                display: none !important;
+            }
+            .container {
+                margin-top: 0 !important; box-shadow: none !important; border: none !important;
+                width: 100% !important; max-width: 100% !important; padding: 0 !important;
+            }
+            .input-group#addedPiecesSection, .results-group {
+                display: block !important; border: none !important; padding: 0 !important;
+                margin-bottom: 15px !important; background-color: #fff !important; 
+            }
+            .input-group#addedPiecesSection h2, .results-group h2, .wastage-section h3 {
+                text-align: left !important; margin-top: 10px; margin-bottom: 8px !important;
+                font-size: 14pt !important; page-break-after: avoid !important; color: #000 !important;
+            }
+             .results-summary {
+                text-align: left !important; margin-bottom: 10px !important;
+                page-break-after: avoid !important; color: #000 !important;
+            }
+            table {
+                page-break-inside: auto !important; width: 100% !important;
+                margin-top: 5px !important; border: 1px solid #ccc !important;
+            }
+            th, td {
+                border: 1px solid #ccc !important; padding: 4px !important;
+                font-size: 9pt !important; color: #000 !important;
+            }
+            th { background-color: #f0f0f0 !important; }
+            .table-summary-row { background-color: #f8f8f8 !important; }
+            #addedPiecesSection .delete-btn {display: none !important;}
+            .sheets-container { display: block !important; margin-top: 10px !important; gap: 0 !important; }
+            .sheet-wrapper {
+                page-break-inside: avoid !important; border: 1px solid #ccc !important;
+                margin-bottom: 20px !important; width: 100% !important;
+                box-sizing: border-box !important; padding: 5px !important;
+                background-color: #fff !important; 
+            }
+            .sheet-wrapper h3 { font-size: 12pt !important; margin-bottom: 5px !important; color: #000 !important; }
+            .sheet-wrapper canvas { max-width: 100% !important; height: auto !important; border: 1px solid #aaa !important; }
+            .cutting-list { font-size: 9pt !important; margin-top: 10px !important; }
+            .cutting-list ul { padding-left: 5px !important; }
+            .cutting-list li label { color: #000 !important; }
+            .cutting-list input[type="checkbox"] {
+                appearance: none; -webkit-appearance: none; -moz-appearance: none;
+                border: 1px solid #555 !important; width: 10px; height: 10px;
+                margin-right: 5px; vertical-align: middle; background-color: #fff;
+                position: relative; 
+            }
+            .cutting-list input[type="checkbox"]:checked::before {
+                content: "✓"; display: block; color: #000 !important; position: absolute;
+                left: 1px; top: -2px; font-size: 10pt; line-height: 1;
+            }
+            .wastage-section {
+                page-break-before: always !important; margin-top: 20px !important;
+                background-color: #fff !important; 
+            }
+            #usefulOffcutsDisplayListContainer ul, #otherSmallWastageContainer ul { padding-left: 0 !important;}
+            #usefulOffcutsDisplayListContainer li, #otherSmallWastageContainer li {
+                font-size: 9pt !important; padding: 4px !important;
+                border: 1px solid #edd !important;
+                color: #000 !important; margin-bottom: 4px !important; border-radius: 3px !important;
+            }
+            #usefulOffcutsDisplayListContainer li { background-color: #f0fdf0 !important; border-color: #ddeedd !important;}
+            #otherSmallWastageContainer li { background-color: #fef6f6 !important; border-color: #f5c6cb !important;}
+
+            .wastage-list .free-rect-dim, #usefulOffcutsDisplayListContainer .free-rect-dim, #otherSmallWastageContainer .free-rect-dim { color: #500 !important; }
+            .wastage-list-summary, .useful-offcuts-summary { font-size: 10pt !important; color: #000 !important; }
+            .useful-offcuts-summary button { display: none !important; } 
+        }
+    </style>
 </head>
 <body>
-    <!-- ===================================================================== -->
-    <!-- यहाँ आपकी 173.html फ़ाइल का पूरा BODY कंटेंट आएगा (बिना script टैग के अंदर के JS कोड के) -->
-    <!-- यह अभी भी वैसा ही रहेगा जैसा मूल फ़ाइल में था -->
-    <!-- ===================================================================== -->
-
     <div id="loadingIndicator">
         <div data-lang-key="loadingPdf">PDF बन रहा है, कृपया प्रतीक्षा करें...</div>
     </div>
@@ -121,10 +371,10 @@
         </div>
     </div>
 
-    <!-- सभी मोडल divs यहाँ आएंगे -->
+    <!-- Modals -->
     <div id="unitSettingsModal" class="modal">
         <div class="unit-modal-content">
-            <span class="close-button" onclick="closeUnitSettingsModal()">×</span>
+            <span class="close-button" onclick="closeUnitSettingsModal()">&times;</span>
             <h2 data-lang-key="unitSettingsTitle">यूनिट सेटिंग्स</h2>
             <label for="currentUnitSelector" data-lang-key="selectUnitLabel">वर्तमान यूनिट चुनें:</label>
             <select id="currentUnitSelector">
@@ -140,7 +390,7 @@
 
     <div id="sheetSettingsModal" class="modal">
         <div class="sheet-size-modal-content">
-            <span class="close-button" onclick="closeSheetSettingsModal()">×</span>
+            <span class="close-button" onclick="closeSheetSettingsModal()">&times;</span>
             <h2 data-lang-key="sheetSettingsTitle">शीट सेटिंग्स</h2>
             <label for="modalSheetName" data-lang-key="sheetNameLabel">शीट का नाम (वैकल्पिक):</label>
             <input type="text" id="modalSheetName" data-lang-placeholder="sheetNamePlaceholder" style="margin-bottom: 15px;">
@@ -175,7 +425,7 @@
 
     <div id="historyModal" class="modal">
         <div class="modal-content">
-            <span class="close-button" onclick="closeHistoryModal()">×</span>
+            <span class="close-button" onclick="closeHistoryModal()">&times;</span>
             <h2 data-lang-key="historyTitle">हिस्ट्री</h2>
             <ul id="historyList"></ul>
             <p><small data-lang-key="historyNote">नोट: यह केवल पिछले कुछ बदलावों को दिखाता है। किसी आइटम पर क्लिक करके उसे लोड करें।</small></p>
@@ -184,7 +434,7 @@
 
     <div id="projectManagementModal" class="modal">
         <div class="project-modal-content">
-            <span class="close-button" onclick="closeProjectManagementModal()">×</span>
+            <span class="close-button" onclick="closeProjectManagementModal()">&times;</span>
             <h2 data-lang-key="projectManagementTitle">प्रोजेक्ट मैनेजमेंट</h2>
             <div class="projects-group">
                 <h3 data-lang-key="saveCurrentProjectTitle">वर्तमान प्रोजेक्ट सेव करें</h3>
@@ -202,7 +452,7 @@
 
     <div id="offcutsLibraryModal" class="modal">
         <div class="offcuts-library-modal-content">
-            <span class="close-button" onclick="closeOffcutsLibraryModal()">×</span>
+            <span class="close-button" onclick="closeOffcutsLibraryModal()">&times;</span>
             <h2 data-lang-key="offcutsLibraryTitle">ऑफकट लाइब्रेरी</h2>
             <div class="offcut-add-manual-group" style="padding: 10px; border: 1px solid #e0e0e0; border-radius: 5px; margin-bottom: 15px;">
                 <h4 data-lang-key="addManualOffcutTitle" style="margin-top:0; margin-bottom:10px;">मैन्युअल ऑफकट जोड़ें</h4>
@@ -228,11 +478,2067 @@
             <p id="noOffcutsMessageModal" style="display:none;"></p>
         </div>
     </div>
-    
-    <!-- मूल स्क्रिप्ट अभी भी यहाँ है, इसे अगले चरणों में हटाया जाएगा -->
+
+
     <script>
-        // ... (आपकी 173.html का सारा JavaScript कोड यहाँ आएगा) ...
-        // ... (const workerCode = `...`; से लेकर window.onload = initializeApp; तक) ...
+        const workerCode = `
+            let freeRectIdCounter_worker = 0; 
+            function isRectInside(rectA, rectB) { return rectA.x >= rectB.x && rectA.y >= rectB.y && rectA.x + rectA.width <= rectB.x + rectB.width && rectA.y + rectA.height <= rectB.y + rectB.height; }
+            function optimizeFreeRects(freeRects) { if (!freeRects || freeRects.length < 2) return; let i = 0; while (i < freeRects.length) { if (!freeRects[i]) { i++; continue; } let j = i + 1; while (j < freeRects.length) { if (!freeRects[j]) { j++; continue; } if (isRectInside(freeRects[i], freeRects[j])) { freeRects.splice(i, 1); i--; break; } else if (isRectInside(freeRects[j], freeRects[i])) { freeRects.splice(j, 1); j--; } j++; } i++; } }
+            function splitFreeRect(sheet, rectIndexBeingUsed, pk, kerfWidth) { const R = sheet.freeRects.splice(rectIndexBeingUsed, 1)[0]; let newFragments = []; if (pk.y - R.y > 0.01) { newFragments.push({ x: R.x, y: R.y, width: R.width, height: pk.y - R.y, id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-T\`}); } if ((R.y + R.height) - (pk.y + pk.placedLength) > 0.01) { newFragments.push({ x: R.x, y: pk.y + pk.placedLength, width: R.width, height: (R.y + R.height) - (pk.y + pk.placedLength), id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-B\`}); } if (pk.x - R.x > 0.01) { newFragments.push({ x: R.x, y: pk.y, width: pk.x - R.x, height: pk.placedLength, id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-L\`}); } if ((R.x + R.width) - (pk.x + pk.placedWidth) > 0.01) { newFragments.push({ x: pk.x + pk.placedWidth, y: pk.y, width: (R.x + R.width) - (pk.x + pk.placedWidth), height: pk.placedLength, id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-R\`}); } for (let frag of newFragments) { if (frag.width > 0.01 && frag.height > 0.01) { sheet.freeRects.push(frag); } } optimizeFreeRects(sheet.freeRects); }
+            
+            function tryPlacePieceOnSheet(piece, sheet, kerfWidth, strategy) {
+                if (strategy === 'bottomLeftFreeRect') { sheet.freeRects.sort((a, b) => a.y - b.y || a.x - b.x); } 
+                else if (strategy === 'firstFit') { sheet.freeRects.sort((a, b) => a.y - b.y || a.x - b.x);  } 
+                else if (strategy === 'worstFit') { sheet.freeRects.sort((a,b) => (b.width * b.height) - (a.width * a.height) || b.y - a.y || b.x - a.x); }
+                else { sheet.freeRects.sort((a, b) => (a.width * a.height) - (b.width * b.height) || a.y - b.y || a.x - b.x); }
+
+                let bestFit = null;
+                let scoreMetric = (strategy === 'worstFit') ? -Infinity : Infinity; 
+
+                for (let i = 0; i < sheet.freeRects.length; i++) {
+                    const rect = sheet.freeRects[i];
+                    const pieceL = piece.length;
+                    const pieceW = piece.width;
+                    let currentOrientationFits = [];
+
+                    if (pieceL <= rect.height && pieceW <= rect.width) {
+                        let score;
+                        if (strategy === 'minWastageArea' || strategy === 'worstFit') { score = (rect.width * rect.height) - (pieceW * pieceL); } 
+                        else if (strategy === 'firstFit') { bestFit = { rectIndex: i, x: rect.x, y: rect.y, placedLength: pieceL, placedWidth: pieceW, isRotated: false, score: 0 }; break; } 
+                        else { score = Math.min(rect.width - pieceW, rect.height - pieceL) + ((rect.width - pieceW) * (rect.height - pieceL) * 0.001); }
+                        currentOrientationFits.push({ rectIndex: i, x: rect.x, y: rect.y, placedLength: pieceL, placedWidth: pieceW, isRotated: false, score: score });
+                    }
+
+                    if (!sheet.hasGrain && pieceW <= rect.height && pieceL <= rect.width) {
+                        let scoreRotated;
+                        if (strategy === 'minWastageArea' || strategy === 'worstFit') { scoreRotated = (rect.width * rect.height) - (pieceL * pieceW); } 
+                        else if (strategy === 'firstFit') { bestFit = { rectIndex: i, x: rect.x, y: rect.y, placedLength: pieceW, placedWidth: pieceL, isRotated: true, score: 0 }; break; } 
+                        else { scoreRotated = Math.min(rect.width - pieceL, rect.height - pieceW) + ((rect.width - pieceL) * (rect.height - pieceW) * 0.001); }
+                         currentOrientationFits.push({ rectIndex: i, x: rect.x, y: rect.y, placedLength: pieceW, placedWidth: pieceL, isRotated: true, score: scoreRotated });
+                    }
+                    
+                    if (strategy === 'firstFit' && bestFit) break; 
+
+                    for(const fitAttempt of currentOrientationFits){
+                        if (strategy === 'worstFit') {
+                            if (bestFit === null || fitAttempt.score > scoreMetric) { scoreMetric = fitAttempt.score; bestFit = fitAttempt; } 
+                            else if (fitAttempt.score === scoreMetric) { if (fitAttempt.y < bestFit.y || (fitAttempt.y === bestFit.y && fitAttempt.x < bestFit.x)) { bestFit = fitAttempt; } }
+                        } else { 
+                            if (bestFit === null || fitAttempt.score < scoreMetric) { scoreMetric = fitAttempt.score; bestFit = fitAttempt; } 
+                            else if (fitAttempt.score === scoreMetric) { if (fitAttempt.y < bestFit.y || (fitAttempt.y === bestFit.y && fitAttempt.x < bestFit.x)) { bestFit = fitAttempt; } }
+                        }
+                    }
+                     if (strategy === 'firstFit' && bestFit) break;
+                }
+
+                if (bestFit) {
+                    piece.x = bestFit.x; piece.y = bestFit.y;
+                    piece.placedLength = bestFit.placedLength; piece.placedWidth = bestFit.placedWidth;
+                    piece.isRotated = bestFit.isRotated; piece.sheetId = sheet.id; 
+                    piece.isPlaced = true; sheet.placedPieces.push({...piece}); 
+                    splitFreeRect(sheet, bestFit.rectIndex, piece, kerfWidth);
+                    return true;
+                }
+                return false;
+            }
+
+            self.onmessage = function(e) {
+                const { type, data } = e.data;
+                if (type === 'CALCULATE_LAYOUT') {
+                    freeRectIdCounter_worker = 0;
+                    const { pieces: workerIndividualPieces, stockItems, kerfWidth, strategy } = data;
+                    workerIndividualPieces.forEach(p => p.isPlaced = false);
+            
+                    let sheetsLayoutData = [];
+                    let currentSheetIdGlobal = 0; 
+                    let usedStockItemOriginalIds = []; 
+            
+                    for (let stockIdx = 0; stockIdx < stockItems.length; stockIdx++) {
+                        if (!workerIndividualPieces.some(p => !p.isPlaced)) break; 
+            
+                        const stockDefinition = stockItems[stockIdx];
+                        let sheetsFromThisStockItem = 0; 
+                        const maxSheetsFromThisStockItem = stockDefinition.isOffcut ? 1 : Infinity; 
+            
+                        while (sheetsFromThisStockItem < maxSheetsFromThisStockItem && workerIndividualPieces.some(p => !p.isPlaced)) {
+                            currentSheetIdGlobal++;
+                            const newSheet = {
+                                id: currentSheetIdGlobal, 
+                                name: stockDefinition.name,
+                                originalStockId: stockDefinition.isOffcut ? stockDefinition.originalStockId : \`STD-\${stockDefinition.width}x\${stockDefinition.length}-\${currentSheetIdGlobal}\`,
+                                isOffcutSheet: stockDefinition.isOffcut,
+                                placedPieces: [],
+                                hasGrain: stockDefinition.hasGrain,
+                                width: stockDefinition.width,
+                                height: stockDefinition.length,
+                                freeRects: [{ x: 0, y: 0, width: stockDefinition.width, height: stockDefinition.length, id: \`FR-S\${currentSheetIdGlobal}-0\` }]
+                            };
+            
+                            let piecesPlacedOnThisSheetInstance = true; 
+                            let innerSafetyBreak = 0;
+                            const MAX_ITERATIONS_PER_SHEET_INSTANCE = workerIndividualPieces.length * 2 + 5; 
+            
+                            while(piecesPlacedOnThisSheetInstance){
+                                innerSafetyBreak++;
+                                if (innerSafetyBreak > MAX_ITERATIONS_PER_SHEET_INSTANCE) break;
+                                piecesPlacedOnThisSheetInstance = false;
+                                for (let piece of workerIndividualPieces) {
+                                    if (piece.isPlaced) continue;
+                                    if (tryPlacePieceOnSheet(piece, newSheet, kerfWidth, strategy)) {
+                                        piecesPlacedOnThisSheetInstance = true;
+                                        if (newSheet.isOffcutSheet && !usedStockItemOriginalIds.includes(newSheet.originalStockId)) {
+                                            usedStockItemOriginalIds.push(newSheet.originalStockId);
+                                        }
+                                        break; 
+                                    }
+                                }
+                            }
+            
+                            if (newSheet.placedPieces.length > 0) {
+                                sheetsLayoutData.push(newSheet);
+                                sheetsFromThisStockItem++;
+                                self.postMessage({ type: 'LAYOUT_PROGRESS', progress: { sheetsProcessed: sheetsLayoutData.length } });
+                            } else {
+                                // If no pieces placed on this new_sheet (which could be an offcut or a new standard sheet),
+                                // and it's an offcut, then this offcut is done with.
+                                // If it's a standard sheet and nothing fit, then something is wrong or no piece is small enough.
+                                break; 
+                            }
+                        }
+                    }
+            
+                    const finalSheetsLayoutData = sheetsLayoutData.filter(s => s.placedPieces.length > 0);
+
+                    if (workerIndividualPieces.some(p => !p.isPlaced) && finalSheetsLayoutData.length === 0) {
+                        const unplacedExample = workerIndividualPieces.find(p => !p.isPlaced);
+                        let errorMsg = "कोई भी पीस किसी भी उपलब्ध स्टॉक पर फिट नहीं हो सका।";
+                        if (unplacedExample) {
+                             errorMsg = \`पीस "\${unplacedExample.name}" (\${unplacedExample.width}x\${unplacedExample.length}) फिट नहीं हो सका। स्टॉक आकार जांचें।\`;
+                        }
+                        self.postMessage({ type: 'LAYOUT_ERROR', error: errorMsg, result: [], usedOffcutIds: usedStockItemOriginalIds });
+                        return;
+                    } else if (workerIndividualPieces.some(p => !p.isPlaced)) {
+                         const unplacedExample = workerIndividualPieces.find(p => !p.isPlaced);
+                         let errorMsg = "सभी पीस फिट नहीं हो सके।";
+                         if (unplacedExample) {
+                              errorMsg = \`पीस "\${unplacedExample.name}" (\${unplacedExample.width}x\${unplacedExample.length}) के लिए कोई उपयुक्त स्थान नहीं मिला।\`;
+                         }
+                        self.postMessage({ type: 'LAYOUT_ERROR', error: errorMsg, result: finalSheetsLayoutData, usedOffcutIds: usedStockItemOriginalIds });
+                         return;
+                    }
+                    self.postMessage({ type: 'LAYOUT_COMPLETE', result: finalSheetsLayoutData, usedOffcutIds: usedStockItemOriginalIds });
+                }
+            };
+        `;
+
+        let pieces = [];
+        let pieceIdCounter = 0;
+        const BASE_CANVAS_SCALE = 2.5; 
+        const KERF_WIDTH_CM = 0;
+
+        let modalSheetLengthEl, modalSheetWidthEl, modalSheetHasGrainEl, modalSheetNameEl, sheetSettingsModalEl,
+            partNameEl, partLengthEl, partWidthEl, partQuantityEl, piecesTableBodyEl,
+            resultsSummaryEl, sheetsContainerEl, historyModalEl, historyListEl, jsonMenuEl,
+            unitSettingsModalEl, currentUnitSelectorEl, unitDisplayElements = [], wastageSectionEl,
+            piecesTableSummaryRowEl, totalPiecesInListCountEl, totalWastagePiecesSummaryEl, usefulOffcutsSummaryEl, loadingIndicatorEl,
+            addedPiecesSectionEl, mainActionButtonsEl,
+            projectManagementModalEl, projectNameInputEl, projectListEl, noProjectsMessageEl,
+            modalGrainColorEl, fittingStrategySelectorEl, useOffcutsCheckboxEl,
+            minOffcutWidthEl, minOffcutLengthEl, 
+            offcutsLibraryModalEl, offcutsListContainerEl, noOffcutsMessageEl_Modal,
+            wastageOverallStatsEl, usefulOffcutsDisplayListContainerEl, otherSmallWastageContainerEl,
+            manualOffcutWidthEl, manualOffcutLengthEl, manualOffcutSourceNameEl;
+
+
+        const STORAGE_KEY_PIECES = 'sheetLayoutCalcPieces_v21_offcuts_final3_1'; 
+        const STORAGE_KEY_SETTINGS = 'sheetLayoutCalcSettings_v21_offcuts_final3_1';
+        const STORAGE_KEY_ID_COUNTER = 'sheetLayoutCalcIdCounter_v21_offcuts_final3_1';
+        const STORAGE_KEY_HISTORY = 'sheetLayoutCalcHistory_v21_offcuts_final3_1';
+        const STORAGE_KEY_LANGUAGE = 'sheetLayoutCalcLang_v9_offcuts_final3_1';
+        const STORAGE_KEY_CURRENT_UNIT = 'sheetLayoutCalcUnit_v9_offcuts_final3_1';
+        const STORAGE_KEY_CUTTING_LIST_CHECKS = 'sheetLayoutCalcCutChecks_v9_offcuts_final3_1';
+        const STORAGE_KEY_PROJECTS = 'sheetLayoutCalcProjects_v8_offcuts_final3_1'; 
+        const STORAGE_KEY_GRAIN_COLOR = 'sheetLayoutCalculatorGrainColor_v3_offcuts_final3_1';
+        const STORAGE_KEY_FITTING_STRATEGY = 'sheetLayoutCalculatorFittingStrategy_v2_offcuts_final3_1';
+        const STORAGE_KEY_SAVED_OFFCUTS = 'sheetLayoutCalculatorSavedOffcuts_v3_final3_1'; 
+        const STORAGE_KEY_OFFCUT_SETTINGS = 'sheetLayoutCalculatorOffcutSettings_v1_final3_1';
+
+
+        const MAX_HISTORY_STATES = 20;
+        let historyStack = [];
+        let currentLanguage = 'hi';
+        let currentUnit = 'cm';
+        let cuttingListCheckboxStates = {};
+        let savedProjects = []; 
+        let currentGrainColor = 'rgba(0,0,0,0.08)'; 
+        let currentFittingStrategy = 'defaultScore';
+        let savedOffcuts = []; 
+        let offcutSettings = { minWidth: 10, minLength: 45 }; 
+        let currentCalculationOffcuts = []; 
+
+
+        let lastCalculatedSheetsData = null;
+        let isLoadedFromHistory = false; 
+        let layoutWorker = null;
+        let pieceColors = {}; 
+
+
+        const conversionFactorsToCm = { 'cm': 1, 'mm': 0.1, 'm': 100, 'in': 2.54, 'ft': 30.48 };
+        const langStrings = {
+            "hi": {
+                "appTitle": "विज़ुअल शीट लेआउट कैलकुलेटर", "headerTitle": "शीट लेआउट",
+                "printPdfBtn": "प्रिंट/PDF",
+                "grainColorLabel": "ग्रेन का रंग:", "grainGray": "हल्का ग्रे", "grainLightBrown": "हल्का भूरा", "grainDarkBrown": "गहरा भूरा", "grainTan": "टैन", "grainNone": "कोई ग्रेन नहीं",
+                "fittingStrategyLabel": "फिटिंग रणनीति चुनें:",
+                "strategyDefaultScore": "डिफ़ॉल्ट स्कोर आधारित (बड़े पीस पहले)",
+                "strategyMinWastage": "न्यूनतम व्यर्थ क्षेत्र",
+                "strategyFirstFit": "फर्स्ट फिट (सबसे तेज़)",
+                "strategyWorstFit": "वर्स्ट फिट (अधिक व्यर्थ क्षेत्र)",
+                "strategyBottomLeftFree": "खाली आयत (बॉटम-लेफ्ट प्राथमिकता)",
+                "strategySortPiecePerimeterDesc": "पीस: परिधि (बड़े पहले)",
+                "strategySortPieceLongestSideDesc": "पीस: सबसे लंबी भुजा पहले",
+                "strategySortPieceShortestSideAsc": "पीस: सबसे छोटी भुजा पहले",
+                "strategySortPieceWidthDesc": "पीस: चौड़ाई (बड़े पहले)",
+                "strategySortPieceHeightDesc": "पीस: ऊंचाई/लंबाई (बड़े पहले)",
+                "strategySortPieceAreaAsc": "पीस: क्षेत्रफल (छोटे पहले)",
+                "calculateWithStrategyBtn": "चयनित रणनीति से गणना करें",
+                "useSavedOffcutsLabel": "सहेजे गए ऑफकट्स का उपयोग करें", 
+                "offcutSettingsTitle": "ऑफकट सेटिंग्स", 
+                "minOffcutWidthLabel": "न्यूनतम ऑफकट चौड़ाई", 
+                "minOffcutLengthLabel": "न्यूनतम ऑफकट लंबाई", 
+                "offcutsLibraryTitle": "ऑफकट लाइब्रेरी", 
+                "noOffcutsSaved": "कोई ऑफकट सेव नहीं किया गया है।", 
+                "confirmDeleteOffcut": "क्या आप वाकई इस ऑफकट को हटाना चाहते हैं?", 
+                "totalUsefulOffcutsGenerated": "कुल उपयोगी ऑफकट बने:", 
+                "saveUsefulOffcutsBtn": "उपयोगी ऑफकट सहेजें",
+                "noUsefulOffcutsGenerated": "कोई उपयोगी ऑफकट नहीं बने।",
+                "offcutsSavedBtn": "ऑफकट सहेजे गए",
+                "otherSmallWastageLabel": "अन्य छोटे वेस्टेज टुकड़े:",
+                "usefulOffcutsSavedAlert" : "{count} उपयोगी ऑफकट लाइब्रेरी में सहेजे गए!",
+                "noNewOffcutsToSaveAlert": "कोई नया उपयोगी ऑफकट सहेजने के लिए नहीं मिला।",
+                "sourceSheetNameLabel": "स्रोत शीट",
+                "addManualOffcutTitle": "मैन्युअल ऑफकट जोड़ें",
+                "offcutWidthLabel": "चौड़ाई",
+                "offcutLengthLabel": "लंबाई",
+                "offcutSourceNameLabel": "स्रोत (वैकल्पिक)",
+                "offcutSourcePlaceholder": "उदा. पुरानी परियोजना",
+                "addManualOffcutBtn": "ऑफकट जोड़ें",
+                "alert_invalidOffcutDimensions": "कृपया मान्य ऑफकट आयाम दर्ज करें।",
+                "alert_offcutAddedManually": "ऑफकट मैन्युअल रूप से जोड़ा गया!",
+                "manualEntryLabel": "मैन्युअल एंट्री",
+                "batchIdLabel": "बैच ID", "statusLabel": "स्थिति", "availableLabel": "उपलब्ध", "usedLabel": "प्रयुक्त",
+                "confirmUseOffcutsMsg": "क्या आप {name} स्रोत वाले {count} ऑफकट (या सभी उपलब्ध {count} ऑफकट यदि कोई नाम नहीं है) का उपयोग करना चाहते हैं?",
+                "noMatchingOffcuts": "इस शीट नाम के लिए कोई ऑफकट नहीं मिला, या कोई ऑफकट उपलब्ध नहीं है।",
+                "unnamedSheetLabel": "अनाम शीट",
+                "allSourcesLabel": "सभी स्रोतों",
+                "offcutsSelectedForCalcAlert": "{count} ऑफकट गणना के लिए चुने गए।",
+                "noAvailableOffcutsInBatches": "इन बैचों में कोई उपलब्ध ऑफकट नहीं है।",
+                "exportJson": "JSON एक्सपोर्ट करें", "importJson": "JSON इम्पोर्ट करें", "clearSavedData": "सेव डेटा क्लियर करें",
+                "addPieceTitle": "पीस जोड़ें", "pieceNameLabel": "पीस का नाम (वैकल्पिक):",
+                "pieceDefaultName": "पीस-",
+                "pieceWidthLabel": "पीस की चौड़ाई", "pieceLengthLabel": "पीस की लंबाई (ग्रेन)",
+                "pieceQuantityLabel": "कितने पीस:", "addPieceBtn": "पीस जोड़ें",
+                "addedPiecesTitle": "जोड़े गए पीस", "tableName": "नाम", "tableWidth": "चौड़ाई",
+                "tableLength": "लंबाई", "tableQuantity": "संख्या", "tableRemove": "हटाएं",
+                "totalPiecesInList": "कुल पीस लिस्ट में:",
+                "calculateLayoutBtn": "लेआउट की गणना करें (डिफ़ॉल्ट)", "resetCurrentBtn": "रीसेट (वर्तमान)",
+                "resultsTitle": "परिणाम", "totalSheetsDefault": "कुल आवश्यक शीट्स: 0",
+                "sheetSettingsTitle": "शीट सेटिंग्स",
+                "sheetNameLabel": "शीट का नाम (वैकल्पिक):",
+                "sheetNamePlaceholder": "उदा: प्लायवुड 8x4",
+                "sheetWidthLabel": "शीट की चौड़ाई",
+                "sheetLengthGrainLabel": "शीट की लंबाई (ग्रेन)", "respectGrainLabel": "ग्रेन की दिशा का ध्यान रखें",
+                "applyAndSaveBtn": "लागू करें और सेव करें", "historyTitle": "हिस्ट्री",
+                "historyNote": "नोट: यह केवल पिछले कुछ बदलावों को दिखाता है। किसी आइटम पर क्लिक करके उसे लोड करें।",
+                "noHistory": "कोई हिस्ट्री उपलब्ध नहीं है।", "historyStatusPrefix": "स्थिति #", "historyPiecesSuffix": " पीस",
+                "historyNoPieces": "कोई पीस नहीं", "historySheetNamePrefix": "शीट: ",
+                "alert_invalidPositiveNumbers": "कृपया सभी पीस के लिए मान्य सकारात्मक संख्याएँ दर्ज करें।",
+                "alert_pieceTooLarge": "पीस \"{name}\" ({width}×{length}) शीट ({sheetW}×{sheetL}){grainText}{sheetNameText} फिट नहीं हो सकता।",
+                "alert_noDataToExport": "एक्सपोर्ट/प्रिंट करने के लिए कोई डेटा नहीं है।",
+                "alert_selectValidJson": "कृपया एक मान्य JSON फ़ाइल चुनें।",
+                "alert_jsonImportSuccess": "डेटा JSON फ़ाइल से सफलतापूर्वक इम्पोर्ट किया गया!",
+                "alert_jsonFormatError": "JSON फ़ाइल का प्रारूप सही नहीं है।", "alert_jsonParseError": "JSON फ़ाइल पार्स करने में त्रुटि हुई।",
+                "alert_confirmClearStorage": "क्या आप वाकई localStorage में सेव किए गए सभी डेटा (हिस्ट्री और प्रोजेक्ट्स सहित) को हटाना चाहते हैं?",
+                "alert_storageCleared": "localStorage से सेव किया हुआ डेटा सफलतापूर्वक हटा दिया गया है।",
+                "alert_confirmResetCurrent": "क्या आप वाकई वर्तमान डेटा और लेआउट रीसेट करना चाहते हैं?",
+                "alert_historyLoaded": "हिस्ट्री से स्थिति लोड की गई।",
+                "alert_calculateLayoutFirst": "पहले लेआउट की गणना करें।",
+                "alert_calculateLayoutFirstForPrint": "छापने/PDF बनाने के लिए पहले लेआउट की गणना करें।",
+                "alert_layoutForPrint": "लेआउट देखने के लिए \"लेआउट की गणना करें और दिखाएं\" पर क्लिक करें।",
+                "alert_sheetSettingsUpdated": "शीट सेटिंग्स अपडेट की गईं।", "totalSheetsResult": "कुल आवश्यक शीट्स: {count}",
+                "sheetTitlePrefix": "शीट", "grainedSheetSuffix": "(ग्रेन वाली)", "noGrainSheetSuffix": "(बिना ग्रेन)",
+                "sheetDisplayName": " ({name})",
+                "unitSettingsTitle": "यूनिट सेटिंग्स", "selectUnitLabel": "वर्तमान यूनिट चुनें:", "applyBtn":"लागू करें",
+                "alert_unitChanged":"यूनिट {unit} में बदल दी गई है। मौजूदा मान रूपांतरित कर दिए गए हैं।",
+                "alert_invalidSheetSize": "कृपया मान्य शीट आकार दर्ज करें।",
+                "alert_pieceTooLargeSheet": "पीस \"{name}\" ({width}×{length} {unit}) शीट #{sheetNum} पर फिट नहीं हो सका। कृपया पीस या शीट का आकार जांचें।",
+                "alert_layoutHang": "लेआउट गणना में बहुत अधिक समय लग रहा है। कृपया पीसों की संख्या या आकार जांचें।",
+                "alert_workerCreationError": "वेब वर्कर बनाने में त्रुटि हुई। ब्राउज़र इसे सपोर्ट नहीं कर सकता है या कोई सुरक्षा नीति इसे रोक रही है।",
+                "calculatingLayout": "लेआउट की गणना हो रही है...",
+                "sheetsTitle": "शीट्स",
+                "cuttingListTitle": "कटिंग लिस्ट:", "totalPiecesOnSheet": "इस शीट पर कुल पीस: {count}",
+                "wastageReportTitle": "वेस्टेज रिपोर्ट",
+                "sheetWastageTitle": "शीट #{id} वेस्टेज:", "totalWastageRectsOnSheet": "इस शीट पर कुल वेस्टेज टुकड़े: {count}",
+                "totalAreaUsed": "उपयोग किया गया कुल क्षेत्र:",
+                "totalFreeArea": "कुल खाली क्षेत्र (वेस्टेज):",
+                "wastagePercentage": "वेस्टेज प्रतिशत:",
+                "noFreeRects": "कोई उपयोगी वेस्टेज नहीं (या बहुत छोटा)।",
+                "totalWastagePiecesOverall": "कुल अन्य वेस्टेज टुकड़े: {count}", 
+                "deleteHistoryEntryConfirm": "क्या आप वाकई इस हिस्ट्री एंट्री को हटाना चाहते हैं?",
+                "loadingPdf": "प्रिंट के लिए तैयारी...", 
+                "projectManagementTitle": "प्रोजेक्ट मैनेजमेंट",
+                "saveCurrentProjectTitle": "वर्तमान प्रोजेक्ट सेव करें",
+                "projectNameLabel": "प्रोजेक्ट का नाम:",
+                "projectNamePlaceholder": "उदा: किचन कैबिनेट, बुकशेल्फ",
+                "saveProjectBtn": "प्रोजेक्ट सेव करें",
+                "savedProjectsTitle": "सेव किए गए प्रोजेक्ट्स",
+                "loadProjectBtn": "लोड करें",
+                "deleteProjectBtn": "हटाएं",
+                "noProjectsSaved": "कोई प्रोजेक्ट सेव नहीं किया गया है।",
+                "alert_projectNameMissing": "कृपया प्रोजेक्ट का नाम दर्ज करें।",
+                "alert_projectSaved": "प्रोजेक्ट '{name}' सफलतापूर्वक सेव किया गया!",
+                "alert_projectLoaded": "प्रोजेक्ट '{name}' सफलतापूर्वक लोड किया गया!",
+                "alert_projectDeleted": "प्रोजेक्ट '{name}' सफलतापूर्वक हटाया गया!",
+                "confirmDeleteProject": "क्या आप वाकई प्रोजेक्ट '{name}' को हटाना चाहते हैं?"
+            },
+            "en": { 
+                "appTitle": "Visual Sheet Layout Calculator", "headerTitle": "Sheet Layout",
+                "printPdfBtn": "Print/PDF",
+                "grainColorLabel": "Grain Color:", "grainGray": "Light Gray", "grainLightBrown": "Light Brown", "grainDarkBrown": "Dark Brown", "grainTan": "Tan", "grainNone": "No Grain",
+                "fittingStrategyLabel": "Select Fitting Strategy:",
+                "strategyDefaultScore": "Default Score Based (Largest First)",
+                "strategyMinWastage": "Minimum Wastage Area",
+                "strategyFirstFit": "First Fit (Fastest)",
+                "strategyWorstFit": "Worst Fit (More Wastage)",
+                "strategyBottomLeftFree": "Free Rect (Bottom-Left Priority)",
+                "strategySortPiecePerimeterDesc": "Piece: Perimeter (Largest First)",
+                "strategySortPieceLongestSideDesc": "Piece: Longest Side First",
+                "strategySortPieceShortestSideAsc": "Piece: Shortest Side First",
+                "strategySortPieceWidthDesc": "Piece: Width (Largest First)",
+                "strategySortPieceHeightDesc": "Piece: Height/Length (Largest First)",
+                "strategySortPieceAreaAsc": "Piece: Area (Smallest First)",
+                "calculateWithStrategyBtn": "Calculate with Selected Strategy",
+                "useSavedOffcutsLabel": "Use saved offcuts", 
+                "offcutSettingsTitle": "Offcut Settings", 
+                "minOffcutWidthLabel": "Min. Offcut Width", 
+                "minOffcutLengthLabel": "Min. Offcut Length", 
+                "offcutsLibraryTitle": "Offcut Library", 
+                "noOffcutsSaved": "No offcuts saved.", 
+                "confirmDeleteOffcut": "Are you sure you want to delete this offcut?", 
+                "totalUsefulOffcutsGenerated": "Total useful offcuts generated:", 
+                "saveUsefulOffcutsBtn": "Save Useful Offcuts",
+                "noUsefulOffcutsGenerated": "No useful offcuts generated.",
+                "offcutsSavedBtn": "Offcuts Saved",
+                "otherSmallWastageLabel": "Other small wastage pieces:",
+                "usefulOffcutsSavedAlert": "{count} useful offcuts saved to library!",
+                "noNewOffcutsToSaveAlert": "No new useful offcuts found to save.",
+                "sourceSheetNameLabel": "Source Sheet",
+                "addManualOffcutTitle": "Add Manual Offcut",
+                "offcutWidthLabel": "Width",
+                "offcutLengthLabel": "Length",
+                "offcutSourceNameLabel": "Source (Optional)",
+                "offcutSourcePlaceholder": "e.g., Old Project",
+                "addManualOffcutBtn": "Add Offcut",
+                "alert_invalidOffcutDimensions": "Please enter valid offcut dimensions.",
+                "alert_offcutAddedManually": "Offcut added manually!",
+                "manualEntryLabel": "Manual Entry",
+                "batchIdLabel": "Batch ID", "statusLabel": "Status", "availableLabel": "Available", "usedLabel": "Used",
+                "confirmUseOffcutsMsg": "Use {count} offcuts from source '{name}' (or all {count} available if no name)?",
+                "noMatchingOffcuts": "No offcuts found for this sheet name, or no offcuts available.",
+                "unnamedSheetLabel": "Unnamed Sheet",
+                "allSourcesLabel": "all sources",
+                "offcutsSelectedForCalcAlert":"{count} offcuts selected for calculation.",
+                "noAvailableOffcutsInBatches": "No available offcuts in these batches.",
+                "exportJson": "Export JSON", "importJson": "Import JSON", "clearSavedData": "Clear Saved Data",
+                "addPieceTitle": "Add Piece", "pieceNameLabel": "Piece Name (Optional):", "pieceDefaultName": "Piece-",
+                "pieceWidthLabel": "Piece Width", "pieceLengthLabel": "Piece Length (Grain)",
+                "pieceQuantityLabel": "Quantity:", "addPieceBtn": "Add Piece", "addedPiecesTitle": "Added Pieces",
+                "tableName": "Name", "tableWidth": "Width", "tableLength": "Length", "tableQuantity": "Qty",
+                "tableRemove": "Remove", "totalPiecesInList": "Total Pieces in List:",
+                "calculateLayoutBtn": "Calculate Layout (Default)", "resetCurrentBtn": "Reset (Current)",
+                "resultsTitle": "Results", "totalSheetsDefault": "Total Sheets Required: 0",
+                "sheetSettingsTitle": "Sheet Settings",
+                "sheetNameLabel": "Sheet Name (Optional):",
+                "sheetNamePlaceholder": "e.g., Plywood 8x4",
+                "sheetWidthLabel": "Sheet Width",
+                "sheetLengthGrainLabel": "Sheet Length (Grain)", "respectGrainLabel": "Respect Grain Direction",
+                "applyAndSaveBtn": "Apply & Save", "historyTitle": "History",
+                "historyNote": "Note: This only shows recent changes. Click an item to load it.",
+                "noHistory": "No history available.", "historyStatusPrefix": "State #", "historyPiecesSuffix": " pieces",
+                "historyNoPieces": "No pieces", "historySheetNamePrefix": "Sheet: ",
+                "alert_invalidPositiveNumbers": "Please enter valid positive numbers for all piece dimensions.",
+                "alert_pieceTooLarge": "Piece \"{name}\" ({width}×{length}) cannot fit on sheet ({sheetW}×{sheetL}){grainText}{sheetNameText}.",
+                "alert_noDataToExport": "No data to export/print.",
+                "alert_selectValidJson": "Please select a valid JSON file.",
+                "alert_jsonImportSuccess": "Data imported successfully from JSON file!",
+                "alert_jsonFormatError": "JSON file format is incorrect.", "alert_jsonParseError": "Error parsing JSON file.",
+                "alert_confirmClearStorage": "Are you sure you want to delete all saved data (including history and projects) from localStorage?",
+                "alert_storageCleared": "Saved data successfully cleared from localStorage.",
+                "alert_confirmResetCurrent": "Are you sure you want to reset the current data and layout?",
+                "alert_historyLoaded": "State loaded from history.",
+                "alert_calculateLayoutFirst": "Please calculate the layout first.",
+                "alert_calculateLayoutFirstForPrint": "Please calculate the layout first to print/create PDF.",
+                "alert_layoutForPrint": "Click \"Calculate & Show Layout\" to see the layout.",
+                "alert_sheetSettingsUpdated": "Sheet settings updated.", "totalSheetsResult": "Total Sheets Required: {count}",
+                "sheetTitlePrefix": "Sheet", "grainedSheetSuffix": "(Grained)", "noGrainSheetSuffix": "(No Grain)",
+                "sheetDisplayName": " ({name})",
+                "unitSettingsTitle": "Unit Settings", "selectUnitLabel": "Select Current Unit:", "applyBtn":"Apply",
+                "alert_unitChanged":"Unit changed to {unit}. Existing values have been converted.",
+                "alert_invalidSheetSize": "Please enter valid sheet dimensions.",
+                "alert_pieceTooLargeSheet": "Piece \"{name}\" ({width}×{length} {unit}) could not fit on Sheet #{sheetNum}. Please check piece or sheet dimensions.",
+                "alert_layoutHang": "Layout calculation is taking too long. Please check the number or size of pieces.",
+                "alert_workerCreationError": "Error creating Web Worker. The browser may not support it or a security policy might be blocking it.",
+                "calculatingLayout": "Calculating layout...",
+                "sheetsTitle": "Sheets",
+                "cuttingListTitle": "Cutting List:", "totalPiecesOnSheet": "Total Pieces on this Sheet: {count}",
+                "wastageReportTitle": "Wastage Report",
+                "sheetWastageTitle": "Sheet #{id} Wastage:", "totalWastageRectsOnSheet": "Total Wastage Pieces on this Sheet: {count}",
+                "totalAreaUsed": "Total Area Used:",
+                "totalFreeArea": "Total Free Area (Wastage):",
+                "wastagePercentage": "Wastage Percentage:",
+                "noFreeRects": "No usable wastage (or very small).",
+                "totalWastagePiecesOverall": "Total Other Wastage Pieces: {count}",
+                "deleteHistoryEntryConfirm": "Are you sure you want to delete this history entry?",
+                "loadingPdf": "Preparing for print...",
+                "projectManagementTitle": "Project Management",
+                "saveCurrentProjectTitle": "Save Current Project",
+                "projectNameLabel": "Project Name:",
+                "projectNamePlaceholder": "e.g., Kitchen Cabinets, Bookshelf",
+                "saveProjectBtn": "Save Project",
+                "savedProjectsTitle": "Saved Projects",
+                "loadProjectBtn": "Load",
+                "deleteProjectBtn": "Delete",
+                "noProjectsSaved": "No projects saved.",
+                "alert_projectNameMissing": "Please enter a project name.",
+                "alert_projectSaved": "Project '{name}' saved successfully!",
+                "alert_projectLoaded": "Project '{name}' loaded successfully!",
+                "alert_projectDeleted": "Project '{name}' deleted successfully!",
+                "confirmDeleteProject": "Are you sure you want to delete project '{name}'?"
+            }
+        };
+
+        function cacheDOMElements() { 
+            modalSheetLengthEl = document.getElementById('modalSheetLength');
+            modalSheetWidthEl = document.getElementById('modalSheetWidth');
+            modalSheetHasGrainEl = document.getElementById('modalHasGrainDirection');
+            modalSheetNameEl = document.getElementById('modalSheetName');
+            sheetSettingsModalEl = document.getElementById('sheetSettingsModal');
+            partNameEl = document.getElementById('partName');
+            partLengthEl = document.getElementById('partLength');
+            partWidthEl = document.getElementById('partWidth');
+            partQuantityEl = document.getElementById('partQuantity');
+            piecesTableBodyEl = document.querySelector('#piecesTable tbody');
+            resultsSummaryEl = document.getElementById('resultsSummary');
+            sheetsContainerEl = document.getElementById('sheetsContainer');
+            historyModalEl = document.getElementById('historyModal');
+            historyListEl = document.getElementById('historyList');
+            jsonMenuEl = document.getElementById('jsonMenu');
+            unitSettingsModalEl = document.getElementById('unitSettingsModal');
+            currentUnitSelectorEl = document.getElementById('currentUnitSelector');
+            unitDisplayElements = Array.from(document.querySelectorAll('.unit-display'));
+            wastageSectionEl = document.getElementById('wastageSection');
+            
+            wastageOverallStatsEl = document.getElementById('wastageOverallStats');
+            usefulOffcutsSummaryEl = document.getElementById('usefulOffcutsSummary');
+            usefulOffcutsDisplayListContainerEl = document.getElementById('usefulOffcutsDisplayListContainer');
+            otherSmallWastageContainerEl = document.getElementById('otherSmallWastageContainer');
+            
+            piecesTableSummaryRowEl = document.getElementById('piecesTableSummaryRow');
+            totalPiecesInListCountEl = document.getElementById('totalPiecesInListCount');
+            totalWastagePiecesSummaryEl = document.getElementById('totalWastagePiecesSummary');
+            loadingIndicatorEl = document.getElementById('loadingIndicator');
+            addedPiecesSectionEl = document.getElementById('addedPiecesSection');
+            mainActionButtonsEl = document.getElementById('mainActionButtons');
+            projectManagementModalEl = document.getElementById('projectManagementModal');
+            projectNameInputEl = document.getElementById('projectNameInput');
+            projectListEl = document.getElementById('projectList');
+            noProjectsMessageEl = document.getElementById('noProjectsMessage');
+            modalGrainColorEl = document.getElementById('modalGrainColor');
+            fittingStrategySelectorEl = document.getElementById('fittingStrategySelector');
+            useOffcutsCheckboxEl = document.getElementById('useOffcutsCheckbox');
+            minOffcutWidthEl = document.getElementById('minOffcutWidth');
+            minOffcutLengthEl = document.getElementById('minOffcutLength');
+            offcutsLibraryModalEl = document.getElementById('offcutsLibraryModal');
+            offcutsListContainerEl = document.getElementById('offcutsListContainer');
+            noOffcutsMessageEl_Modal = offcutsLibraryModalEl.querySelector('#noOffcutsMessageModal');
+            manualOffcutWidthEl = document.getElementById('manualOffcutWidth');
+            manualOffcutLengthEl = document.getElementById('manualOffcutLength');
+            manualOffcutSourceNameEl = document.getElementById('manualOffcutSourceName');
+        }
+        function getLangString(key, replacements = {}) { let str = (langStrings[currentLanguage] && langStrings[currentLanguage][key]) || `[[${key}]]`; for (const placeholder in replacements) { str = str.replace(`{${placeholder}}`, replacements[placeholder]); } return str; }
+        function updateUnitDisplaysDOM(unit) { if(unitDisplayElements && unitDisplayElements.length > 0) unitDisplayElements.forEach(el => { if(el) el.textContent = unit; }); }
+        
+        function convertToCm(value, fromUnit) { 
+            if (value === "" || value === null || isNaN(parseFloat(value))) return ""; 
+            return parseFloat(value) * conversionFactorsToCm[fromUnit]; 
+        }
+
+        function convertFromCm(valueInCm, toUnit) {
+            if (valueInCm === "" || valueInCm === null || isNaN(parseFloat(valueInCm))) return "";
+            let factor = conversionFactorsToCm[toUnit];
+            if (!factor) factor = 1; 
+
+            const result = parseFloat(valueInCm) / factor;
+            let dp;
+
+            switch (toUnit) {
+                case 'mm':
+                    dp = 0;
+                    break;
+                case 'cm':
+                    if (result % 1 !== 0) { 
+                        const s = result.toString();
+                        const decimalPart = s.split('.')[1];
+                        dp = decimalPart ? Math.min(decimalPart.length, 2) : 0; 
+                        if (dp === 0 && result % 1 !== 0) dp = 1;
+                    } else {
+                        dp = 0; 
+                    }
+                    if (dp === 0 && Math.abs(result - Math.floor(result)) > 1e-5) {
+                         if (Math.abs(result * 10 - Math.floor(result * 10)) > 1e-5 && Math.abs(result * 100 - Math.floor(result * 100)) > 1e-5) dp = 2; 
+                         else if (Math.abs(result * 10 - Math.floor(result * 10)) > 1e-5) dp = 1;
+                         else dp = 0;
+                    }
+                    break;
+                case 'm': dp = 3; break;
+                case 'in': case 'ft': dp = 3; break;
+                default: dp = 2; 
+            }
+            
+            let numStr = result.toFixed(dp);
+            let num = parseFloat(numStr);
+
+            if (toUnit === 'cm') {
+                if (num % 1 === 0) { 
+                    return num; 
+                } else if (dp > 0) {
+                    let s = num.toString(); 
+                    if (s.includes('.') && s.endsWith('0')) {
+                        s = s.replace(/0+$/, ''); 
+                        if (s.endsWith('.')) s = s.slice(0, -1); 
+                        return parseFloat(s);
+                    }
+                }
+            }
+            return num;
+        }
+
+
+        function convertFromCmForArea(valueInCm2, toUnitLinear) { if (valueInCm2 === "" || valueInCm2 === null || isNaN(parseFloat(valueInCm2))) return 0; const factorLinear = conversionFactorsToCm[toUnitLinear]; const factorArea = factorLinear * factorLinear; const result = parseFloat(valueInCm2) / factorArea; return parseFloat(result.toFixed(2)); }
+        
+        function hslToRgb(h, s, l){
+            let r, g, b;
+            if(s == 0){ r = g = b = l; }
+            else {
+                const hue2rgb = (p, q, t) => { if(t < 0) t += 1; if(t > 1) t -= 1; if(t < 1/6) return p + (q - p) * 6 * t; if(t < 1/2) return q; if(t < 2/3) return p + (q - p) * (2/3 - t) * 6; return p; }
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3); g = hue2rgb(p, q, h); b = hue2rgb(p, q, h - 1/3);
+            }
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+        function getRandomColor() { const h = Math.floor(Math.random() * 360); const s = 65; const l = 70; return `hsl(${h}, ${s}%, ${l}%)`; }
+        
+        function setLanguage(lang) { 
+            currentLanguage = lang;
+            if(document.documentElement) document.documentElement.lang = lang;
+            const elements = document.querySelectorAll('[data-lang-key]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-lang-key');
+                const placeholderKey = el.getAttribute('data-lang-placeholder');
+                if (langStrings[lang] && langStrings[lang][key]) {
+                    if (el.tagName === 'INPUT' && (el.type === 'text' || el.type === 'number') && placeholderKey && langStrings[lang][placeholderKey] ) {
+                        el.placeholder = getLangString(placeholderKey) + (placeholderKey === "pieceDefaultName" ? (pieceIdCounter + 1) : "");
+                    } else if (el.tagName === 'INPUT' && el.type !== 'checkbox' && el.placeholder !== undefined && !placeholderKey) {
+                         if (el.id !== 'partName' && el.id !== 'partWidth' && el.id !== 'partLength' && el.id !== 'partQuantity') { 
+                            el.placeholder = getLangString(key);
+                        }
+                    } else if (el.tagName === 'OPTION') { 
+                        if (langStrings[lang][key]) el.textContent = getLangString(key);
+                    }
+                     else {
+                        el.textContent = getLangString(key);
+                    }
+                }
+            });
+            updateUnitDisplaysDOM(currentUnit); 
+            renderPiecesTable();
+            if (historyModalEl && historyModalEl.style.display === 'flex') showHistoryModal();
+            if (projectManagementModalEl && projectManagementModalEl.style.display === 'flex') renderProjectsList(); 
+            if (offcutsLibraryModalEl && offcutsLibraryModalEl.style.display === 'flex') renderOffcutsList();
+
+
+            if (lastCalculatedSheetsData && lastCalculatedSheetsData.length > 0) {
+                displayLayoutOnCanvas(lastCalculatedSheetsData);
+            } else if ((!pieces || pieces.length === 0) && resultsSummaryEl) {
+                 resultsSummaryEl.textContent = getLangString("totalSheetsDefault");
+                 if(sheetsContainerEl) sheetsContainerEl.innerHTML = '';
+                 if(wastageSectionEl) wastageSectionEl.style.display = 'none';
+            }
+            localStorage.setItem(STORAGE_KEY_LANGUAGE, lang);
+        }
+        function updateTotalPiecesInListDisplay() {
+            const totalQuantity = pieces.reduce((sum, p) => sum + p.quantity, 0);
+            if (totalPiecesInListCountEl) {
+                totalPiecesInListCountEl.textContent = totalQuantity;
+            }
+            if (piecesTableSummaryRowEl) {
+                piecesTableSummaryRowEl.style.display = pieces.length > 0 ? '' : 'none';
+                const labelCell = piecesTableSummaryRowEl.querySelector('td[colspan="3"]');
+                if (labelCell) {
+                    labelCell.textContent = getLangString("totalPiecesInList");
+                }
+            }
+         }
+        function toggleLanguage() { const newLang = currentLanguage === 'hi' ? 'en' : 'hi'; setLanguage(newLang); }
+        function showUnitSettingsModal() { if(currentUnitSelectorEl) currentUnitSelectorEl.value = currentUnit; if(unitSettingsModalEl) unitSettingsModalEl.style.display = 'flex'; }
+        function closeUnitSettingsModal() { if(unitSettingsModalEl) unitSettingsModalEl.style.display = 'none'; }
+        function applyUnitChange() { 
+            isLoadedFromHistory = false; const newUnit = currentUnitSelectorEl.value; if (newUnit === currentUnit) { closeUnitSettingsModal(); return; } const oldSheetL_cm = convertToCm(modalSheetLengthEl.value, currentUnit); const oldSheetW_cm = convertToCm(modalSheetWidthEl.value, currentUnit); const oldPartL_val = partLengthEl.value; const oldPartW_val = partWidthEl.value; const oldPartL_cm = convertToCm(oldPartL_val, currentUnit); const oldPartW_cm = convertToCm(oldPartW_val, currentUnit); const oldPieces = JSON.parse(JSON.stringify(pieces)); currentUnit = newUnit; localStorage.setItem(STORAGE_KEY_CURRENT_UNIT, currentUnit); updateUnitDisplaysDOM(currentUnit); setLanguage(currentLanguage); modalSheetLengthEl.value = convertFromCm(oldSheetL_cm, currentUnit) || ""; modalSheetWidthEl.value = convertFromCm(oldSheetW_cm, currentUnit) || ""; if (oldPartL_val) partLengthEl.value = convertFromCm(oldPartL_cm, currentUnit) || ""; if (oldPartW_val) partWidthEl.value = convertFromCm(oldPartW_cm, currentUnit) || ""; pieces = oldPieces; 
+            if(minOffcutWidthEl) minOffcutWidthEl.value = convertFromCm(offcutSettings.minWidth, currentUnit); 
+            if(minOffcutLengthEl) minOffcutLengthEl.value = convertFromCm(offcutSettings.minLength, currentUnit);
+            renderPiecesTable(); autoSaveData(); saveStateToHistory(); closeUnitSettingsModal(); alert(getLangString("alert_unitChanged", {unit: currentUnit.toUpperCase()}));
+        }
+        function showSheetSettingsModal() { 
+            const settingsStr = localStorage.getItem(STORAGE_KEY_SETTINGS); 
+            if (settingsStr) { 
+                const settings = JSON.parse(settingsStr); 
+                modalSheetWidthEl.value = convertFromCm(settings.sheetWidth, currentUnit) || ""; 
+                modalSheetLengthEl.value = convertFromCm(settings.sheetLength, currentUnit) || ""; 
+                modalSheetHasGrainEl.checked = typeof settings.hasGrain === 'boolean' ? settings.hasGrain : true;
+                modalSheetNameEl.value = settings.sheetName || ""; 
+                if (modalGrainColorEl) modalGrainColorEl.value = settings.grainColor || currentGrainColor; 
+            } else { 
+                modalSheetWidthEl.value = convertFromCm(122, currentUnit); 
+                modalSheetLengthEl.value = convertFromCm(244, currentUnit); 
+                modalSheetHasGrainEl.checked = true;
+                modalSheetNameEl.value = ""; 
+                if (modalGrainColorEl) modalGrainColorEl.value = currentGrainColor; 
+            } 
+            minOffcutWidthEl.value = convertFromCm(offcutSettings.minWidth, currentUnit);
+            minOffcutLengthEl.value = convertFromCm(offcutSettings.minLength, currentUnit);
+            if(sheetSettingsModalEl) sheetSettingsModalEl.style.display = 'flex'; 
+        }
+        function closeSheetSettingsModal() { if(sheetSettingsModalEl) sheetSettingsModalEl.style.display = 'none'; }
+        function applySheetSettings() {
+            isLoadedFromHistory = false; 
+            if (modalGrainColorEl) { 
+                currentGrainColor = modalGrainColorEl.value;
+                localStorage.setItem(STORAGE_KEY_GRAIN_COLOR, currentGrainColor);
+            }
+            offcutSettings.minWidth = convertToCm(parseFloat(minOffcutWidthEl.value) || 10, currentUnit);
+            offcutSettings.minLength = convertToCm(parseFloat(minOffcutLengthEl.value) || 45, currentUnit);
+            localStorage.setItem(STORAGE_KEY_OFFCUT_SETTINGS, JSON.stringify(offcutSettings));
+
+            autoSaveData(); 
+            saveStateToHistory(); 
+            closeSheetSettingsModal(); 
+            if (lastCalculatedSheetsData) { 
+                 displayLayoutOnCanvas(lastCalculatedSheetsData);
+            } else if (pieces.length > 0 && resultsSummaryEl && sheetsContainerEl) { 
+                resultsSummaryEl.textContent = getLangString("alert_sheetSettingsUpdated"); 
+                sheetsContainerEl.innerHTML = `<p style="text-align:center; color: #555;">${getLangString("alert_layoutForPrint")}</p>`; 
+                if(wastageSectionEl) wastageSectionEl.style.display = 'none'; 
+            } 
+        }
+        function toggleJsonMenu(event) { event.stopPropagation(); if(jsonMenuEl) jsonMenuEl.style.display = jsonMenuEl.style.display === 'block' ? 'none' : 'block'; }
+        function closeJsonMenu() { if(jsonMenuEl) jsonMenuEl.style.display = 'none'; }
+        function addPiece() { 
+            isLoadedFromHistory = false; 
+            const name = partNameEl.value.trim() || getLangString("pieceDefaultName") + (pieceIdCounter + 1); 
+            const pieceW_input = parseFloat(partWidthEl.value); 
+            const pieceL_input = parseFloat(partLengthEl.value); 
+            const quantity = parseInt(partQuantityEl.value) || 1;  
+            if (isNaN(pieceL_input) || pieceL_input <= 0 || isNaN(pieceW_input) || pieceW_input <= 0 || isNaN(quantity) || quantity <= 0) { 
+                alert(getLangString("alert_invalidPositiveNumbers")); return; 
+            } 
+            const pieceL_cm = convertToCm(pieceL_input, currentUnit); 
+            const pieceW_cm = convertToCm(pieceW_input, currentUnit); 
+            const sheetL_cm_val = convertToCm(modalSheetLengthEl.value, currentUnit);  
+            const sheetW_cm_val = convertToCm(modalSheetWidthEl.value, currentUnit); 
+            const hasGrain = modalSheetHasGrainEl.checked; 
+            const sheetName = modalSheetNameEl.value.trim(); 
+            let canFit = false; 
+            if (hasGrain) { 
+                if (pieceL_cm <= sheetL_cm_val && pieceW_cm <= sheetW_cm_val) canFit = true; 
+            } else { 
+                if ((pieceL_cm <= sheetL_cm_val && pieceW_cm <= sheetW_cm_val) || (pieceW_cm <= sheetL_cm_val && pieceL_cm <= sheetW_cm_val)) canFit = true; 
+            } 
+            if (!canFit) { 
+                alert(getLangString("alert_pieceTooLarge", {
+                    name: name, 
+                    width: pieceW_input, 
+                    length: pieceL_input, 
+                    sheetW: convertFromCm(sheetW_cm_val,currentUnit), 
+                    sheetL: convertFromCm(sheetL_cm_val,currentUnit), 
+                    grainText: (hasGrain ? getLangString("grainedSheetSuffix") : getLangString("noGrainSheetSuffix")),
+                    sheetNameText: sheetName ? ` (${getLangString("sheetDisplayName", {name: sheetName})})` : "" 
+                })); 
+                return; 
+            } 
+            pieces.push({id: pieceIdCounter, name, length: pieceL_cm, width: pieceW_cm, quantity, area: pieceL_cm * pieceW_cm}); 
+            pieceIdCounter++; 
+            renderPiecesTable(); 
+            clearPieceInputs(); 
+            autoSaveData(); 
+            saveStateToHistory(); 
+        }
+        function clearPieceInputs() { 
+            if(partNameEl) partNameEl.value = ''; if(partNameEl) partNameEl.placeholder = getLangString("pieceDefaultName") + (pieceIdCounter + 1); if(partWidthEl) partWidthEl.value = ''; if(partLengthEl) partLengthEl.value = ''; if(partQuantityEl) partQuantityEl.value = ''; if(partWidthEl) partWidthEl.focus();
+        }
+        function renderPiecesTable() { 
+            if(!piecesTableBodyEl) return; piecesTableBodyEl.innerHTML = ''; const table = piecesTableBodyEl.parentElement; if(!table) return; const headers = table.querySelectorAll('thead th'); if (headers.length >= 5) { headers[0].textContent = getLangString("tableName"); headers[1].innerHTML = `${getLangString("tableWidth")} (<span class="unit-display">${currentUnit}</span>)`; headers[2].innerHTML = `${getLangString("tableLength")} (<span class="unit-display">${currentUnit}</span>)`; headers[3].textContent = getLangString("tableQuantity"); headers[4].textContent = getLangString("tableRemove"); } pieces.forEach((p, index) => { const row = piecesTableBodyEl.insertRow(); row.insertCell().textContent = p.name; row.insertCell().textContent = convertFromCm(p.width,currentUnit);  row.insertCell().textContent = convertFromCm(p.length,currentUnit); row.insertCell().textContent = p.quantity; const btn = document.createElement('button'); btn.textContent = 'X'; btn.className = 'delete-btn no-print'; btn.onclick = () => removePiece(index); const cell = row.insertCell(); cell.className = 'no-print'; cell.appendChild(btn); cell.style.textAlign = 'center'; }); updateTotalPiecesInListDisplay(); 
+        }
+        function removePiece(index) { isLoadedFromHistory = false; pieces.splice(index, 1); renderPiecesTable(); autoSaveData(); saveStateToHistory(); }
+        function resetAll() { if (confirm(getLangString("alert_confirmResetCurrent"))) resetAllInternal(true); }
+        function resetAllInternal(saveToHist = false) { 
+            isLoadedFromHistory = false; 
+            pieces = []; 
+            pieceIdCounter = 0; 
+            const defaultSheetL_cm = 244; 
+            const defaultSheetW_cm = 122; 
+            if(modalSheetWidthEl) modalSheetWidthEl.value = convertFromCm(defaultSheetW_cm, currentUnit); 
+            if(modalSheetLengthEl) modalSheetLengthEl.value = convertFromCm(defaultSheetL_cm, currentUnit); 
+            if(modalSheetHasGrainEl) modalSheetHasGrainEl.checked = true; 
+            if(modalSheetNameEl) modalSheetNameEl.value = ""; 
+            if(modalGrainColorEl) modalGrainColorEl.value = 'rgba(0,0,0,0.08)'; 
+            currentGrainColor = 'rgba(0,0,0,0.08)';
+            localStorage.setItem(STORAGE_KEY_GRAIN_COLOR, currentGrainColor);
+            if(fittingStrategySelectorEl) fittingStrategySelectorEl.value = 'defaultScore';
+            currentFittingStrategy = 'defaultScore';
+            localStorage.setItem(STORAGE_KEY_FITTING_STRATEGY, currentFittingStrategy);
+            offcutSettings = { minWidth: 10, minLength: 45 }; 
+            if(minOffcutWidthEl) minOffcutWidthEl.value = convertFromCm(offcutSettings.minWidth, currentUnit);
+            if(minOffcutLengthEl) minOffcutLengthEl.value = convertFromCm(offcutSettings.minLength, currentUnit);
+            localStorage.setItem(STORAGE_KEY_OFFCUT_SETTINGS, JSON.stringify(offcutSettings));
+            if(useOffcutsCheckboxEl) useOffcutsCheckboxEl.checked = false;
+
+
+            renderPiecesTable(); 
+            clearPieceInputs(); 
+            if(resultsSummaryEl) resultsSummaryEl.textContent = getLangString("totalSheetsDefault"); 
+            if(sheetsContainerEl) sheetsContainerEl.innerHTML = ''; 
+            if(wastageSectionEl) wastageSectionEl.style.display = 'none'; 
+            if(wastageOverallStatsEl) wastageOverallStatsEl.innerHTML = '';
+            if(usefulOffcutsSummaryEl) usefulOffcutsSummaryEl.style.display = 'none';
+            if(usefulOffcutsDisplayListContainerEl) usefulOffcutsDisplayListContainerEl.innerHTML = '';
+            if(otherSmallWastageContainerEl) otherSmallWastageContainerEl.innerHTML = '';
+            if(totalWastagePiecesSummaryEl) totalWastagePiecesSummaryEl.style.display = 'none'; 
+            
+            cuttingListCheckboxStates = {}; 
+            localStorage.removeItem(STORAGE_KEY_CUTTING_LIST_CHECKS); 
+            lastCalculatedSheetsData = null; 
+            autoSaveData(); 
+            if (saveToHist && !isLoadedFromHistory) saveStateToHistory(); 
+        }
+        function autoSaveData() { 
+            try { 
+                localStorage.setItem(STORAGE_KEY_PIECES, JSON.stringify(pieces)); 
+                const settings = { 
+                    sheetWidth: convertToCm(modalSheetWidthEl.value, currentUnit) || 122, 
+                    sheetLength: convertToCm(modalSheetLengthEl.value, currentUnit) || 244, 
+                    hasGrain: modalSheetHasGrainEl.checked,
+                    sheetName: modalSheetNameEl.value.trim(),
+                    grainColor: currentGrainColor,
+                    fittingStrategy: currentFittingStrategy,
+                    offcutSettings: offcutSettings
+                }; 
+                localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings)); 
+                localStorage.setItem(STORAGE_KEY_ID_COUNTER, pieceIdCounter.toString()); 
+            } catch (e) { console.error("डेटा ऑटो-सेव करने में त्रुटि:", e); } 
+        }
+        function exportDataAsJson() { 
+            if (pieces.length === 0 && !modalSheetLengthEl.value && !modalSheetWidthEl.value) { 
+                alert(getLangString("alert_noDataToExport")); return; 
+            } 
+            const dataToExport = { 
+                pieces: pieces, 
+                settings: { 
+                    sheetWidth: convertToCm(modalSheetWidthEl.value, currentUnit) || 122, 
+                    sheetLength: convertToCm(modalSheetLengthEl.value, currentUnit) || 244, 
+                    hasGrain: modalSheetHasGrainEl.checked,
+                    sheetName: modalSheetNameEl.value.trim(),
+                    grainColor: currentGrainColor,
+                    fittingStrategy: currentFittingStrategy,
+                    offcutSettings: offcutSettings 
+                }, 
+                pieceIdCounter: pieceIdCounter, 
+                savedUnit: currentUnit, 
+                cuttingChecks: cuttingListCheckboxStates,
+                savedOffcuts: savedOffcuts 
+            }; 
+            const dataStr = JSON.stringify(dataToExport, null, 2); 
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr); 
+            const exportFileDefaultName = 'sheet_layout_data.json'; 
+            let linkElement = document.createElement('a'); 
+            linkElement.setAttribute('href', dataUri); 
+            linkElement.setAttribute('download', exportFileDefaultName); 
+            linkElement.click(); 
+            linkElement.remove(); 
+        }
+        function importDataFromJson(event) { 
+            isLoadedFromHistory = false; 
+            const file = event.target.files[0]; 
+            if (!file) return; 
+            if (file.type !== "application/json") { 
+                alert(getLangString("alert_selectValidJson")); event.target.value = null; return; 
+            } 
+            const reader = new FileReader(); 
+            reader.onload = function(e) { 
+                try { 
+                    const importedData = JSON.parse(e.target.result); 
+                    if (importedData && importedData.pieces && importedData.settings) { 
+                        pieces = importedData.pieces || []; 
+                        const settings = importedData.settings; 
+                        const importUnit = importedData.savedUnit || 'cm'; 
+                        modalSheetWidthEl.value = convertFromCm(settings.sheetWidth, currentUnit); 
+                        modalSheetLengthEl.value = convertFromCm(settings.sheetLength, currentUnit); 
+                        modalSheetHasGrainEl.checked = typeof settings.hasGrain === 'boolean' ? settings.hasGrain : true; 
+                        modalSheetNameEl.value = settings.sheetName || ""; 
+                        currentGrainColor = settings.grainColor || 'rgba(0,0,0,0.08)'; 
+                        if (modalGrainColorEl) modalGrainColorEl.value = currentGrainColor;
+                        currentFittingStrategy = settings.fittingStrategy || 'defaultScore';
+                        if (fittingStrategySelectorEl) fittingStrategySelectorEl.value = currentFittingStrategy;
+                        offcutSettings = settings.offcutSettings || { minWidth: 10, minLength: 45 };
+                        if (minOffcutWidthEl) minOffcutWidthEl.value = convertFromCm(offcutSettings.minWidth, currentUnit);
+                        if (minOffcutLengthEl) minOffcutLengthEl.value = convertFromCm(offcutSettings.minLength, currentUnit);
+                        savedOffcuts = importedData.savedOffcuts || [];
+
+
+                        pieceIdCounter = parseInt(importedData.pieceIdCounter) || 0; 
+                        cuttingListCheckboxStates = importedData.cuttingChecks || {}; 
+                        if (pieces.length > 0 && pieceIdCounter === 0) { 
+                            const maxId = pieces.reduce((max, p) => (typeof p.id === 'number' && p.id > max ? p.id : max), -1); 
+                            pieceIdCounter = maxId >= 0 ? maxId + 1 : pieces.length; 
+                        } 
+                        pieces.forEach(p => { 
+                            if(importedData.savedUnit && importedData.savedUnit !== 'cm'){ 
+                                p.length = convertToCm(p.length, importedData.savedUnit); 
+                                p.width = convertToCm(p.width, importedData.savedUnit);
+                            }
+                        }); 
+                        renderPiecesTable(); 
+                        clearPieceInputs(); 
+                        autoSaveData(); 
+                        saveStateToHistory(); 
+                        resultsSummaryEl.textContent = getLangString("totalSheetsDefault"); 
+                        sheetsContainerEl.innerHTML = `<p style="text-align:center; color: #555;">${getLangString("alert_layoutForPrint")}</p>`; 
+                        if (lastCalculatedSheetsData) { 
+                            displayLayoutOnCanvas(lastCalculatedSheetsData);
+                        }
+                        wastageSectionEl.style.display = 'none'; 
+                        if(wastageOverallStatsEl) wastageOverallStatsEl.innerHTML = '';
+                        if(usefulOffcutsDisplayListContainerEl) usefulOffcutsDisplayListContainerEl.innerHTML = '';
+                        if(otherSmallWastageContainerEl) otherSmallWastageContainerEl.innerHTML = '';
+                        if(totalWastagePiecesSummaryEl) totalWastagePiecesSummaryEl.style.display = 'none'; 
+                         if(usefulOffcutsSummaryEl) usefulOffcutsSummaryEl.style.display = 'none';
+                        lastCalculatedSheetsData = null; 
+                        alert(getLangString("alert_jsonImportSuccess")); 
+                    } else { 
+                        alert(getLangString("alert_jsonFormatError")); 
+                    } 
+                } catch (err) { 
+                    console.error("JSON फ़ाइल पार्स करने में त्रुटि:", err); 
+                    alert(getLangString("alert_jsonParseError")); 
+                } finally { 
+                    event.target.value = null; 
+                } 
+            }; 
+            reader.readAsText(file); 
+        }
+        function clearSavedData() { 
+            isLoadedFromHistory = false; 
+            if (confirm(getLangString("alert_confirmClearStorage"))) { 
+                localStorage.removeItem(STORAGE_KEY_PIECES); 
+                localStorage.removeItem(STORAGE_KEY_SETTINGS); 
+                localStorage.removeItem(STORAGE_KEY_ID_COUNTER); 
+                localStorage.removeItem(STORAGE_KEY_HISTORY); 
+                localStorage.removeItem(STORAGE_KEY_LANGUAGE); 
+                localStorage.removeItem(STORAGE_KEY_CURRENT_UNIT); 
+                localStorage.removeItem(STORAGE_KEY_CUTTING_LIST_CHECKS); 
+                localStorage.removeItem(STORAGE_KEY_PROJECTS); 
+                localStorage.removeItem(STORAGE_KEY_GRAIN_COLOR); 
+                localStorage.removeItem(STORAGE_KEY_FITTING_STRATEGY);
+                localStorage.removeItem(STORAGE_KEY_SAVED_OFFCUTS);
+                localStorage.removeItem(STORAGE_KEY_OFFCUT_SETTINGS);
+                historyStack = []; 
+                cuttingListCheckboxStates = {}; 
+                savedProjects = []; 
+                savedOffcuts = [];
+                currentGrainColor = 'rgba(0,0,0,0.08)'; 
+                if (modalGrainColorEl) modalGrainColorEl.value = currentGrainColor;
+                currentFittingStrategy = 'defaultScore';
+                if (fittingStrategySelectorEl) fittingStrategySelectorEl.value = currentFittingStrategy;
+                offcutSettings = { minWidth: 10, minLength: 45 };
+                if(minOffcutWidthEl) minOffcutWidthEl.value = convertFromCm(offcutSettings.minWidth, currentUnit);
+                if(minOffcutLengthEl) minOffcutLengthEl.value = convertFromCm(offcutSettings.minLength, currentUnit);
+                alert(getLangString("alert_storageCleared")); 
+            } 
+        }
+        function saveStateToHistory() { 
+            if (isLoadedFromHistory) return; 
+            const currentState = {
+                pieces: JSON.parse(JSON.stringify(pieces)),
+                settings: {
+                    sheetWidth: convertToCm(modalSheetWidthEl.value, currentUnit) || 122,
+                    sheetLength: convertToCm(modalSheetLengthEl.value, currentUnit) || 244,
+                    hasGrain: modalSheetHasGrainEl.checked,
+                    sheetName: modalSheetNameEl.value.trim(),
+                    grainColor: currentGrainColor,
+                    fittingStrategy: currentFittingStrategy,
+                    offcutSettings: offcutSettings
+                },
+                pieceIdCounter: pieceIdCounter,
+                timestamp: new Date().toLocaleTimeString(currentLanguage === 'hi' ? 'hi-IN' : 'en-US', { hour: 'numeric', minute: '2-digit'}) + ", " + new Date().toLocaleDateString(currentLanguage === 'hi' ? 'hi-IN' : 'en-US', {day: 'numeric', month: 'short'}),
+                unit: currentUnit,
+                cuttingChecks: JSON.parse(JSON.stringify(cuttingListCheckboxStates))
+            };
+
+            if (historyStack.length > 0) {
+                const lastState = historyStack[0];
+                if (JSON.stringify(lastState.pieces) === JSON.stringify(currentState.pieces) &&
+                    JSON.stringify(lastState.settings.sheetWidth) === JSON.stringify(currentState.settings.sheetWidth) &&
+                    JSON.stringify(lastState.settings.sheetLength) === JSON.stringify(currentState.settings.sheetLength) &&
+                    lastState.settings.hasGrain === currentState.settings.hasGrain &&
+                    lastState.settings.sheetName === currentState.settings.sheetName &&
+                    lastState.settings.grainColor === currentState.settings.grainColor &&
+                    JSON.stringify(lastState.settings.offcutSettings) === JSON.stringify(currentState.settings.offcutSettings) && 
+                    lastState.settings.fittingStrategy === currentState.settings.fittingStrategy && 
+                    lastState.unit === currentState.unit &&
+                    JSON.stringify(lastState.cuttingChecks) === JSON.stringify(currentState.cuttingChecks) ) {
+                    return; 
+                }
+            }
+            historyStack.unshift(currentState);
+            if (historyStack.length > MAX_HISTORY_STATES) historyStack.pop();
+            try { localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(historyStack)); }
+            catch (e) { console.error("हिस्ट्री सेव करने में त्रुटि:", e); }
+        }
+        function loadHistoryFromStorage() { try { const savedHistory = localStorage.getItem(STORAGE_KEY_HISTORY); historyStack = savedHistory ? JSON.parse(savedHistory) : []; } catch (e) { console.error("हिस्ट्री लोड करने में त्रुटि:", e); historyStack = []; } }
+        function applyStateFromHistory(historyIndex) { 
+            if (historyIndex < 0 || historyIndex >= historyStack.length) return;
+            const stateToLoad = JSON.parse(JSON.stringify(historyStack[historyIndex]));
+            pieces = stateToLoad.pieces;
+            const settings = stateToLoad.settings;
+            currentUnit = stateToLoad.unit || 'cm';
+            cuttingListCheckboxStates = stateToLoad.cuttingChecks || {};
+            if(currentUnitSelectorEl) currentUnitSelectorEl.value = currentUnit;
+            if(modalSheetWidthEl) modalSheetWidthEl.value = convertFromCm(settings.sheetWidth, currentUnit);
+            if(modalSheetLengthEl) modalSheetLengthEl.value = convertFromCm(settings.sheetLength, currentUnit);
+            if(modalSheetHasGrainEl) modalSheetHasGrainEl.checked = settings.hasGrain;
+            if(modalSheetNameEl) modalSheetNameEl.value = settings.sheetName || ""; 
+            currentGrainColor = settings.grainColor || 'rgba(0,0,0,0.08)'; 
+            if(modalGrainColorEl) modalGrainColorEl.value = currentGrainColor;
+            currentFittingStrategy = settings.fittingStrategy || 'defaultScore';
+            if(fittingStrategySelectorEl) fittingStrategySelectorEl.value = currentFittingStrategy;
+            offcutSettings = settings.offcutSettings || { minWidth: 10, minLength: 45 };
+            if(minOffcutWidthEl) minOffcutWidthEl.value = convertFromCm(offcutSettings.minWidth, currentUnit);
+            if(minOffcutLengthEl) minOffcutLengthEl.value = convertFromCm(offcutSettings.minLength, currentUnit);
+
+            pieceIdCounter = stateToLoad.pieceIdCounter;
+
+            renderPiecesTable();
+            clearPieceInputs();
+            if(resultsSummaryEl) resultsSummaryEl.textContent = getLangString("totalSheetsDefault");
+            if(sheetsContainerEl) sheetsContainerEl.innerHTML = `<p style="text-align:center; color: #555;">${getLangString("alert_layoutForPrint")}</p>`;
+            if (lastCalculatedSheetsData) { 
+                displayLayoutOnCanvas(lastCalculatedSheetsData);
+            }
+            wastageSectionEl.style.display = 'none';
+            if(wastageOverallStatsEl) wastageOverallStatsEl.innerHTML = '';
+            if(usefulOffcutsDisplayListContainerEl) usefulOffcutsDisplayListContainerEl.innerHTML = '';
+            if(otherSmallWastageContainerEl) otherSmallWastageContainerEl.innerHTML = '';
+            if(totalWastagePiecesSummaryEl) totalWastagePiecesSummaryEl.style.display = 'none';
+            if(usefulOffcutsSummaryEl) usefulOffcutsSummaryEl.style.display = 'none';
+            autoSaveData(); 
+            isLoadedFromHistory = true; 
+            closeHistoryModal();
+            alert(getLangString("alert_historyLoaded"));
+            setLanguage(currentLanguage); 
+            isLoadedFromHistory = false; 
+        }
+        function deleteHistoryEntry(indexToDelete) { 
+            if (confirm(getLangString("deleteHistoryEntryConfirm"))) {
+                historyStack.splice(indexToDelete, 1);
+                try { localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(historyStack)); }
+                catch (e) { console.error("हिस्ट्री अपडेट करने में त्रुटि:", e); }
+                showHistoryModal(); 
+            }
+        }
+        function showHistoryModal() { 
+            if(!historyListEl || !historyModalEl) return;
+            historyListEl.innerHTML = '';
+            if (historyStack.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = getLangString("noHistory");
+                historyListEl.appendChild(li);
+            } else {
+                historyStack.forEach((state, index) => {
+                    const li = document.createElement('li');
+                    const contentSpan = document.createElement('span');
+                    contentSpan.className = 'history-item-content';
+                    const displayIndex = historyStack.length - index;
+                    
+                    let summaryText = `${state.pieces.length} ${getLangString("historyPiecesSuffix")}`;
+                    if (state.settings && state.settings.sheetName) {
+                        summaryText = `${getLangString("historySheetNamePrefix")}${state.settings.sheetName} | ${summaryText}`;
+                    }
+                    
+                    contentSpan.innerHTML = `<span>${getLangString("historyStatusPrefix")}${displayIndex} - ${summaryText}</span> <small>${state.timestamp} [${state.unit || 'cm'}]</small>`;
+                    contentSpan.onclick = () => applyStateFromHistory(index);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'history-delete-btn no-print';
+                    deleteBtn.innerHTML = '&#x2715;'; 
+                    deleteBtn.title = getLangString("tableRemove");
+                    deleteBtn.onclick = (event) => {
+                        event.stopPropagation(); 
+                        deleteHistoryEntry(index);
+                    };
+
+                    li.appendChild(contentSpan);
+                    li.appendChild(deleteBtn);
+                    historyListEl.appendChild(li);
+                });
+            }
+            historyModalEl.style.display = 'flex';
+        }
+        function closeHistoryModal() { if(historyModalEl) historyModalEl.style.display = 'none'; }
+        function loadCuttingListCheckboxStates() { try { const saved = localStorage.getItem(STORAGE_KEY_CUTTING_LIST_CHECKS); cuttingListCheckboxStates = saved ? JSON.parse(saved) : {}; } catch(e) { console.error("Error loading cutting list states:", e); cuttingListCheckboxStates = {};}}
+        function saveCuttingListCheckboxStates() { isLoadedFromHistory = false; try { localStorage.setItem(STORAGE_KEY_CUTTING_LIST_CHECKS, JSON.stringify(cuttingListCheckboxStates)); saveStateToHistory(); } catch(e) { console.error("Error saving cutting list checkbox states:", e);}}
+        function loadProjectsFromStorage() { 
+            try {
+                const projectsStr = localStorage.getItem(STORAGE_KEY_PROJECTS);
+                savedProjects = projectsStr ? JSON.parse(projectsStr) : [];
+            } catch (e) {
+                console.error("प्रोजेक्ट लोड करने में त्रुटि:", e);
+                savedProjects = [];
+            }
+        }
+        function saveProjectsToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY_PROJECTS, JSON.stringify(savedProjects));
+            } catch (e) {
+                console.error("प्रोजेक्ट सेव करने में त्रुटि:", e);
+            }
+         }
+        function showProjectManagementModal() { 
+            if (projectManagementModalEl) {
+                renderProjectsList();
+                projectNameInputEl.value = ""; 
+                projectManagementModalEl.style.display = 'flex';
+            }
+        }
+        function closeProjectManagementModal() { if (projectManagementModalEl) projectManagementModalEl.style.display = 'none'; }
+        function saveCurrentProject() { 
+            isLoadedFromHistory = false;
+            const projectName = projectNameInputEl.value.trim();
+            if (!projectName) {
+                alert(getLangString("alert_projectNameMissing"));
+                return;
+            }
+            const projectData = {
+                projectName: projectName,
+                timestamp: new Date().toISOString(),
+                data: { 
+                    pieces: JSON.parse(JSON.stringify(pieces)),
+                    settings: {
+                        sheetWidth: convertToCm(modalSheetWidthEl.value, currentUnit) || 122,
+                        sheetLength: convertToCm(modalSheetLengthEl.value, currentUnit) || 244,
+                        hasGrain: modalSheetHasGrainEl.checked,
+                        sheetName: modalSheetNameEl.value.trim(),
+                        grainColor: currentGrainColor,
+                        fittingStrategy: currentFittingStrategy,
+                        offcutSettings: offcutSettings
+                    },
+                    pieceIdCounter: pieceIdCounter,
+                    savedUnit: currentUnit,
+                    cuttingChecks: JSON.parse(JSON.stringify(cuttingListCheckboxStates))
+                }
+            };
+            const existingProjectIndex = savedProjects.findIndex(p => p.projectName === projectName);
+            if (existingProjectIndex > -1) {
+                savedProjects[existingProjectIndex] = projectData; 
+            } else {
+                savedProjects.unshift(projectData); 
+            }
+            saveProjectsToStorage();
+            renderProjectsList();
+            projectNameInputEl.value = ""; 
+            alert(getLangString("alert_projectSaved", {name: projectName}));
+        }
+        function loadProjectByName(projectName) { 
+            const projectToLoad = savedProjects.find(p => p.projectName === projectName);
+            if (projectToLoad) {
+                isLoadedFromHistory = true; 
+                const projectState = projectToLoad.data;
+                pieces = projectState.pieces || [];
+                const settings = projectState.settings;
+                currentUnit = projectState.savedUnit || 'cm';
+                cuttingListCheckboxStates = projectState.cuttingChecks || {};
+                if(currentUnitSelectorEl) currentUnitSelectorEl.value = currentUnit;
+                if(modalSheetWidthEl) modalSheetWidthEl.value = convertFromCm(settings.sheetWidth, currentUnit);
+                if(modalSheetLengthEl) modalSheetLengthEl.value = convertFromCm(settings.sheetLength, currentUnit);
+                if(modalSheetHasGrainEl) modalSheetHasGrainEl.checked = settings.hasGrain;
+                if(modalSheetNameEl) modalSheetNameEl.value = settings.sheetName || "";
+                currentGrainColor = settings.grainColor || 'rgba(0,0,0,0.08)'; 
+                if(modalGrainColorEl) modalGrainColorEl.value = currentGrainColor;
+                currentFittingStrategy = settings.fittingStrategy || 'defaultScore';
+                if(fittingStrategySelectorEl) fittingStrategySelectorEl.value = currentFittingStrategy;
+                offcutSettings = settings.offcutSettings || { minWidth: 10, minLength: 45 };
+                if(minOffcutWidthEl) minOffcutWidthEl.value = convertFromCm(offcutSettings.minWidth, currentUnit);
+                if(minOffcutLengthEl) minOffcutLengthEl.value = convertFromCm(offcutSettings.minLength, currentUnit);
+                
+                pieceIdCounter = projectState.pieceIdCounter;
+                renderPiecesTable();
+                clearPieceInputs();
+                if(resultsSummaryEl) resultsSummaryEl.textContent = getLangString("totalSheetsDefault");
+                if(sheetsContainerEl) sheetsContainerEl.innerHTML = `<p style="text-align:center; color: #555;">${getLangString("alert_layoutForPrint")}</p>`;
+                 if (lastCalculatedSheetsData) { 
+                    displayLayoutOnCanvas(lastCalculatedSheetsData);
+                }
+                wastageSectionEl.style.display = 'none';
+                if(wastageOverallStatsEl) wastageOverallStatsEl.innerHTML = '';
+                if(usefulOffcutsDisplayListContainerEl) usefulOffcutsDisplayListContainerEl.innerHTML = '';
+                if(otherSmallWastageContainerEl) otherSmallWastageContainerEl.innerHTML = '';
+                if(totalWastagePiecesSummaryEl) totalWastagePiecesSummaryEl.style.display = 'none';
+                 if(usefulOffcutsSummaryEl) usefulOffcutsSummaryEl.style.display = 'none';
+                autoSaveData(); 
+                saveStateToHistory(); 
+                closeProjectManagementModal();
+                alert(getLangString("alert_projectLoaded", {name: projectName}));
+                setLanguage(currentLanguage); 
+                isLoadedFromHistory = false; 
+            }
+        }
+        function deleteProjectByName(projectName) { 
+            if (confirm(getLangString("confirmDeleteProject", {name: projectName}))) {
+                savedProjects = savedProjects.filter(p => p.projectName !== projectName);
+                saveProjectsToStorage();
+                renderProjectsList();
+                alert(getLangString("alert_projectDeleted", {name: projectName}));
+            }
+        }
+        function renderProjectsList() { 
+            if (!projectListEl || !noProjectsMessageEl) return;
+            projectListEl.innerHTML = '';
+            if (savedProjects.length === 0) {
+                noProjectsMessageEl.style.display = 'block';
+                projectListEl.style.display = 'none';
+            } else {
+                noProjectsMessageEl.style.display = 'none';
+                projectListEl.style.display = 'block';
+                savedProjects.forEach(project => {
+                    const li = document.createElement('li');
+                    const contentSpan = document.createElement('span');
+                    contentSpan.className = 'project-item-content';
+                    let displayDate = new Date(project.timestamp).toLocaleDateString(currentLanguage === 'hi' ? 'hi-IN' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric', hour:'2-digit', minute:'2-digit'});
+                    contentSpan.innerHTML = `<strong>${project.projectName}</strong> <small>(${displayDate})</small>`;
+                    contentSpan.onclick = () => loadProjectByName(project.projectName);
+                    const loadBtn = document.createElement('button');
+                    loadBtn.textContent = getLangString("loadProjectBtn");
+                    loadBtn.style.marginRight = '5px';
+                    loadBtn.onclick = (event) => { event.stopPropagation(); loadProjectByName(project.projectName); };
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = getLangString("deleteProjectBtn");
+                    deleteBtn.className = 'project-delete-btn'; 
+                    deleteBtn.onclick = (event) => { event.stopPropagation(); deleteProjectByName(project.projectName); };
+                    const buttonsDiv = document.createElement('div');
+                    buttonsDiv.appendChild(loadBtn);
+                    buttonsDiv.appendChild(deleteBtn);
+                    li.appendChild(contentSpan);
+                    li.appendChild(buttonsDiv);
+                    projectListEl.appendChild(li);
+                });
+            }
+        }
+
+        function addManualOffcut() {
+            const widthInput = parseFloat(manualOffcutWidthEl.value);
+            const lengthInput = parseFloat(manualOffcutLengthEl.value);
+            const sourceName = manualOffcutSourceNameEl.value.trim();
+
+            if (isNaN(widthInput) || widthInput <= 0 || isNaN(lengthInput) || lengthInput <= 0) {
+                alert(getLangString("alert_invalidOffcutDimensions"));
+                return;
+            }
+
+            const width_cm = convertToCm(widthInput, currentUnit);
+            const length_cm = convertToCm(lengthInput, currentUnit);
+            
+            let w_final = width_cm;
+            let l_final = length_cm;
+            if (!modalSheetHasGrainEl.checked && w_final > l_final) { 
+                [w_final, l_final] = [l_final, w_final]; 
+            }
+            
+            const newOffcut = {
+                id: `MANUAL-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+                width: parseFloat(w_final.toFixed(2)),
+                length: parseFloat(l_final.toFixed(2)),
+                area: parseFloat((w_final * l_final).toFixed(2)),
+                dateAdded: new Date().toISOString(),
+                isIndividuallyAvailable: true, 
+                sourceSheetIdFromCalc: 'MANUAL', 
+                sourceSheetNameFromCalc: sourceName || (getLangString("manualEntryLabel") || "मैन्युअल एंट्री")
+            };
+
+            const batchId = `BATCH-MANUAL-${Date.now()}`;
+            const newBatch = {
+                batchId: batchId,
+                dateTime: new Date().toLocaleString(currentLanguage === 'hi' ? 'hi-IN' : 'en-US'),
+                sourceSheetNameForBatch: newOffcut.sourceSheetNameFromCalc,
+                offcutsInBatch: [newOffcut],
+                isBatchAvailable: true 
+            };
+
+            savedOffcuts.push(newBatch);
+            localStorage.setItem(STORAGE_KEY_SAVED_OFFCUTS, JSON.stringify(savedOffcuts));
+            alert(getLangString("alert_offcutAddedManually"));
+
+            manualOffcutWidthEl.value = '';
+            manualOffcutLengthEl.value = '';
+            manualOffcutSourceNameEl.value = '';
+            renderOffcutsList(); 
+        }
+
+        function showOffcutsLibraryModal() {
+            renderOffcutsList();
+            if (offcutsLibraryModalEl) offcutsLibraryModalEl.style.display = 'flex';
+        }
+        function closeOffcutsLibraryModal() {
+            if (offcutsLibraryModalEl) offcutsLibraryModalEl.style.display = 'none';
+        }
+        function renderOffcutsList() {
+            if (!offcutsListContainerEl || !noOffcutsMessageEl_Modal) return;
+            offcutsListContainerEl.innerHTML = '';
+            const availableBatches = savedOffcuts.filter(batch => batch.isBatchAvailable && batch.offcutsInBatch.some(oc => oc.isIndividuallyAvailable !== false));
+
+            if (availableBatches.length === 0) {
+                noOffcutsMessageEl_Modal.style.display = 'block';
+                noOffcutsMessageEl_Modal.textContent = getLangString("noOffcutsSaved");
+            } else {
+                noOffcutsMessageEl_Modal.style.display = 'none';
+                availableBatches.forEach(batch => {
+                    const batchDiv = document.createElement('div');
+                    batchDiv.style.marginBottom = '15px';
+                    batchDiv.style.border = '1px solid #ddd';
+                    batchDiv.style.borderRadius = '5px';
+                    batchDiv.style.padding = '10px';
+
+                    const batchHeader = document.createElement('h5');
+                    batchHeader.style.marginTop = '0';
+                    batchHeader.style.marginBottom = '8px';
+                    batchHeader.textContent = `${getLangString("batchIdLabel") || "बैच ID"}: ${batch.batchId.slice(-6)} (${batch.dateTime}) - ${getLangString("sourceSheetNameLabel") || "स्रोत"}: ${batch.sourceSheetNameForBatch}`;
+                    batchDiv.appendChild(batchHeader);
+
+                    const table = document.createElement('table');
+                    table.style.fontSize = "0.85em";
+                    const thead = table.createTHead();
+                    const tbody = table.createTBody();
+                    let headerRow = thead.insertRow();
+                    [
+                        "ID", 
+                        `${getLangString("tableWidth")} (${currentUnit})`, 
+                        `${getLangString("tableLength")} (${currentUnit})`, 
+                        getLangString("statusLabel") || "स्थिति",
+                        getLangString("tableRemove")
+                    ].forEach(text => {
+                        let th = document.createElement("th");
+                        th.textContent = text;
+                        headerRow.appendChild(th);
+                    });
+
+                    let hasVisibleOffcutsInBatch = false;
+                    batch.offcutsInBatch.forEach(offcut => {
+                         if (offcut.isIndividuallyAvailable === false) return; 
+                         hasVisibleOffcutsInBatch = true;
+
+                        let row = tbody.insertRow();
+                        row.insertCell().textContent = offcut.id.slice(-6);
+                        row.insertCell().textContent = convertFromCm(offcut.width, currentUnit);
+                        row.insertCell().textContent = convertFromCm(offcut.length, currentUnit);
+                        row.insertCell().textContent = offcut.isIndividuallyAvailable ? (getLangString("availableLabel") || "उपलब्ध") : (getLangString("usedLabel") || "प्रयुक्त");
+                        
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.innerHTML = '&times;'; 
+                        deleteBtn.className = 'offcut-delete-btn';
+                        deleteBtn.title = getLangString("tableRemove");
+                        deleteBtn.onclick = () => deleteIndividualOffcut(batch.batchId, offcut.id);
+                        let cell = row.insertCell();
+                        cell.style.textAlign = 'center';
+                        cell.appendChild(deleteBtn);
+                    });
+                    
+                    if(hasVisibleOffcutsInBatch){ 
+                        batchDiv.appendChild(table);
+                        offcutsListContainerEl.appendChild(batchDiv);
+                    }
+                });
+                 if(offcutsListContainerEl.children.length === 0 && availableBatches.length > 0){ 
+                     noOffcutsMessageEl_Modal.style.display = 'block';
+                     noOffcutsMessageEl_Modal.textContent = getLangString("noAvailableOffcutsInBatches") || "इन बैचों में कोई उपलब्ध ऑफकट नहीं है।"; 
+                 } else if (availableBatches.length === 0) { 
+                     noOffcutsMessageEl_Modal.style.display = 'block';
+                     noOffcutsMessageEl_Modal.textContent = getLangString("noOffcutsSaved");
+                 }
+
+            }
+        }
+        function deleteIndividualOffcut(batchId, offcutId) {
+            if (confirm(getLangString("confirmDeleteOffcut"))) {
+                const batchIndex = savedOffcuts.findIndex(b => b.batchId === batchId);
+                if (batchIndex > -1) {
+                    savedOffcuts[batchIndex].offcutsInBatch = savedOffcuts[batchIndex].offcutsInBatch.filter(oc => oc.id !== offcutId);
+                    if (savedOffcuts[batchIndex].offcutsInBatch.length === 0) {
+                        savedOffcuts.splice(batchIndex, 1);
+                    } else {
+                        savedOffcuts[batchIndex].isBatchAvailable = savedOffcuts[batchIndex].offcutsInBatch.some(oc => oc.isIndividuallyAvailable !== false);
+                    }
+                }
+                localStorage.setItem(STORAGE_KEY_SAVED_OFFCUTS, JSON.stringify(savedOffcuts));
+                renderOffcutsList(); 
+            }
+        }
+        function loadSavedOffcuts() {
+            const offcutsStr = localStorage.getItem(STORAGE_KEY_SAVED_OFFCUTS);
+            if (offcutsStr) {
+                try { savedOffcuts = JSON.parse(offcutsStr); } catch (e) { console.error("Error parsing saved offcuts:", e); savedOffcuts = [];}
+            }
+        }
+         function loadOffcutSettings() {
+            const settingsStr = localStorage.getItem(STORAGE_KEY_OFFCUT_SETTINGS);
+            if (settingsStr) {
+                try { offcutSettings = JSON.parse(settingsStr); } catch (e) { offcutSettings = { minWidth: 10, minLength: 45 }; }
+            } else { 
+                 offcutSettings = { minWidth: 10, minLength: 45 };
+                 localStorage.setItem(STORAGE_KEY_OFFCUT_SETTINGS, JSON.stringify(offcutSettings));
+            }
+            if(minOffcutWidthEl) minOffcutWidthEl.value = convertFromCm(offcutSettings.minWidth, currentUnit);
+            if(minOffcutLengthEl) minOffcutLengthEl.value = convertFromCm(offcutSettings.minLength, currentUnit);
+        }
+
+        function markOffcutsAsUsed(usedIds) {
+            let changed = false;
+            usedIds.forEach(id => {
+                 for (const batch of savedOffcuts) {
+                    const offcut = batch.offcutsInBatch.find(oc => oc.id === id && oc.isIndividuallyAvailable !== false);
+                    if (offcut) {
+                        offcut.isIndividuallyAvailable = false;
+                        changed = true;
+                        if (!batch.offcutsInBatch.some(o => o.isIndividuallyAvailable !== false)) {
+                            batch.isBatchAvailable = false;
+                        }
+                        break; 
+                    }
+                }
+            });
+            if (changed) {
+                localStorage.setItem(STORAGE_KEY_SAVED_OFFCUTS, JSON.stringify(savedOffcuts));
+                if (offcutsLibraryModalEl && offcutsLibraryModalEl.style.display === 'flex') {
+                    renderOffcutsList();
+                }
+            }
+        }
+
+
+        function calculateWithSelectedStrategy() {
+            currentFittingStrategy = fittingStrategySelectorEl.value;
+            localStorage.setItem(STORAGE_KEY_FITTING_STRATEGY, currentFittingStrategy);
+            calculateAndDrawLayout(currentFittingStrategy); 
+        }
+        
+        function calculateAndDrawLayout(strategy = currentFittingStrategy) { 
+            isLoadedFromHistory = false;
+            if (!pieces || pieces.length === 0) {
+                alert(getLangString("alert_calculateLayoutFirst"));
+                if(wastageSectionEl) wastageSectionEl.style.display = 'none';
+                if(resultsSummaryEl) resultsSummaryEl.textContent = getLangString("totalSheetsDefault");
+                if(sheetsContainerEl) sheetsContainerEl.innerHTML = '';
+                lastCalculatedSheetsData = null;
+                return;
+            }
+            
+            const sheetL_cm_modal = convertToCm(modalSheetLengthEl.value, currentUnit);
+            const sheetW_cm_modal = convertToCm(modalSheetWidthEl.value, currentUnit);
+            const sheetHasGrain_modal = modalSheetHasGrainEl.checked;
+            const sheetName_modal = modalSheetNameEl.value.trim();
+
+
+            if (isNaN(sheetL_cm_modal) || sheetL_cm_modal <= 0 || isNaN(sheetW_cm_modal) || sheetW_cm_modal <= 0) {
+                alert(getLangString("alert_invalidSheetSize"));
+                if(wastageSectionEl) wastageSectionEl.style.display = 'none';
+                lastCalculatedSheetsData = null;
+                return;
+            }
+            if (loadingIndicatorEl) {
+                loadingIndicatorEl.querySelector('div').textContent = getLangString('calculatingLayout');
+                loadingIndicatorEl.style.display = 'flex';
+            }
+            if (layoutWorker) layoutWorker.terminate();
+            try {
+                const blob = new Blob([workerCode], { type: 'application/javascript' });
+                const workerUrl = URL.createObjectURL(blob);
+                layoutWorker = new Worker(workerUrl);
+                URL.revokeObjectURL(workerUrl);
+            } catch (e) {
+                console.error("Error creating worker from blob:", e);
+                if (loadingIndicatorEl) loadingIndicatorEl.style.display = 'none';
+                alert(getLangString("alert_workerCreationError")); 
+                return;
+            }
+
+            layoutWorker.onmessage = function(e) {
+                const { type, result, error, progress, usedOffcutIds } = e.data; 
+                if (type === 'LAYOUT_COMPLETE') {
+                    if (loadingIndicatorEl) loadingIndicatorEl.style.display = 'none';
+                    lastCalculatedSheetsData = result;
+                    displayLayoutOnCanvas(lastCalculatedSheetsData); 
+                    if (usedOffcutIds && usedOffcutIds.length > 0) {
+                        markOffcutsAsUsed(usedOffcutIds);
+                    }
+                    saveStateToHistory(); 
+                    if (layoutWorker) layoutWorker.terminate();
+                    layoutWorker = null;
+                } else if (type === 'LAYOUT_ERROR') {
+                    if (loadingIndicatorEl) loadingIndicatorEl.style.display = 'none';
+                    console.error("Layout Worker Error:", error);
+                    alert(getLangString("alert_layoutHang") + "\n" + error); 
+                     if (result && Array.isArray(result)) { 
+                        lastCalculatedSheetsData = result;
+                        displayLayoutOnCanvas(lastCalculatedSheetsData);
+                    }
+                     if (usedOffcutIds && usedOffcutIds.length > 0) { 
+                        markOffcutsAsUsed(usedOffcutIds);
+                    }
+                    if (layoutWorker) layoutWorker.terminate();
+                    layoutWorker = null;
+
+                } else if (type === 'LAYOUT_PROGRESS') {
+                    if(loadingIndicatorEl && progress) {
+                         loadingIndicatorEl.querySelector('div').textContent = `${getLangString('calculatingLayout')} (${progress.sheetsProcessed} ${getLangString('sheetsTitle')})`;
+                    }
+                }
+            };
+            layoutWorker.onerror = function(errorEvent) {
+                if (loadingIndicatorEl) loadingIndicatorEl.style.display = 'none';
+                console.error("Worker error:", errorEvent.message, errorEvent);
+                alert(getLangString("alert_layoutHang") + "\nWorker error: " + errorEvent.message);
+                if (layoutWorker) layoutWorker.terminate();
+                layoutWorker = null;
+            };
+            let individualPieces = [];
+            let pieceInstanceCounters = {};
+            pieces.forEach(p_orig => {
+                if (!pieceInstanceCounters[p_orig.id]) pieceInstanceCounters[p_orig.id] = 0;
+                for (let i = 0; i < p_orig.quantity; i++) {
+                    pieceInstanceCounters[p_orig.id]++;
+                    individualPieces.push({ ...p_orig, originalId: p_orig.id, uniqueId: `${p_orig.id}-${pieceInstanceCounters[p_orig.id]}`, instanceNum: pieceInstanceCounters[p_orig.id], });
+                }
+            });
+            
+            switch (strategy) {
+                case 'sortPiecesByWidthDesc': individualPieces.sort((a, b) => b.width - a.width || b.area - a.area); break;
+                case 'sortPiecesByHeightDesc': individualPieces.sort((a, b) => b.length - a.length || b.area - a.area); break;
+                case 'sortPiecesByAreaAsc': individualPieces.sort((a, b) => a.area - b.area); break;
+                case 'sortPiecesByPerimeterDesc': individualPieces.sort((a, b) => ((b.width + b.length) - (a.width + a.length)) || b.area - a.area); break;
+                case 'sortPiecesByLongestSideDesc': individualPieces.sort((a, b) => (Math.max(b.width, b.length) - Math.max(a.width, a.length)) || b.area - a.area); break;
+                case 'sortPiecesByShortestSideAsc': individualPieces.sort((a, b) => (Math.min(a.width, a.length) - Math.min(b.width, b.length)) || a.area - b.area); break;
+                default: individualPieces.sort((a, b) => b.area - a.area); break;
+            }
+
+            let stockItemsToWorker = [];
+            stockItemsToWorker.push({
+                width: sheetW_cm_modal, length: sheetL_cm_modal,
+                name: sheetName_modal || `${getLangString("sheetTitlePrefix")} ${convertFromCm(sheetW_cm_modal, currentUnit)}x${convertFromCm(sheetL_cm_modal, currentUnit)}`,
+                hasGrain: sheetHasGrain_modal, isOffcut: false, originalStockId: `STD-${sheetW_cm_modal}x${sheetL_cm_modal}`
+            });
+
+            if (useOffcutsCheckboxEl && useOffcutsCheckboxEl.checked) {
+                // currentCalculationOffcuts का उपयोग करें, जो promptForOffcutSelection में सेट होता है
+                if (currentCalculationOffcuts && currentCalculationOffcuts.length > 0) {
+                     stockItemsToWorker.push(...currentCalculationOffcuts);
+                }
+                stockItemsToWorker.sort((a,b) => (a.width * a.length) - (b.width * b.length));
+            }
+
+
+            const workerData = { 
+                pieces: JSON.parse(JSON.stringify(individualPieces)), 
+                stockItems: stockItemsToWorker, 
+                kerfWidth: KERF_WIDTH_CM, 
+                strategy: strategy 
+            };
+            layoutWorker.postMessage({ type: 'CALCULATE_LAYOUT', data: workerData });
+        }
+        
+        function displayLayoutOnCanvas(sheets) { 
+            if (!sheetsContainerEl) return;
+            sheetsContainerEl.innerHTML = ''; 
+            if(usefulOffcutsDisplayListContainerEl) usefulOffcutsDisplayListContainerEl.innerHTML = '';
+            if(otherSmallWastageContainerEl) otherSmallWastageContainerEl.innerHTML = '';
+            if(usefulOffcutsSummaryEl) usefulOffcutsSummaryEl.innerHTML = '';
+
+
+            if (!sheets || sheets.length === 0) {
+                if(resultsSummaryEl) resultsSummaryEl.textContent = getLangString("totalSheetsDefault");
+                if(wastageSectionEl) wastageSectionEl.style.display = 'none';
+                if(totalWastagePiecesSummaryEl) totalWastagePiecesSummaryEl.style.display = 'none';
+                if(usefulOffcutsSummaryEl) usefulOffcutsSummaryEl.style.display = 'none';
+                return;
+            }
+            if(resultsSummaryEl) resultsSummaryEl.textContent = getLangString("totalSheetsResult", {count: sheets.length});
+            
+            let overallTotalAreaUsed_cm2 = 0;
+            let allGeneratedFreeRects = []; 
+            const dpr = window.devicePixelRatio || 1;
+
+            sheets.forEach(sheet => {
+                if (!sheet || sheet.placedPieces.length === 0) return; 
+                const wrapper = document.createElement('div');
+                wrapper.className = 'sheet-wrapper';
+                const titleEl = document.createElement('h3');
+                titleEl.textContent = `${sheet.name || getLangString("sheetTitlePrefix")} #${sheet.id} (${convertFromCm(sheet.width, currentUnit)}x${convertFromCm(sheet.height, currentUnit)}) ${sheet.hasGrain ? getLangString("grainedSheetSuffix") : ""}`;
+                wrapper.appendChild(titleEl);
+
+                const canvas = document.createElement('canvas');
+                const logicalWidth = sheet.width * BASE_CANVAS_SCALE;
+                const logicalHeight = sheet.height * BASE_CANVAS_SCALE;
+                canvas.width = Math.round(logicalWidth * dpr);
+                canvas.height = Math.round(logicalHeight * dpr);
+                canvas.style.width = `${logicalWidth}px`;
+                canvas.style.height = `${logicalHeight}px`;
+                wrapper.appendChild(canvas);
+
+                const ctx = canvas.getContext('2d');
+                ctx.scale(dpr, dpr);
+                ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+                ctx.strokeStyle = '#bdc3c7'; 
+                ctx.lineWidth = 1;
+                ctx.strokeRect(0.5, 0.5, logicalWidth - 1, logicalHeight - 1); 
+
+                const showGrain = sheet.hasGrain && currentGrainColor !== 'none';
+                if (showGrain) {
+                    ctx.strokeStyle = currentGrainColor; 
+                    ctx.lineWidth = 0.3; 
+                    const numGrains = Math.floor(logicalWidth / (BASE_CANVAS_SCALE * 0.8)); 
+                    for (let i = 0; i < numGrains; i++) {
+                        let xPos = (i / numGrains) * logicalWidth + (Math.random() - 0.5) * 4; 
+                        if (xPos < 0) xPos = 0; if (xPos > logicalWidth) xPos = logicalWidth;
+                        ctx.beginPath();
+                        ctx.moveTo(xPos, 0);
+                        let midY1 = logicalHeight * 0.25 + (Math.random() - 0.5) * 5;
+                        let midX1Offset = (Math.random() - 0.5) * 3;
+                        let midY2 = logicalHeight * 0.75 + (Math.random() - 0.5) * 5;
+                        let midX2Offset = (Math.random() - 0.5) * 3;
+                        ctx.bezierCurveTo(xPos + midX1Offset, midY1, xPos + midX2Offset, midY2, xPos + (Math.random() - 0.5) * 4, logicalHeight);
+                        ctx.stroke();
+                    }
+                }
+                
+                sheet.placedPieces.forEach(p => {
+                    if (!pieceColors[p.originalId]) pieceColors[p.originalId] = getRandomColor();
+                    ctx.fillStyle = pieceColors[p.originalId].replace('hsl', 'hsla').replace(')', ', 0.75)');
+                    const pieceX_logical = p.x * BASE_CANVAS_SCALE;
+                    const pieceY_logical = p.y * BASE_CANVAS_SCALE;
+                    const pieceWidth_logical = p.placedWidth * BASE_CANVAS_SCALE;
+                    const pieceHeight_logical = p.placedLength * BASE_CANVAS_SCALE;
+                    ctx.fillRect(pieceX_logical, pieceY_logical, pieceWidth_logical, pieceHeight_logical);
+                    ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 0.5;
+                    ctx.strokeRect(pieceX_logical + 0.5, pieceY_logical + 0.5, pieceWidth_logical - 1, pieceHeight_logical - 1);
+                    overallTotalAreaUsed_cm2 += p.placedWidth * p.placedLength; 
+                });
+                
+                 sheet.placedPieces.forEach(p => { 
+                    ctx.fillStyle = '#101d2c';
+                    const baseFontSizePt = BASE_CANVAS_SCALE * 3.0;
+                    let dynamicFontSize;
+                    const minAllowedLogicalFontSize = 4.0;
+                    const displayedWidth = convertFromCm(p.isRotated ? p.placedLength : p.placedWidth, currentUnit);
+                    const displayedLength = convertFromCm(p.isRotated ? p.placedWidth : p.placedLength, currentUnit);
+                    const pieceName = `${p.name || ""}`;
+                    const pieceInstance = `#${p.instanceNum}`;
+                    const pieceDimensions = `${displayedWidth}×${displayedLength}${p.isRotated ? '(R)' : ''}`;
+                    const pieceX_logical = p.x * BASE_CANVAS_SCALE;
+                    const pieceY_logical = p.y * BASE_CANVAS_SCALE;
+                    const pieceWidth_logical = p.placedWidth * BASE_CANVAS_SCALE;
+                    const pieceHeight_logical = p.placedLength * BASE_CANVAS_SCALE;
+                    let textX = pieceX_logical + pieceWidth_logical / 2;
+                    let textY = pieceY_logical + pieceHeight_logical / 2;
+                    let textAlign = 'center'; let textBaseline = 'middle'; let textAngle = 0;
+                    let fontStyle; let currentFontSize;
+                    const estLineHeightFactor = 1.3;
+                    const estMaxCharsForThreeLines = Math.max(pieceName.length, pieceInstance.length, pieceDimensions.length, 3);
+                    const requiredWidthForThreeLines = estMaxCharsForThreeLines * baseFontSizePt * 0.62;
+                    const requiredHeightForThreeLines = baseFontSizePt * estLineHeightFactor * 3.2;
+
+                    if (pieceWidth_logical > requiredWidthForThreeLines && pieceHeight_logical > requiredHeightForThreeLines) {
+                        dynamicFontSize = Math.min(baseFontSizePt, pieceHeight_logical / (3.5 * estLineHeightFactor), pieceWidth_logical / (estMaxCharsForThreeLines * 0.65));
+                        currentFontSize = Math.max(minAllowedLogicalFontSize, Math.round(dynamicFontSize));
+                        fontStyle = `bold ${currentFontSize}px Arial`;
+                        const lineHeight = currentFontSize * estLineHeightFactor;
+                        ctx.save(); ctx.textAlign = textAlign; ctx.textBaseline = textBaseline; ctx.font = fontStyle; ctx.fillStyle = ctx.fillStyle; ctx.translate(textX, textY - lineHeight); ctx.rotate(0); ctx.fillText(pieceName, 0, 0); ctx.restore();  
+                        ctx.save(); ctx.textAlign = textAlign; ctx.textBaseline = textBaseline; ctx.font = fontStyle; ctx.fillStyle = ctx.fillStyle; ctx.translate(textX, textY); ctx.rotate(0); ctx.fillText(pieceInstance, 0, 0); ctx.restore();  
+                        ctx.save(); ctx.textAlign = textAlign; ctx.textBaseline = textBaseline; ctx.font = fontStyle; ctx.fillStyle = ctx.fillStyle; ctx.translate(textX, textY + lineHeight); ctx.rotate(0); ctx.fillText(pieceDimensions, 0, 0); ctx.restore();  
+                    } else {
+                        const singleLineText = `${pieceName}/${pieceInstance}/${pieceDimensions}`;
+                        dynamicFontSize = Math.min(baseFontSizePt * 0.9, pieceHeight_logical / (1.5 * estLineHeightFactor), pieceWidth_logical / (singleLineText.length * 0.58));
+                        currentFontSize = Math.max(minAllowedLogicalFontSize, Math.round(dynamicFontSize));
+                        if (currentFontSize >= minAllowedLogicalFontSize && pieceWidth_logical > (singleLineText.length * currentFontSize * 0.55) ) {
+                            fontStyle = `bold ${currentFontSize}px Arial`;
+                             ctx.save(); ctx.textAlign = textAlign; ctx.textBaseline = textBaseline; ctx.font = fontStyle; ctx.fillStyle = ctx.fillStyle; ctx.translate(textX, textY); ctx.rotate(0); ctx.fillText(singleLineText, 0, 0); ctx.restore();  
+                        }
+                        else if (pieceHeight_logical > (singleLineText.length * minAllowedLogicalFontSize * 0.6) && pieceWidth_logical > minAllowedLogicalFontSize * 1.8) {
+                            dynamicFontSize = Math.min(baseFontSizePt * 0.8, pieceWidth_logical / (1.8 * estLineHeightFactor), pieceHeight_logical / (singleLineText.length * 0.6));
+                            currentFontSize = Math.max(minAllowedLogicalFontSize, Math.round(dynamicFontSize));
+                            fontStyle = `bold ${currentFontSize}px Arial`; textAngle = -90;
+                            ctx.save(); ctx.textAlign = textAlign; ctx.textBaseline = textBaseline; ctx.font = fontStyle; ctx.fillStyle = ctx.fillStyle; ctx.translate(textX, textY); ctx.rotate(textAngle * Math.PI / 180); ctx.fillText(singleLineText, 0, 0); ctx.restore();  
+                        }
+                        else if (pieceWidth_logical > (pieceInstance.length * minAllowedLogicalFontSize * 0.6) && pieceHeight_logical > minAllowedLogicalFontSize * 1.5) {
+                             dynamicFontSize = Math.min(baseFontSizePt * 0.7, pieceHeight_logical / (1.5 * estLineHeightFactor), pieceWidth_logical / (pieceInstance.length * 0.6));
+                             currentFontSize = Math.max(minAllowedLogicalFontSize, Math.round(dynamicFontSize));
+                             fontStyle = `bold ${currentFontSize}px Arial`;
+                             ctx.save(); ctx.textAlign = textAlign; ctx.textBaseline = textBaseline; ctx.font = fontStyle; ctx.fillStyle = ctx.fillStyle; ctx.translate(textX, textY); ctx.rotate(0); ctx.fillText(pieceInstance, 0, 0); ctx.restore();  
+                        }
+                    }
+                });
+
+                // फ्री रेक्ट्स पर टेक्स्ट (यदि आवश्यक हो)
+                ctx.strokeStyle = 'rgba(52, 152, 219, 0.5)'; ctx.lineWidth = 0.3;
+                 if (sheet.freeRects) {
+                    sheet.freeRects.forEach(rect => {
+                        allGeneratedFreeRects.push({ ...rect, sourceSheetId: sheet.id, sourceSheetName: sheet.name });
+                        if (rect.width > 0.1 && rect.height > 0.1) {
+                            const rectX_logical = rect.x * BASE_CANVAS_SCALE;
+                            const rectY_logical = rect.y * BASE_CANVAS_SCALE;
+                            const rectWidth_logical = rect.width * BASE_CANVAS_SCALE;
+                            const rectHeight_logical = rect.height * BASE_CANVAS_SCALE;
+                            ctx.strokeRect(rectX_logical + 0.5, rectY_logical + 0.5, rectWidth_logical - 1, rectHeight_logical - 1);
+                            
+                            const MIN_TEXT_FREE_WIDTH_LOGICAL = 20 * BASE_CANVAS_SCALE * 0.35; // इन्हें पहले से परिभाषित करें
+                            const MIN_TEXT_FREE_HEIGHT_LOGICAL = 10 * BASE_CANVAS_SCALE * 0.35;
+                            if (rectWidth_logical >= MIN_TEXT_FREE_WIDTH_LOGICAL && rectHeight_logical >= MIN_TEXT_FREE_HEIGHT_LOGICAL) {
+                                ctx.fillStyle = 'rgba(41, 128, 185, 0.7)';
+                                const baseFontSizePt_free = Math.min(5.5, rectHeight_logical * 0.3, rectWidth_logical * 0.15);
+                                let dynamicFontSize_free = Math.max(BASE_CANVAS_SCALE * 1.5, baseFontSizePt_free);
+                                ctx.font = `${Math.round(dynamicFontSize_free)}px Arial`;
+                                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                                const text = `${convertFromCm(rect.width, currentUnit)}×${convertFromCm(rect.height, currentUnit)}`;
+                                ctx.fillText(text, rectX_logical + rectWidth_logical / 2, rectY_logical + rectHeight_logical / 2);
+                            }
+                        }
+                    });
+                }
+
+
+                const cuttingListDiv = document.createElement('div'); cuttingListDiv.className = 'cutting-list';
+                const cuttingListTitleEl = document.createElement('h4'); cuttingListTitleEl.textContent = getLangString('cuttingListTitle');
+                cuttingListDiv.appendChild(cuttingListTitleEl);
+                const ul = document.createElement('ul');
+                sheet.placedPieces.forEach(p => { 
+                    const li = document.createElement('li');
+                    const checkbox = document.createElement('input'); checkbox.type = 'checkbox';
+                    const checkboxId = `cut-s${sheet.id}-p${p.uniqueId}`; checkbox.id = checkboxId;
+                    checkbox.checked = cuttingListCheckboxStates[checkboxId] || false;
+                    checkbox.onchange = () => { cuttingListCheckboxStates[checkboxId] = checkbox.checked; saveCuttingListCheckboxStates(); };
+                    li.appendChild(checkbox);
+                    const label = document.createElement('label'); label.htmlFor = checkbox.id;
+                    const pieceWDisplay = convertFromCm(p.isRotated ? p.placedLength : p.placedWidth, currentUnit);
+                    const pieceLDisplay = convertFromCm(p.isRotated ? p.placedWidth : p.placedLength, currentUnit);
+                    label.innerHTML = ` ${p.name || ""} #${p.instanceNum} <span style="color: #007bff;">&rarr;</span> ${pieceWDisplay} × ${pieceLDisplay} ${currentUnit} ${p.isRotated ? '(R)' : ''}`;
+                    li.appendChild(label);
+                    ul.appendChild(li);
+                });
+                cuttingListDiv.appendChild(ul);
+                const cuttingListSummary = document.createElement('div'); cuttingListSummary.className = 'cutting-list-summary';
+                cuttingListSummary.textContent = getLangString("totalPiecesOnSheet", {count: sheet.placedPieces.length});
+                cuttingListDiv.appendChild(cuttingListSummary);
+                wrapper.appendChild(cuttingListDiv);
+
+                if(sheetsContainerEl) sheetsContainerEl.appendChild(wrapper);
+            });
+            processAndDisplayWastage(allGeneratedFreeRects, sheets, overallTotalAreaUsed_cm2); 
+        }
+
+        function processAndDisplayWastage(allFreeRects, calculatedSheets, totalAreaUsedByPiecesCm2) { 
+            if (!usefulOffcutsSummaryEl || !totalWastagePiecesSummaryEl || !wastageOverallStatsEl || !usefulOffcutsDisplayListContainerEl || !otherSmallWastageContainerEl) {
+                console.error("Wastage display elements not found for processAndDisplayWastage!");
+                if (wastageSectionEl) wastageSectionEl.style.display = 'none';
+                return;
+            }
+            
+            wastageOverallStatsEl.innerHTML = '';
+            usefulOffcutsSummaryEl.innerHTML = ''; 
+            totalWastagePiecesSummaryEl.innerHTML = '';
+            usefulOffcutsDisplayListContainerEl.innerHTML = '';
+            otherSmallWastageContainerEl.innerHTML = '';
+
+
+            if (!calculatedSheets || calculatedSheets.length === 0) { 
+                if (wastageSectionEl) wastageSectionEl.style.display = 'none';
+                return;
+            }
+
+            let totalSheetAreaCm2 = 0;
+            calculatedSheets.forEach(s => totalSheetAreaCm2 += s.width * s.height); 
+            
+            let totalFreeAreaFromRectsCm2 = 0;
+            let usefulOffcutsGeneratedThisRun = [];
+            let allNonUsefulRectsForDisplay = []; 
+
+            allFreeRects.forEach(rect => {
+                if (typeof rect.width !== 'number' || typeof rect.height !== 'number' || isNaN(rect.width) || isNaN(rect.height)) {
+                    return; 
+                }
+                totalFreeAreaFromRectsCm2 += rect.width * rect.height;
+                const isUseful = (rect.width >= offcutSettings.minWidth && rect.height >= offcutSettings.minLength) ||
+                                 (rect.height >= offcutSettings.minWidth && rect.width >= offcutSettings.minLength);
+                
+                if (isUseful) {
+                    let w = rect.width;
+                    let l = rect.height;
+                    if (!modalSheetHasGrainEl.checked && w > l) { [w, l] = [l, w]; }
+
+                    usefulOffcutsGeneratedThisRun.push({
+                        tempId: `TEMP-${rect.sourceSheetId}-${Math.random().toString(36).substr(2, 5)}`, 
+                        width: parseFloat(w.toFixed(2)),
+                        length: parseFloat(l.toFixed(2)),
+                        area: parseFloat((w * l).toFixed(2)),
+                        sourceSheetId: rect.sourceSheetId,
+                        sourceSheetName: rect.sourceSheetName
+                    });
+                } else {
+                    if (rect.width > 0.1 && rect.height > 0.1) { 
+                        allNonUsefulRectsForDisplay.push(rect);
+                    }
+                }
+            });
+
+            let contentAddedToWastageSection = false;
+
+            const overallPercentageWastage = totalSheetAreaCm2 > 0 ? (totalFreeAreaFromRectsCm2 / totalSheetAreaCm2) * 100 : 0;
+            const totalAreaUsedDisplay = convertFromCmForArea(totalAreaUsedByPiecesCm2, currentUnit); 
+            const totalFreeAreaDisplay = convertFromCmForArea(totalFreeAreaFromRectsCm2, currentUnit);
+
+            wastageOverallStatsEl.innerHTML = `
+                <li>${getLangString("totalAreaUsed")} <strong>${totalAreaUsedDisplay.toFixed(2)} ${currentUnit}²</strong></li>
+                <li>${getLangString("totalFreeArea")} <strong>${totalFreeAreaDisplay.toFixed(2)} ${currentUnit}²</strong></li>
+                <li>${getLangString("wastagePercentage")} <strong>${overallPercentageWastage.toFixed(1)}%</strong></li>
+            `;
+            contentAddedToWastageSection = true;
+
+            if (usefulOffcutsGeneratedThisRun.length > 0) {
+                usefulOffcutsSummaryEl.style.display = 'flex'; 
+                usefulOffcutsSummaryEl.style.alignItems = 'center';
+
+                const summaryTextEl = document.createElement('span');
+                summaryTextEl.textContent = getLangString("totalUsefulOffcutsGenerated", { count: usefulOffcutsGeneratedThisRun.length }) + " ";
+                
+                const saveButton = document.createElement('button');
+                saveButton.textContent = getLangString("saveUsefulOffcutsBtn"); 
+                saveButton.onclick = () => saveGeneratedOffcuts(usefulOffcutsGeneratedThisRun);
+                saveButton.style.marginLeft = "10px";
+                saveButton.style.fontSize = "0.9em";
+                saveButton.style.padding = "5px 10px";
+
+
+                usefulOffcutsSummaryEl.appendChild(summaryTextEl); 
+                usefulOffcutsSummaryEl.appendChild(saveButton); 
+
+                const ul = document.createElement('ul');
+                // ul.style.marginTop = '5px'; // CSS में मैनेज करें
+                usefulOffcutsGeneratedThisRun.sort((a,b) => b.area - a.area).forEach(offcut => { 
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span class="free-rect-dim">${convertFromCm(offcut.width, currentUnit)} × ${convertFromCm(offcut.length, currentUnit)} ${currentUnit}</span> (from: ${offcut.sourceSheetName})`;
+                    ul.appendChild(li);
+                });
+                usefulOffcutsDisplayListContainerEl.appendChild(ul);
+                contentAddedToWastageSection = true;
+            } else {
+                usefulOffcutsSummaryEl.textContent = getLangString("noUsefulOffcutsGenerated"); 
+                usefulOffcutsSummaryEl.style.display = 'block'; 
+            }
+            
+            if (usefulOffcutsDisplayListContainerEl.children.length > 0 && allNonUsefulRectsForDisplay.length > 0) {
+                 // यदि उपयोगी ऑफकट के बाद छोटे वेस्टेज हैं तो HR की आवश्यकता नहीं, क्योंकि HTML में पहले से है
+                // const hr = document.createElement('hr');
+                // hr.style.margin = "10px 0";
+                // usefulOffcutsDisplayListContainerEl.appendChild(hr); 
+            }
+
+            if(allNonUsefulRectsForDisplay.length > 0){
+                const p = document.createElement('p');
+                p.textContent = getLangString("otherSmallWastageLabel"); 
+                p.style.fontWeight = 'bold';
+                p.style.marginTop = '15px'; 
+                otherSmallWastageContainerEl.appendChild(p);
+                const ulSmall = document.createElement('ul');
+                 allNonUsefulRectsForDisplay.sort((a,b)=>b.area-a.area).slice(0,10).forEach(rect => { 
+                    const li = document.createElement('li');
+                    // li.style.backgroundColor = '#fff9f9'; // CSS में मैनेज करें
+                    li.innerHTML = `<span class="free-rect-dim">${convertFromCm(rect.width, currentUnit)} × ${convertFromCm(rect.height, currentUnit)} ${currentUnit}</span> (from: ${rect.sourceSheetName})`;
+                    ulSmall.appendChild(li);
+                });
+                otherSmallWastageContainerEl.appendChild(ulSmall);
+                contentAddedToWastageSection = true;
+            }
+            
+            const totalNonUsefulRectsCount = allNonUsefulRectsForDisplay.length;
+            if(totalWastagePiecesSummaryEl && totalNonUsefulRectsCount > 0) { 
+                totalWastagePiecesSummaryEl.textContent = getLangString("totalWastagePiecesOverall", {count: totalNonUsefulRectsCount }); 
+                totalWastagePiecesSummaryEl.style.display = 'block';
+            } else if (totalWastagePiecesSummaryEl) {
+                 totalWastagePiecesSummaryEl.style.display = 'none';
+            }
+
+            if (contentAddedToWastageSection || usefulOffcutsSummaryEl.style.display !== 'none') { 
+                 if(wastageSectionEl) wastageSectionEl.style.display = 'block';
+            } else {
+                 if(wastageSectionEl) wastageSectionEl.style.display = 'none';
+            }
+        } 
+        
+        function saveGeneratedOffcuts(offcutsToSaveDetails) {
+            if (!offcutsToSaveDetails || offcutsToSaveDetails.length === 0) {
+                alert(getLangString("noNewOffcutsToSaveAlert"));
+                return;
+            }
+        
+            const batchId = `BATCH-${Date.now()}`;
+            const currentSheetNameForBatch = modalSheetNameEl.value.trim() || (getLangString("unnamedSheetLabel") || "अनाम शीट");
+        
+            const newBatch = {
+                batchId: batchId,
+                dateTime: new Date().toLocaleString(currentLanguage === 'hi' ? 'hi-IN' : 'en-US'),
+                sourceSheetNameForBatch: currentSheetNameForBatch,
+                offcutsInBatch: [],
+                isBatchAvailable: true 
+            };
+        
+            let newOffcutsActuallyAddedToStorage = 0;
+        
+            offcutsToSaveDetails.forEach(newOffcutDetail => {
+                const alreadyExistsInCurrentBatch = newBatch.offcutsInBatch.some(existing => 
+                    Math.abs(existing.width - newOffcutDetail.width) < 0.01 &&
+                    Math.abs(existing.length - newOffcutDetail.length) < 0.01 &&
+                    existing.sourceSheetNameFromCalc === newOffcutDetail.sourceSheetName 
+                );
+
+                let existsInOldBatches = false;
+                for(const batch of savedOffcuts){
+                    if(batch.offcutsInBatch.some(existing => 
+                        Math.abs(existing.width - newOffcutDetail.width) < 0.01 &&
+                        Math.abs(existing.length - newOffcutDetail.length) < 0.01 &&
+                        existing.isIndividuallyAvailable && 
+                        existing.sourceSheetNameFromCalc === newOffcutDetail.sourceSheetName
+                     )){
+                        existsInOldBatches = true;
+                        break;
+                    }
+                }
+
+                if (!alreadyExistsInCurrentBatch && !existsInOldBatches) {
+                    newBatch.offcutsInBatch.push({
+                        id: `OFFCUT-${newOffcutDetail.sourceSheetId}-${Math.random().toString(36).substr(2, 5)}`,
+                        width: newOffcutDetail.width,
+                        length: newOffcutDetail.length,
+                        area: newOffcutDetail.area,
+                        dateAdded: new Date().toISOString(), 
+                        isIndividuallyAvailable: true, 
+                        sourceSheetIdFromCalc: newOffcutDetail.sourceSheetId, 
+                        sourceSheetNameFromCalc: newOffcutDetail.sourceSheetName 
+                    });
+                    newOffcutsActuallyAddedToStorage++;
+                }
+            });
+        
+            if (newOffcutsActuallyAddedToStorage > 0) {
+                savedOffcuts.push(newBatch);
+                localStorage.setItem(STORAGE_KEY_SAVED_OFFCUTS, JSON.stringify(savedOffcuts));
+                alert(getLangString("usefulOffcutsSavedAlert", { count: newOffcutsActuallyAddedToStorage })); 
+                if (offcutsLibraryModalEl && offcutsLibraryModalEl.style.display === 'flex') {
+                    renderOffcutsList(); 
+                }
+            } else {
+                alert(getLangString("noNewOffcutsToSaveAlert")); 
+            }
+        
+            if (usefulOffcutsSummaryEl && usefulOffcutsSummaryEl.querySelector('button')) {
+                 usefulOffcutsSummaryEl.querySelector('button').disabled = true;
+                 usefulOffcutsSummaryEl.querySelector('button').textContent = getLangString("offcutsSavedBtn");
+            }
+        }
+        
+        function prepareAndPrint() {
+            if (!lastCalculatedSheetsData && (!pieces || pieces.length === 0)) {
+                alert(getLangString("alert_noDataToExport"));
+                return;
+            }
+            if (!lastCalculatedSheetsData && pieces && pieces.length > 0) {
+                const confirmPrint = currentLanguage === 'hi' ? 
+                    confirm("कोई लेआउट गणना नहीं की गई है, क्या आप केवल पीस लिस्ट प्रिंट करना चाहते हैं?") : 
+                    confirm("No layout calculated, do you want to print only the piece list?");
+                if (!confirmPrint) return;
+            }
+            if (lastCalculatedSheetsData) { 
+                displayLayoutOnCanvas(lastCalculatedSheetsData);
+            }
+            window.print();
+        }
+
+        function initializeApp() {
+            cacheDOMElements();
+            partWidthEl.step = "any"; partLengthEl.step = "any";
+            modalSheetWidthEl.step = "any"; modalSheetLengthEl.step = "any";
+            minOffcutWidthEl.step = "any"; minOffcutLengthEl.step = "any";
+
+            loadSavedOffcuts(); 
+            loadOffcutSettings(); 
+
+            const savedGrainColor = localStorage.getItem(STORAGE_KEY_GRAIN_COLOR);
+            if (savedGrainColor) {
+                currentGrainColor = savedGrainColor;
+                if (modalGrainColorEl) modalGrainColorEl.value = savedGrainColor;
+            } else {
+                if (modalGrainColorEl) modalGrainColorEl.value = currentGrainColor; 
+            }
+             if(modalGrainColorEl) {
+                modalGrainColorEl.addEventListener('change', function() {
+                    currentGrainColor = this.value;
+                    localStorage.setItem(STORAGE_KEY_GRAIN_COLOR, currentGrainColor);
+                    if (lastCalculatedSheetsData) {
+                        displayLayoutOnCanvas(lastCalculatedSheetsData);
+                    }
+                });
+            }
+
+            const savedFittingStrategy = localStorage.getItem(STORAGE_KEY_FITTING_STRATEGY);
+            if (savedFittingStrategy) {
+                currentFittingStrategy = savedFittingStrategy;
+                if (fittingStrategySelectorEl) fittingStrategySelectorEl.value = savedFittingStrategy;
+            } else {
+                 if (fittingStrategySelectorEl) fittingStrategySelectorEl.value = currentFittingStrategy;
+            }
+            if(fittingStrategySelectorEl){
+                fittingStrategySelectorEl.addEventListener('change', function() {
+                    currentFittingStrategy = this.value;
+                    localStorage.setItem(STORAGE_KEY_FITTING_STRATEGY, currentFittingStrategy);
+                });
+            }
+            if(useOffcutsCheckboxEl){ 
+                useOffcutsCheckboxEl.addEventListener('change', function() {
+                    if (this.checked) {
+                        promptForOffcutSelection();
+                    } else {
+                        currentCalculationOffcuts = [];
+                    }
+                });
+            }
+
+
+            if(modalSheetLengthEl) modalSheetLengthEl.addEventListener('change', () => {isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
+            if(modalSheetWidthEl) modalSheetWidthEl.addEventListener('change', () => {isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
+            if(modalSheetHasGrainEl) modalSheetHasGrainEl.addEventListener('change', () => {isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
+            if(modalSheetNameEl) modalSheetNameEl.addEventListener('input', () => {isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); }); 
+            if(jsonMenuEl && document.body) {
+                 document.body.addEventListener('click', function(event) {
+                    if (jsonMenuEl && jsonMenuEl.style.display === 'block' && !jsonMenuEl.contains(event.target) && event.target.id !== 'jsonIcon') {
+                        closeJsonMenu();
+                    }
+                });
+            }
+            loadProjectsFromStorage(); 
+            loadHistoryFromStorage();
+            loadCuttingListCheckboxStates();
+            const savedLang = localStorage.getItem(STORAGE_KEY_LANGUAGE) || 'hi';
+            const savedUnit = localStorage.getItem(STORAGE_KEY_CURRENT_UNIT) || 'cm';
+            currentUnit = savedUnit; 
+            updateUnitDisplaysDOM(currentUnit); 
+            
+            const settingsStr = localStorage.getItem(STORAGE_KEY_SETTINGS); 
+            if (settingsStr) {
+                try {
+                    const settings = JSON.parse(settingsStr);
+                    if(modalSheetWidthEl) modalSheetWidthEl.value = convertFromCm(settings.sheetWidth, currentUnit) || "";
+                    if(modalSheetLengthEl) modalSheetLengthEl.value = convertFromCm(settings.sheetLength, currentUnit) || "";
+                    if(modalSheetHasGrainEl) modalSheetHasGrainEl.checked = typeof settings.hasGrain === 'boolean' ? settings.hasGrain : true;
+                    if(modalSheetNameEl) modalSheetNameEl.value = settings.sheetName || ""; 
+                } catch (e) {
+                    console.error("Error parsing settings from localStorage:", e);
+                }
+            } 
+            if(!modalSheetWidthEl.value) modalSheetWidthEl.value = convertFromCm(122, currentUnit);
+            if(!modalSheetLengthEl.value) modalSheetLengthEl.value = convertFromCm(244, currentUnit);
+            if(modalSheetHasGrainEl.checked === undefined) modalSheetHasGrainEl.checked = true;
+
+            loadOffcutSettings(); 
+
+            const piecesStr = localStorage.getItem(STORAGE_KEY_PIECES);
+            if (piecesStr) {
+                try { pieces = JSON.parse(piecesStr); } catch (e) { console.error("Error parsing pieces from localStorage:", e); pieces = []; }
+            }
+            const idCounterStr = localStorage.getItem(STORAGE_KEY_ID_COUNTER);
+            pieceIdCounter = idCounterStr ? parseInt(idCounterStr) : 0;
+             if (pieces && pieces.length > 0 && pieceIdCounter === 0) { 
+                const maxId = pieces.reduce((max, p) => (typeof p.id === 'number' && p.id > max ? p.id : max), -1);
+                pieceIdCounter = maxId >= 0 ? maxId + 1 : pieces.length;
+            }
+            renderPiecesTable();
+            setLanguage(savedLang); 
+            clearPieceInputs(); 
+            if(resultsSummaryEl) resultsSummaryEl.textContent = getLangString("totalSheetsDefault");
+            if(wastageSectionEl) wastageSectionEl.style.display = 'none';
+            if(totalWastagePiecesSummaryEl) totalWastagePiecesSummaryEl.style.display = 'none';
+            if(usefulOffcutsSummaryEl) usefulOffcutsSummaryEl.style.display = 'none';
+            console.log("App initialized (Browser Print Mode with offcuts & strategies).");
+        }
+
+        function promptForOffcutSelection() {
+            const sheetNameFilter = modalSheetNameEl.value.trim();
+            let offcutsToConsider = savedOffcuts
+                .flatMap(batch => batch.offcutsInBatch.filter(oc => oc.isIndividuallyAvailable !== false))
+                .filter(oc => {
+                    if (sheetNameFilter) {
+                        const batch = savedOffcuts.find(b => b.offcutsInBatch.some(o => o.id === oc.id));
+                        return batch && batch.sourceSheetNameForBatch && batch.sourceSheetNameForBatch.toLowerCase().includes(sheetNameFilter.toLowerCase());
+                    }
+                    return true; 
+                });
+
+            if (offcutsToConsider.length === 0) {
+                alert(getLangString("noMatchingOffcuts"));
+                if(useOffcutsCheckboxEl) useOffcutsCheckboxEl.checked = false;
+                currentCalculationOffcuts = [];
+                return;
+            }
+
+            let confirmMsg = "";
+            if (sheetNameFilter) {
+                confirmMsg = getLangString("confirmUseOffcutsMsg", {count: offcutsToConsider.length, name: `"${sheetNameFilter}"`});
+            } else {
+                 confirmMsg = getLangString("confirmUseOffcutsMsg", {count: offcutsToConsider.length, name: (getLangString("allSourcesLabel") || "सभी स्रोतों")}); 
+            }
+
+            if (confirm(confirmMsg)) {
+                currentCalculationOffcuts = offcutsToConsider.map(oc => ({
+                    width: oc.width,
+                    length: oc.length,
+                    name: `Offcut ${oc.id.slice(-4)} (${convertFromCm(oc.width, currentUnit)}x${convertFromCm(oc.length, currentUnit)})`,
+                    hasGrain: modalSheetHasGrainEl.checked, 
+                    isOffcut: true,
+                    originalOffcutId: oc.id,
+                    quantity: 1 
+                }));
+                alert(getLangString("offcutsSelectedForCalcAlert", { count: currentCalculationOffcuts.length})); 
+            } else {
+                if(useOffcutsCheckboxEl) useOffcutsCheckboxEl.checked = false;
+                currentCalculationOffcuts = [];
+            }
+        }
+
+
+        window.onload = initializeApp;
     </script>
 </body>
-                </html>
+    </html>
