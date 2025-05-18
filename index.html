@@ -215,7 +215,8 @@
         <iframe id="appFrame" title="मुख्य एप्लीकेशन क्षेत्र"></iframe>
         <div id="homeContent">
             <h2 data-translate-key="homeWelcomeTitle">टूल हब में आपका स्वागत है!</h2>
-            <p data-translate-key="homeWelcomeMsg">ऊपर दिए गए आइकन से एक टूल चुनें।</p> </div>
+            <p data-translate-key="homeWelcomeMsg">ऊपर दिए गए आइकन से एक टूल चुनें।</p>
+        </div>
     </div>
 
     <script>
@@ -235,9 +236,8 @@
                 navTileCalculator: "टाइल कैलकुलेटर",
                 navFmRadio: "एफएम रेडियो",
                 homeWelcomeTitle: "टूल हब में आपका स्वागत है!",
-                homeWelcomeMsg: "ऊपर दिए गए आइकन से एक टूल चुनें।", // टेक्स्ट अपडेट किया गया
+                homeWelcomeMsg: "ऊपर दिए गए आइकन से एक टूल चुनें।",
                 loadingText: "लोड हो रहा है...",
-                // त्रुटि संदेश आदि
                 errorLoadingApp: "टूल लोड करने में त्रुटि। कृपया पुनः प्रयास करें।"
             },
             en: {
@@ -255,7 +255,7 @@
                 navTileCalculator: "Tile Calculator", // en अनुवाद जोड़ा गया
                 navFmRadio: "FM Radio", // en अनुवाद जोड़ा गया
                 homeWelcomeTitle: "Welcome to the Tool Hub!",
-                homeWelcomeMsg: "Select a tool from the icons above.", // टेक्स्ट अपडेट किया गया
+                homeWelcomeMsg: "Select a tool from the icons above.",
                 loadingText: "Loading...",
                 errorLoadingApp: "Error loading app. Please try again."
             }
@@ -269,7 +269,7 @@
             const langToggle = document.getElementById('langToggle');
             const darkModeToggle = document.getElementById('darkModeToggle');
             const homeContentDiv = document.getElementById('homeContent');
-            const loadingMessageDiv = documentgetElementById('loadingMessage');
+            const loadingMessageDiv = document.getElementById('loadingMessage');
 
             const lastActiveAppKey = 'hubLastActiveApp';
             const darkModeKey = 'hubDarkMode';
@@ -283,17 +283,17 @@
                 document.querySelectorAll('[data-translate-key]').forEach(el => {
                     const key = el.getAttribute('data-translate-key');
                     if (translations[currentLang] && translations[currentLang][key]) {
-                        // हेडर आइकन के लिए: टेक्स्ट को span के अंदर रखें या सीधे बटन में
-                        // हमने buttons में span रखा है, तो span के textContent को अपडेट करें
+                         // हेडर आइकन के लिए: टेक्स्ट को span के अंदर रखें
                         const span = el.querySelector('span');
                         if (span) {
                              span.textContent = translations[currentLang][key];
                         } else {
-                             // यदि कोई span नहीं है, तो सीधे एलिमेंट का टेक्स्ट अपडेट करें (जैसे होम टाइटल)
+                             // यदि कोई span नहीं है (जैसे होम टाइटल), तो सीधे एलिमेंट का टेक्स्ट अपडेट करें
                              el.textContent = translations[currentLang][key];
                         }
                     }
                 });
+                 // टाइटल एट्रीब्यूट का अनुवाद करें
                 document.querySelectorAll('[data-translate-key-title]').forEach(el => {
                     const key = el.getAttribute('data-translate-key-title');
                      if (translations[currentLang] && translations[currentLang][key]) {
