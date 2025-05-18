@@ -115,7 +115,7 @@
         }
 
 
-        /* ड्रॉपडाउन मेनू का कंटेनर */
+        /* ड्रॉपdown मेनू का कंटेनर */
         .dropdown-menu {
             position: absolute;
             top: 100%; /* हेडर के ठीक नीचे */
@@ -175,9 +175,8 @@
             overflow: hidden;
             border-top: 1px solid var(--iframe-border-light);
             position: relative; /* लोडिंग संदेश के लिए */
-             /* हेडर और संभावित ड्रॉपडाउन के लिए ऊपर कुछ पैडिंग जोड़ें */
-            padding-top: 0; /* हेडर में ही पैडिंग हो रही है */
-            box-sizing: border-box; /* पैडिंग को चौड़ाई में शामिल करें */
+            padding-top: 0;
+            box-sizing: border-box;
         }
          body.dark-mode #appContainer {
             border-top: 1px solid var(--iframe-border-dark);
@@ -190,18 +189,17 @@
             display: block;
         }
 
-        #homeContent { /* होम कंटेंट पहले जैसा */
+        #homeContent {
             padding: 20px;
-            display: none; /* शुरू में छिपा हुआ */
+            display: none;
             text-align: center;
             flex-grow: 1;
             align-items:center;
             justify-content:center;
-            display:flex; /* showHomeContent में 'flex' सेट होगा */
+            display:flex;
             flex-direction:column;
         }
 
-        /* वैकल्पिक: iframe लोड होते समय संदेश */
         .loading-message {
             position: absolute;
             top: 50%;
@@ -209,7 +207,7 @@
             transform: translate(-50%, -50%);
             font-size: 1.2em;
             color: var(--text-color-light);
-            display: none; /* JS द्वारा दिखाया जाएगा */
+            display: none;
         }
         body.dark-mode .loading-message {
             color: var(--text-color-dark);
@@ -247,7 +245,8 @@
         <iframe id="appFrame" title="मुख्य एप्लीकेशन क्षेत्र"></iframe>
         <div id="homeContent">
             <h2 data-translate-key="homeWelcomeTitle">टूल हब में आपका स्वागत है!</h2>
-            <p data-translate-key="homeWelcomeMsg">ऊपर मेनू आइकन (<i class="fas fa-ellipsis-v"></i>) से एक टूल चुनें।</p> </div>
+            <p data-translate-key="homeWelcomeMsg">ऊपर मेनू आइकन (<i class="fas fa-ellipsis-v"></i>) से एक टूल चुनें।</p>
+        </div>
     </div>
 
     <script>
@@ -267,7 +266,7 @@
                 navTileCalculator: "टाइल कैलकुलेटर",
                 navFmRadio: "एफएम रेडियो",
                 homeWelcomeTitle: "टूल हब में आपका स्वागत है!",
-                homeWelcomeMsg: "ऊपर मेनू आइकन (" + '<i class="fas fa-ellipsis-v"></i>' + ") से एक टूल चुनें।", // टेक्स्ट अपडेट किया गया
+                homeWelcomeMsg: "ऊपर मेनू आइकन (" + '<i class="fas fa-ellipsis-v"></i>' + ") से एक टूल चुनें।",
                 loadingText: "लोड हो रहा है...",
                 errorLoadingApp: "टूल लोड करने में त्रुटि। कृपया पुनः प्रयास करें।"
             },
@@ -286,7 +285,7 @@
                 navTileCalculator: "Tile Calculator",
                 navFmRadio: "FM Radio",
                 homeWelcomeTitle: "Welcome to the Tool Hub!",
-                homeWelcomeMsg: "Select a tool from the menu icon (" + '<i class="fas fa-ellipsis-v"></i>' + ") above.", // टेक्स्ट अपडेट किया गया
+                homeWelcomeMsg: "Select a tool from the menu icon (" + '<i class="fas fa-ellipsis-v"></i>' + ") above.",
                 loadingText: "Loading...",
                 errorLoadingApp: "Error loading app. Please try again."
             }
@@ -294,15 +293,13 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const iframe = document.getElementById('appFrame');
-            // सेलेक्टर बदला गया है ताकि वह ड्रॉपडाउन मेनू के अंदर के ऐप बटनों को ढूंढे
-            const appButtons = document.querySelectorAll('#toolMenu .control-icon[data-app]');
+            const appButtons = document.querySelectorAll('#toolMenu .control-icon[data-app]'); // ड्रॉपडाउन के अंदर के बटन्स
             const homeButton = document.getElementById('homeButton');
             const langToggle = document.getElementById('langToggle');
             const darkModeToggle = document.getElementById('darkModeToggle');
             const homeContentDiv = document.getElementById('homeContent');
             const loadingMessageDiv = document.getElementById('loadingMessage');
 
-            // नए मेनू एलिमेंट्स
             const menuToggle = document.getElementById('menuToggle');
             const toolMenuDiv = document.getElementById('toolMenu');
 
@@ -319,17 +316,15 @@
                     const key = el.getAttribute('data-translate-key');
                     if (translations[currentLang] && translations[currentLang][key]) {
                          const span = el.querySelector('span');
-                         // होम मैसेज में HTML (आइकन) है, इसलिए innerHTML का उपयोग करें
                          if (el.id === 'homeWelcomeMsg') {
-                              el.innerHTML = translations[currentLang][key];
+                              el.innerHTML = translations[currentLang][key]; // होम मैसेज में HTML है
                          } else if (span) {
-                              span.textContent = translations[currentLang][key];
+                              span.textContent = translations[currentLang][key]; // बटनों के अंदर का टेक्स्ट
                          } else {
-                              el.textContent = translations[currentLang][key];
+                              el.textContent = translations[currentLang][key]; // बाकी टेक्स्ट (जैसे टाइटल)
                          }
                     }
                 });
-                 // टाइटल एट्रीब्यूट का अनुवाद करें
                 document.querySelectorAll('[data-translate-key-title]').forEach(el => {
                     const key = el.getAttribute('data-translate-key-title');
                      if (translations[currentLang] && translations[currentLang][key]) {
@@ -366,8 +361,7 @@
                 document.title = translations[currentLang]?.hubMainTitle || "Tool Hub";
                 appButtons.forEach(btn => btn.classList.remove('active'));
                 localStorage.setItem(lastActiveAppKey, 'HOME');
-                 // होम पर आने पर मेनू बंद करें
-                 toolMenuDiv.style.display = 'none';
+                 toolMenuDiv.style.display = 'none'; // होम पर आने पर मेनू बंद करें
             }
 
             function loadApp(appUrl) {
@@ -398,8 +392,7 @@
                     btn.classList.toggle('active', btn.dataset.app === appUrl);
                 });
 
-                 // ऐप लोड होने पर मेनू बंद करें
-                 toolMenuDiv.style.display = 'none';
+                 toolMenuDiv.style.display = 'none'; // ऐप लोड होने पर मेनू बंद करें
 
 
                 iframe.onload = () => {
@@ -443,23 +436,25 @@
 
             // मेनू टॉगल लॉजिक
             menuToggle.addEventListener('click', (event) => {
-                event.stopPropagation(); // इवेंट को ऊपर तक फैलने से रोकें
+                event.stopPropagation();
                 toolMenuDiv.style.display = toolMenuDiv.style.display === 'flex' ? 'none' : 'flex';
             });
 
             // मेनू के बाहर क्लिक करने पर मेनू बंद करें
             document.addEventListener('click', (event) => {
-                if (toolMenuDiv.style.display === 'flex' && !toolMenuDiv.contains(event.target) && event.target !== menuToggle && !menuToggle.contains(event.target)) {
+                const isClickInsideMenu = toolMenuDiv.contains(event.target);
+                const isClickOnMenuToggle = menuToggle.contains(event.target);
+                if (toolMenuDiv.style.display === 'flex' && !isClickInsideMenu && !isClickOnMenuToggle) {
                     toolMenuDiv.style.display = 'none';
                 }
             });
 
-            // ड्रॉपडाउन मेनू के अंदर के बटन के लिए इवेंट लिसनर
+
             appButtons.forEach(button => {
                 button.addEventListener('click', (e) => {
                     e.preventDefault();
                     loadApp(button.dataset.app);
-                    // मेनू को loadApp में बंद किया जा रहा है
+                     // loadApp फंक्शन मेनू को बंद कर देता है
                 });
             });
 
