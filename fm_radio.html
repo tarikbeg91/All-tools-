@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World FM - सरल और कार्यात्मक</title>
+    <style>
+        body { background: #f0f0f0; font-family: Arial, sans-serif; color: #333; margin: 0; padding: 0; }
+        .radio-container { width: 90%; max-width: 600px; margin: 20px auto; padding: 20px; background: #8B4513; border: 5px solid #654321; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.6); color: #fff; }
+        .display-area { margin-bottom: 15px; }
+        .main-display { font-family: 'Courier New', monospace; color: #00FF00; background: #000; padding: 10px; text-align: center; font-size: 14px; border-radius: 5px; min-height: 36px; margin-bottom: 5px; word-wrap: break-word; transition: color 0.3s; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .main-display .playing-info, .main-display .status-info { display: block; width: 100%; }
+        .now-playing-display { font-family: 'Arial', sans-serif; color: #FFFF00; background: #222; padding: 5px 10px; text-align: center; font-size: 14px; border-radius: 5px; min-height: 18px; font-style: italic; word-wrap: break-word; }
+        /* विज़ुअलाइज़र CSS हटा दिया गया */
+        .player-controls-area { margin-bottom: 15px; }
+        .player-controls { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .player-controls button { background-color: #D2B48C; color: #333; border: 1px solid #654321; border-radius: 50%; width: 38px; height: 38px; font-size: 16px; cursor: pointer; display: flex; justify-content: center; align-items: center; padding: 0; transition: background-color 0.2s, transform 0.1s, color 0.2s, border-color 0.2s; }
+        .player-controls button:active { transform: scale(0.95); }
+        @keyframes pulse_green { 0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); } 100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); } }
+        .player-controls button#stop-save-btn.recording-active { animation: pulse_green 1.5s infinite; border-color: #28a745; color: #28a745; }
+        .player-controls button#cancel-record-btn.recording-active { border-color: #dc3545; color: #dc3545; }
+        .player-controls button#record-btn.can-record { color: green; }
+        .player-controls button:hover { background-color: #DEB887; }
+        .player-controls button:disabled { background-color: #aaa !important; color: #666 !important; cursor: not-allowed; animation: none !important; box-shadow: none !important; }
+        .recording-quality-selector, .sleep-timer-controls { text-align: center; margin-bottom: 10px; font-size: 14px; }
+        .recording-quality-selector label, .sleep-timer-controls label { margin-right: 5px; }
+        .recording-quality-selector select, .sleep-timer-controls select { padding: 5px; border-radius: 4px; border: 1px solid #654321; background-color: #D2B48C; color: #333; font-size: 13px; }
+        #sleep-timer-display { margin-left: 10px; font-style: italic; color: #FFD700; }
+        audio { width: 100%; margin-bottom: 15px; }
+        .navigation-tabs { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px; }
+        .navigation-tabs button { padding: 8px 10px; background-color: #D2B48C; color: #333; border: 1px solid #8B4513; border-radius: 5px; cursor: pointer; font-size: 13px; flex-grow: 1; }
+        .navigation-tabs button:hover, .navigation-tabs button.active { background-color: #DEB887; font-weight: bold; }
+        .navigation-tabs button:disabled { background-color: #ccc !important; color: #888 !important; cursor: not-allowed; }
+        .country-search-area { margin-bottom: 15px; }
+        #country-select, #search-station { width: calc(100% - 22px); padding: 10px; margin-bottom: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+        #country-select:disabled, #search-station:disabled { background-color: #eee; cursor: not-allowed; }
+        #station-list { list-style: none; padding: 0; max-height: 240px; /* गुणवत्ता चयनकर्ता और स्लीप टाइमर के लिए जगह */ overflow-y: auto; border: 1px solid #654321; border-radius: 5px; background-color: #A0522D; }
+        #station-list li { padding: 8px 12px; background: #D2B48C; color: #333; cursor: pointer; font-size: 15px; border-bottom: 1px solid #8B4513; display: flex; align-items: center; }
+        #station-list li.broken-stream { opacity: 0.6; }
+        #station-list li.broken-stream .station-name::after { content: " ⚠️"; color: red; font-size: 12px; }
+        #station-list li:last-child { border-bottom: none; }
+        #station-list li:hover { background: #DEB887; }
+        #station-list li.playing { background: #FFD700; color: #000; font-weight: bold; }
+        .station-favicon { width: 24px; height: 24px; margin-right: 10px; border-radius: 3px; background-color: #eee; object-fit: contain; vertical-align: middle; flex-shrink: 0; }
+        .station-details { flex-grow: 1; overflow: hidden; }
+        .station-name { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .station-bitrate { font-size: 12px; color: #555; margin-top: 2px; }
+        .favorite-btn { cursor: pointer; font-size: 22px; color: #777; margin-left: auto; padding: 0 5px; transition: color 0.2s, transform 0.2s; flex-shrink: 0; }
+        .favorite-btn.favorited { color: #FF4500; transform: scale(1.1); }
+        .knobs-container { display: flex; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+        .knob { width: 45px; height: 45px; background: #333; border-radius: 50%; margin: 10px; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
+        .message-box { padding: 15px; text-align: center; color: #fff; background-color: transparent; font-style: italic; }
+        .loader { border: 4px solid #f3f3f3; border-radius: 50%; border-top: 4px solid #DEB887; width: 20px; height: 20px; animation: spin 1s linear infinite; margin: 10px auto; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        @media (max-width: 600px) {
+            /* ... (पिछला जैसा, विज़ुअलाइज़र स्टाइल हटा दिया गया) ... */
+            .knob { width: 30px; height: 30px; }
+            .main-display { font-size: 12px; min-height: 30px; }
+            .now-playing-display { font-size: 12px; }
+            #country-select, #search-station { font-size: 14px; }
+            #station-list { max-height: 200px; } /* थोड़ी और जगह */
+            #station-list li { font-size: 14px; padding: 10px 8px; }
+            .navigation-tabs button { font-size: 12px; padding: 6px 8px;}
+            .player-controls button { width: 35px; height: 35px; font-size: 16px;}
+            .recording-quality-selector select, .sleep-timer-controls select { font-size: 12px; padding: 4px;}
+            .sleep-timer-controls { flex-direction: column; align-items: center; }
+            .sleep-timer-controls select { margin-top: 5px; }
+            #sleep-timer-display { margin-left: 0; margin-top: 5px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="radio-container">
+        <div class="display-area">
+            <div class="main-display">
+                <span class="playing-info">रेडियो में आपका स्वागत है!</span>
+                <span class="status-info"></span>
+            </div>
+            <div class="now-playing-display">अभी कुछ नहीं बज रहा</div>
+            <!-- विज़ुअलाइज़र कैनवास हटा दिया गया -->
+        </div>
+
+        <div class="player-controls-area">
+            <div class="player-controls">
+                <button id="prev-station-btn" title="पिछला स्टेशन" disabled>&#9664;</button>
+                <button id="record-btn" title="रिकॉर्डिंग शुरू करें">⏺️</button>
+                <button id="stop-save-btn" title="रोकें और सहेजें" style="display:none;">⏹️💾</button>
+                <button id="cancel-record-btn" title="रिकॉर्डिंग रद्द करें" style="display:none;">❌</button>
+                <button id="next-station-btn" title="अगला स्टेशन" disabled>&#9654;</button>
+            </div>
+            <div class="recording-quality-selector">
+                <label for="quality-select">गुणवत्ता (WebM/Opus):</label>
+                <select id="quality-select">
+                    <option value="128">उच्च (≈128kbps)</option>
+                    <option value="96" selected>मध्यम (≈96kbps)</option>
+                    <option value="64">निम्न (≈64kbps)</option>
+                    <option value="32">बहुत निम्न (≈32kbps)</option>
+                </select>
+            </div>
+             <div class="sleep-timer-controls">
+                <label for="sleep-timer-select">स्लीप टाइमर:</label>
+                <select id="sleep-timer-select">
+                    <option value="0">बंद</option>
+                    <option value="1">1 मि (परीक्षण)</option>
+                    <option value="15">15 मिनट</option>
+                    <option value="30">30 मिनट</option>
+                    <option value="60">60 मिनट</option>
+                    <option value="90">90 मिनट</option>
+                </select>
+                <span id="sleep-timer-display"></span>
+            </div>
+        </div>
+        <audio controls id="audio-player"></audio>
+
+        <div class="navigation-tabs">
+            <button id="show-country-btn" class="active">देश से</button>
+            <button id="show-favorites-btn">पसंदीदा</button>
+            <button id="show-hindi-stations-btn">हिंदी</button>
+            <button id="show-urdu-stations-btn">उर्दू</button>
+            <button id="show-english-stations-btn">अंग्रेजी</button>
+            <button id="share-station-btn" title="वर्तमान स्टेशन साझा करें" disabled>साझा करें</button>
+        </div>
+
+        <div class="country-search-area">
+            <select id="country-select">
+                <option value="">देश चुनें</option>
+            </select>
+            <input type="text" id="search-station" placeholder="स्टेशन खोजें...">
+        </div>
+        <div id="loader" class="loader"></div>
+        <ul id="station-list"></ul>
+
+        <div class="knobs-container">
+            <div class="knob"></div>
+            <div class="knob"></div>
+            <div class="knob"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM पूरी तरह से लोड और पार्स हो गया है।");
+
+            const countrySelect = document.getElementById('country-select');
+            const stationList = document.getElementById('station-list');
+            const audio = document.getElementById('audio-player');
+            const mainDisplayPlayingInfo = document.querySelector('.main-display .playing-info');
+            const mainDisplayStatusInfo = document.querySelector('.main-display .status-info');
+            const nowPlayingDisplay = document.querySelector('.now-playing-display');
+            const searchStationInput = document.getElementById('search-station');
+            const countrySearchArea = document.querySelector('.country-search-area');
+            const loader = document.getElementById('loader');
+            const qualitySelect = document.getElementById('quality-select');
+            const sleepTimerSelect = document.getElementById('sleep-timer-select');
+            const sleepTimerDisplay = document.getElementById('sleep-timer-display');
+            // visualizerCanvas और visualizerCtx हटा दिए गए
+
+            const prevStationBtn = document.getElementById('prev-station-btn');
+            const nextStationBtn = document.getElementById('next-station-btn');
+            const recordBtn = document.getElementById('record-btn');
+            const stopSaveBtn = document.getElementById('stop-save-btn');
+            const cancelRecordBtn = document.getElementById('cancel-record-btn');
+
+            const navButtons = {
+                country: document.getElementById('show-country-btn'),
+                favorites: document.getElementById('show-favorites-btn'),
+                hindi: document.getElementById('show-hindi-stations-btn'),
+                urdu: document.getElementById('show-urdu-stations-btn'),
+                english: document.getElementById('show-english-stations-btn'),
+            };
+            const shareStationBtn = document.getElementById('share-station-btn');
+
+            const defaultFavicon = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLW11c2ljIj48cGF0aCBkPSJNOWcgMTdWNUExIDEgMCAwIDAgOCA0SDZBMSAxIDAgMCAwIDUgNXYxMCIvPjxwYXRoIGQ9Ik0xOCA5di0zYTEgMSAwIDAgMC0xLTFoLTJBMSAxIDAgMCAwIDEzIDZ2MyIvPjxwYXRoIGQ9Ik0xMSAxNXYtM2ExIDEgMCAwIDAtMS0xaC0yYTEgMSAwIDAgMC0xIDF2MyIvPjxwYXRoIGQ9Ik0xNCA1YS41LjUgMCAxIDAtMSAwIC41LjUgMCAxIDAgMSAwWiIvPjxwYXRoIGQ9Ik0xOSA4YS41LjUgMCAxIDAtMSAwIC41LjUgMCAxIDAgMSAwWiIvPjxwYXRoIGQ9Ik02IDE4YS41LjUgMCAxIDAtMSAwIC41LjUgMCAxIDAgMSAwWiIvPjwvc3ZnPg==';
+            const radioBrowserServers = ['https://de1.api.radio-browser.info', 'https://nl1.api.radio-browser.info', 'https://at1.api.radio-browser.info'];
+            // PROXY_SERVER_URL हटा दिया गया
+
+            let currentStations = [];
+            let currentPlayingStationDetails = null;
+            let currentPlayingIndex = -1;
+            let activeView = 'country';
+            let brokenStreams = JSON.parse(sessionStorage.getItem('brokenRadioStreamsSimple')) || []; // कुंजी बदली
+
+            let originalPageTitle = document.title;
+            let recordingIntervalId;
+            let recordingDuration = 0;
+            let recordedBlobSize = 0;
+            let mediaRecorder;
+            let recordedChunks = [];
+            let currentMediaRecorderOptions = {};
+            let baseDisplayMessage = 'रेडियो में आपका स्वागत है!';
+            let userIntendsToCancel = false;
+            let sleepTimeoutId = null;
+            let sleepTimerIntervalId = null;
+            let sleepEndTime = 0;
+
+            // विज़ुअलाइज़र चर हटा दिए गए (audioContext, analyser, sourceNode, dataArray, rafId)
+
+            const RECORD_AS_WAV_FOR_MP3 = false; // इसे true करें यदि आप क्लाइंट-साइड MP3 रूपांतरण चाहते हैं
+            let isConvertingToMp3 = false; 
+
+            function showLoader(show) { loader.style.display = show ? 'block' : 'none'; }
+            
+            function updateActiveNavButton(view) {
+                Object.values(navButtons).forEach(btn => btn.classList.remove('active'));
+                if (navButtons[view]) navButtons[view].classList.add('active');
+                countrySearchArea.style.display = (view === 'country') ? 'block' : 'none';
+                searchStationInput.placeholder = (view === 'country') ? "देश में स्टेशन खोजें..." : "स्टेशनों में खोजें";
+            }
+            
+            let toastTimeoutId;
+            function showToast(message, duration = 3000, isError = false, isPersistent = false) {
+                if (RECORD_AS_WAV_FOR_MP3 && isConvertingToMp3 && message !== "MP3 में परिवर्तित किया जा रहा है... कृपया प्रतीक्षा करें।" && !isPersistent) {
+                    console.log("Toast skipped due to MP3 conversion:", message);
+                    return;
+                }
+                
+                const defaultColor = '#00FF00'; const statusColor = '#FFFF00'; const errorColor = 'orange';
+                mainDisplayStatusInfo.textContent = message;
+                if(isError) mainDisplayStatusInfo.style.color = errorColor;
+                else if(isPersistent) mainDisplayStatusInfo.style.color = statusColor;
+                else mainDisplayStatusInfo.style.color = defaultColor;
+
+                clearTimeout(toastTimeoutId);
+                if (!isPersistent && duration > 0) {
+                    toastTimeoutId = setTimeout(() => {
+                        if (!(RECORD_AS_WAV_FOR_MP3 && isConvertingToMp3) && 
+                            !(mediaRecorder && mediaRecorder.state === 'recording') &&
+                            !sleepTimerIntervalId) {
+                             mainDisplayStatusInfo.textContent = '';
+                        }
+                    }, duration);
+                }
+            }
+            
+            function updateMainDisplayPlayingInfo(text) {
+                baseDisplayMessage = text;
+                if (!(mediaRecorder && mediaRecorder.state === 'recording') && !sleepTimerIntervalId && !(RECORD_AS_WAV_FOR_MP3 && isConvertingToMp3)) {
+                    mainDisplayPlayingInfo.textContent = text;
+                    mainDisplayStatusInfo.textContent = '';
+                    mainDisplayPlayingInfo.style.color = '#00FF00';
+                } else if (mediaRecorder && mediaRecorder.state === 'recording'){
+                    mainDisplayPlayingInfo.textContent = text;
+                } else if (!mainDisplayPlayingInfo.textContent) {
+                    mainDisplayPlayingInfo.textContent = text;
+                }
+            }
+
+            function getFavorites() { const favorites = localStorage.getItem('radioFavsSimple'); return favorites ? JSON.parse(favorites) : []; } // कुंजी बदली
+            function saveFavorites(favorites) { localStorage.setItem('radioFavsSimple', JSON.stringify(favorites)); }
+            function isFavorite(stationuuid) { return getFavorites().includes(stationuuid); }
+            function toggleFavorite(stationuuid, buttonElement) {
+                let favorites = getFavorites();
+                if (favorites.includes(stationuuid)) {
+                    favorites = favorites.filter(id => id !== stationuuid);
+                    buttonElement.classList.remove('favorited'); buttonElement.textContent = '♡';
+                } else {
+                    favorites.push(stationuuid);
+                    buttonElement.classList.add('favorited'); buttonElement.textContent = '♥';
+                }
+                saveFavorites(favorites);
+                if (activeView === 'favorites' && !favorites.includes(stationuuid)) { loadData('favorites', null, 'पसंदीदा'); }
+            }
+
+            async function fetchWithFallback(path) { // प्रॉक्सी तर्क हटा दिया गया
+                console.log("Fetching data from path:", path);
+                showLoader(true);
+                for (const server of radioBrowserServers) { // केवल RadioBrowser सर्वर का उपयोग करें
+                    const fullPath = `${server}${path}`;
+                    try {
+                        console.log(`Attempting to fetch from: ${fullPath}`);
+                        const response = await fetch(fullPath);
+                        if (response.ok) { 
+                            console.log("Data fetched successfully from:", fullPath); 
+                            showLoader(false); 
+                            return await response.json(); 
+                        }
+                        else { console.warn(`Failed to fetch from ${fullPath}, status: ${response.status}`);}
+                    } catch (error) { console.error(`सर्वर ${fullPath} से त्रुटि:`, error); }
+                }
+                showLoader(false); 
+                console.error("सभी सर्वर्स से संपर्क विफल for path:", path);
+                throw new Error('सभी सर्वर्स से संपर्क विफल');
+            }
+
+            function playStation(station, indexInList) {
+                console.log("Playing station:", station ? station.name : 'Unknown', "at index:", indexInList);
+                userIntendsToCancel = false; 
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    stopRecordingStream(false, "स्टेशन बदलने के कारण रिकॉर्डिंग रोक दी गई। पिछला सहेजा गया (यदि कुछ था)।"); 
+                }
+
+                const streamUrl = station.url_resolved || station.url;
+                // प्रॉक्सी तर्क हटा दिया गया, सीधे URL का उपयोग करें
+                audio.src = streamUrl; 
+                audio.crossOrigin = "anonymous"; // CORS समस्याओं से बचने का प्रयास (रिकॉर्डिंग/विज़ुअलाइज़र के लिए यदि जोड़ा जाए)
+                console.log("Audio src set to (direct):", streamUrl);
+
+                audio.play().then(() => {
+                    console.log("Audio playback started for:", station.name);
+                    updateRecordButtonState();
+                    // विज़ुअलाइज़र लॉजिक हटा दिया गया
+                }).catch(e => {
+                    console.error("ऑडियो प्ले करने में त्रुटि:", e, "for station:", station.name, "URL:", streamUrl);
+                    showToast(`ऑडियो प्ले करने में त्रुटि: ${station.name}`, 3000, true);
+                    if (station.stationuuid && !brokenStreams.includes(station.stationuuid)) {
+                        brokenStreams.push(station.stationuuid);
+                        sessionStorage.setItem('brokenRadioStreamsSimple', JSON.stringify(brokenStreams));
+                        const brokenLi = stationList.querySelector(`li[data-uuid='${station.stationuuid}']`);
+                        if(brokenLi) { brokenLi.classList.add('broken-stream'); brokenLi.title = "यह स्ट्रीम पिछली बार चलने में विफल रही थी।"; }
+                    }
+                    updateRecordButtonState();
+                });
+                updateMainDisplayPlayingInfo(`बज रहा है: ${station.name}`);
+
+                currentPlayingStationDetails = { 
+                    name: station.name, url: streamUrl, 
+                    uuid: station.stationuuid, homepage: station.homepage 
+                };
+                currentPlayingIndex = indexInList;
+                shareStationBtn.disabled = false;
+                
+                fetchNowPlaying(station.stationuuid);
+
+                document.querySelectorAll('#station-list li').forEach(item => item.classList.remove('playing'));
+                const playingLi = stationList.querySelector(`li[data-uuid='${station.stationuuid}']`);
+                if(playingLi) playingLi.classList.add('playing');
+
+                if (playingLi && (playingLi.offsetTop < stationList.scrollTop || playingLi.offsetTop + playingLi.offsetHeight > stationList.scrollTop + stationList.offsetHeight)) {
+                    playingLi.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                updateNavigationButtonsState();
+            }
+
+            function renderStations(stationsToRender, viewType = 'general') {
+                console.log("Rendering stations, count:", stationsToRender ? stationsToRender.length : 0, "View type:", viewType);
+                stationList.innerHTML = '';
+                 if (!stationsToRender || stationsToRender.length === 0) {
+                    const li = document.createElement('li'); li.classList.add('message-box');
+                    let msg = 'कोई स्टेशन नहीं मिला।';
+                    if (viewType === 'favorites') msg = 'अभी कोई पसंदीदा स्टेशन नहीं है।';
+                    else if (viewType === 'hindi') msg = 'कोई हिंदी स्टेशन नहीं मिला।';
+                    else if (viewType === 'urdu') msg = 'कोई उर्दू स्टेशन नहीं मिला।';
+                    else if (viewType === 'english') msg = 'कोई अंग्रेजी स्टेशन नहीं मिला।';
+                    else if (viewType === 'country') msg = 'इस देश के लिए कोई स्टेशन नहीं मिला।';
+                    li.textContent = msg; stationList.appendChild(li);
+                    updateNavigationButtonsState();
+                    return;
+                }
+
+                stationsToRender.forEach((station, index) => {
+                    if (!station.name || !(station.url_resolved || station.url) ) return;
+                    const li = document.createElement('li'); li.setAttribute('data-uuid', station.stationuuid);
+                    const faviconImg = document.createElement('img'); faviconImg.classList.add('station-favicon');
+                    faviconImg.src = station.favicon || defaultFavicon; faviconImg.alt = "logo";
+                    faviconImg.onerror = () => { faviconImg.src = defaultFavicon; };
+                    const stationDetailsDiv = document.createElement('div'); stationDetailsDiv.classList.add('station-details');
+                    const stationNameSpan = document.createElement('span'); stationNameSpan.classList.add('station-name');
+                    stationNameSpan.textContent = station.name.trim(); stationNameSpan.title = station.name.trim();
+                    stationDetailsDiv.appendChild(stationNameSpan);
+                    if (station.bitrate && station.bitrate > 0) {
+                        const bitrateSpan = document.createElement('span'); bitrateSpan.classList.add('station-bitrate');
+                        bitrateSpan.textContent = `${station.bitrate} kbps`; stationDetailsDiv.appendChild(bitrateSpan);
+                    }
+                    const favoriteBtn = document.createElement('span'); favoriteBtn.classList.add('favorite-btn');
+                    favoriteBtn.textContent = isFavorite(station.stationuuid) ? '♥' : '♡';
+                    if (isFavorite(station.stationuuid)) favoriteBtn.classList.add('favorited');
+                    favoriteBtn.title = "पसंदीदा टॉगल करें";
+                    favoriteBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleFavorite(station.stationuuid, favoriteBtn); });
+                    li.appendChild(faviconImg); li.appendChild(stationDetailsDiv); li.appendChild(favoriteBtn);
+                    if (brokenStreams.includes(station.stationuuid)) {
+                        li.classList.add('broken-stream'); li.title = "यह स्ट्रीम पिछली बार चलने में विफल रही थी।";
+                    }
+                    li.addEventListener('click', () => { playStation(station, index); });
+                    stationList.appendChild(li);
+                });
+                updateNavigationButtonsState();
+            }
+            
+            function updateNavigationButtonsState(){
+                const hasStations = currentStations && currentStations.length > 0;
+                const isPlaying = currentPlayingIndex !== -1 && !audio.paused && audio.src && audio.readyState >= 2;
+
+                prevStationBtn.disabled = !isPlaying || currentPlayingIndex <= 0;
+                nextStationBtn.disabled = !isPlaying || currentPlayingIndex >= currentStations.length - 1;
+                updateRecordButtonState();
+            }
+
+            async function fetchNowPlaying(stationuuid) {
+                nowPlayingDisplay.textContent = "गीत की जानकारी लोड हो रही है...";
+                try {
+                    const playInfoServer = radioBrowserServers[0];
+                    const response = await fetch(`${playInfoServer}/json/playinfo/${stationuuid}`);
+                    if(response.ok){
+                        const playInfo = await response.json();
+                        if (playInfo && playInfo.length > 0 && playInfo[0].title) {
+                            nowPlayingDisplay.textContent = `अभी बज रहा है: ${playInfo[0].title}`;
+                        } else {
+                            nowPlayingDisplay.textContent = "अभी बज रहे गीत की जानकारी उपलब्ध नहीं है।";
+                        }
+                    } else {
+                         nowPlayingDisplay.textContent = "गीत की जानकारी प्राप्त नहीं हो सकी।";
+                    }
+                } catch (error) {
+                    console.error('"अभी बज रहा है" जानकारी प्राप्त करने में त्रुटि:', error);
+                    nowPlayingDisplay.textContent = "गीत की जानकारी प्राप्त करने में त्रुटि।";
+                }
+            }
+
+            async function loadData(type, param, nameForDisplay) {
+                console.log("Loading data for type:", type, "Param:", param);
+                userIntendsToCancel = false;
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    stopRecordingStream(false, "दृश्य बदलने के कारण रिकॉर्डिंग रोक दी गई। पिछला सहेजा गया (यदि कुछ था)।");
+                }
+                // MP3 रूपांतरण से संबंधित isConvertingToMp3 जांच हटा दी गई
+
+                activeView = type; updateActiveNavButton(activeView); searchStationInput.value = ''; 
+                let apiUrlPath; let displayMessagePrefix = nameForDisplay || type;
+                updateMainDisplayPlayingInfo(`${displayMessagePrefix} स्टेशन लोड हो रहे हैं...`);
+                mainDisplayPlayingInfo.style.color = '#00FF00';
+
+                switch (type) {
+                    case 'country':
+                        if (!param) { currentStations = []; stationList.innerHTML = ''; 
+                                      updateMainDisplayPlayingInfo('कृपया एक देश चुनें'); 
+                                      updateNavigationButtonsState(); return; }
+                        apiUrlPath = `/json/stations/bycountrycodeexact/${param}?order=clickcount&reverse=true&limit=150&hidebroken=true`;
+                        break;
+                    case 'favorites':
+                        const favoriteUUIDs = getFavorites();
+                        if (favoriteUUIDs.length === 0) { currentStations = []; renderStations([], 'favorites'); 
+                                                          updateMainDisplayPlayingInfo('पसंदीदा स्टेशन (0)'); 
+                                                          updateNavigationButtonsState(); return; }
+                        apiUrlPath = `/json/stations/byuuid?uuids=${favoriteUUIDs.join(',')}&hidebroken=true`;
+                        break;
+                    case 'hindi': case 'urdu': case 'english':
+                        apiUrlPath = `/json/stations/bylanguageexact/${type}?order=clickcount&reverse=true&limit=150&hidebroken=true`;
+                        break;
+                    default: console.error('अज्ञात डेटा प्रकार:', type); return;
+                }
+
+                try {
+                    stationList.innerHTML = ''; 
+                    const stations = await fetchWithFallback(apiUrlPath); // useRadioBrowserServers = true डिफ़ॉल्ट रूप से
+                    currentStations = stations.filter(s => s.name && (s.url_resolved || s.url));
+                    renderStations(currentStations, type);
+                    
+                    let countMsg = currentStations.length > 0 ? `(${currentStations.length})` : '';
+                    let newBaseDisplayMsg;
+                    if (type === 'country' && param) {
+                         const countryName = countrySelect.options[countrySelect.selectedIndex]?.text || param;
+                         newBaseDisplayMsg = `"${countryName}" के स्टेशन ${countMsg}`;
+                    } else {
+                         newBaseDisplayMsg = `${displayMessagePrefix} स्टेशन ${countMsg}`;
+                    }
+                    if (currentStations.length === 0) {
+                        newBaseDisplayMsg = (type === 'favorites') ? 'कोई पसंदीदा स्टेशन नहीं' : `कोई ${displayMessagePrefix} स्टेशन नहीं मिला`;
+                    }
+                     updateMainDisplayPlayingInfo(newBaseDisplayMsg);
+
+                } catch (error) {
+                    updateMainDisplayPlayingInfo(`${displayMessagePrefix} स्टेशन लोड करने में त्रुटि`);
+                    stationList.innerHTML = `<li class="message-box">${displayMessagePrefix} स्टेशन लोड करने में त्रुटि</li>`;
+                    console.error(error);
+                }
+                updateNavigationButtonsState();
+            }
+
+            fetchWithFallback('/json/countries') // useRadioBrowserServers = true डिफ़ॉल्ट रूप से
+                .then(countries => {
+                    countries.sort((a, b) => a.name.localeCompare(b.name));
+                    countries.forEach(country => {
+                        const option = document.createElement('option'); option.value = country.iso_3166_1; option.textContent = country.name; countrySelect.appendChild(option);
+                    });
+                    updateMainDisplayPlayingInfo('देश चुनें या भाषा टैब का उपयोग करें');
+                })
+                .catch(error => { updateMainDisplayPlayingInfo('देशों को लोड करने में त्रुटि'); console.error(error); });
+
+            function clearSleepTimer(showMessage = false) {
+                if (sleepTimeoutId) { clearTimeout(sleepTimeoutId); sleepTimeoutId = null; }
+                if (sleepTimerIntervalId) { clearInterval(sleepTimerIntervalId); sleepTimerIntervalId = null; }
+                sleepTimerDisplay.textContent = '';
+                if (!(mediaRecorder && mediaRecorder.state === 'recording')) {
+                    mainDisplayStatusInfo.textContent = ''; 
+                }
+                if (showMessage) showToast("स्लीप टाइमर बंद।", 2000);
+                console.log("स्लीप टाइमर साफ़ किया गया।");
+            }
+
+            function updateSleepTimerDisplay() {
+                const remainingTime = Math.max(0, Math.round((sleepEndTime - Date.now()) / 1000));
+                if (remainingTime > 0) {
+                    const minutes = Math.floor(remainingTime / 60);
+                    const seconds = remainingTime % 60;
+                    const timerText = `स्लीप: ${minutes}m ${seconds}s`;
+                    sleepTimerDisplay.textContent = timerText;
+                    if (!(mediaRecorder && mediaRecorder.state === 'recording')) { // MP3 रूपांतरण जांच हटा दी गई
+                        mainDisplayStatusInfo.textContent = timerText;
+                        mainDisplayStatusInfo.style.color = '#FFD700';
+                    }
+                } else {
+                    sleepTimerDisplay.textContent = 'समाप्त!';
+                    clearSleepTimer(); 
+                }
+            }
+
+            sleepTimerSelect.addEventListener('change', function() {
+                clearSleepTimer();
+                const minutes = parseInt(this.value);
+                if (minutes > 0) {
+                    const milliseconds = minutes * 60 * 1000;
+                    sleepEndTime = Date.now() + milliseconds;
+                    sleepTimeoutId = setTimeout(() => {
+                        console.log("स्लीप टाइमर समाप्त! ऑडियो रोका जा रहा है।");
+                        audio.pause();
+                        audio.src = ''; 
+                        showToast(`स्लीप टाइमर (${minutes} मिनट) समाप्त। रेडियो बंद।`, 5000);
+                        clearSleepTimer(); 
+                        updateRecordButtonState(); 
+                        updateNavigationButtonsState(); 
+                    }, milliseconds);
+                    sleepTimerIntervalId = setInterval(updateSleepTimerDisplay, 1000);
+                    updateSleepTimerDisplay();
+                    showToast(`${minutes} मिनट का स्लीप टाइमर सेट।`, 3000);
+                } else {
+                    clearSleepTimer(true);
+                }
+            });
+
+            // विज़ुअलाइज़र से संबंधित सभी फ़ंक्शन और इवेंट लिस्नर हटा दिए गए
+            // setupAudioContextAndVisualizer, connectSourceToVisualizer, drawVisualizerLoop
+            // और audio 'canplay' इवेंट लिस्नर
+
+            async function startRecordingStream() {
+                console.log("startRecordingStream called");
+                userIntendsToCancel = false;
+                if (audio.paused || !audio.src || audio.readyState < 2) {
+                    showToast("कृपया रिकॉर्डिंग शुरू करने से पहले स्टेशन पूरी तरह लोड होने दें और चलाएं।", 3000, true); return;
+                }
+                // captureStream की उपलब्धता की जाँच करें (यह अभी भी आवश्यक है)
+                if (!audio.captureStream) { 
+                    showToast('आपका ब्राउज़र स्ट्रीम कैप्चर का समर्थन नहीं करता है। रिकॉर्डिंग संभव नहीं।', 4000, true);
+                    return;
+                }
+
+                try {
+                    const stream = audio.captureStream(); // यह अभी भी CORS पर निर्भर कर सकता है
+                    console.log("Audio stream captured:", stream);
+                    const selectedBitrate = parseInt(qualitySelect.value) * 1000;
+
+                    currentMediaRecorderOptions = { mimeType: 'audio/webm; codecs=opus', audioBitsPerSecond: selectedBitrate };
+                    if (!MediaRecorder.isTypeSupported(currentMediaRecorderOptions.mimeType)) {
+                        console.warn(`${currentMediaRecorderOptions.mimeType} समर्थित नहीं है। ogg/opus आज़मा रहे हैं।`);
+                        currentMediaRecorderOptions.mimeType = 'audio/ogg; codecs=opus';
+                        currentMediaRecorderOptions.audioBitsPerSecond = selectedBitrate;
+                        if (!MediaRecorder.isTypeSupported(currentMediaRecorderOptions.mimeType)) {
+                            showToast('WebM/Opus या Ogg/Opus रिकॉर्डिंग समर्थित नहीं है।', 3000, true); return;
+                        }
+                    }
+                    console.log("MediaRecorder options:", currentMediaRecorderOptions);
+                    
+                    mediaRecorder = new MediaRecorder(stream, currentMediaRecorderOptions);
+                    console.log("MediaRecorder instance created.");
+                    recordedChunks = []; recordedBlobSize = 0;
+
+                    mediaRecorder.ondataavailable = (event) => {
+                        console.log("ondataavailable event, data size:", event.data.size);
+                        if (event.data.size > 0) { recordedChunks.push(event.data); recordedBlobSize += event.data.size; }
+                    };
+
+                    mediaRecorder.onstop = async () => { // MP3 रूपांतरण नहीं है, तो async की आवश्यकता नहीं
+                        console.log("onstop event triggered. userIntendsToCancel:", userIntendsToCancel, "recordedChunks.length:", recordedChunks.length);
+                        stopSaveBtn.classList.remove('recording-active');
+                        cancelRecordBtn.classList.remove('recording-active');
+                        document.title = originalPageTitle;
+                        if (recordingIntervalId) clearInterval(recordingIntervalId);
+                        recordingIntervalId = null;
+                        mainDisplayStatusInfo.textContent = '';
+
+                        if (userIntendsToCancel) {
+                            showToast("रिकॉर्डिंग रद्द की गई।", 3000);
+                            updateMainDisplayPlayingInfo(baseDisplayMessage);
+                            updateRecordButtonState();
+                            disablePlayerControls(false);
+                            userIntendsToCancel = false;
+                            recordedChunks = [];
+                            return;
+                        }
+
+                        if (recordedChunks.length === 0) {
+                            showToast("कुछ भी रिकॉर्ड नहीं हुआ।", 3000, true);
+                            updateMainDisplayPlayingInfo(baseDisplayMessage);
+                            updateRecordButtonState();
+                            disablePlayerControls(false);
+                            return;
+                        }
+
+                        const recordedBlob = new Blob(recordedChunks, { type: currentMediaRecorderOptions.mimeType });
+                        console.log("Blob created for saving. Type:", recordedBlob.type, "Size:", recordedBlob.size);
+                        recordedChunks = [];
+
+                        // सीधा WebM/Opus डाउनलोड
+                        if (recordedBlob.size > 0) {
+                            downloadBlob(recordedBlob, `${generateFilename()}_q${qualitySelect.value}.${currentMediaRecorderOptions.mimeType.split('/')[1].split(';')[0]}`);
+                            showToast("रिकॉर्डिंग सहेजी गई!", 5000);
+                        } else {
+                            showToast("रिकॉर्ड किया गया डेटा खाली है, सहेजा नहीं जा सका।", 3000, true);
+                        }
+                        updateMainDisplayPlayingInfo(baseDisplayMessage);
+                        updateRecordButtonState();
+                        disablePlayerControls(false); // सुनिश्चित करें कि यह कॉल हो रहा है
+                    };
+                    
+                    mediaRecorder.onerror = (event) => {
+                        console.error('MediaRecorder त्रुटि:', event.error);
+                        showToast(`रिकॉर्डिंग त्रुटि: ${event.error.name}.`, 5000, true);
+                        if (recordingIntervalId) clearInterval(recordingIntervalId);
+                        recordingIntervalId = null;
+                        document.title = originalPageTitle;
+                        updateMainDisplayPlayingInfo(baseDisplayMessage);
+                        mainDisplayStatusInfo.textContent = '';
+                        stopSaveBtn.classList.remove('recording-active');
+                        cancelRecordBtn.classList.remove('recording-active');
+                        updateRecordButtonState();
+                        disablePlayerControls(false);
+                    };
+
+                    mediaRecorder.start(1000); 
+                    console.log("MediaRecorder started.");
+                    recordingDuration = 0;
+                    updateRecordingDisplay(); 
+
+                    document.title = "🔴 रिकॉर्डिंग... - " + originalPageTitle;
+                    showToast("रिकॉर्डिंग शुरू हुई!", 2000);
+                    updateRecordButtonState();
+
+                    recordingIntervalId = setInterval(() => {
+                        recordingDuration++;
+                        updateRecordingDisplay();
+                    }, 1000);
+
+                } catch (err) {
+                    console.error("रिकॉर्डिंग शुरू करने में त्रुटि:", err);
+                    showToast("रिकॉर्डिंग शुरू करने में त्रुटि। कंसोल देखें।", 5000, true);
+                    updateRecordButtonState();
+                }
+            }
+
+            function stopRecordingStream(save = true, stopMessage = "रिकॉर्डिंग रोकी गई।") {
+                userIntendsToCancel = !save; 
+                console.log("stopRecordingStream called. saveFile (userIntendsToCancel will be !saveFile):", save, "state:", mediaRecorder ? mediaRecorder.state : "n/a");
+                
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    console.log("Stopping MediaRecorder. User intends to cancel:", userIntendsToCancel);
+                    mediaRecorder.stop();
+                } 
+                 else { 
+                    console.log("MediaRecorder not recording or not initialized when stop was called.");
+                    if (recordingIntervalId) clearInterval(recordingIntervalId);
+                    recordingIntervalId = null;
+                    document.title = originalPageTitle;
+                    updateMainDisplayPlayingInfo(baseDisplayMessage);
+                    mainDisplayStatusInfo.textContent = '';
+                    updateRecordButtonState();
+                }
+                stopSaveBtn.classList.remove('recording-active');
+                cancelRecordBtn.classList.remove('recording-active');
+            }
+            
+            function updateRecordingDisplay() {
+                const minutes = Math.floor(recordingDuration / 60).toString().padStart(2, '0');
+                const seconds = (recordingDuration % 60).toString().padStart(2, '0');
+                const sizeMB = (recordedBlobSize / (1024 * 1024)).toFixed(2);
+                const statusText = `रिकॉर्डिंग: ${minutes}:${seconds} (${sizeMB} MB) 🔴`;
+                mainDisplayStatusInfo.textContent = statusText;
+                mainDisplayStatusInfo.style.color = '#00FF00';
+                if(currentPlayingStationDetails && mainDisplayPlayingInfo.textContent !== `बज रहा है: ${currentPlayingStationDetails.name}`) {
+                    mainDisplayPlayingInfo.textContent = `बज रहा है: ${currentPlayingStationDetails.name}`;
+                } else if (!currentPlayingStationDetails && mainDisplayPlayingInfo.textContent !== baseDisplayMessage) {
+                     mainDisplayPlayingInfo.textContent = baseDisplayMessage;
+                }
+            }
+
+            function generateFilename() { return currentPlayingStationDetails ? currentPlayingStationDetails.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'radio'; }
+            
+            function downloadBlob(blob, filename) {
+                if (!blob || blob.size === 0) {
+                    console.error("डाउनलोड करने के लिए Blob खाली है या अमान्य है।");
+                    showToast("डाउनलोड करने के लिए डेटा नहीं है।", 3000, true);
+                    return;
+                }
+                console.log(`Attempting to download: ${filename}, size: ${blob.size}`);
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                try {
+                    a.click();
+                    console.log("Download click triggered for", filename);
+                } catch (e) {
+                    console.error("a.click() में त्रुटि:", e);
+                    showToast("डाउनलोड शुरू करने में त्रुटि।", 3000, true);
+                }
+                setTimeout(() => {
+                    window.URL.revokeObjectURL(url);
+                    if (a.parentElement) { document.body.removeChild(a); }
+                    console.log("Blob URL revoked and <a> removed for", filename);
+                }, 300);
+            }
+
+            function updateRecordButtonState() {
+                const canRecord = !audio.paused && audio.src && audio.readyState >= 2;
+
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    recordBtn.style.display = 'none';
+                    stopSaveBtn.style.display = 'inline-block';
+                    cancelRecordBtn.style.display = 'inline-block';
+                    stopSaveBtn.disabled = false;
+                    cancelRecordBtn.disabled = false;
+                    stopSaveBtn.classList.add('recording-active');
+                    cancelRecordBtn.classList.add('recording-active');
+                    recordBtn.classList.remove('can-record');
+                } 
+                // isConvertingToMp3 स्थिति हटा दी गई
+                else {
+                    recordBtn.style.display = 'inline-block';
+                    stopSaveBtn.style.display = 'none';
+                    cancelRecordBtn.style.display = 'none';
+                    recordBtn.disabled = !canRecord;
+                    stopSaveBtn.classList.remove('recording-active');
+                    cancelRecordBtn.classList.remove('recording-active');
+                    if (canRecord) {
+                         recordBtn.classList.add('can-record');
+                         recordBtn.style.color = 'green';
+                    } else {
+                        recordBtn.classList.remove('can-record');
+                        recordBtn.style.color = '#666';
+                    }
+                }
+            }
+            
+            function disablePlayerControls(disable) {
+                prevStationBtn.disabled = disable || !(currentPlayingIndex > 0 && currentStations.length > 0 && !audio.paused && audio.readyState >=2);
+                nextStationBtn.disabled = disable || !(currentPlayingIndex < currentStations.length - 1 && currentStations.length > 0 && !audio.paused && audio.readyState >=2);
+                shareStationBtn.disabled = disable || !(currentPlayingStationDetails && !audio.paused);
+                
+                Object.values(navButtons).forEach(btn => {
+                    if(btn !== shareStationBtn) btn.disabled = disable 
+                });
+                countrySelect.disabled = disable;
+                searchStationInput.disabled = disable;
+                qualitySelect.disabled = disable;
+                sleepTimerSelect.disabled = disable;
+                
+                stationList.style.pointerEvents = disable ? 'none' : 'auto';
+                stationList.style.opacity = disable ? 0.5 : 1;
+                
+                if(disable) {
+                    recordBtn.disabled = true;
+                    recordBtn.classList.remove('can-record');
+                    recordBtn.style.color = '#666';
+                    stopSaveBtn.disabled = true;
+                    cancelRecordBtn.disabled = true;
+                } else {
+                    updateRecordButtonState();
+                    const isPlaying = currentPlayingIndex !== -1 && !audio.paused && audio.src && audio.readyState >= 2;
+                    prevStationBtn.disabled = !isPlaying || currentPlayingIndex <= 0;
+                    nextStationBtn.disabled = !isPlaying || currentPlayingIndex >= currentStations.length - 1;
+                }
+            }
+
+            recordBtn.addEventListener('click', startRecordingStream);
+            stopSaveBtn.addEventListener('click', () => {
+                console.log("Stop & Save button clicked by user.");
+                stopRecordingStream(true, "रिकॉर्डिंग रोकी गई, सहेजा जा रहा है...");
+            });
+            cancelRecordBtn.addEventListener('click', () => {
+                console.log("Cancel Record button clicked by user.");
+                stopRecordingStream(false, "रिकॉर्डिंग रद्द की गई।");
+            });
+
+            audio.addEventListener('play', () => { 
+                console.log("Audio 'play' event");
+                shareStationBtn.disabled = false; 
+                updateRecordButtonState(); 
+                // विज़ुअलाइज़र लॉजिक हटा दिया गया
+            });
+            audio.addEventListener('pause', () => { 
+                console.log("Audio 'pause' event");
+                updateRecordButtonState(); 
+                // विज़ुअलाइज़र लॉजिक हटा दिया गया
+            });
+            audio.addEventListener('ended', () => { 
+                 console.log("Audio 'ended' event");
+                shareStationBtn.disabled = true; currentPlayingStationDetails = null; 
+                const playingLi = stationList.querySelector('li.playing'); if (playingLi) playingLi.classList.remove('playing');
+                nowPlayingDisplay.textContent = ''; updateRecordButtonState();
+                // विज़ुअलाइज़र लॉजिक हटा दिया गया
+            });
+            audio.addEventListener('error', (e) => { 
+                console.error("Audio error event:", e);
+                showToast('ऑडियो स्ट्रीम त्रुटि।', 3000, true);
+                updateRecordButtonState(); 
+                if (currentPlayingStationDetails && currentPlayingStationDetails.uuid && !brokenStreams.includes(currentPlayingStationDetails.uuid)) {
+                    brokenStreams.push(currentPlayingStationDetails.uuid);
+                    sessionStorage.setItem('brokenRadioStreamsSimple', JSON.stringify(brokenStreams));
+                    const li = stationList.querySelector(`li[data-uuid='${currentPlayingStationDetails.uuid}']`);
+                    if(li) li.classList.add('broken-stream');
+                }
+                // विज़ुअलाइज़र लॉजिक हटा दिया गया
+            });
+            audio.addEventListener('emptied', () => {
+                console.log("Audio 'emptied' event (src changed or reset)");
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    stopRecordingStream(false, "ऑडियो स्रोत बदलने के कारण रिकॉर्डिंग रोक दी गई।");
+                }
+                shareStationBtn.disabled = true; currentPlayingStationDetails = null; updateRecordButtonState();
+                // विज़ुअलाइज़र लॉजिक हटा दिया गया
+            });
+            
+            navButtons.country.addEventListener('click', () => { activeView = 'country'; updateActiveNavButton(activeView); 
+                                                              if (countrySelect.value) loadData('country', countrySelect.value); 
+                                                              else { currentStations = []; stationList.innerHTML = ''; updateMainDisplayPlayingInfo('कृपया एक देश चुनें'); updateNavigationButtonsState(); } });
+            countrySelect.addEventListener('change', () => loadData('country', countrySelect.value));
+            navButtons.favorites.addEventListener('click', () => loadData('favorites', null, 'पसंदीदा'));
+            navButtons.hindi.addEventListener('click', () => loadData('hindi', null, 'हिंदी'));
+            navButtons.urdu.addEventListener('click', () => loadData('urdu', null, 'उर्दू'));
+            navButtons.english.addEventListener('click', () => loadData('english', null, 'अंग्रेजी'));
+
+            searchStationInput.addEventListener('input', () => {
+                const searchTerm = searchStationInput.value.toLowerCase(); if (!currentStations) return;
+                const filteredStations = currentStations.filter(station => station.name.toLowerCase().includes(searchTerm));
+                renderStations(filteredStations, activeView);
+            });
+            
+            shareStationBtn.addEventListener('click', async () => {
+                 if (currentPlayingStationDetails) {
+                    const { name, url, homepage } = currentPlayingStationDetails; // url अब मूल url है
+                    const shareData = { title: `सुनिए ${name}`, text: `मैं World FM पर ${name} सुन रहा हूँ! आप भी सुनें: ${homepage || url}`, url: homepage || url };
+                    try {
+                        if (navigator.share) { await navigator.share(shareData); } 
+                        else { const shareText = `स्टेशन: ${name}\nलिंक: ${shareData.url}`; prompt("यह स्टेशन साझा करें (लिंक कॉपी करें):", shareText); }
+                    } catch (err) { const shareText = `स्टेशन: ${name}\nलिंक: ${shareData.url}`; prompt("साझा करने में त्रुटि हुई। यह लिंक कॉपी करें:", shareText); }
+                }
+            });
+            
+            updateActiveNavButton(activeView);
+            updateRecordButtonState();
+            updateNavigationButtonsState(); 
+            updateMainDisplayPlayingInfo(baseDisplayMessage);
+            console.log("स्क्रिप्ट आरंभिकरण पूर्ण।");
+        });
+    </script>
+</body>
+</html>
