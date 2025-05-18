@@ -18,11 +18,12 @@
             top: 0; left: 0; z-index: 1001;
         }
         .app-header .title { font-size: 1.3em; font-weight: bold; }
-        .header-icons { display: flex; gap: 8px; }
+        .header-icons { display: flex; gap: 8px; flex-wrap: nowrap; }
         .header-icons button {
             background: none; border: none; color: white; font-size: 1.4em;
             cursor: pointer; padding: 8px; border-radius: 4px; transition: background-color 0.2s;
             display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; 
         }
         .header-icons button:hover { background-color: rgba(255,255,255,0.15); }
         .container {
@@ -98,14 +99,31 @@
             font-size: 28px; font-weight: bold;
         }
         .close-button:hover, .close-button:focus { color: black; text-decoration: none; cursor: pointer; }
-        #historyList, #projectList, #offcutsListContainer ul { 
-            list-style-type: none; padding: 0; max-height: 300px; overflow-y: auto;
-            border-top: 1px solid #eee; margin-top: 15px;
+        #historyList, #projectList, #offcutsListContainer ul, #usefulOffcutsDisplayListContainer ul, #otherSmallWastageContainer ul { 
+            list-style-type: none; padding: 0; margin-top: 5px;
         }
-        #historyList li, #projectList li, #offcutsListContainer li { 
+        #historyList, #projectList, #offcutsListContainer { 
+             max-height: 300px; overflow-y: auto; border-top: 1px solid #eee; margin-top: 15px;
+        }
+         #usefulOffcutsDisplayListContainer, #otherSmallWastageContainer { 
+            max-height: 150px; overflow-y:auto; 
+        }
+
+        #historyList li, #projectList li, #offcutsListContainer li, #usefulOffcutsDisplayListContainer li, #otherSmallWastageContainer li { 
             padding: 8px 10px; border-bottom: 1px solid #eee;
             font-size: 0.9em; display: flex; justify-content: space-between; align-items: center;
         }
+         #offcutsListContainer table td, #offcutsListContainer table th { 
+            padding: 6px 8px;
+            font-size: 0.85em;
+        }
+
+        #usefulOffcutsDisplayListContainer li, #otherSmallWastageContainer li {
+            background-color: #fef6f6; border: 1px solid #f5c6cb; border-radius: 4px; margin-bottom: 5px;
+        }
+        #usefulOffcutsDisplayListContainer li { background-color: #f0fdf0; border-color: #ddeedd; }
+
+
         #historyList li .history-item-content, #projectList li .project-item-content, #offcutsListContainer li span:first-child {
             flex-grow: 1; cursor: default; 
         }
@@ -133,9 +151,9 @@
 
         .wastage-section { margin-top: 30px; padding-top: 20px; border-top: 2px dashed #bdc3c7;}
         .wastage-section h3 { text-align: center; color: #c0392b; }
-        .wastage-list ul { list-style-type: none; padding-left: 0; margin-top:5px; } 
-        .wastage-list li { background-color: #fef6f6; padding: 8px; border-radius: 4px; margin-bottom: 8px; border: 1px solid #f5c6cb;}
-        .wastage-list .free-rect-dim { font-weight: bold; color: #721c24; }
+        #wastageOverallStats { list-style-type: none; padding-left: 0; margin-top:0; margin-bottom: 10px;}
+        #wastageOverallStats li { margin-bottom: 5px; }
+        .wastage-list .free-rect-dim { font-weight: bold; color: #721c24; } 
         .wastage-list-summary { font-weight: bold; margin-top: 10px; text-align: right; } 
         .useful-offcuts-summary { font-weight: bold; text-align: left; padding: 5px 0; margin-top: 5px; margin-bottom: 5px; display:flex; align-items:center; justify-content:space-between;}
 
@@ -151,49 +169,25 @@
         }
 
         /* Mobile Header Icon Adjustments */
-        @media (max-width: 700px) { /* Increased breakpoint for more aggressive icon scaling */
-            .app-header .title {
-                font-size: 1.1em; 
-            }
-            .header-icons {
-                gap: 1px; /* Reduce gap significantly */
-            }
-            .header-icons button {
-                font-size: 1.1em; /* Make icons smaller */
-                padding: 5px; /* Reduce padding */
-            }
-            .header-icons button small { /* Hide small text like "PDF" */
-                display: none; 
-            }
+        @media (max-width: 700px) { 
+            .app-header .title { font-size: 1.1em; }
+            .header-icons { gap: 1px; flex-wrap: nowrap; }
+            .header-icons button { font-size: 1.1em; padding: 5px; }
+            .header-icons button small { display: none; }
         }
-        @media (max-width: 480px) { /* Very small screens */
-            .app-header {
-                padding: 8px 10px; 
-            }
-             .app-header .title {
-                /* Optionally hide title if too cramped, or make it even smaller */
-                /* display: none; */ 
-                font-size: 1.0em;
-            }
-            .header-icons button {
-                font-size: 1.0em; /* Even smaller icons */
-                padding: 4px;
-            }
+        @media (max-width: 480px) { 
+            .app-header { padding: 8px 10px; }
+            .app-header .title { font-size: 1.0em; }
+            .header-icons button { font-size: 1.0em; padding: 4px; }
         }
 
 
         @media print {
             body {
-                margin: 15mm; 
-                padding: 0;
-                font-size: 10pt;
-                color: #000 !important; 
-                background-color: #fff !important; 
+                margin: 15mm; padding: 0; font-size: 10pt;
+                color: #000 !important; background-color: #fff !important; 
             }
-            html, body { 
-                height: auto;
-                overflow: visible;
-            }
+            html, body { height: auto; overflow: visible; }
             .app-header, .parts-group, #mainActionButtons, .modal, #jsonMenu, .no-print,
             #manageProjectsIcon, #unitSettingsIcon, #langToggle, #printToPdfButton, 
             #sheetSettingsIcon, #historyIcon, #jsonIcon, #loadingIndicator, #showOffcutsLibraryIcon,
@@ -228,22 +222,15 @@
             th { background-color: #f0f0f0 !important; }
             .table-summary-row { background-color: #f8f8f8 !important; }
             #addedPiecesSection .delete-btn {display: none !important;}
-            .sheets-container {
-                display: block !important; margin-top: 10px !important; gap: 0 !important;
-            }
+            .sheets-container { display: block !important; margin-top: 10px !important; gap: 0 !important; }
             .sheet-wrapper {
                 page-break-inside: avoid !important; border: 1px solid #ccc !important;
                 margin-bottom: 20px !important; width: 100% !important;
                 box-sizing: border-box !important; padding: 5px !important;
                 background-color: #fff !important; 
             }
-            .sheet-wrapper h3 {
-                font-size: 12pt !important; margin-bottom: 5px !important; color: #000 !important;
-            }
-            .sheet-wrapper canvas {
-                max-width: 100% !important; height: auto !important;
-                border: 1px solid #aaa !important;
-            }
+            .sheet-wrapper h3 { font-size: 12pt !important; margin-bottom: 5px !important; color: #000 !important; }
+            .sheet-wrapper canvas { max-width: 100% !important; height: auto !important; border: 1px solid #aaa !important; }
             .cutting-list { font-size: 9pt !important; margin-top: 10px !important; }
             .cutting-list ul { padding-left: 5px !important; }
             .cutting-list li label { color: #000 !important; }
@@ -261,13 +248,16 @@
                 page-break-before: always !important; margin-top: 20px !important;
                 background-color: #fff !important; 
             }
-            .wastage-list ul { padding-left: 0 !important;}
-            .wastage-list li {
+            #usefulOffcutsDisplayListContainer ul, #otherSmallWastageContainer ul { padding-left: 0 !important;}
+            #usefulOffcutsDisplayListContainer li, #otherSmallWastageContainer li {
                 font-size: 9pt !important; padding: 4px !important;
-                background-color: #fdf0f0 !important; border: 1px solid #edd !important;
-                color: #000 !important;
+                border: 1px solid #edd !important;
+                color: #000 !important; margin-bottom: 4px !important; border-radius: 3px !important;
             }
-            .wastage-list .free-rect-dim { color: #500 !important; }
+            #usefulOffcutsDisplayListContainer li { background-color: #f0fdf0 !important; border-color: #ddeedd !important;}
+            #otherSmallWastageContainer li { background-color: #fef6f6 !important; border-color: #f5c6cb !important;}
+
+            .wastage-list .free-rect-dim, #usefulOffcutsDisplayListContainer .free-rect-dim, #otherSmallWastageContainer .free-rect-dim { color: #500 !important; }
             .wastage-list-summary, .useful-offcuts-summary { font-size: 10pt !important; color: #000 !important; }
             .useful-offcuts-summary button { display: none !important; } 
         }
@@ -464,6 +454,25 @@
         <div class="offcuts-library-modal-content">
             <span class="close-button" onclick="closeOffcutsLibraryModal()">&times;</span>
             <h2 data-lang-key="offcutsLibraryTitle">ऑफकट लाइब्रेरी</h2>
+            <div class="offcut-add-manual-group" style="padding: 10px; border: 1px solid #e0e0e0; border-radius: 5px; margin-bottom: 15px;">
+                <h4 data-lang-key="addManualOffcutTitle" style="margin-top:0; margin-bottom:10px;">मैन्युअल ऑफकट जोड़ें</h4>
+                <div style="display:flex; gap:10px; align-items: flex-end;">
+                    <div style="flex-grow:1;">
+                        <label for="manualOffcutWidth"><span data-lang-key="offcutWidthLabel">चौड़ाई</span> (<span class="unit-display">cm</span>):</label>
+                        <input type="number" id="manualOffcutWidth" placeholder="0" step="any" style="margin-bottom:5px;">
+                    </div>
+                    <div style="flex-grow:1;">
+                        <label for="manualOffcutLength"><span data-lang-key="offcutLengthLabel">लंबाई</span> (<span class="unit-display">cm</span>):</label>
+                        <input type="number" id="manualOffcutLength" placeholder="0" step="any" style="margin-bottom:5px;">
+                    </div>
+                    <div style="flex-grow:1;">
+                        <label for="manualOffcutSourceName" data-lang-key="offcutSourceNameLabel">स्रोत (वैकल्पिक):</label>
+                        <input type="text" id="manualOffcutSourceName" data-lang-placeholder="offcutSourcePlaceholder" style="margin-bottom:5px;">
+                    </div>
+                    <button onclick="addManualOffcut()" data-lang-key="addManualOffcutBtn" style="padding: 10px 15px; height: 40px; margin-bottom:5px;">जोड़ें</button>
+                </div>
+            </div>
+            <hr style="margin: 15px 0;">
             <div id="offcutsListContainer">
             </div>
             <p id="noOffcutsMessageModal" style="display:none;"></p>
@@ -591,6 +600,9 @@
                                 sheetsFromThisStockItem++;
                                 self.postMessage({ type: 'LAYOUT_PROGRESS', progress: { sheetsProcessed: sheetsLayoutData.length } });
                             } else {
+                                // If no pieces placed on this new_sheet (which could be an offcut or a new standard sheet),
+                                // and it's an offcut, then this offcut is done with.
+                                // If it's a standard sheet and nothing fit, then something is wrong or no piece is small enough.
                                 break; 
                             }
                         }
@@ -635,21 +647,22 @@
             modalGrainColorEl, fittingStrategySelectorEl, useOffcutsCheckboxEl,
             minOffcutWidthEl, minOffcutLengthEl, 
             offcutsLibraryModalEl, offcutsListContainerEl, noOffcutsMessageEl_Modal,
-            wastageOverallStatsEl, usefulOffcutsDisplayListContainerEl, otherSmallWastageContainerEl; 
+            wastageOverallStatsEl, usefulOffcutsDisplayListContainerEl, otherSmallWastageContainerEl,
+            manualOffcutWidthEl, manualOffcutLengthEl, manualOffcutSourceNameEl;
 
 
-        const STORAGE_KEY_PIECES = 'sheetLayoutCalcPieces_v21_offcuts_final'; 
-        const STORAGE_KEY_SETTINGS = 'sheetLayoutCalcSettings_v21_offcuts_final';
-        const STORAGE_KEY_ID_COUNTER = 'sheetLayoutCalcIdCounter_v21_offcuts_final';
-        const STORAGE_KEY_HISTORY = 'sheetLayoutCalcHistory_v21_offcuts_final';
-        const STORAGE_KEY_LANGUAGE = 'sheetLayoutCalcLang_v9_offcuts_final';
-        const STORAGE_KEY_CURRENT_UNIT = 'sheetLayoutCalcUnit_v9_offcuts_final';
-        const STORAGE_KEY_CUTTING_LIST_CHECKS = 'sheetLayoutCalcCutChecks_v9_offcuts_final';
-        const STORAGE_KEY_PROJECTS = 'sheetLayoutCalcProjects_v8_offcuts_final'; 
-        const STORAGE_KEY_GRAIN_COLOR = 'sheetLayoutCalculatorGrainColor_v3_offcuts_final';
-        const STORAGE_KEY_FITTING_STRATEGY = 'sheetLayoutCalculatorFittingStrategy_v2_offcuts_final';
-        const STORAGE_KEY_SAVED_OFFCUTS = 'sheetLayoutCalculatorSavedOffcuts_v2_final'; 
-        const STORAGE_KEY_OFFCUT_SETTINGS = 'sheetLayoutCalculatorOffcutSettings_v1_final';
+        const STORAGE_KEY_PIECES = 'sheetLayoutCalcPieces_v21_offcuts_final3_1'; 
+        const STORAGE_KEY_SETTINGS = 'sheetLayoutCalcSettings_v21_offcuts_final3_1';
+        const STORAGE_KEY_ID_COUNTER = 'sheetLayoutCalcIdCounter_v21_offcuts_final3_1';
+        const STORAGE_KEY_HISTORY = 'sheetLayoutCalcHistory_v21_offcuts_final3_1';
+        const STORAGE_KEY_LANGUAGE = 'sheetLayoutCalcLang_v9_offcuts_final3_1';
+        const STORAGE_KEY_CURRENT_UNIT = 'sheetLayoutCalcUnit_v9_offcuts_final3_1';
+        const STORAGE_KEY_CUTTING_LIST_CHECKS = 'sheetLayoutCalcCutChecks_v9_offcuts_final3_1';
+        const STORAGE_KEY_PROJECTS = 'sheetLayoutCalcProjects_v8_offcuts_final3_1'; 
+        const STORAGE_KEY_GRAIN_COLOR = 'sheetLayoutCalculatorGrainColor_v3_offcuts_final3_1';
+        const STORAGE_KEY_FITTING_STRATEGY = 'sheetLayoutCalculatorFittingStrategy_v2_offcuts_final3_1';
+        const STORAGE_KEY_SAVED_OFFCUTS = 'sheetLayoutCalculatorSavedOffcuts_v3_final3_1'; 
+        const STORAGE_KEY_OFFCUT_SETTINGS = 'sheetLayoutCalculatorOffcutSettings_v1_final3_1';
 
 
         const MAX_HISTORY_STATES = 20;
@@ -660,8 +673,9 @@
         let savedProjects = []; 
         let currentGrainColor = 'rgba(0,0,0,0.08)'; 
         let currentFittingStrategy = 'defaultScore';
-        let savedOffcuts = [];
-        let offcutSettings = { minWidth: 10, minLength: 45 };
+        let savedOffcuts = []; 
+        let offcutSettings = { minWidth: 10, minLength: 45 }; 
+        let currentCalculationOffcuts = []; 
 
 
         let lastCalculatedSheetsData = null;
@@ -704,6 +718,22 @@
                 "usefulOffcutsSavedAlert" : "{count} उपयोगी ऑफकट लाइब्रेरी में सहेजे गए!",
                 "noNewOffcutsToSaveAlert": "कोई नया उपयोगी ऑफकट सहेजने के लिए नहीं मिला।",
                 "sourceSheetNameLabel": "स्रोत शीट",
+                "addManualOffcutTitle": "मैन्युअल ऑफकट जोड़ें",
+                "offcutWidthLabel": "चौड़ाई",
+                "offcutLengthLabel": "लंबाई",
+                "offcutSourceNameLabel": "स्रोत (वैकल्पिक)",
+                "offcutSourcePlaceholder": "उदा. पुरानी परियोजना",
+                "addManualOffcutBtn": "ऑफकट जोड़ें",
+                "alert_invalidOffcutDimensions": "कृपया मान्य ऑफकट आयाम दर्ज करें।",
+                "alert_offcutAddedManually": "ऑफकट मैन्युअल रूप से जोड़ा गया!",
+                "manualEntryLabel": "मैन्युअल एंट्री",
+                "batchIdLabel": "बैच ID", "statusLabel": "स्थिति", "availableLabel": "उपलब्ध", "usedLabel": "प्रयुक्त",
+                "confirmUseOffcutsMsg": "क्या आप {name} स्रोत वाले {count} ऑफकट (या सभी उपलब्ध {count} ऑफकट यदि कोई नाम नहीं है) का उपयोग करना चाहते हैं?",
+                "noMatchingOffcuts": "इस शीट नाम के लिए कोई ऑफकट नहीं मिला, या कोई ऑफकट उपलब्ध नहीं है।",
+                "unnamedSheetLabel": "अनाम शीट",
+                "allSourcesLabel": "सभी स्रोतों",
+                "offcutsSelectedForCalcAlert": "{count} ऑफकट गणना के लिए चुने गए।",
+                "noAvailableOffcutsInBatches": "इन बैचों में कोई उपलब्ध ऑफकट नहीं है।",
                 "exportJson": "JSON एक्सपोर्ट करें", "importJson": "JSON इम्पोर्ट करें", "clearSavedData": "सेव डेटा क्लियर करें",
                 "addPieceTitle": "पीस जोड़ें", "pieceNameLabel": "पीस का नाम (वैकल्पिक):",
                 "pieceDefaultName": "पीस-",
@@ -804,6 +834,22 @@
                 "usefulOffcutsSavedAlert": "{count} useful offcuts saved to library!",
                 "noNewOffcutsToSaveAlert": "No new useful offcuts found to save.",
                 "sourceSheetNameLabel": "Source Sheet",
+                "addManualOffcutTitle": "Add Manual Offcut",
+                "offcutWidthLabel": "Width",
+                "offcutLengthLabel": "Length",
+                "offcutSourceNameLabel": "Source (Optional)",
+                "offcutSourcePlaceholder": "e.g., Old Project",
+                "addManualOffcutBtn": "Add Offcut",
+                "alert_invalidOffcutDimensions": "Please enter valid offcut dimensions.",
+                "alert_offcutAddedManually": "Offcut added manually!",
+                "manualEntryLabel": "Manual Entry",
+                "batchIdLabel": "Batch ID", "statusLabel": "Status", "availableLabel": "Available", "usedLabel": "Used",
+                "confirmUseOffcutsMsg": "Use {count} offcuts from source '{name}' (or all {count} available if no name)?",
+                "noMatchingOffcuts": "No offcuts found for this sheet name, or no offcuts available.",
+                "unnamedSheetLabel": "Unnamed Sheet",
+                "allSourcesLabel": "all sources",
+                "offcutsSelectedForCalcAlert":"{count} offcuts selected for calculation.",
+                "noAvailableOffcutsInBatches": "No available offcuts in these batches.",
                 "exportJson": "Export JSON", "importJson": "Import JSON", "clearSavedData": "Clear Saved Data",
                 "addPieceTitle": "Add Piece", "pieceNameLabel": "Piece Name (Optional):", "pieceDefaultName": "Piece-",
                 "pieceWidthLabel": "Piece Width", "pieceLengthLabel": "Piece Length (Grain)",
@@ -916,6 +962,9 @@
             offcutsLibraryModalEl = document.getElementById('offcutsLibraryModal');
             offcutsListContainerEl = document.getElementById('offcutsListContainer');
             noOffcutsMessageEl_Modal = offcutsLibraryModalEl.querySelector('#noOffcutsMessageModal');
+            manualOffcutWidthEl = document.getElementById('manualOffcutWidth');
+            manualOffcutLengthEl = document.getElementById('manualOffcutLength');
+            manualOffcutSourceNameEl = document.getElementById('manualOffcutSourceName');
         }
         function getLangString(key, replacements = {}) { let str = (langStrings[currentLanguage] && langStrings[currentLanguage][key]) || `[[${key}]]`; for (const placeholder in replacements) { str = str.replace(`{${placeholder}}`, replacements[placeholder]); } return str; }
         function updateUnitDisplaysDOM(unit) { if(unitDisplayElements && unitDisplayElements.length > 0) unitDisplayElements.forEach(el => { if(el) el.textContent = unit; }); }
@@ -1013,11 +1062,11 @@
                     }
                 }
             });
-            updateUnitDisplaysDOM(currentUnit);
+            updateUnitDisplaysDOM(currentUnit); 
             renderPiecesTable();
             if (historyModalEl && historyModalEl.style.display === 'flex') showHistoryModal();
             if (projectManagementModalEl && projectManagementModalEl.style.display === 'flex') renderProjectsList(); 
-             if (offcutsLibraryModalEl && offcutsLibraryModalEl.style.display === 'flex') renderOffcutsList();
+            if (offcutsLibraryModalEl && offcutsLibraryModalEl.style.display === 'flex') renderOffcutsList();
 
 
             if (lastCalculatedSheetsData && lastCalculatedSheetsData.length > 0) {
@@ -1550,7 +1599,7 @@
                     displayLayoutOnCanvas(lastCalculatedSheetsData);
                 }
                 wastageSectionEl.style.display = 'none';
-                 if(wastageOverallStatsEl) wastageOverallStatsEl.innerHTML = '';
+                if(wastageOverallStatsEl) wastageOverallStatsEl.innerHTML = '';
                 if(usefulOffcutsDisplayListContainerEl) usefulOffcutsDisplayListContainerEl.innerHTML = '';
                 if(otherSmallWastageContainerEl) otherSmallWastageContainerEl.innerHTML = '';
                 if(totalWastagePiecesSummaryEl) totalWastagePiecesSummaryEl.style.display = 'none';
@@ -1605,6 +1654,55 @@
             }
         }
 
+        function addManualOffcut() {
+            const widthInput = parseFloat(manualOffcutWidthEl.value);
+            const lengthInput = parseFloat(manualOffcutLengthEl.value);
+            const sourceName = manualOffcutSourceNameEl.value.trim();
+
+            if (isNaN(widthInput) || widthInput <= 0 || isNaN(lengthInput) || lengthInput <= 0) {
+                alert(getLangString("alert_invalidOffcutDimensions"));
+                return;
+            }
+
+            const width_cm = convertToCm(widthInput, currentUnit);
+            const length_cm = convertToCm(lengthInput, currentUnit);
+            
+            let w_final = width_cm;
+            let l_final = length_cm;
+            if (!modalSheetHasGrainEl.checked && w_final > l_final) { 
+                [w_final, l_final] = [l_final, w_final]; 
+            }
+            
+            const newOffcut = {
+                id: `MANUAL-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+                width: parseFloat(w_final.toFixed(2)),
+                length: parseFloat(l_final.toFixed(2)),
+                area: parseFloat((w_final * l_final).toFixed(2)),
+                dateAdded: new Date().toISOString(),
+                isIndividuallyAvailable: true, 
+                sourceSheetIdFromCalc: 'MANUAL', 
+                sourceSheetNameFromCalc: sourceName || (getLangString("manualEntryLabel") || "मैन्युअल एंट्री")
+            };
+
+            const batchId = `BATCH-MANUAL-${Date.now()}`;
+            const newBatch = {
+                batchId: batchId,
+                dateTime: new Date().toLocaleString(currentLanguage === 'hi' ? 'hi-IN' : 'en-US'),
+                sourceSheetNameForBatch: newOffcut.sourceSheetNameFromCalc,
+                offcutsInBatch: [newOffcut],
+                isBatchAvailable: true 
+            };
+
+            savedOffcuts.push(newBatch);
+            localStorage.setItem(STORAGE_KEY_SAVED_OFFCUTS, JSON.stringify(savedOffcuts));
+            alert(getLangString("alert_offcutAddedManually"));
+
+            manualOffcutWidthEl.value = '';
+            manualOffcutLengthEl.value = '';
+            manualOffcutSourceNameEl.value = '';
+            renderOffcutsList(); 
+        }
+
         function showOffcutsLibraryModal() {
             renderOffcutsList();
             if (offcutsLibraryModalEl) offcutsLibraryModalEl.style.display = 'flex';
@@ -1615,52 +1713,90 @@
         function renderOffcutsList() {
             if (!offcutsListContainerEl || !noOffcutsMessageEl_Modal) return;
             offcutsListContainerEl.innerHTML = '';
-            const availableOffcuts = savedOffcuts.filter(oc => oc.isAvailable !== false);
+            const availableBatches = savedOffcuts.filter(batch => batch.isBatchAvailable && batch.offcutsInBatch.some(oc => oc.isIndividuallyAvailable !== false));
 
-            if (availableOffcuts.length === 0) {
+            if (availableBatches.length === 0) {
                 noOffcutsMessageEl_Modal.style.display = 'block';
                 noOffcutsMessageEl_Modal.textContent = getLangString("noOffcutsSaved");
             } else {
                 noOffcutsMessageEl_Modal.style.display = 'none';
-                const table = document.createElement('table');
-                table.style.fontSize = "0.9em";
-                const thead = table.createTHead();
-                const tbody = table.createTBody();
-                let headerRow = thead.insertRow();
-                [
-                    "ID", 
-                    `${getLangString("tableWidth")} (${currentUnit})`, 
-                    `${getLangString("tableLength")} (${currentUnit})`, 
-                    getLangString("sourceSheetNameLabel") || "स्रोत शीट", 
-                    getLangString("tableRemove")
-                ].forEach(text => {
-                    let th = document.createElement("th");
-                    th.textContent = text;
-                    headerRow.appendChild(th);
-                });
+                availableBatches.forEach(batch => {
+                    const batchDiv = document.createElement('div');
+                    batchDiv.style.marginBottom = '15px';
+                    batchDiv.style.border = '1px solid #ddd';
+                    batchDiv.style.borderRadius = '5px';
+                    batchDiv.style.padding = '10px';
 
-                availableOffcuts.sort((a,b) => b.area - a.area).forEach((offcut) => {
-                    let row = tbody.insertRow();
-                    row.insertCell().textContent = offcut.id.slice(-6);
-                    row.insertCell().textContent = convertFromCm(offcut.width, currentUnit);
-                    row.insertCell().textContent = convertFromCm(offcut.length, currentUnit);
-                    row.insertCell().textContent = offcut.sourceSheetName || `(ID: ${offcut.sourceSheetId})`;
+                    const batchHeader = document.createElement('h5');
+                    batchHeader.style.marginTop = '0';
+                    batchHeader.style.marginBottom = '8px';
+                    batchHeader.textContent = `${getLangString("batchIdLabel") || "बैच ID"}: ${batch.batchId.slice(-6)} (${batch.dateTime}) - ${getLangString("sourceSheetNameLabel") || "स्रोत"}: ${batch.sourceSheetNameForBatch}`;
+                    batchDiv.appendChild(batchHeader);
+
+                    const table = document.createElement('table');
+                    table.style.fontSize = "0.85em";
+                    const thead = table.createTHead();
+                    const tbody = table.createTBody();
+                    let headerRow = thead.insertRow();
+                    [
+                        "ID", 
+                        `${getLangString("tableWidth")} (${currentUnit})`, 
+                        `${getLangString("tableLength")} (${currentUnit})`, 
+                        getLangString("statusLabel") || "स्थिति",
+                        getLangString("tableRemove")
+                    ].forEach(text => {
+                        let th = document.createElement("th");
+                        th.textContent = text;
+                        headerRow.appendChild(th);
+                    });
+
+                    let hasVisibleOffcutsInBatch = false;
+                    batch.offcutsInBatch.forEach(offcut => {
+                         if (offcut.isIndividuallyAvailable === false) return; 
+                         hasVisibleOffcutsInBatch = true;
+
+                        let row = tbody.insertRow();
+                        row.insertCell().textContent = offcut.id.slice(-6);
+                        row.insertCell().textContent = convertFromCm(offcut.width, currentUnit);
+                        row.insertCell().textContent = convertFromCm(offcut.length, currentUnit);
+                        row.insertCell().textContent = offcut.isIndividuallyAvailable ? (getLangString("availableLabel") || "उपलब्ध") : (getLangString("usedLabel") || "प्रयुक्त");
+                        
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.innerHTML = '&times;'; 
+                        deleteBtn.className = 'offcut-delete-btn';
+                        deleteBtn.title = getLangString("tableRemove");
+                        deleteBtn.onclick = () => deleteIndividualOffcut(batch.batchId, offcut.id);
+                        let cell = row.insertCell();
+                        cell.style.textAlign = 'center';
+                        cell.appendChild(deleteBtn);
+                    });
                     
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.innerHTML = '&times;'; 
-                    deleteBtn.className = 'offcut-delete-btn';
-                    deleteBtn.title = getLangString("tableRemove");
-                    deleteBtn.onclick = () => deleteOffcut(offcut.id);
-                    let cell = row.insertCell();
-                    cell.style.textAlign = 'center';
-                    cell.appendChild(deleteBtn);
+                    if(hasVisibleOffcutsInBatch){ 
+                        batchDiv.appendChild(table);
+                        offcutsListContainerEl.appendChild(batchDiv);
+                    }
                 });
-                offcutsListContainerEl.appendChild(table);
+                 if(offcutsListContainerEl.children.length === 0 && availableBatches.length > 0){ 
+                     noOffcutsMessageEl_Modal.style.display = 'block';
+                     noOffcutsMessageEl_Modal.textContent = getLangString("noAvailableOffcutsInBatches") || "इन बैचों में कोई उपलब्ध ऑफकट नहीं है।"; 
+                 } else if (availableBatches.length === 0) { 
+                     noOffcutsMessageEl_Modal.style.display = 'block';
+                     noOffcutsMessageEl_Modal.textContent = getLangString("noOffcutsSaved");
+                 }
+
             }
         }
-        function deleteOffcut(offcutId) {
-            if (confirm(getLangString("confirmDeleteOffcut") || "क्या आप वाकई इस ऑफकट को हटाना चाहते हैं?")) {
-                savedOffcuts = savedOffcuts.filter(oc => oc.id !== offcutId);
+        function deleteIndividualOffcut(batchId, offcutId) {
+            if (confirm(getLangString("confirmDeleteOffcut"))) {
+                const batchIndex = savedOffcuts.findIndex(b => b.batchId === batchId);
+                if (batchIndex > -1) {
+                    savedOffcuts[batchIndex].offcutsInBatch = savedOffcuts[batchIndex].offcutsInBatch.filter(oc => oc.id !== offcutId);
+                    if (savedOffcuts[batchIndex].offcutsInBatch.length === 0) {
+                        savedOffcuts.splice(batchIndex, 1);
+                    } else {
+                        savedOffcuts[batchIndex].isBatchAvailable = savedOffcuts[batchIndex].offcutsInBatch.some(oc => oc.isIndividuallyAvailable !== false);
+                    }
+                }
                 localStorage.setItem(STORAGE_KEY_SAVED_OFFCUTS, JSON.stringify(savedOffcuts));
                 renderOffcutsList(); 
             }
@@ -1686,10 +1822,16 @@
         function markOffcutsAsUsed(usedIds) {
             let changed = false;
             usedIds.forEach(id => {
-                const offcut = savedOffcuts.find(oc => oc.id === id && oc.isAvailable !== false);
-                if (offcut) {
-                    offcut.isAvailable = false;
-                    changed = true;
+                 for (const batch of savedOffcuts) {
+                    const offcut = batch.offcutsInBatch.find(oc => oc.id === id && oc.isIndividuallyAvailable !== false);
+                    if (offcut) {
+                        offcut.isIndividuallyAvailable = false;
+                        changed = true;
+                        if (!batch.offcutsInBatch.some(o => o.isIndividuallyAvailable !== false)) {
+                            batch.isBatchAvailable = false;
+                        }
+                        break; 
+                    }
                 }
             });
             if (changed) {
@@ -1814,15 +1956,10 @@
             });
 
             if (useOffcutsCheckboxEl && useOffcutsCheckboxEl.checked) {
-                const availableOffcuts = savedOffcuts.filter(oc => oc.isAvailable !== false);
-                availableOffcuts.forEach(oc => {
-                    stockItemsToWorker.push({
-                        width: oc.width, length: oc.length,
-                        name: `Offcut ${oc.id.slice(-4)} (${convertFromCm(oc.width, currentUnit)}x${convertFromCm(oc.length, currentUnit)})`,
-                        hasGrain: sheetHasGrain_modal, 
-                        isOffcut: true, originalOffcutId: oc.id
-                    });
-                });
+                // currentCalculationOffcuts का उपयोग करें, जो promptForOffcutSelection में सेट होता है
+                if (currentCalculationOffcuts && currentCalculationOffcuts.length > 0) {
+                     stockItemsToWorker.push(...currentCalculationOffcuts);
+                }
                 stockItemsToWorker.sort((a,b) => (a.width * a.length) - (b.width * b.length));
             }
 
@@ -1967,16 +2104,34 @@
                     }
                 });
 
-
-                if (sheet.freeRects) {
+                // फ्री रेक्ट्स पर टेक्स्ट (यदि आवश्यक हो)
+                ctx.strokeStyle = 'rgba(52, 152, 219, 0.5)'; ctx.lineWidth = 0.3;
+                 if (sheet.freeRects) {
                     sheet.freeRects.forEach(rect => {
-                        allGeneratedFreeRects.push({
-                            ...rect, 
-                            sourceSheetId: sheet.id, 
-                            sourceSheetName: sheet.name 
-                        });
+                        allGeneratedFreeRects.push({ ...rect, sourceSheetId: sheet.id, sourceSheetName: sheet.name });
+                        if (rect.width > 0.1 && rect.height > 0.1) {
+                            const rectX_logical = rect.x * BASE_CANVAS_SCALE;
+                            const rectY_logical = rect.y * BASE_CANVAS_SCALE;
+                            const rectWidth_logical = rect.width * BASE_CANVAS_SCALE;
+                            const rectHeight_logical = rect.height * BASE_CANVAS_SCALE;
+                            ctx.strokeRect(rectX_logical + 0.5, rectY_logical + 0.5, rectWidth_logical - 1, rectHeight_logical - 1);
+                            
+                            const MIN_TEXT_FREE_WIDTH_LOGICAL = 20 * BASE_CANVAS_SCALE * 0.35; // इन्हें पहले से परिभाषित करें
+                            const MIN_TEXT_FREE_HEIGHT_LOGICAL = 10 * BASE_CANVAS_SCALE * 0.35;
+                            if (rectWidth_logical >= MIN_TEXT_FREE_WIDTH_LOGICAL && rectHeight_logical >= MIN_TEXT_FREE_HEIGHT_LOGICAL) {
+                                ctx.fillStyle = 'rgba(41, 128, 185, 0.7)';
+                                const baseFontSizePt_free = Math.min(5.5, rectHeight_logical * 0.3, rectWidth_logical * 0.15);
+                                let dynamicFontSize_free = Math.max(BASE_CANVAS_SCALE * 1.5, baseFontSizePt_free);
+                                ctx.font = `${Math.round(dynamicFontSize_free)}px Arial`;
+                                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                                const text = `${convertFromCm(rect.width, currentUnit)}×${convertFromCm(rect.height, currentUnit)}`;
+                                ctx.fillText(text, rectX_logical + rectWidth_logical / 2, rectY_logical + rectHeight_logical / 2);
+                            }
+                        }
                     });
                 }
+
+
                 const cuttingListDiv = document.createElement('div'); cuttingListDiv.className = 'cutting-list';
                 const cuttingListTitleEl = document.createElement('h4'); cuttingListTitleEl.textContent = getLangString('cuttingListTitle');
                 cuttingListDiv.appendChild(cuttingListTitleEl);
@@ -2008,7 +2163,8 @@
 
         function processAndDisplayWastage(allFreeRects, calculatedSheets, totalAreaUsedByPiecesCm2) { 
             if (!usefulOffcutsSummaryEl || !totalWastagePiecesSummaryEl || !wastageOverallStatsEl || !usefulOffcutsDisplayListContainerEl || !otherSmallWastageContainerEl) {
-                if (wastageSectionEl) wastageSectionEl.style.display = 'none'; // Hide if elements are missing
+                console.error("Wastage display elements not found for processAndDisplayWastage!");
+                if (wastageSectionEl) wastageSectionEl.style.display = 'none';
                 return;
             }
             
@@ -2091,7 +2247,7 @@
                 usefulOffcutsSummaryEl.appendChild(saveButton); 
 
                 const ul = document.createElement('ul');
-                ul.style.marginTop = '5px';
+                // ul.style.marginTop = '5px'; // CSS में मैनेज करें
                 usefulOffcutsGeneratedThisRun.sort((a,b) => b.area - a.area).forEach(offcut => { 
                     const li = document.createElement('li');
                     li.innerHTML = `<span class="free-rect-dim">${convertFromCm(offcut.width, currentUnit)} × ${convertFromCm(offcut.length, currentUnit)} ${currentUnit}</span> (from: ${offcut.sourceSheetName})`;
@@ -2104,15 +2260,11 @@
                 usefulOffcutsSummaryEl.style.display = 'block'; 
             }
             
-            if (usefulOffcutsGeneratedThisRun.length > 0 && allNonUsefulRectsForDisplay.length > 0) {
-                const hr = document.createElement('hr');
-                hr.style.margin = "10px 0";
-                // usefulOffcutsDisplayListContainerEl के बाद HR जोड़ें यदि वह खाली नहीं है, अन्यथा otherSmallWastageContainerEl से पहले
-                if (usefulOffcutsDisplayListContainerEl.children.length > 0) {
-                     usefulOffcutsDisplayListContainerEl.appendChild(hr);
-                } else {
-                     otherSmallWastageContainerEl.parentNode.insertBefore(hr, otherSmallWastageContainerEl);
-                }
+            if (usefulOffcutsDisplayListContainerEl.children.length > 0 && allNonUsefulRectsForDisplay.length > 0) {
+                 // यदि उपयोगी ऑफकट के बाद छोटे वेस्टेज हैं तो HR की आवश्यकता नहीं, क्योंकि HTML में पहले से है
+                // const hr = document.createElement('hr');
+                // hr.style.margin = "10px 0";
+                // usefulOffcutsDisplayListContainerEl.appendChild(hr); 
             }
 
             if(allNonUsefulRectsForDisplay.length > 0){
@@ -2124,7 +2276,7 @@
                 const ulSmall = document.createElement('ul');
                  allNonUsefulRectsForDisplay.sort((a,b)=>b.area-a.area).slice(0,10).forEach(rect => { 
                     const li = document.createElement('li');
-                    li.style.backgroundColor = '#fff9f9'; 
+                    // li.style.backgroundColor = '#fff9f9'; // CSS में मैनेज करें
                     li.innerHTML = `<span class="free-rect-dim">${convertFromCm(rect.width, currentUnit)} × ${convertFromCm(rect.height, currentUnit)} ${currentUnit}</span> (from: ${rect.sourceSheetName})`;
                     ulSmall.appendChild(li);
                 });
@@ -2140,45 +2292,78 @@
                  totalWastagePiecesSummaryEl.style.display = 'none';
             }
 
-            if (contentAddedToWastageSection || usefulOffcutsGeneratedThisRun.length > 0) { 
+            if (contentAddedToWastageSection || usefulOffcutsSummaryEl.style.display !== 'none') { 
                  if(wastageSectionEl) wastageSectionEl.style.display = 'block';
             } else {
                  if(wastageSectionEl) wastageSectionEl.style.display = 'none';
             }
         } 
         
-        function saveGeneratedOffcuts(offcutsToSave) {
-            let newOffcutsAddedCount = 0;
-            offcutsToSave.forEach(newOffcut => {
-                const alreadyExists = savedOffcuts.some(existing => 
-                    Math.abs(existing.width - newOffcut.width) < 0.01 && 
-                    Math.abs(existing.length - newOffcut.length) < 0.01 &&
-                    existing.isAvailable &&
-                    existing.sourceSheetName === newOffcut.sourceSheetName 
+        function saveGeneratedOffcuts(offcutsToSaveDetails) {
+            if (!offcutsToSaveDetails || offcutsToSaveDetails.length === 0) {
+                alert(getLangString("noNewOffcutsToSaveAlert"));
+                return;
+            }
+        
+            const batchId = `BATCH-${Date.now()}`;
+            const currentSheetNameForBatch = modalSheetNameEl.value.trim() || (getLangString("unnamedSheetLabel") || "अनाम शीट");
+        
+            const newBatch = {
+                batchId: batchId,
+                dateTime: new Date().toLocaleString(currentLanguage === 'hi' ? 'hi-IN' : 'en-US'),
+                sourceSheetNameForBatch: currentSheetNameForBatch,
+                offcutsInBatch: [],
+                isBatchAvailable: true 
+            };
+        
+            let newOffcutsActuallyAddedToStorage = 0;
+        
+            offcutsToSaveDetails.forEach(newOffcutDetail => {
+                const alreadyExistsInCurrentBatch = newBatch.offcutsInBatch.some(existing => 
+                    Math.abs(existing.width - newOffcutDetail.width) < 0.01 &&
+                    Math.abs(existing.length - newOffcutDetail.length) < 0.01 &&
+                    existing.sourceSheetNameFromCalc === newOffcutDetail.sourceSheetName 
                 );
-                if (!alreadyExists) {
-                    savedOffcuts.push({
-                        id: `OFFCUT-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-                        width: newOffcut.width,
-                        length: newOffcut.length,
-                        area: newOffcut.area,
-                        dateAdded: new Date().toISOString(),
-                        isAvailable: true,
-                        sourceSheetId: newOffcut.sourceSheetId,
-                        sourceSheetName: newOffcut.sourceSheetName
+
+                let existsInOldBatches = false;
+                for(const batch of savedOffcuts){
+                    if(batch.offcutsInBatch.some(existing => 
+                        Math.abs(existing.width - newOffcutDetail.width) < 0.01 &&
+                        Math.abs(existing.length - newOffcutDetail.length) < 0.01 &&
+                        existing.isIndividuallyAvailable && 
+                        existing.sourceSheetNameFromCalc === newOffcutDetail.sourceSheetName
+                     )){
+                        existsInOldBatches = true;
+                        break;
+                    }
+                }
+
+                if (!alreadyExistsInCurrentBatch && !existsInOldBatches) {
+                    newBatch.offcutsInBatch.push({
+                        id: `OFFCUT-${newOffcutDetail.sourceSheetId}-${Math.random().toString(36).substr(2, 5)}`,
+                        width: newOffcutDetail.width,
+                        length: newOffcutDetail.length,
+                        area: newOffcutDetail.area,
+                        dateAdded: new Date().toISOString(), 
+                        isIndividuallyAvailable: true, 
+                        sourceSheetIdFromCalc: newOffcutDetail.sourceSheetId, 
+                        sourceSheetNameFromCalc: newOffcutDetail.sourceSheetName 
                     });
-                    newOffcutsAddedCount++;
+                    newOffcutsActuallyAddedToStorage++;
                 }
             });
-            if (newOffcutsAddedCount > 0) {
+        
+            if (newOffcutsActuallyAddedToStorage > 0) {
+                savedOffcuts.push(newBatch);
                 localStorage.setItem(STORAGE_KEY_SAVED_OFFCUTS, JSON.stringify(savedOffcuts));
-                alert(getLangString("usefulOffcutsSavedAlert", { count: newOffcutsAddedCount })); 
+                alert(getLangString("usefulOffcutsSavedAlert", { count: newOffcutsActuallyAddedToStorage })); 
                 if (offcutsLibraryModalEl && offcutsLibraryModalEl.style.display === 'flex') {
                     renderOffcutsList(); 
                 }
             } else {
                 alert(getLangString("noNewOffcutsToSaveAlert")); 
             }
+        
             if (usefulOffcutsSummaryEl && usefulOffcutsSummaryEl.querySelector('button')) {
                  usefulOffcutsSummaryEl.querySelector('button').disabled = true;
                  usefulOffcutsSummaryEl.querySelector('button').textContent = getLangString("offcutsSavedBtn");
@@ -2241,6 +2426,15 @@
                     localStorage.setItem(STORAGE_KEY_FITTING_STRATEGY, currentFittingStrategy);
                 });
             }
+            if(useOffcutsCheckboxEl){ 
+                useOffcutsCheckboxEl.addEventListener('change', function() {
+                    if (this.checked) {
+                        promptForOffcutSelection();
+                    } else {
+                        currentCalculationOffcuts = [];
+                    }
+                });
+            }
 
 
             if(modalSheetLengthEl) modalSheetLengthEl.addEventListener('change', () => {isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
@@ -2259,8 +2453,9 @@
             loadCuttingListCheckboxStates();
             const savedLang = localStorage.getItem(STORAGE_KEY_LANGUAGE) || 'hi';
             const savedUnit = localStorage.getItem(STORAGE_KEY_CURRENT_UNIT) || 'cm';
-            currentUnit = savedUnit;
-            if(currentUnitSelectorEl) currentUnitSelectorEl.value = currentUnit;
+            currentUnit = savedUnit; 
+            updateUnitDisplaysDOM(currentUnit); 
+            
             const settingsStr = localStorage.getItem(STORAGE_KEY_SETTINGS); 
             if (settingsStr) {
                 try {
@@ -2271,17 +2466,14 @@
                     if(modalSheetNameEl) modalSheetNameEl.value = settings.sheetName || ""; 
                 } catch (e) {
                     console.error("Error parsing settings from localStorage:", e);
-                    if(modalSheetWidthEl) modalSheetWidthEl.value = convertFromCm(122, currentUnit);
-                    if(modalSheetLengthEl) modalSheetLengthEl.value = convertFromCm(244, currentUnit);
-                    if(modalSheetHasGrainEl) modalSheetHasGrainEl.checked = true;
-                    if(modalSheetNameEl) modalSheetNameEl.value = ""; 
                 }
-            } else { 
-                if(modalSheetWidthEl) modalSheetWidthEl.value = convertFromCm(122, currentUnit);
-                if(modalSheetLengthEl) modalSheetLengthEl.value = convertFromCm(244, currentUnit);
-                if(modalSheetHasGrainEl) modalSheetHasGrainEl.checked = true;
-                if(modalSheetNameEl) modalSheetNameEl.value = ""; 
-            }
+            } 
+            if(!modalSheetWidthEl.value) modalSheetWidthEl.value = convertFromCm(122, currentUnit);
+            if(!modalSheetLengthEl.value) modalSheetLengthEl.value = convertFromCm(244, currentUnit);
+            if(modalSheetHasGrainEl.checked === undefined) modalSheetHasGrainEl.checked = true;
+
+            loadOffcutSettings(); 
+
             const piecesStr = localStorage.getItem(STORAGE_KEY_PIECES);
             if (piecesStr) {
                 try { pieces = JSON.parse(piecesStr); } catch (e) { console.error("Error parsing pieces from localStorage:", e); pieces = []; }
@@ -2293,7 +2485,6 @@
                 pieceIdCounter = maxId >= 0 ? maxId + 1 : pieces.length;
             }
             renderPiecesTable();
-            updateUnitDisplaysDOM(currentUnit);
             setLanguage(savedLang); 
             clearPieceInputs(); 
             if(resultsSummaryEl) resultsSummaryEl.textContent = getLangString("totalSheetsDefault");
@@ -2302,7 +2493,53 @@
             if(usefulOffcutsSummaryEl) usefulOffcutsSummaryEl.style.display = 'none';
             console.log("App initialized (Browser Print Mode with offcuts & strategies).");
         }
+
+        function promptForOffcutSelection() {
+            const sheetNameFilter = modalSheetNameEl.value.trim();
+            let offcutsToConsider = savedOffcuts
+                .flatMap(batch => batch.offcutsInBatch.filter(oc => oc.isIndividuallyAvailable !== false))
+                .filter(oc => {
+                    if (sheetNameFilter) {
+                        const batch = savedOffcuts.find(b => b.offcutsInBatch.some(o => o.id === oc.id));
+                        return batch && batch.sourceSheetNameForBatch && batch.sourceSheetNameForBatch.toLowerCase().includes(sheetNameFilter.toLowerCase());
+                    }
+                    return true; 
+                });
+
+            if (offcutsToConsider.length === 0) {
+                alert(getLangString("noMatchingOffcuts"));
+                if(useOffcutsCheckboxEl) useOffcutsCheckboxEl.checked = false;
+                currentCalculationOffcuts = [];
+                return;
+            }
+
+            let confirmMsg = "";
+            if (sheetNameFilter) {
+                confirmMsg = getLangString("confirmUseOffcutsMsg", {count: offcutsToConsider.length, name: `"${sheetNameFilter}"`});
+            } else {
+                 confirmMsg = getLangString("confirmUseOffcutsMsg", {count: offcutsToConsider.length, name: (getLangString("allSourcesLabel") || "सभी स्रोतों")}); 
+            }
+
+            if (confirm(confirmMsg)) {
+                currentCalculationOffcuts = offcutsToConsider.map(oc => ({
+                    width: oc.width,
+                    length: oc.length,
+                    name: `Offcut ${oc.id.slice(-4)} (${convertFromCm(oc.width, currentUnit)}x${convertFromCm(oc.length, currentUnit)})`,
+                    hasGrain: modalSheetHasGrainEl.checked, 
+                    isOffcut: true,
+                    originalOffcutId: oc.id,
+                    quantity: 1 
+                }));
+                alert(getLangString("offcutsSelectedForCalcAlert", { count: currentCalculationOffcuts.length})); 
+            } else {
+                if(useOffcutsCheckboxEl) useOffcutsCheckboxEl.checked = false;
+                currentCalculationOffcuts = [];
+            }
+        }
+
+
         window.onload = initializeApp;
     </script>
 </body>
-    </html>
+</html>
+```
