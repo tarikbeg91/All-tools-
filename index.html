@@ -1,319 +1,533 @@
 <!DOCTYPE html>
-
-<html lang="hi">
-<head>
+<html lang="hi"> <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-translate-key="hubTitle">मेरा टूल हब</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HpfVcpeSXTnL/faDJvmoWaQqrjFhyCkyUwzWzzYBJjyeHzUpFJnGBhdIAkAxFcVTwzbuK4kTQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        /* --- CSS वेरिएबल्स --- */
+        /* --- CSS वेरिएबल्स और स्टाइल्स --- */
         :root {
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-
---bg-light: #f4f7f6;
-        --text-light: #2c3e50;
-        --header-bg-light: #ffffff;
-        --header-shadow-light: rgba(0, 0, 0, 0.1);
-        --sidebar-bg-light: #ffffff;
-        --sidebar-shadow-light: rgba(0, 0, 0, 0.15);
-        --button-text-light: #34495e;
-        --button-hover-bg-light: #e9ecef;
-        --button-active-bg-light: #d4e2fc;
-        --icon-fill-light: #566573;
-        --iframe-border-light: #e0e0e0;
-
-        --bg-dark: #1c1c1e;
-        --text-dark: #e1e1e1;
-        --header-bg-dark: #2c2c2e;
-        --header-shadow-dark: rgba(255, 255, 255, 0.08);
-        --sidebar-bg-dark: #2c2c2e;
-        --sidebar-shadow-dark: rgba(255, 255, 255, 0.1);
-        --button-text-dark: #bdc3c7;
-        --button-hover-bg-dark: #3a3a3c;
-        --button-active-bg-dark: #1a4a7d;
-        --icon-fill-dark: #9e9e9e;
-        --iframe-border-dark: #3a3a3c;
-    }
-
-    /* --- रीसेट और सामान्य स्टाइल्स --- */
-    *, *::before, *::after { box-sizing: border-box; }
-    body {
-        font-family: var(--font-family);
-        margin: 0;
-        background-color: var(--bg-light);
-        color: var(--text-light);
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        overflow: hidden; /* मुख्य बॉडी पर स्क्रॉलिंग रोकें */
-        transition: background-color 0.3s, color 0.3s;
-    }
-    body.dark-mode {
-        background-color: var(--bg-dark);
-        color: var(--text-dark);
-    }
-
-    /* --- हेडर --- */
-    .app-header {
-        background-color: var(--header-bg-light);
-        padding: 0 16px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        box-shadow: 0 1px 3px var(--header-shadow-light);
-        z-index: 1001;
-        flex-shrink: 0;
-    }
-    body.dark-mode .app-header { background-color: var(--header-bg-dark); box-shadow: 0 1px 3px var(--header-shadow-dark); }
-
-    .app-header h1 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin: 0;
-        text-align: center;
-        flex-grow: 1;
-    }
-
-    .header-icon-button {
-        background: none; border: none; padding: 0; cursor: pointer;
-        width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
-        border-radius: 50%;
-        transition: background-color 0.2s;
-    }
-    .header-icon-button svg {
-        width: 22px; height: 22px;
-        fill: var(--icon-fill-light);
-    }
-    body.dark-mode .header-icon-button svg { fill: var(--icon-fill-dark); }
-    .header-icon-button:hover { background-color: var(--button-hover-bg-light); }
-    body.dark-mode .header-icon-button:hover { background-color: var(--button-hover-bg-dark); }
-    .header-settings { display: flex; gap: 8px; }
-
-    /* --- साइडबार --- */
-    .sidebar {
-        position: fixed; top: 0; left: -100%; 
-        width: 280px; height: 100%;
-        background-color: var(--sidebar-bg-light);
-        box-shadow: 2px 0 8px var(--sidebar-shadow-light);
-        padding: 20px 0;
-        padding-top: 70px; 
-        overflow-y: auto;
-        z-index: 1000;
-        transition: left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        display: flex; flex-direction: column;
-    }
-    body.dark-mode .sidebar { background-color: var(--sidebar-bg-dark); box-shadow: 2px 0 8px var(--sidebar-shadow-dark); }
-    .sidebar.open { left: 0; }
-
-    .sidebar-button {
-        display: flex; align-items: center;
-        padding: 14px 24px; margin: 4px 12px; 
-        text-decoration: none;
-        font-size: 0.95rem; font-weight: 500;
-        color: var(--button-text-light);
-        border: none; background: none; width: calc(100% - 24px); 
-        text-align: left; cursor: pointer;
-        border-radius: 8px; 
-        transition: background-color 0.2s, color 0.2s;
-    }
-    body.dark-mode .sidebar-button { color: var(--button-text-dark); }
-    .sidebar-button svg {
-        width: 20px; height: 20px;
-        margin-right: 16px;
-        fill: var(--icon-fill-light);
-        transition: fill 0.2s;
-    }
-    body.dark-mode .sidebar-button svg { fill: var(--icon-fill-dark); }
-
-    .sidebar-button:hover { background-color: var(--button-hover-bg-light); }
-    body.dark-mode .sidebar-button:hover { background-color: var(--button-hover-bg-dark); }
-    
-    .sidebar-button.active {
-        background-color: var(--button-active-bg-light);
-        color: #0056b3; 
-        font-weight: 600;
-    }
-    body.dark-mode .sidebar-button.active {
-        background-color: var(--button-active-bg-dark);
-        color: #72b5ff; 
-    }
-    .sidebar-button.active svg { fill: #0056b3; }
-    body.dark-mode .sidebar-button.active svg { fill: #72b5ff; }
+            --bg-color-light: #f0f0f0;
+            --text-color-light: #333;
+            --nav-button-text-light: #333; /* ड्रॉपडाउन बटन का टेक्स्ट कलर */
+            --nav-button-hover-bg-light: #e9ecef; /* ड्रॉपडाउन बटन पर हॉवर */
+            --nav-button-active-bg-light: #cfe2ff; /* ड्रॉपडाउन सक्रिय बटन */
+            --iframe-border-light: #ccc;
+            --header-bg-light: #e9ecef;
+            --header-text-color-light: #212529;
+            --control-icon-color-light: #495057;
+            --control-icon-hover-bg-light: rgba(0,0,0,0.075);
+            --dropdown-bg-light: #fff;
+            --dropdown-border-light: #ccc;
+            --dropdown-shadow-light: rgba(0,0,0,0.2);
 
 
-    .sidebar-overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background-color: rgba(0,0,0,0.4); z-index: 999;
-        display: none; opacity: 0;
-        transition: opacity 0.3s ease-in-out;
-    }
-    .sidebar-overlay.visible { display: block; opacity: 1; }
+            --bg-color-dark: #1a1a1a;
+            --text-color-dark: #f0f0f0;
+             --nav-button-text-dark: #f0f0f0; /* ड्रॉपडाउन बटन का टेक्स्ट कलर */
+            --nav-button-hover-bg-dark: #444; /* ड्रॉपडाउन बटन पर हॉवर */
+            --nav-button-active-bg-dark: #003366; /* ड्रॉपडाउन सक्रिय बटन */
+            --iframe-border-dark: #444;
+            --header-bg-dark: #343a40;
+            --header-text-color-dark: #f8f9fa;
+            --control-icon-color-dark: #adb5bd;
+            --control-icon-hover-bg-dark: rgba(255,255,255,0.1);
+            --dropdown-bg-dark: #222;
+            --dropdown-border-dark: #444;
+            --dropdown-shadow-dark: rgba(0,0,0,0.5);
+        }
 
-    /* --- ऐप कंटेनर --- */
-    .app-content-wrapper {
-        flex-grow: 1; display: flex; position: relative; overflow: hidden; 
-    }
-    #appFrame { width: 100%; height: 100%; border: none; display: block; }
-    #homeContent {
-        flex-grow: 1; display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        padding: 20px; text-align: center;
-    }
-    #homeContent svg { width: 64px; height: 64px; margin-bottom: 20px; fill: var(--icon-fill-light); }
-    body.dark-mode #homeContent svg { fill: var(--icon-fill-dark); }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: var(--bg-color-light);
+            color: var(--text-color-light);
+            transition: background-color 0.3s, color 0.3s;
+        }
 
-    .loading-message {
-        position: absolute; top: 50%; left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 1.1rem; display: none;
-    }
-</style>
+        body.dark-mode {
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-dark);
+        }
 
+        .app-header {
+            background-color: var(--header-bg-light);
+            color: var(--header-text-color-light);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative; /* ड्रॉपडाउन के लिए पोजीशनिंग संदर्भ */
+            z-index: 10; /* सुनिश्चित करें कि हेडर ऊपर रहे */
+        }
+         body.dark-mode .app-header {
+            background-color: var(--header-bg-dark);
+            color: var(--header-text-color-dark);
+        }
+
+        .app-header h1 {
+            margin: 0;
+            font-size: 1.5em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 0;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* हेडर के अंदर के कंट्रोल आइकन/बटन */
+        .header-controls .control-icon {
+            background: none;
+            border: none;
+            font-size: 1.4em;
+            cursor: pointer;
+            color: var(--control-icon-color-light);
+            padding: 6px 8px;
+            border-radius: 5px;
+            transition: background-color 0.2s, color 0.2s;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        body.dark-mode .header-controls .control-icon {
+            color: var(--control-icon-color-dark);
+        }
+
+        .header-controls .control-icon:hover {
+            background-color: var(--control-icon-hover-bg-light);
+        }
+        body.dark-mode .header-controls .control-icon:hover {
+             background-color: var(--control-icon-hover-bg-dark);
+        }
+
+
+        /* ड्रॉपडाउन मेनू का कंटेनर */
+        .dropdown-menu {
+            position: absolute;
+            top: 100%; /* हेडर के ठीक नीचे */
+            right: 10px; /* हेडर के दाएं किनारे से थोड़ी दूरी */
+            background-color: var(--dropdown-bg-light);
+            border: 1px solid var(--dropdown-border-light);
+            border-radius: 5px;
+            box-shadow: 0 2px 10px var(--dropdown-shadow-light);
+            padding: 5px 0;
+            z-index: 5; /* हेडर से नीचे लेकिन कंटेंट से ऊपर */
+            display: none; /* शुरू में छिपा हुआ */
+            flex-direction: column; /* आइटम्स को एक के नीचे एक रखें */
+            min-width: 180px; /* मेनू की न्यूनतम चौड़ाई */
+        }
+         body.dark-mode .dropdown-menu {
+            background-color: var(--dropdown-bg-dark);
+            border: 1px solid var(--dropdown-border-dark);
+            box-shadow: 0 2px 10px var(--dropdown-shadow-dark);
+        }
+
+
+        /* ड्रॉपdown के अंदर के बटन */
+        .dropdown-menu .control-icon {
+             font-size: 1em; /* आइकन का आकार थोड़ा छोटा */
+             color: var(--nav-button-text-light); /* टेक्स्ट कलर */
+             padding: 8px 15px; /* पैडिंग बढ़ाएं */
+             width: 100%; /* पूरी चौड़ाई लें */
+             justify-content: flex-start; /* कंटेंट को बाएं अलाइन करें */
+             border-radius: 0; /* कोने गोल न करें */
+             gap: 10px; /* आइकन और टेक्स्ट के बीच गैप */
+        }
+        body.dark-mode .dropdown-menu .control-icon {
+             color: var(--nav-button-text-dark);
+        }
+
+
+        .dropdown-menu .control-icon:hover {
+            background-color: var(--nav-button-hover-bg-light);
+        }
+         body.dark-mode .dropdown-menu .control-icon:hover {
+            background-color: var(--nav-button-hover-bg-dark);
+        }
+
+
+        /* ड्रॉपडाउन के अंदर सक्रिय बटन */
+         .dropdown-menu .control-icon.active {
+            background-color: var(--nav-button-active-bg-light);
+            font-weight: bold;
+        }
+        body.dark-mode .dropdown-menu .control-icon.active {
+            background-color: var(--nav-button-active-bg-dark);
+        }
+
+
+        #appContainer {
+            flex-grow: 1;
+            overflow: hidden;
+            border-top: 1px solid var(--iframe-border-light);
+            position: relative; /* लोडिंग संदेश के लिए */
+            padding-top: 0;
+            box-sizing: border-box;
+        }
+         body.dark-mode #appContainer {
+            border-top: 1px solid var(--iframe-border-dark);
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        #homeContent {
+            padding: 20px;
+            display: none;
+            text-align: center;
+            flex-grow: 1;
+            align-items:center;
+            justify-content:center;
+            display:flex;
+            flex-direction:column;
+        }
+
+        .loading-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2em;
+            color: var(--text-color-light);
+            display: none;
+        }
+        body.dark-mode .loading-message {
+            color: var(--text-color-dark);
+        }
+
+    </style>
 </head>
-<body>
+<body class="">
+
     <header class="app-header">
-        <button id="sidebarToggle" class="header-icon-button" title="मेनू">
-            <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path></svg>
-        </button>
         <h1 data-translate-key="hubMainTitle">मेरा टूल हब</h1>
-        <div class="header-settings">
-            <button id="langToggle" class="header-icon-button" data-translate-key-title="titleLangToggle">
-                <svg viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17v2h-2.93a15.52 15.52 0 01-1.84 3.09l.03.03 2.54 2.51zM11.5 2C6.81 2 3 5.81 3 10.5S6.81 19 11.5 19C12.73 19 13.91 18.76 15 18.33v-2.01C14.09 16.76 12.85 17 11.5 17 7.92 17 5 14.08 5 10.5S7.92 4 11.5 4c1.74 0 3.33.62 4.54 1.64L14.07 7.57H19V2l-2.23 2.23C15.51 2.84 13.58 2 11.5 2z"></path></svg>
-            </button>
-            <button id="darkModeToggle" class="header-icon-button" data-translate-key-title="titleThemeToggle">
-                <!-- SVG थीम के अनुसार JS से बदलेगा -->
-            </button>
+        <div class="header-controls">
+            <button id="homeButton" class="control-icon" data-translate-key-title="titleHome"><i class="fas fa-home"></i></button>
+
+            <button id="menuToggle" class="control-icon" title="टूल मेनू"><i class="fas fa-ellipsis-v"></i></button>
+
+            <button id="langToggle" class="control-icon" data-translate-key-title="titleLangToggle">🌐</button>
+            <button id="darkModeToggle" class="control-icon" data-translate-key-title="titleThemeToggle"><i class="fas fa-moon"></i></button>
         </div>
+
+        <div id="toolMenu" class="dropdown-menu">
+             <button data-app="land_area_calculator.html" class="control-icon" data-translate-key="navLandArea"><i class="fas fa-ruler-combined"></i> <span>ज़मीन का क्षेत्रफल</span></button>
+            <button data-app="attendance_tracker.html" class="control-icon" data-translate-key="navAttendance"><i class="fas fa-user-check"></i> <span>अटेंडेंस ट्रैकर</span></button>
+            <button data-app="kharch_tracker.html" class="control-icon" data-translate-key="navExpense"><i class="fas fa-wallet"></i> <span>खर्च ट्रैकर</span></button>
+            <button data-app="combined_calculator.html" class="control-icon" data-translate-key="navCalculator"><i class="fas fa-calculator"></i> <span>कैलकुलेटर</span></button>
+            <button data-app="unit_converter.html" class="control-icon" data-translate-key="navUnitConverter"><i class="fas fa-exchange-alt"></i> <span>यूनिट कन्वर्टर</span></button>
+            <button data-app="Sheet-layout.html" class="control-icon" data-translate-key="navSheetLayout"><i class="fas fa-table"></i> <span>Sheet layout</span></button>
+            <button data-app="Tile-calculator.html" class="control-icon" data-translate-key="navTileCalculator"><i class="fas fa-border-all"></i> <span>टाइल कैलकुलेटर</span></button>
+            <button data-app="Fm_radio.html" class="control-icon" data-translate-key="navFmRadio"><i class="fas fa-radio"></i> <span>एफएम रेडियो</span></button>
+             </div>
     </header>
 
-<nav class="sidebar" id="appSidebar">
-    <button id="homeButton" class="sidebar-button" data-translate-key-title="titleHome">
-        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path></svg>
-        <span data-translate-key="titleHome">होम</span>
-    </button>
-    <button data-app="land_area_calculator.html" class="sidebar-button">
-        <svg viewBox="0 0 24 24"><path d="M21 6H3C2.45 6 2 6.45 2 7v10c0 .55.45 1 1 1h18c.55 0 1-.45 1-1V7c0-.55-.45-1-1-1zm-1 10H4V8h16v8z"></path></svg>
-        <span data-translate-key="navLandArea">ज़मीन का क्षेत्रफल</span>
-    </button>
-    <button data-app="attendance_tracker.html" class="sidebar-button">
-         <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
-        <span data-translate-key="navAttendance">अटेंडेंस ट्रैकर</span>
-    </button>
-    <button data-app="kharch_tracker.html" class="sidebar-button">
-        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"></path></svg>
-        <span data-translate-key="navExpense">खर्च ट्रैकर</span>
-    </button>
-     <button data-app="combined_calculator.html" class="sidebar-button">
-        <svg viewBox="0 0 24 24"><path d="M7 2v2H5v16h14V4h-2V2H7zm8 6H9v2h6V8zm0 4H9v2h6v-2zm0 4H9v2h6v-2z"></path></svg>
-        <span data-translate-key="navCalculator">कैलकुलेटर</span>
-    </button>
-    <button data-app="unit_converter.html" class="sidebar-button">
-        <svg viewBox="0 0 24 24"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zm10.02-6L21 9l-3.99-4v3H10v2h7.01v3z"></path></svg>
-        <span data-translate-key="navUnitConverter">यूनिट कन्वर्टर</span>
-    </button>
-    <button data-app="Sheet-layout.html" class="sidebar-button">
-        <svg viewBox="0 0 24 24"><path d="M3 3v18h18V3H3zm8 16H5v-6h6v6zm0-8H5V5h6v6zm8 8h-6v-6h6v6zm0-8h-6V5h6v6z"></path></svg>
-        <span data-translate-key="navSheetLayout">Sheet layout</span>
-    </button>
-    <button data-app="Tile-calculator.html" class="sidebar-button">
-        <svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zm0 8h6v6H4zm8-8h6v6h-6zm0 8h6v6h-6z"></path></svg>
-        <span data-translate-key="navTileCalculator">टाइल कैलकुलेटर</span>
-    </button>
-    <button data-app="Fm_radio.html" class="sidebar-button">
-        <svg viewBox="0 0 24 24"><path d="M3 7v2h2V7H3zm0 4v2h2v-2H3zm0 4v2h2v-2H3zm4-8v2h14V7H7zm0 4v2h14v-2H7zm0 4v2h14v-2H7zM21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path></svg>
-        <span data-translate-key="navFmRadio">एफएम रेडियो</span>
-    </button>
-</nav>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-<main class="app-content-wrapper">
-    <div class="loading-message" id="loadingMessage" data-translate-key="loadingText">लोड हो रहा है...</div>
-    <iframe id="appFrame" name="appFrame" title="मुख्य एप्लीकेशन क्षेत्र"></iframe>
-    <div id="homeContent" style="display:none;">
-        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"></path></svg>
-        <h2 data-translate-key="homeWelcomeTitle">टूल हब में आपका स्वागत है!</h2>
-        <p data-translate-key="homeWelcomeMsg">बाएं मेनू से एक टूल चुनें।</p>
+    <div id="appContainer">
+        <div class="loading-message" id="loadingMessage" data-translate-key="loadingText">लोड हो रहा है...</div>
+        <iframe id="appFrame" title="मुख्य एप्लीकेशन क्षेत्र"></iframe>
+        <div id="homeContent">
+            <h2 data-translate-key="homeWelcomeTitle">टूल हब में आपका स्वागत है!</h2>
+            <p data-translate-key="homeWelcomeMsg">ऊपर मेनू आइकन (<i class="fas fa-ellipsis-v"></i>) से एक टूल चुनें।</p>
+        </div>
     </div>
-</main>
 
-<script>
-    const translations = {
-        // ... (आपका translations ऑब्जेक्ट यहाँ आएगा, यूनिट कन्वर्टर आदि के लिए keys जोड़ें) ...
-        hi: { hubTitle: "मेरा टूल हब", hubMainTitle: "मेरा टूल हब", titleHome: "होम", titleLangToggle: "भाषा बदलें", titleThemeToggle: "थीम बदलें", navLandArea: "ज़मीन का क्षेत्रफल", navAttendance: "अटेंडेंस ट्रैकर", navExpense: "खर्च ट्रैकर", navCalculator: "कैलकुलेटर", navUnitConverter: "यूनिट कन्वर्टर", navSheetLayout: "शीट लेआउट", navTileCalculator: "टाइल कैलकुलेटर", navFmRadio: "एफएम रेडियो", homeWelcomeTitle: "टूल हब में आपका स्वागत है!", homeWelcomeMsg: "बाएं मेनू से एक टूल चुनें।", loadingText: "लोड हो रहा है...", errorLoadingApp: "त्रुटि!" },
-        en: { hubTitle: "My Tool Hub", hubMainTitle: "My Tool Hub", titleHome: "Home", titleLangToggle: "Change Language", titleThemeToggle: "Toggle Theme", navLandArea: "Land Area Calculator", navAttendance: "Attendance Tracker", navExpense: "Expense Tracker", navCalculator: "Calculator", navUnitConverter: "Unit Converter", navSheetLayout: "Sheet Layout", navTileCalculator: "Tile Calculator", navFmRadio: "FM Radio", homeWelcomeTitle: "Welcome to the Tool Hub!", homeWelcomeMsg: "Select a tool from the left menu.", loadingText: "Loading...", errorLoadingApp: "Error!" }
-    };
+    <script>
+        const translations = {
+            hi: {
+                hubTitle: "मेरा टूल हब",
+                hubMainTitle: "मेरा टूल हब",
+                titleHome: "होम",
+                titleLangToggle: "भाषा बदलें (Change Language)",
+                titleThemeToggle: "थीम बदलें (Toggle Theme)",
+                navLandArea: "ज़मीन का क्षेत्रफल",
+                navAttendance: "अटेंडेंस ट्रैकर",
+                navExpense: "खर्च ट्रैकर",
+                navCalculator: "कैलकुलेटर",
+                navUnitConverter: "यूनिट कन्वर्टर",
+                navSheetLayout: "Sheet layout",
+                navTileCalculator: "टाइल कैलकुलेटर",
+                navFmRadio: "एफएम रेडियो",
+                homeWelcomeTitle: "टूल हब में आपका स्वागत है!",
+                homeWelcomeMsg: "ऊपर मेनू आइकन (" + '<i class="fas fa-ellipsis-v"></i>' + ") से एक टूल चुनें।",
+                loadingText: "लोड हो रहा है...",
+                errorLoadingApp: "टूल लोड करने में त्रुटि। कृपया पुनः प्रयास करें।"
+            },
+            en: {
+                hubTitle: "My Tool Hub",
+                hubMainTitle: "My Tool Hub",
+                titleHome: "Home",
+                titleLangToggle: "Change Language (भाषा बदलें)",
+                titleThemeToggle: "Toggle Theme (थीम बदलें)",
+                navLandArea: "Land Area Calculator",
+                navAttendance: "Attendance Tracker",
+                navExpense: "Expense Tracker",
+                navCalculator: "Calculator",
+                navUnitConverter: "Unit Converter",
+                navSheetLayout: "Sheet layout",
+                navTileCalculator: "Tile Calculator",
+                navFmRadio: "FM Radio",
+                homeWelcomeTitle: "Welcome to the Tool Hub!",
+                homeWelcomeMsg: "Select a tool from the menu icon (" + '<i class="fas fa-ellipsis-v"></i>' + ") above.",
+                loadingText: "Loading...",
+                errorLoadingApp: "Error loading app. Please try again."
+            }
+        };
 
-    const svgIcons = {
-        sun: '<svg viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.64 5.64c-.39-.39-1.02-.39-1.41 0s-.39 1.02 0 1.41l1.06 1.06c.39.39 1.02.39 1.41 0s.39-1.02 0-1.41L5.64 5.64zm12.73 12.73c-.39-.39-1.02-.39-1.41 0s-.39 1.02 0 1.41l1.06 1.06c.39.39 1.02.39 1.41 0s.39-1.02 0-1.41l-1.06-1.06zm1.06-12.73c.39-.39.39-1.02 0-1.41s-1.02-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.02 0 1.41s1.02.39 1.41 0l1.06-1.06zm-12.73 12.73c.39-.39.39-1.02 0-1.41s-1.02-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.02 0 1.41s1.02.39 1.41 0l1.06-1.06z"></path></svg>',
-        moon: '<svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.64-.11 2.41-.31-.04-.08-.07-.16-.1-.25-.33-.8-.51-1.68-.51-2.59 0-3.03 2.47-5.5 5.5-5.5.91 0 1.79.18 2.59.51.09.03.17.06.25.1C21.11 13.64 21 12.83 21 12c0-4.97-4.03-9-9-9z"></path></svg>'
-    };
+        document.addEventListener('DOMContentLoaded', () => {
+            const iframe = document.getElementById('appFrame');
+            const appButtons = document.querySelectorAll('#toolMenu .control-icon[data-app]'); // ड्रॉपडाउन के अंदर के बटन्स
+            const homeButton = document.getElementById('homeButton');
+            const langToggle = document.getElementById('langToggle');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const homeContentDiv = document.getElementById('homeContent');
+            const loadingMessageDiv = document.getElementById('loadingMessage');
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const iframe = document.getElementById('appFrame');
-        const appButtons = document.querySelectorAll('#appSidebar .sidebar-button[data-app]');
-        const homeButton = document.getElementById('homeButton');
-        const langToggle = document.getElementById('langToggle');
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        const homeContentDiv = document.getElementById('homeContent');
-        const loadingMessageDiv = document.getElementById('loadingMessage');
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const appSidebar = document.getElementById('appSidebar');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-        const mainTitleElement = document.querySelector('.app-header h1');
+            const menuToggle = document.getElementById('menuToggle');
+            const toolMenuDiv = document.getElementById('toolMenu');
 
-        const lastActiveAppKey = 'toolHubLastActiveApp';
-        const darkModeKey = 'toolHubDarkMode';
-        const langKey = 'toolHubLanguage';
+            const lastActiveAppKey = 'hubLastActiveApp';
+            const darkModeKey = 'hubDarkMode';
+            const langKey = 'hubLanguage';
 
-        let currentLang = localStorage.getItem(langKey) || 'hi';
-        let currentMode = localStorage.getItem(darkModeKey) || 'light';
-        let currentAppUrl = localStorage.getItem(lastActiveAppKey) || 'HOME';
+            let currentLang = localStorage.getItem(langKey) || 'hi';
+            let currentMode = localStorage.getItem(darkModeKey) || 'light';
+            let defaultAppUrl = localStorage.getItem(lastActiveAppKey) || 'HOME';
 
-        function applyTranslations() { /* ... (पिछला स्क्रिप्ट का फंक्शन) ... */ }
-        function updatePageTitle() { /* ... (पिछला स्क्रिप्ट का फंक्शन) ... */ }
-        function applyDarkMode(isDark) { /* ... (पिछला स्क्रिप्ट का फंक्शन) ... */ }
-        function openSidebar() { /* ... (पिछला स्क्रिप्ट का फंक्शन) ... */ }
-        function closeSidebar() { /* ... (पिछला स्क्रिप्ट का फंक्शन) ... */ }
-        function setActiveButton(targetUrl) { /* ... (पिछला स्क्रिप्ट का फंक्शन) ... */ }
-        function showHomeContent() { /* ... (पिछला स्क्रिप्ट का फंक्शन) ... */ }
-        function loadApp(appUrl) { /* ... (पिछला स्क्रिप्ट का फंक्शन) ... */ }
+            function applyTranslations() {
+                document.querySelectorAll('[data-translate-key]').forEach(el => {
+                    const key = el.getAttribute('data-translate-key');
+                    if (translations[currentLang] && translations[currentLang][key]) {
+                         const span = el.querySelector('span');
+                         if (el.id === 'homeWelcomeMsg') {
+                              el.innerHTML = translations[currentLang][key]; // होम मैसेज में HTML है
+                         } else if (span) {
+                              span.textContent = translations[currentLang][key]; // बटनों के अंदर का टेक्स्ट
+                         } else {
+                              el.textContent = translations[currentLang][key]; // बाकी टेक्स्ट (जैसे टाइटल)
+                         }
+                    }
+                });
+                document.querySelectorAll('[data-translate-key-title]').forEach(el => {
+                    const key = el.getAttribute('data-translate-key-title');
+                     if (translations[currentLang] && translations[currentLang][key]) {
+                        el.title = translations[currentLang][key];
+                    }
+                });
+                document.documentElement.lang = currentLang;
+                document.title = translations[currentLang]?.hubTitle || "Tool Hub";
+            }
 
-        // कॉपी-पेस्ट के लिए, यहाँ पिछली स्क्रिप्ट के मुख्य JS फंक्शन्स हैं:
-        // (सुनिश्चित करें कि ये फंक्शन्स पिछली SVG-आधारित स्क्रिप्ट से लिए गए हैं)
-        function applyTranslations() { document.querySelectorAll('[data-translate-key]').forEach(el => { const key = el.getAttribute('data-translate-key'); const translation = translations[currentLang]?.[key]; if (translation) { if (el.tagName === 'SPAN' || el.matches('h1, h2, p, title')) { el.textContent = translation; } else if (el.id === 'homeWelcomeMsg' && el.tagName === 'P') { el.innerHTML = translation; } } }); document.querySelectorAll('[data-translate-key-title]').forEach(el => { const key = el.getAttribute('data-translate-key-title'); if (translations[currentLang]?.[key]) el.title = translations[currentLang][key]; }); document.documentElement.lang = currentLang; updatePageTitle(); }
-        function updatePageTitle() { if (currentAppUrl === 'HOME' || !currentAppUrl) { document.title = translations[currentLang]?.hubTitle || "Tool Hub"; } else { const appButton = document.querySelector(`#appSidebar .sidebar-button[data-app="${currentAppUrl}"] span[data-translate-key]`); let appSpecificTitle = appUrl.split('/').pop().split('.')[0]; if (appButton) { const key = appButton.getAttribute('data-translate-key'); appSpecificTitle = translations[currentLang]?.[key] || appSpecificTitle; } document.title = `${translations[currentLang]?.hubMainTitle || "Tool Hub"} - ${appSpecificTitle}`; } }
-        function applyDarkMode(isDark) { currentMode = isDark ? 'dark' : 'light'; document.body.classList.toggle('dark-mode', isDark); darkModeToggle.innerHTML = isDark ? svgIcons.sun : svgIcons.moon; if (iframe.contentWindow && iframe.src !== 'about:blank') { try { iframe.contentWindow.postMessage({ theme: currentMode }, new URL(iframe.src).origin); } catch (e) { iframe.contentWindow.postMessage({ theme: currentMode }, '*'); } } }
-        function openSidebar() { appSidebar.classList.add('open'); sidebarOverlay.classList.add('visible'); }
-        function closeSidebar() { appSidebar.classList.remove('open'); sidebarOverlay.classList.remove('visible'); }
-        function setActiveButton(targetUrl) { document.querySelectorAll('#appSidebar .sidebar-button').forEach(btn => { btn.classList.toggle('active', (btn.dataset.app === targetUrl) || (btn.id === 'homeButton' && targetUrl === 'HOME')); }); }
-        function showHomeContent() { currentAppUrl = 'HOME'; iframe.style.display = 'none'; iframe.src = 'about:blank'; loadingMessageDiv.style.display = 'none'; homeContentDiv.style.display = 'flex'; if(mainTitleElement) mainTitleElement.textContent = translations[currentLang]?.hubMainTitle || "Tool Hub"; setActiveButton('HOME'); localStorage.setItem(lastActiveAppKey, 'HOME'); updatePageTitle(); closeSidebar(); }
-        function loadApp(appUrl) { if (appUrl === 'HOME') { showHomeContent(); return; } currentAppUrl = appUrl; homeContentDiv.style.display = 'none'; iframe.style.display = 'none'; loadingMessageDiv.style.display = 'block'; loadingMessageDiv.textContent = translations[currentLang]?.loadingText || "Loading..."; setActiveButton(appUrl); localStorage.setItem(lastActiveAppKey, appUrl); updatePageTitle(); closeSidebar(); let targetOrigin = '*';  try { if (iframe.src && iframe.src !== 'about:blank' && !iframe.src.startsWith('data:')) targetOrigin = new URL(iframe.src).origin; } catch (e) {} if (iframe.src.endsWith(appUrl) && iframe.contentWindow && iframe.contentWindow.location.href !== "about:blank") { iframe.style.display = 'block'; loadingMessageDiv.style.display = 'none'; if (iframe.contentWindow) iframe.contentWindow.postMessage({ theme: currentMode, lang: currentLang }, targetOrigin); } else { iframe.src = appUrl; } iframe.onload = () => { iframe.style.display = 'block'; loadingMessageDiv.style.display = 'none'; updatePageTitle(); if (iframe.contentWindow) { try { iframe.contentWindow.postMessage({ theme: currentMode, lang: currentLang }, new URL(iframe.src).origin); } catch(e) { iframe.contentWindow.postMessage({ theme: currentMode, lang: currentLang }, '*');}} }; iframe.onerror = () => { loadingMessageDiv.textContent = translations[currentLang]?.errorLoadingApp || "Error!"; iframe.style.display = 'none'; }; }
+            function applyDarkMode(isDark) {
+                const icon = darkModeToggle.querySelector('i');
+                currentMode = isDark ? 'dark' : 'light';
+                if (isDark) {
+                    document.body.classList.add('dark-mode');
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+                 if (iframe.contentWindow) {
+                     iframe.contentWindow.postMessage({
+                         theme: currentMode
+                     }, '*');
+                 }
+            }
+
+            function showHomeContent() {
+                iframe.style.display = 'none';
+                loadingMessageDiv.style.display = 'none';
+                homeContentDiv.style.display = 'flex';
+                document.title = translations[currentLang]?.hubMainTitle || "Tool Hub";
+                appButtons.forEach(btn => btn.classList.remove('active'));
+                localStorage.setItem(lastActiveAppKey, 'HOME');
+                 toolMenuDiv.style.display = 'none'; // होम पर आने पर मेनू बंद करें
+            }
+
+            function loadApp(appUrl) {
+                if (appUrl === 'HOME') {
+                    showHomeContent();
+                    return;
+                }
+
+                homeContentDiv.style.display = 'none';
+                iframe.style.display = 'none';
+                loadingMessageDiv.style.display = 'block';
+
+                 const currentIframeSrc = iframe.src.split('/').pop();
+                 const newAppFileName = appUrl.split('/').pop();
+
+                 if (currentIframeSrc !== newAppFileName || !iframe.src) {
+                     iframe.src = appUrl;
+                     console.log('Loading app:', appUrl);
+                 } else {
+                    console.log('App already loaded, showing iframe:', appUrl);
+                    iframe.style.display = 'block';
+                    loadingMessageDiv.style.display = 'none';
+                 }
+
+                localStorage.setItem(lastActiveAppKey, appUrl);
+
+                appButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.app === appUrl);
+                });
+
+                 toolMenuDiv.style.display = 'none'; // ऐप लोड होने पर मेनू बंद करें
 
 
-        sidebarToggle.addEventListener('click', (e) => { e.stopPropagation(); appSidebar.classList.contains('open') ? closeSidebar() : openSidebar(); });
-        sidebarOverlay.addEventListener('click', closeSidebar);
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && appSidebar.classList.contains('open')) closeSidebar(); });
-        appButtons.forEach(button => button.addEventListener('click', (e) => { e.preventDefault(); loadApp(button.dataset.app); }));
-        homeButton.addEventListener('click', (e) => { e.preventDefault(); showHomeContent(); });
-        langToggle.addEventListener('click', () => { currentLang = (currentLang === 'hi') ? 'en' : 'hi'; localStorage.setItem(langKey, currentLang); applyTranslations(); if (currentAppUrl !== 'HOME' && iframe.contentWindow && iframe.src !== 'about:blank') { try { iframe.contentWindow.postMessage({ lang: currentLang }, new URL(iframe.src).origin); } catch(e) {iframe.contentWindow.postMessage({ lang: currentLang }, '*');}}});
-        darkModeToggle.addEventListener('click', () => { applyDarkMode(!document.body.classList.contains('dark-mode')); localStorage.setItem(darkModeKey, currentMode); });
+                iframe.onload = () => {
+                    iframe.style.display = 'block';
+                    loadingMessageDiv.style.display = 'none';
+                    try {
+                        let appTitle = "";
+                        if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.readyState === 'complete') {
+                             appTitle = iframe.contentWindow.document.title;
+                        } else {
+                             const appNameParts = appUrl.split('/').pop().split('.');
+                             appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                        }
+                         document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
 
-        // प्रारंभिक सेटअप
-        applyTranslations();
-        applyDarkMode(currentMode === 'dark');
-        loadApp(currentAppUrl);
-    });
-</script>
-IGNORE_WHEN_COPYING_START
-content_copy
-download
-Use code with caution.
-IGNORE_WHEN_COPYING_END
+                         if (iframe.contentWindow) {
+                             iframe.contentWindow.postMessage({
+                                 theme: currentMode,
+                                 lang: currentLang
+                             }, '*');
+                         }
+
+                    } catch (e) {
+                        console.warn("Could not access iframe title or postMessage.", e);
+                        const appNameParts = appUrl.split('/').pop().split('.');
+                        const appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                        document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+                    }
+                };
+                iframe.onerror = () => {
+                    loadingMessageDiv.textContent = translations[currentLang]?.errorLoadingApp || "Error loading app.";
+                    loadingMessageDiv.style.display = 'block';
+                    iframe.style.display = 'none';
+                    console.error("Failed to load iframe:", appUrl);
+                    iframe.src = "about:blank";
+                };
+                 iframe.onbeforeunload = () => {
+                     loadingMessageDiv.style.display = 'block';
+                 };
+            }
+
+            // मेनू टॉगल लॉजिक
+            menuToggle.addEventListener('click', (event) => {
+                event.stopPropagation();
+                toolMenuDiv.style.display = toolMenuDiv.style.display === 'flex' ? 'none' : 'flex';
+            });
+
+            // मेनू के बाहर क्लिक करने पर मेनू बंद करें
+            document.addEventListener('click', (event) => {
+                const isClickInsideMenu = toolMenuDiv.contains(event.target);
+                const isClickOnMenuToggle = menuToggle.contains(event.target);
+                if (toolMenuDiv.style.display === 'flex' && !isClickInsideMenu && !isClickOnMenuToggle) {
+                    toolMenuDiv.style.display = 'none';
+                }
+            });
+
+
+            appButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loadApp(button.dataset.app);
+                     // loadApp फंक्शन मेनू को बंद कर देता है
+                });
+            });
+
+            homeButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                loadApp('HOME');
+            });
+
+            langToggle.addEventListener('click', () => {
+                currentLang = (currentLang === 'hi') ? 'en' : 'hi';
+                localStorage.setItem(langKey, currentLang);
+                applyTranslations();
+                if (homeContentDiv.style.display === 'flex') {
+                    showHomeContent();
+                }
+                 const activeAppButton = document.querySelector('#toolMenu .control-icon[data-app].active');
+                 if (activeAppButton && activeAppButton.dataset.app !== 'HOME') {
+                       if (iframe.contentWindow) {
+                           iframe.contentWindow.postMessage({
+                               lang: currentLang
+                           }, '*');
+                       }
+                       try {
+                           let appTitle = "";
+                            if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.readyState === 'complete') {
+                                 appTitle = iframe.contentWindow.document.title;
+                            } else {
+                                 const appNameParts = activeAppButton.dataset.app.split('/').pop().split('.');
+                                 appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                            }
+                            document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+                       } catch (e) {
+                            console.warn("Could not access iframe title after lang change.", e);
+                            const appNameParts = activeAppButton.dataset.app.split('/').pop().split('.');
+                            const appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                            document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+                       }
+                 }
+            });
+
+            darkModeToggle.addEventListener('click', () => {
+                const isDark = !document.body.classList.contains('dark-mode');
+                applyDarkMode(isDark);
+                localStorage.setItem(darkModeKey, isDark ? 'dark' : 'light');
+                 if (iframe.contentWindow) {
+                     iframe.contentWindow.postMessage({
+                         theme: currentMode
+                     }, '*');
+                 }
+            });
+
+            applyDarkMode(currentMode === 'dark');
+            applyTranslations();
+
+             const initialApp = localStorage.getItem(lastActiveAppKey);
+             if (initialApp && initialApp !== 'HOME') {
+                 loadApp(initialApp);
+             } else {
+                 showHomeContent();
+             }
+
+            window.addEventListener('message', (event) => {
+                // Check origin for security
+                // if (event.origin !== 'YOUR_EXPECTED_ORIGIN') return;
+                const message = event.data;
+                // console.log("Message from iframe:", message);
+                 if (message && message.type === 'appLoaded') {
+                     console.log(message.appName + ' inside iframe reported loaded.');
+                 }
+            });
+
+        });
+    </script>
+
 </body>
 </html>
-
-
-Ye script full final hai or sahi hai
-Ab isme ye kare bas
-Manu se home button ko hta kar header me rcon bna de bas itna hi kar na hai or kuch nahi
