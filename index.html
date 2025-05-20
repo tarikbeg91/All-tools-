@@ -82,24 +82,24 @@
         .header-controls {
             display: flex;
             align-items: center;
-            gap: 10px; /* बटनों के बीच गैप बढ़ाया */
+            gap: 10px;
         }
 
         .header-controls .control-icon {
             background-color: var(--control-icon-bg-light);
             border: 1px solid var(--control-icon-color-light);
-            font-size: 1.5em; /* आइकन का आकार बढ़ाया */
+            font-size: 1.5em;
             cursor: pointer;
             color: var(--control-icon-color-light);
-            padding: 10px; /* पैडिंग बढ़ाई */
-            border-radius: 8px; /* गोल कोने */
+            padding: 10px;
+            border-radius: 8px;
             transition: background-color 0.2s, color 0.2s, transform 0.2s;
             line-height: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 40px; /* निश्चित चौड़ाई */
-            height: 40px; /* निश्चित ऊंचाई */
+            width: 40px;
+            height: 40px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
@@ -111,7 +111,7 @@
 
         .header-controls .control-icon:hover {
             background-color: var(--control-icon-hover-bg-light);
-            transform: scale(1.1); /* होवर पर थोड़ा बड़ा */
+            transform: scale(1.1);
         }
 
         body.dark-mode .header-controls .control-icon:hover {
@@ -131,7 +131,6 @@
             overflow: hidden;
             border-top: 1px solid var(--iframe-border-light);
             position: relative;
-            padding-top: 0;
             box-sizing: border-box;
         }
 
@@ -143,17 +142,19 @@
             width: 100%;
             height: 100%;
             border: none;
-            display: block;
+            display: block; /* Default to block, JS will hide if needed */
         }
 
         #homeContent {
             padding: 20px;
-            display: none; /* Initially hidden, JavaScript will show it */
+            display: none; /* Initially hidden */
             text-align: center;
             flex-grow: 1;
             align-items: center;
             justify-content: center;
             flex-direction: column;
+            width: 100%;
+            height: 100%;
         }
 
         .tool-grid {
@@ -212,6 +213,7 @@
             font-size: 1.2em;
             color: var(--text-color-light);
             display: none;
+            z-index: 5; /* Ensure it's above homeContent if both briefly visible */
         }
 
         body.dark-mode .loading-message {
@@ -231,7 +233,7 @@
 
     <div id="appContainer">
         <div class="loading-message" id="loadingMessage" data-translate-key="loadingText">लोड हो रहा है...</div>
-        <iframe id="appFrame" title="मुख्य एप्लीकेशन क्षेत्र"></iframe>
+        <iframe id="appFrame" title="मुख्य एप्लीकेशन क्षेत्र" src="about:blank"></iframe> <!-- Start with about:blank -->
         <div id="homeContent">
             <h2 data-translate-key="homeWelcomeTitle">टूल हब में आपका स्वागत है!</h2>
             <p data-translate-key="homeWelcomeMsg">नीचे दिए गए टूल्स में से एक चुनें।</p>
@@ -269,7 +271,7 @@
                     <span>एफएम रेडियो</span>
                 </div>
                 <div class="tool-card" data-app="diary.html" data-translate-key="navDiary">
-                    <i class="fas fa-book"></i> <!-- डायरी के लिए उपयुक्त आइकन -->
+                    <i class="fas fa-book"></i>
                     <span>डायरी</span>
                 </div>
             </div>
@@ -292,7 +294,7 @@
                 navSheetLayout: "Sheet layout",
                 navTileCalculator: "टाइल कैलकुलेटर",
                 navFmRadio: "एफएम रेडियो",
-                navDiary: "डायरी", // डायरी के लिए अनुवाद जोड़ा
+                navDiary: "डायरी",
                 homeWelcomeTitle: "टूल हब में आपका स्वागत है!",
                 homeWelcomeMsg: "नीचे दिए गए टूल्स में से एक चुनें।",
                 loadingText: "लोड हो रहा है...",
@@ -312,7 +314,7 @@
                 navSheetLayout: "Sheet layout",
                 navTileCalculator: "Tile Calculator",
                 navFmRadio: "FM Radio",
-                navDiary: "Diary", // Diary translation added
+                navDiary: "Diary",
                 homeWelcomeTitle: "Welcome to the Tool Hub!",
                 homeWelcomeMsg: "Select a tool from below.",
                 loadingText: "Loading...",
@@ -329,24 +331,22 @@
             const homeContentDiv = document.getElementById('homeContent');
             const loadingMessageDiv = document.getElementById('loadingMessage');
 
-            // const lastActiveAppKey = 'hubLastActiveApp'; // इसे अब इस्तेमाल नहीं करेंगे
             const darkModeKey = 'hubDarkMode';
             const langKey = 'hubLanguage';
 
             let currentLang = localStorage.getItem(langKey) || 'hi';
             let currentMode = localStorage.getItem(darkModeKey) || 'light';
-            // let defaultAppUrl = localStorage.getItem(lastActiveAppKey) || 'HOME'; // इसे हटा दिया गया
 
             function applyTranslations() {
                 document.querySelectorAll('[data-translate-key]').forEach(el => {
                     const key = el.getAttribute('data-translate-key');
                     if (translations[currentLang] && translations[currentLang][key]) {
                         const span = el.querySelector('span');
-                        if (el.tagName === 'P' || el.tagName === 'H1' || el.tagName === 'H2' || el.id === 'loadingMessage') { // विशिष्ट टैग्स के लिए सीधे textContent
+                        if (el.tagName === 'P' || el.tagName === 'H1' || el.tagName === 'H2' || el.id === 'loadingMessage') {
                              el.textContent = translations[currentLang][key];
-                        } else if (span) { // tool-card के span के लिए
+                        } else if (span && el.classList.contains('tool-card')) {
                             span.textContent = translations[currentLang][key];
-                        } else if (el.tagName === 'TITLE') { // title टैग के लिए
+                        } else if (el.tagName === 'TITLE') {
                             el.textContent = translations[currentLang][key];
                         }
                     }
@@ -358,7 +358,6 @@
                     }
                 });
                 document.documentElement.lang = currentLang;
-                // document.title = translations[currentLang]?.hubTitle || "Tool Hub"; // यह showHomeContent या loadApp में सेट होगा
             }
 
             function applyDarkMode(isDark) {
@@ -373,95 +372,106 @@
                     icon.classList.remove('fa-sun');
                     icon.classList.add('fa-moon');
                 }
-                if (iframe.contentWindow && iframe.src !== 'about:blank' && iframe.style.display !== 'none') {
-                    iframe.contentWindow.postMessage({
-                        theme: currentMode
-                    }, '*');
+                const currentIframeSrc = iframe.getAttribute('src');
+                if (iframe.contentWindow && currentIframeSrc && currentIframeSrc !== 'about:blank') {
+                    iframe.contentWindow.postMessage({ theme: currentMode }, '*');
                 }
             }
 
             function showHomeContent() {
-                iframe.src = 'about:blank'; // iframe को खाली करें
-                iframe.style.display = 'none';
                 loadingMessageDiv.style.display = 'none';
+                iframe.style.display = 'none';
                 homeContentDiv.style.display = 'flex';
+                
                 document.title = translations[currentLang]?.hubMainTitle || "Tool Hub";
                 appCards.forEach(card => card.classList.remove('active'));
-                // localStorage.setItem(lastActiveAppKey, 'HOME'); // इसे अब इस्तेमाल नहीं करेंगे
+
+                const currentIframeSrc = iframe.getAttribute('src');
+                if (currentIframeSrc && currentIframeSrc !== 'about:blank') {
+                    iframe.setAttribute('src', 'about:blank'); 
+                }
             }
 
             function loadApp(appUrl) {
-                if (appUrl === 'HOME') {
+                if (appUrl === 'HOME') { // यह केस अब इस्तेमाल नहीं होना चाहिए, लेकिन सुरक्षा के लिए रखा है
                     showHomeContent();
                     return;
                 }
 
                 homeContentDiv.style.display = 'none';
-                iframe.style.display = 'none';
-                loadingMessageDiv.style.display = 'block';
+                iframe.style.display = 'none'; // iframe को पहले छिपाएं
                 loadingMessageDiv.textContent = translations[currentLang]?.loadingText || "Loading...";
+                loadingMessageDiv.style.display = 'block';
 
-
-                const currentIframeSrc = iframe.src.split('/').pop();
-                const newAppFileName = appUrl.split('/').pop();
-
-                // हमेशा iframe का src रीसेट करें ताकि वह फिर से लोड हो
-                iframe.src = appUrl;
+                iframe.setAttribute('src', appUrl); // अब src सेट करें
                 console.log('Loading app:', appUrl);
-
-                // localStorage.setItem(lastActiveAppKey, appUrl); // इसे अब इस्तेमाल नहीं करेंगे
 
                 appCards.forEach(card => {
                     card.classList.toggle('active', card.dataset.app === appUrl);
                 });
-
-                iframe.onload = () => {
-                    iframe.style.display = 'block';
-                    loadingMessageDiv.style.display = 'none';
-                    try {
-                        let appTitle = "";
-                         // iframe लोड होने के बाद टाइटल अपडेट करें
-                        if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.title) {
-                            appTitle = iframe.contentWindow.document.title;
-                        } else {
-                            // फॉलबैक अगर iframe का टाइटल एक्सेसिबल नहीं है
-                            const appNameParts = appUrl.split('/').pop().split('.');
-                            appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-                        }
-                        document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
-
-                        if (iframe.contentWindow) {
-                            iframe.contentWindow.postMessage({
-                                theme: currentMode,
-                                lang: currentLang
-                            }, '*');
-                        }
-                    } catch (e) {
-                        console.warn("Could not access iframe title or postMessage after load.", e);
-                        const appNameParts = appUrl.split('/').pop().split('.');
-                        const appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-                        document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
-                    }
-                };
-                iframe.onerror = () => {
-                    loadingMessageDiv.textContent = translations[currentLang]?.errorLoadingApp || "Error loading app.";
-                    loadingMessageDiv.style.display = 'block';
-                    iframe.style.display = 'none';
-                    console.error("Failed to load iframe:", appUrl);
-                    iframe.src = "about:blank"; // त्रुटि पर iframe को खाली करें
-                };
-                iframe.onbeforeunload = () => { // iframe अनलोड होने से पहले लोडिंग दिखाएं
-                    if (iframe.src !== 'about:blank') {
-                         loadingMessageDiv.style.display = 'block';
-                    }
-                };
             }
+
+            iframe.onload = () => {
+                const currentIframeSrc = iframe.getAttribute('src');
+                if (!currentIframeSrc || currentIframeSrc === 'about:blank') {
+                    iframe.style.display = 'none';
+                    loadingMessageDiv.style.display = 'none';
+                    // होम स्क्रीन पर टाइटल showHomeContent द्वारा सेट किया जाता है
+                    return; 
+                }
+
+                // यह एक वास्तविक ऐप के लिए है
+                iframe.style.display = 'block';
+                loadingMessageDiv.style.display = 'none';
+                
+                try {
+                    let appTitle = "";
+                    if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.title) {
+                        appTitle = iframe.contentWindow.document.title;
+                    } else {
+                        const appNameParts = currentIframeSrc.split('/').pop().split('.');
+                        appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                    }
+                    
+                    if (appTitle) {
+                        document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+                    } else {
+                         document.title = translations[currentLang]?.hubMainTitle || "Tool Hub";
+                    }
+
+                    if (iframe.contentWindow) {
+                        iframe.contentWindow.postMessage({ theme: currentMode, lang: currentLang }, '*');
+                    }
+                } catch (e) {
+                    console.warn("Could not access iframe title or postMessage after load.", e);
+                    const appNameParts = currentIframeSrc.split('/').pop().split('.');
+                    const appTitleFallback = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                    document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitleFallback;
+                }
+            };
+
+            iframe.onerror = () => {
+                loadingMessageDiv.textContent = translations[currentLang]?.errorLoadingApp || "Error loading app.";
+                loadingMessageDiv.style.display = 'block';
+                iframe.style.display = 'none';
+                console.error("Failed to load iframe:", iframe.getAttribute('src'));
+                // त्रुटि पर iframe को खाली करें ताकि अगला प्रयास साफ हो
+                iframe.setAttribute('src', 'about:blank'); 
+            };
+            
+            // onbeforeunload को सावधानी से इस्तेमाल करें या हटा दें अगर यह समस्या पैदा कर रहा है
+            // iframe.onbeforeunload = () => { 
+            //     const currentIframeSrc = iframe.getAttribute('src');
+            //     if (currentIframeSrc && currentIframeSrc !== 'about:blank') {
+            //          loadingMessageDiv.style.display = 'block';
+            //     }
+            // };
 
             appCards.forEach(card => {
                 card.addEventListener('click', (e) => {
                     e.preventDefault();
                     const appToLoad = card.dataset.app;
-                    if (appToLoad) { // सुनिश्चित करें कि data-app मौजूद है
+                    if (appToLoad) {
                         loadApp(appToLoad);
                     } else {
                         console.error("Tool card is missing data-app attribute:", card);
@@ -471,55 +481,37 @@
 
             homeButton.addEventListener('click', (e) => {
                 e.preventDefault();
-                showHomeContent(); // homeButton अब सीधे showHomeContent() कॉल करेगा
+                showHomeContent();
             });
 
             langToggle.addEventListener('click', () => {
                 currentLang = (currentLang === 'hi') ? 'en' : 'hi';
                 localStorage.setItem(langKey, currentLang);
-                applyTranslations(); // पहले अनुवाद लागू करें
+                applyTranslations(); 
 
-                // अगर होम स्क्रीन पर हैं, तो उसे अपडेट करें
                 if (homeContentDiv.style.display === 'flex') {
-                    showHomeContent(); // यह टाइटल और अन्य टेक्स्ट अपडेट करेगा
-                } else if (iframe.style.display === 'block' && iframe.src !== 'about:blank') {
-                    // अगर कोई ऐप लोड है, तो उसका टाइटल और iframe कंटेंट अपडेट करें
-                     if (iframe.contentWindow) {
-                        iframe.contentWindow.postMessage({
-                            lang: currentLang
-                        }, '*');
-                    }
-                    // iframe का टाइटल दोबारा सेट करें क्योंकि भाषा बदली है
-                    try {
-                        let appTitle = "";
-                         if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.title) {
-                            appTitle = iframe.contentWindow.document.title;
-                        } else {
-                            const activeAppCard = document.querySelector('.tool-card.active');
-                            if(activeAppCard && activeAppCard.dataset.app) {
-                                const appNameParts = activeAppCard.dataset.app.split('/').pop().split('.');
+                    showHomeContent(); 
+                } else {
+                    const currentIframeSrc = iframe.getAttribute('src');
+                    if (iframe.contentWindow && currentIframeSrc && currentIframeSrc !== 'about:blank') {
+                        iframe.contentWindow.postMessage({ lang: currentLang }, '*');
+                        // iframe.onload में टाइटल अपडेट हो जाएगा, या हम यहां फोर्स कर सकते हैं
+                        // For simplicity, let iframe.onload handle title on next interaction or app reload message
+                        // Or, try to update title based on current loaded app's name if possible
+                        try {
+                            let appTitle = "";
+                            if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.title) {
+                                appTitle = iframe.contentWindow.document.title;
+                            } else {
+                                const appNameParts = currentIframeSrc.split('/').pop().split('.');
                                 appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
                             }
-                        }
-                        if (appTitle) {
-                             document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
-                        } else {
-                            document.title = translations[currentLang]?.hubMainTitle || "Tool Hub";
-                        }
-                    } catch (e) {
-                        console.warn("Could not access iframe title after lang change.", e);
-                         const activeAppCard = document.querySelector('.tool-card.active');
-                         if(activeAppCard && activeAppCard.dataset.app) {
-                            const appNameParts = activeAppCard.dataset.app.split('/').pop().split('.');
-                            const appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-                            document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
-                         } else {
-                             document.title = translations[currentLang]?.hubMainTitle || "Tool Hub";
-                         }
+                            if(appTitle) document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+
+                        } catch (e) { /*ignore*/ }
+                    } else {
+                         document.title = translations[currentLang]?.hubTitle || "Tool Hub";
                     }
-                } else {
-                    // यदि न होम पर और न ही कोई ऐप लोड है, तो बस मुख्य हब का टाइटल अपडेट करें
-                     document.title = translations[currentLang]?.hubTitle || "Tool Hub";
                 }
             });
 
@@ -527,37 +519,26 @@
                 const isDark = !document.body.classList.contains('dark-mode');
                 applyDarkMode(isDark);
                 localStorage.setItem(darkModeKey, isDark ? 'dark' : 'light');
-                // iframe में थीम परिवर्तन का संदेश भेजें, अगर वह लोड है
-                if (iframe.contentWindow && iframe.src !== 'about:blank' && iframe.style.display !== 'none') {
-                    iframe.contentWindow.postMessage({
-                        theme: currentMode
-                    }, '*');
-                }
             });
 
-            // प्रारंभिक सेटअप
             applyDarkMode(currentMode === 'dark');
-            applyTranslations(); // प्रारंभिक अनुवाद
-
-            // हमेशा होम स्क्रीन पर शुरू करें
-            showHomeContent();
+            applyTranslations();
+            showHomeContent(); // हमेशा होम स्क्रीन पर शुरू करें
 
             window.addEventListener('message', (event) => {
                 const message = event.data;
-                if (message && message.type === 'appLoaded') {
-                    console.log(message.appName + ' inside iframe reported loaded.');
-                     // अगर ऐप खुद बताता है कि वह लोड हो गया है, तो टाइटल को उसके हिसाब से सेट करें
-                    if(message.title) {
-                        document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + message.title;
+                if (message && message.type === 'appLoaded' && message.title) {
+                    console.log(message.appName + ' inside iframe reported loaded with title: ' + message.title);
+                    const currentIframeSrc = iframe.getAttribute('src');
+                    // केवल तभी टाइटल अपडेट करें जब यह ऐप अभी भी सक्रिय iframe में हो
+                    if (currentIframeSrc && currentIframeSrc.includes(message.appName) ) {
+                         document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + message.title;
                     }
                 }
-                // If an app inside iframe requests language or theme
                 if (message && message.request === 'initialConfig') {
-                    if (iframe.contentWindow) {
-                         iframe.contentWindow.postMessage({
-                            theme: currentMode,
-                            lang: currentLang
-                        }, '*');
+                    const currentIframeSrcCheck = iframe.getAttribute('src');
+                    if (iframe.contentWindow && currentIframeSrcCheck && currentIframeSrcCheck !== 'about:blank') {
+                         iframe.contentWindow.postMessage({ theme: currentMode, lang: currentLang }, '*');
                     }
                 }
             });
