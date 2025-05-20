@@ -148,12 +148,11 @@
 
         #homeContent {
             padding: 20px;
-            display: none;
+            display: none; /* Initially hidden, JavaScript will show it */
             text-align: center;
             flex-grow: 1;
             align-items: center;
             justify-content: center;
-            display: flex;
             flex-direction: column;
         }
 
@@ -261,7 +260,7 @@
                     <i class="fas fa-table"></i>
                     <span>Sheet layout</span>
                 </div>
-                <div class="tool-card" data-app="Tile-calculator.html" data-translate-key="navTileCalculator">
+                <div class="tool-card" data-app="tile-calculator.html" data-translate-key="navTileCalculator">
                     <i class="fas fa-border-all"></i>
                     <span>टाइल कैलकुलेटर</span>
                 </div>
@@ -269,9 +268,9 @@
                     <i class="fas fa-radio"></i>
                     <span>एफएम रेडियो</span>
                 </div>
-                <div class="tool-card" diary.html" data-translate-key="diary.html">
-    <i class="fas fa-table"></i>
-    <span>diary</span>
+                <div class="tool-card" data-app="diary.html" data-translate-key="navDiary">
+                    <i class="fas fa-book"></i> <!-- डायरी के लिए उपयुक्त आइकन -->
+                    <span>डायरी</span>
                 </div>
             </div>
         </div>
@@ -293,6 +292,7 @@
                 navSheetLayout: "Sheet layout",
                 navTileCalculator: "टाइल कैलकुलेटर",
                 navFmRadio: "एफएम रेडियो",
+                navDiary: "डायरी", // डायरी के लिए अनुवाद जोड़ा
                 homeWelcomeTitle: "टूल हब में आपका स्वागत है!",
                 homeWelcomeMsg: "नीचे दिए गए टूल्स में से एक चुनें।",
                 loadingText: "लोड हो रहा है...",
@@ -312,6 +312,7 @@
                 navSheetLayout: "Sheet layout",
                 navTileCalculator: "Tile Calculator",
                 navFmRadio: "FM Radio",
+                navDiary: "Diary", // Diary translation added
                 homeWelcomeTitle: "Welcome to the Tool Hub!",
                 homeWelcomeMsg: "Select a tool from below.",
                 loadingText: "Loading...",
@@ -328,24 +329,24 @@
             const homeContentDiv = document.getElementById('homeContent');
             const loadingMessageDiv = document.getElementById('loadingMessage');
 
-            const lastActiveAppKey = 'hubLastActiveApp';
+            // const lastActiveAppKey = 'hubLastActiveApp'; // इसे अब इस्तेमाल नहीं करेंगे
             const darkModeKey = 'hubDarkMode';
             const langKey = 'hubLanguage';
 
             let currentLang = localStorage.getItem(langKey) || 'hi';
             let currentMode = localStorage.getItem(darkModeKey) || 'light';
-            let defaultAppUrl = localStorage.getItem(lastActiveAppKey) || 'HOME';
+            // let defaultAppUrl = localStorage.getItem(lastActiveAppKey) || 'HOME'; // इसे हटा दिया गया
 
             function applyTranslations() {
                 document.querySelectorAll('[data-translate-key]').forEach(el => {
                     const key = el.getAttribute('data-translate-key');
                     if (translations[currentLang] && translations[currentLang][key]) {
                         const span = el.querySelector('span');
-                        if (el.id === 'homeWelcomeMsg') {
-                            el.textContent = translations[currentLang][key];
-                        } else if (span) {
+                        if (el.tagName === 'P' || el.tagName === 'H1' || el.tagName === 'H2' || el.id === 'loadingMessage') { // विशिष्ट टैग्स के लिए सीधे textContent
+                             el.textContent = translations[currentLang][key];
+                        } else if (span) { // tool-card के span के लिए
                             span.textContent = translations[currentLang][key];
-                        } else {
+                        } else if (el.tagName === 'TITLE') { // title टैग के लिए
                             el.textContent = translations[currentLang][key];
                         }
                     }
@@ -357,7 +358,7 @@
                     }
                 });
                 document.documentElement.lang = currentLang;
-                document.title = translations[currentLang]?.hubTitle || "Tool Hub";
+                // document.title = translations[currentLang]?.hubTitle || "Tool Hub"; // यह showHomeContent या loadApp में सेट होगा
             }
 
             function applyDarkMode(isDark) {
@@ -372,7 +373,7 @@
                     icon.classList.remove('fa-sun');
                     icon.classList.add('fa-moon');
                 }
-                if (iframe.contentWindow) {
+                if (iframe.contentWindow && iframe.src !== 'about:blank' && iframe.style.display !== 'none') {
                     iframe.contentWindow.postMessage({
                         theme: currentMode
                     }, '*');
@@ -380,12 +381,13 @@
             }
 
             function showHomeContent() {
+                iframe.src = 'about:blank'; // iframe को खाली करें
                 iframe.style.display = 'none';
                 loadingMessageDiv.style.display = 'none';
                 homeContentDiv.style.display = 'flex';
                 document.title = translations[currentLang]?.hubMainTitle || "Tool Hub";
                 appCards.forEach(card => card.classList.remove('active'));
-                localStorage.setItem(lastActiveAppKey, 'HOME');
+                // localStorage.setItem(lastActiveAppKey, 'HOME'); // इसे अब इस्तेमाल नहीं करेंगे
             }
 
             function loadApp(appUrl) {
@@ -397,20 +399,17 @@
                 homeContentDiv.style.display = 'none';
                 iframe.style.display = 'none';
                 loadingMessageDiv.style.display = 'block';
+                loadingMessageDiv.textContent = translations[currentLang]?.loadingText || "Loading...";
+
 
                 const currentIframeSrc = iframe.src.split('/').pop();
                 const newAppFileName = appUrl.split('/').pop();
 
-                if (currentIframeSrc !== newAppFileName || !iframe.src) {
-                    iframe.src = appUrl;
-                    console.log('Loading app:', appUrl);
-                } else {
-                    console.log('App already loaded, showing iframe:', appUrl);
-                    iframe.style.display = 'block';
-                    loadingMessageDiv.style.display = 'none';
-                }
+                // हमेशा iframe का src रीसेट करें ताकि वह फिर से लोड हो
+                iframe.src = appUrl;
+                console.log('Loading app:', appUrl);
 
-                localStorage.setItem(lastActiveAppKey, appUrl);
+                // localStorage.setItem(lastActiveAppKey, appUrl); // इसे अब इस्तेमाल नहीं करेंगे
 
                 appCards.forEach(card => {
                     card.classList.toggle('active', card.dataset.app === appUrl);
@@ -421,9 +420,11 @@
                     loadingMessageDiv.style.display = 'none';
                     try {
                         let appTitle = "";
-                        if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.readyState === 'complete') {
+                         // iframe लोड होने के बाद टाइटल अपडेट करें
+                        if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.title) {
                             appTitle = iframe.contentWindow.document.title;
                         } else {
+                            // फॉलबैक अगर iframe का टाइटल एक्सेसिबल नहीं है
                             const appNameParts = appUrl.split('/').pop().split('.');
                             appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
                         }
@@ -436,7 +437,7 @@
                             }, '*');
                         }
                     } catch (e) {
-                        console.warn("Could not access iframe title or postMessage.", e);
+                        console.warn("Could not access iframe title or postMessage after load.", e);
                         const appNameParts = appUrl.split('/').pop().split('.');
                         const appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
                         document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
@@ -447,54 +448,78 @@
                     loadingMessageDiv.style.display = 'block';
                     iframe.style.display = 'none';
                     console.error("Failed to load iframe:", appUrl);
-                    iframe.src = "about:blank";
+                    iframe.src = "about:blank"; // त्रुटि पर iframe को खाली करें
                 };
-                iframe.onbeforeunload = () => {
-                    loadingMessageDiv.style.display = 'block';
+                iframe.onbeforeunload = () => { // iframe अनलोड होने से पहले लोडिंग दिखाएं
+                    if (iframe.src !== 'about:blank') {
+                         loadingMessageDiv.style.display = 'block';
+                    }
                 };
             }
 
             appCards.forEach(card => {
                 card.addEventListener('click', (e) => {
                     e.preventDefault();
-                    loadApp(card.dataset.app);
+                    const appToLoad = card.dataset.app;
+                    if (appToLoad) { // सुनिश्चित करें कि data-app मौजूद है
+                        loadApp(appToLoad);
+                    } else {
+                        console.error("Tool card is missing data-app attribute:", card);
+                    }
                 });
             });
 
             homeButton.addEventListener('click', (e) => {
                 e.preventDefault();
-                loadApp('HOME');
+                showHomeContent(); // homeButton अब सीधे showHomeContent() कॉल करेगा
             });
 
             langToggle.addEventListener('click', () => {
                 currentLang = (currentLang === 'hi') ? 'en' : 'hi';
                 localStorage.setItem(langKey, currentLang);
-                applyTranslations();
+                applyTranslations(); // पहले अनुवाद लागू करें
+
+                // अगर होम स्क्रीन पर हैं, तो उसे अपडेट करें
                 if (homeContentDiv.style.display === 'flex') {
-                    showHomeContent();
-                }
-                const activeAppCard = document.querySelector('.tool-card[data-app].active');
-                if (activeAppCard && activeAppCard.dataset.app !== 'HOME') {
-                    if (iframe.contentWindow) {
+                    showHomeContent(); // यह टाइटल और अन्य टेक्स्ट अपडेट करेगा
+                } else if (iframe.style.display === 'block' && iframe.src !== 'about:blank') {
+                    // अगर कोई ऐप लोड है, तो उसका टाइटल और iframe कंटेंट अपडेट करें
+                     if (iframe.contentWindow) {
                         iframe.contentWindow.postMessage({
                             lang: currentLang
                         }, '*');
                     }
+                    // iframe का टाइटल दोबारा सेट करें क्योंकि भाषा बदली है
                     try {
                         let appTitle = "";
-                        if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.readyState === 'complete') {
+                         if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.title) {
                             appTitle = iframe.contentWindow.document.title;
                         } else {
-                            const appNameParts = activeAppCard.dataset.app.split('/').pop().split('.');
-                            appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                            const activeAppCard = document.querySelector('.tool-card.active');
+                            if(activeAppCard && activeAppCard.dataset.app) {
+                                const appNameParts = activeAppCard.dataset.app.split('/').pop().split('.');
+                                appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                            }
                         }
-                        document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+                        if (appTitle) {
+                             document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+                        } else {
+                            document.title = translations[currentLang]?.hubMainTitle || "Tool Hub";
+                        }
                     } catch (e) {
                         console.warn("Could not access iframe title after lang change.", e);
-                        const appNameParts = activeAppCard.dataset.app.split('/').pop().split('.');
-                        const appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-                        document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+                         const activeAppCard = document.querySelector('.tool-card.active');
+                         if(activeAppCard && activeAppCard.dataset.app) {
+                            const appNameParts = activeAppCard.dataset.app.split('/').pop().split('.');
+                            const appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                            document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+                         } else {
+                             document.title = translations[currentLang]?.hubMainTitle || "Tool Hub";
+                         }
                     }
+                } else {
+                    // यदि न होम पर और न ही कोई ऐप लोड है, तो बस मुख्य हब का टाइटल अपडेट करें
+                     document.title = translations[currentLang]?.hubTitle || "Tool Hub";
                 }
             });
 
@@ -502,27 +527,38 @@
                 const isDark = !document.body.classList.contains('dark-mode');
                 applyDarkMode(isDark);
                 localStorage.setItem(darkModeKey, isDark ? 'dark' : 'light');
-                if (iframe.contentWindow) {
+                // iframe में थीम परिवर्तन का संदेश भेजें, अगर वह लोड है
+                if (iframe.contentWindow && iframe.src !== 'about:blank' && iframe.style.display !== 'none') {
                     iframe.contentWindow.postMessage({
                         theme: currentMode
                     }, '*');
                 }
             });
 
+            // प्रारंभिक सेटअप
             applyDarkMode(currentMode === 'dark');
-            applyTranslations();
+            applyTranslations(); // प्रारंभिक अनुवाद
 
-            const initialApp = localStorage.getItem(lastActiveAppKey);
-            if (initialApp && initialApp !== 'HOME') {
-                loadApp(initialApp);
-            } else {
-                showHomeContent();
-            }
+            // हमेशा होम स्क्रीन पर शुरू करें
+            showHomeContent();
 
             window.addEventListener('message', (event) => {
                 const message = event.data;
                 if (message && message.type === 'appLoaded') {
                     console.log(message.appName + ' inside iframe reported loaded.');
+                     // अगर ऐप खुद बताता है कि वह लोड हो गया है, तो टाइटल को उसके हिसाब से सेट करें
+                    if(message.title) {
+                        document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + message.title;
+                    }
+                }
+                // If an app inside iframe requests language or theme
+                if (message && message.request === 'initialConfig') {
+                    if (iframe.contentWindow) {
+                         iframe.contentWindow.postMessage({
+                            theme: currentMode,
+                            lang: currentLang
+                        }, '*');
+                    }
                 }
             });
         });
