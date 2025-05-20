@@ -1,40 +1,40 @@
 <!DOCTYPE html>
-<html lang="hi"> <head>
+<html lang="hi">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-translate-key="hubTitle">मेरा टूल हब</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HpfVcpeSXTnL/faDJvmoWaQqrjFhyCkyUwzWzzYBJjyeHzUpFJnGBhdIAkAxFcVTwzbuK4kTQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         /* --- CSS वेरिएबल्स और स्टाइल्स --- */
         :root {
             --bg-color-light: #f0f0f0;
             --text-color-light: #333;
-            --nav-button-text-light: #333; /* ड्रॉपडाउन बटन का टेक्स्ट कलर */
-            --nav-button-hover-bg-light: #e9ecef; /* ड्रॉपडाउन बटन पर हॉवर */
-            --nav-button-active-bg-light: #cfe2ff; /* ड्रॉपडाउन सक्रिय बटन */
             --iframe-border-light: #ccc;
             --header-bg-light: #e9ecef;
             --header-text-color-light: #212529;
             --control-icon-color-light: #495057;
-            --control-icon-hover-bg-light: rgba(0,0,0,0.075);
-            --dropdown-bg-light: #fff;
-            --dropdown-border-light: #ccc;
-            --dropdown-shadow-light: rgba(0,0,0,0.2);
-
+            --control-icon-bg-light: #ffffff;
+            --control-icon-hover-bg-light: #d3d4d5;
+            --control-icon-active-bg-light: #b8c7fa;
+            --card-bg-light: #fff;
+            --card-border-light: #ccc;
+            --card-shadow-light: rgba(0,0,0,0.2);
+            --card-hover-bg-light: #e9ecef;
 
             --bg-color-dark: #1a1a1a;
             --text-color-dark: #f0f0f0;
-             --nav-button-text-dark: #f0f0f0; /* ड्रॉपडाउन बटन का टेक्स्ट कलर */
-            --nav-button-hover-bg-dark: #444; /* ड्रॉपडाउन बटन पर हॉवर */
-            --nav-button-active-bg-dark: #003366; /* ड्रॉपडाउन सक्रिय बटन */
             --iframe-border-dark: #444;
             --header-bg-dark: #343a40;
             --header-text-color-dark: #f8f9fa;
             --control-icon-color-dark: #adb5bd;
-            --control-icon-hover-bg-dark: rgba(255,255,255,0.1);
-            --dropdown-bg-dark: #222;
-            --dropdown-border-dark: #444;
-            --dropdown-shadow-dark: rgba(0,0,0,0.5);
+            --control-icon-bg-dark: #2c3034;
+            --control-icon-hover-bg-dark: #4a4e52;
+            --control-icon-active-bg-dark: #1e3a8a;
+            --card-bg-dark: #222;
+            --card-border-dark: #444;
+            --card-shadow-dark: rgba(0,0,0,0.5);
+            --card-hover-bg-dark: #444;
         }
 
         body {
@@ -61,10 +61,11 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: relative; /* ड्रॉपडाउन के लिए पोजीशनिंग संदर्भ */
-            z-index: 10; /* सुनिश्चित करें कि हेडर ऊपर रहे */
+            position: relative;
+            z-index: 10;
         }
-         body.dark-mode .app-header {
+
+        body.dark-mode .app-header {
             background-color: var(--header-bg-dark);
             color: var(--header-text-color-dark);
         }
@@ -81,104 +82,60 @@
         .header-controls {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 10px; /* बटनों के बीच गैप बढ़ाया */
         }
 
-        /* हेडर के अंदर के कंट्रोल आइकन/बटन */
         .header-controls .control-icon {
-            background: none;
-            border: none;
-            font-size: 1.4em;
+            background-color: var(--control-icon-bg-light);
+            border: 1px solid var(--control-icon-color-light);
+            font-size: 1.5em; /* आइकन का आकार बढ़ाया */
             cursor: pointer;
             color: var(--control-icon-color-light);
-            padding: 6px 8px;
-            border-radius: 5px;
-            transition: background-color 0.2s, color 0.2s;
+            padding: 10px; /* पैडिंग बढ़ाई */
+            border-radius: 8px; /* गोल कोने */
+            transition: background-color 0.2s, color 0.2s, transform 0.2s;
             line-height: 1;
             display: flex;
             align-items: center;
-            text-decoration: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
+            justify-content: center;
+            width: 40px; /* निश्चित चौड़ाई */
+            height: 40px; /* निश्चित ऊंचाई */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         body.dark-mode .header-controls .control-icon {
+            background-color: var(--control-icon-bg-dark);
+            border: 1px solid var(--control-icon-color-dark);
             color: var(--control-icon-color-dark);
         }
 
         .header-controls .control-icon:hover {
             background-color: var(--control-icon-hover-bg-light);
+            transform: scale(1.1); /* होवर पर थोड़ा बड़ा */
         }
+
         body.dark-mode .header-controls .control-icon:hover {
-             background-color: var(--control-icon-hover-bg-dark);
+            background-color: var(--control-icon-hover-bg-dark);
         }
 
-
-        /* ड्रॉपडाउन मेनू का कंटेनर */
-        .dropdown-menu {
-            position: absolute;
-            top: 100%; /* हेडर के ठीक नीचे */
-            right: 10px; /* हेडर के दाएं किनारे से थोड़ी दूरी */
-            background-color: var(--dropdown-bg-light);
-            border: 1px solid var(--dropdown-border-light);
-            border-radius: 5px;
-            box-shadow: 0 2px 10px var(--dropdown-shadow-light);
-            padding: 5px 0;
-            z-index: 5; /* हेडर से नीचे लेकिन कंटेंट से ऊपर */
-            display: none; /* शुरू में छिपा हुआ */
-            flex-direction: column; /* आइटम्स को एक के नीचे एक रखें */
-            min-width: 180px; /* मेनू की न्यूनतम चौड़ाई */
-        }
-         body.dark-mode .dropdown-menu {
-            background-color: var(--dropdown-bg-dark);
-            border: 1px solid var(--dropdown-border-dark);
-            box-shadow: 0 2px 10px var(--dropdown-shadow-dark);
+        .header-controls .control-icon:active {
+            background-color: var(--control-icon-active-bg-light);
         }
 
-
-        /* ड्रॉपdown के अंदर के बटन */
-        .dropdown-menu .control-icon {
-             font-size: 1em; /* आइकन का आकार थोड़ा छोटा */
-             color: var(--nav-button-text-light); /* टेक्स्ट कलर */
-             padding: 8px 15px; /* पैडिंग बढ़ाएं */
-             width: 100%; /* पूरी चौड़ाई लें */
-             justify-content: flex-start; /* कंटेंट को बाएं अलाइन करें */
-             border-radius: 0; /* कोने गोल न करें */
-             gap: 10px; /* आइकन और टेक्स्ट के बीच गैप */
+        body.dark-mode .header-controls .control-icon:active {
+            background-color: var(--control-icon-active-bg-dark);
         }
-        body.dark-mode .dropdown-menu .control-icon {
-             color: var(--nav-button-text-dark);
-        }
-
-
-        .dropdown-menu .control-icon:hover {
-            background-color: var(--nav-button-hover-bg-light);
-        }
-         body.dark-mode .dropdown-menu .control-icon:hover {
-            background-color: var(--nav-button-hover-bg-dark);
-        }
-
-
-        /* ड्रॉपडाउन के अंदर सक्रिय बटन */
-         .dropdown-menu .control-icon.active {
-            background-color: var(--nav-button-active-bg-light);
-            font-weight: bold;
-        }
-        body.dark-mode .dropdown-menu .control-icon.active {
-            background-color: var(--nav-button-active-bg-dark);
-        }
-
 
         #appContainer {
             flex-grow: 1;
             overflow: hidden;
             border-top: 1px solid var(--iframe-border-light);
-            position: relative; /* लोडिंग संदेश के लिए */
+            position: relative;
             padding-top: 0;
             box-sizing: border-box;
         }
-         body.dark-mode #appContainer {
+
+        body.dark-mode #appContainer {
             border-top: 1px solid var(--iframe-border-dark);
         }
 
@@ -194,10 +151,58 @@
             display: none;
             text-align: center;
             flex-grow: 1;
-            align-items:center;
-            justify-content:center;
-            display:flex;
-            flex-direction:column;
+            align-items: center;
+            justify-content: center;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .tool-card {
+            background-color: var(--card-bg-light);
+            border: 1px solid var(--card-border-light);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            box-shadow: 0 2px 5px var(--card-shadow-light);
+        }
+
+        body.dark-mode .tool-card {
+            background-color: var(--card-bg-dark);
+            border: 1px solid var(--card-border-dark);
+            box-shadow: 0 2px 5px var(--card-shadow-dark);
+        }
+
+        .tool-card:hover {
+            background-color: var(--card-hover-bg-light);
+            transform: scale(1.05);
+        }
+
+        body.dark-mode .tool-card:hover {
+            background-color: var(--card-hover-bg-dark);
+        }
+
+        .tool-card i {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .tool-card span {
+            font-size: 1em;
+            text-align: center;
         }
 
         .loading-message {
@@ -209,35 +214,20 @@
             color: var(--text-color-light);
             display: none;
         }
+
         body.dark-mode .loading-message {
             color: var(--text-color-dark);
         }
-
     </style>
 </head>
-<body class="">
-
+<body>
     <header class="app-header">
         <h1 data-translate-key="hubMainTitle">मेरा टूल हब</h1>
         <div class="header-controls">
             <button id="homeButton" class="control-icon" data-translate-key-title="titleHome"><i class="fas fa-home"></i></button>
-
-            <button id="menuToggle" class="control-icon" title="टूल मेनू"><i class="fas fa-ellipsis-v"></i></button>
-
-            <button id="langToggle" class="control-icon" data-translate-key-title="titleLangToggle">🌐</button>
+            <button id="langToggle" class="control-icon" data-translate-key-title="titleLangToggle"><i class="fas fa-globe"></i></button>
             <button id="darkModeToggle" class="control-icon" data-translate-key-title="titleThemeToggle"><i class="fas fa-moon"></i></button>
         </div>
-
-        <div id="toolMenu" class="dropdown-menu">
-             <button data-app="land_area_calculator.html" class="control-icon" data-translate-key="navLandArea"><i class="fas fa-ruler-combined"></i> <span>ज़मीन का क्षेत्रफल</span></button>
-            <button data-app="attendance_tracker.html" class="control-icon" data-translate-key="navAttendance"><i class="fas fa-user-check"></i> <span>अटेंडेंस ट्रैकर</span></button>
-            <button data-app="kharch_tracker.html" class="control-icon" data-translate-key="navExpense"><i class="fas fa-wallet"></i> <span>खर्च ट्रैकर</span></button>
-            <button data-app="combined_calculator.html" class="control-icon" data-translate-key="navCalculator"><i class="fas fa-calculator"></i> <span>कैलकुलेटर</span></button>
-            <button data-app="unit_converter.html" class="control-icon" data-translate-key="navUnitConverter"><i class="fas fa-exchange-alt"></i> <span>यूनिट कन्वर्टर</span></button>
-            <button data-app="Sheet-layout.html" class="control-icon" data-translate-key="navSheetLayout"><i class="fas fa-table"></i> <span>Sheet layout</span></button>
-            <button data-app="Tile-calculator.html" class="control-icon" data-translate-key="navTileCalculator"><i class="fas fa-border-all"></i> <span>टाइल कैलकुलेटर</span></button>
-            <button data-app="Fm_radio.html" class="control-icon" data-translate-key="navFmRadio"><i class="fas fa-radio"></i> <span>एफएम रेडियो</span></button>
-             </div>
     </header>
 
     <div id="appContainer">
@@ -245,7 +235,41 @@
         <iframe id="appFrame" title="मुख्य एप्लीकेशन क्षेत्र"></iframe>
         <div id="homeContent">
             <h2 data-translate-key="homeWelcomeTitle">टूल हब में आपका स्वागत है!</h2>
-            <p data-translate-key="homeWelcomeMsg">ऊपर मेनू आइकन (<i class="fas fa-ellipsis-v"></i>) से एक टूल चुनें।</p>
+            <p data-translate-key="homeWelcomeMsg">नीचे दिए गए टूल्स में से एक चुनें।</p>
+            <div class="tool-grid">
+                <div class="tool-card" data-app="land_area_calculator.html" data-translate-key="navLandArea">
+                    <i class="fas fa-ruler-combined"></i>
+                    <span>ज़मीन का क्षेत्रफल</span>
+                </div>
+                <div class="tool-card" data-app="attendance_tracker.html" data-translate-key="navAttendance">
+                    <i class="fas fa-user-check"></i>
+                    <span>अटेंडेंस ट्रैकर</span>
+                </div>
+                <div class="tool-card" data-app="kharch_tracker.html" data-translate-key="navExpense">
+                    <i class="fas fa-wallet"></i>
+                    <span>खर्च ट्रैकर</span>
+                </div>
+                <div class="tool-card" data-app="combined_calculator.html" data-translate-key="navCalculator">
+                    <i class="fas fa-calculator"></i>
+                    <span>कैलकुलेटर</span>
+                </div>
+                <div class="tool-card" data-app="unit_converter.html" data-translate-key="navUnitConverter">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>यूनिट कन्वर्टर</span>
+                </div>
+                <div class="tool-card" data-app="Sheet-layout.html" data-translate-key="navSheetLayout">
+                    <i class="fas fa-table"></i>
+                    <span>Sheet layout</span>
+                </div>
+                <div class="tool-card" data-app="Tile-calculator.html" data-translate-key="navTileCalculator">
+                    <i class="fas fa-border-all"></i>
+                    <span>टाइल कैलकुलेटर</span>
+                </div>
+                <div class="tool-card" data-app="Fm_radio.html" data-translate-key="navFmRadio">
+                    <i class="fas fa-radio"></i>
+                    <span>एफएम रेडियो</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -266,7 +290,7 @@
                 navTileCalculator: "टाइल कैलकुलेटर",
                 navFmRadio: "एफएम रेडियो",
                 homeWelcomeTitle: "टूल हब में आपका स्वागत है!",
-                homeWelcomeMsg: "ऊपर मेनू आइकन (" + '<i class="fas fa-ellipsis-v"></i>' + ") से एक टूल चुनें।",
+                homeWelcomeMsg: "नीचे दिए गए टूल्स में से एक चुनें।",
                 loadingText: "लोड हो रहा है...",
                 errorLoadingApp: "टूल लोड करने में त्रुटि। कृपया पुनः प्रयास करें।"
             },
@@ -285,7 +309,7 @@
                 navTileCalculator: "Tile Calculator",
                 navFmRadio: "FM Radio",
                 homeWelcomeTitle: "Welcome to the Tool Hub!",
-                homeWelcomeMsg: "Select a tool from the menu icon (" + '<i class="fas fa-ellipsis-v"></i>' + ") above.",
+                homeWelcomeMsg: "Select a tool from below.",
                 loadingText: "Loading...",
                 errorLoadingApp: "Error loading app. Please try again."
             }
@@ -293,15 +317,12 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const iframe = document.getElementById('appFrame');
-            const appButtons = document.querySelectorAll('#toolMenu .control-icon[data-app]'); // ड्रॉपडाउन के अंदर के बटन्स
+            const appCards = document.querySelectorAll('.tool-card[data-app]');
             const homeButton = document.getElementById('homeButton');
             const langToggle = document.getElementById('langToggle');
             const darkModeToggle = document.getElementById('darkModeToggle');
             const homeContentDiv = document.getElementById('homeContent');
             const loadingMessageDiv = document.getElementById('loadingMessage');
-
-            const menuToggle = document.getElementById('menuToggle');
-            const toolMenuDiv = document.getElementById('toolMenu');
 
             const lastActiveAppKey = 'hubLastActiveApp';
             const darkModeKey = 'hubDarkMode';
@@ -315,19 +336,19 @@
                 document.querySelectorAll('[data-translate-key]').forEach(el => {
                     const key = el.getAttribute('data-translate-key');
                     if (translations[currentLang] && translations[currentLang][key]) {
-                         const span = el.querySelector('span');
-                         if (el.id === 'homeWelcomeMsg') {
-                              el.innerHTML = translations[currentLang][key]; // होम मैसेज में HTML है
-                         } else if (span) {
-                              span.textContent = translations[currentLang][key]; // बटनों के अंदर का टेक्स्ट
-                         } else {
-                              el.textContent = translations[currentLang][key]; // बाकी टेक्स्ट (जैसे टाइटल)
-                         }
+                        const span = el.querySelector('span');
+                        if (el.id === 'homeWelcomeMsg') {
+                            el.textContent = translations[currentLang][key];
+                        } else if (span) {
+                            span.textContent = translations[currentLang][key];
+                        } else {
+                            el.textContent = translations[currentLang][key];
+                        }
                     }
                 });
                 document.querySelectorAll('[data-translate-key-title]').forEach(el => {
                     const key = el.getAttribute('data-translate-key-title');
-                     if (translations[currentLang] && translations[currentLang][key]) {
+                    if (translations[currentLang] && translations[currentLang][key]) {
                         el.title = translations[currentLang][key];
                     }
                 });
@@ -347,11 +368,11 @@
                     icon.classList.remove('fa-sun');
                     icon.classList.add('fa-moon');
                 }
-                 if (iframe.contentWindow) {
-                     iframe.contentWindow.postMessage({
-                         theme: currentMode
-                     }, '*');
-                 }
+                if (iframe.contentWindow) {
+                    iframe.contentWindow.postMessage({
+                        theme: currentMode
+                    }, '*');
+                }
             }
 
             function showHomeContent() {
@@ -359,9 +380,8 @@
                 loadingMessageDiv.style.display = 'none';
                 homeContentDiv.style.display = 'flex';
                 document.title = translations[currentLang]?.hubMainTitle || "Tool Hub";
-                appButtons.forEach(btn => btn.classList.remove('active'));
+                appCards.forEach(card => card.classList.remove('active'));
                 localStorage.setItem(lastActiveAppKey, 'HOME');
-                 toolMenuDiv.style.display = 'none'; // होम पर आने पर मेनू बंद करें
             }
 
             function loadApp(appUrl) {
@@ -374,26 +394,23 @@
                 iframe.style.display = 'none';
                 loadingMessageDiv.style.display = 'block';
 
-                 const currentIframeSrc = iframe.src.split('/').pop();
-                 const newAppFileName = appUrl.split('/').pop();
+                const currentIframeSrc = iframe.src.split('/').pop();
+                const newAppFileName = appUrl.split('/').pop();
 
-                 if (currentIframeSrc !== newAppFileName || !iframe.src) {
-                     iframe.src = appUrl;
-                     console.log('Loading app:', appUrl);
-                 } else {
+                if (currentIframeSrc !== newAppFileName || !iframe.src) {
+                    iframe.src = appUrl;
+                    console.log('Loading app:', appUrl);
+                } else {
                     console.log('App already loaded, showing iframe:', appUrl);
                     iframe.style.display = 'block';
                     loadingMessageDiv.style.display = 'none';
-                 }
+                }
 
                 localStorage.setItem(lastActiveAppKey, appUrl);
 
-                appButtons.forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.app === appUrl);
+                appCards.forEach(card => {
+                    card.classList.toggle('active', card.dataset.app === appUrl);
                 });
-
-                 toolMenuDiv.style.display = 'none'; // ऐप लोड होने पर मेनू बंद करें
-
 
                 iframe.onload = () => {
                     iframe.style.display = 'block';
@@ -401,20 +418,19 @@
                     try {
                         let appTitle = "";
                         if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.readyState === 'complete') {
-                             appTitle = iframe.contentWindow.document.title;
+                            appTitle = iframe.contentWindow.document.title;
                         } else {
-                             const appNameParts = appUrl.split('/').pop().split('.');
-                             appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                            const appNameParts = appUrl.split('/').pop().split('.');
+                            appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
                         }
-                         document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+                        document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
 
-                         if (iframe.contentWindow) {
-                             iframe.contentWindow.postMessage({
-                                 theme: currentMode,
-                                 lang: currentLang
-                             }, '*');
-                         }
-
+                        if (iframe.contentWindow) {
+                            iframe.contentWindow.postMessage({
+                                theme: currentMode,
+                                lang: currentLang
+                            }, '*');
+                        }
                     } catch (e) {
                         console.warn("Could not access iframe title or postMessage.", e);
                         const appNameParts = appUrl.split('/').pop().split('.');
@@ -429,32 +445,15 @@
                     console.error("Failed to load iframe:", appUrl);
                     iframe.src = "about:blank";
                 };
-                 iframe.onbeforeunload = () => {
-                     loadingMessageDiv.style.display = 'block';
-                 };
+                iframe.onbeforeunload = () => {
+                    loadingMessageDiv.style.display = 'block';
+                };
             }
 
-            // मेनू टॉगल लॉजिक
-            menuToggle.addEventListener('click', (event) => {
-                event.stopPropagation();
-                toolMenuDiv.style.display = toolMenuDiv.style.display === 'flex' ? 'none' : 'flex';
-            });
-
-            // मेनू के बाहर क्लिक करने पर मेनू बंद करें
-            document.addEventListener('click', (event) => {
-                const isClickInsideMenu = toolMenuDiv.contains(event.target);
-                const isClickOnMenuToggle = menuToggle.contains(event.target);
-                if (toolMenuDiv.style.display === 'flex' && !isClickInsideMenu && !isClickOnMenuToggle) {
-                    toolMenuDiv.style.display = 'none';
-                }
-            });
-
-
-            appButtons.forEach(button => {
-                button.addEventListener('click', (e) => {
+            appCards.forEach(card => {
+                card.addEventListener('click', (e) => {
                     e.preventDefault();
-                    loadApp(button.dataset.app);
-                     // loadApp फंक्शन मेनू को बंद कर देता है
+                    loadApp(card.dataset.app);
                 });
             });
 
@@ -470,64 +469,59 @@
                 if (homeContentDiv.style.display === 'flex') {
                     showHomeContent();
                 }
-                 const activeAppButton = document.querySelector('#toolMenu .control-icon[data-app].active');
-                 if (activeAppButton && activeAppButton.dataset.app !== 'HOME') {
-                       if (iframe.contentWindow) {
-                           iframe.contentWindow.postMessage({
-                               lang: currentLang
-                           }, '*');
-                       }
-                       try {
-                           let appTitle = "";
-                            if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.readyState === 'complete') {
-                                 appTitle = iframe.contentWindow.document.title;
-                            } else {
-                                 const appNameParts = activeAppButton.dataset.app.split('/').pop().split('.');
-                                 appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-                            }
-                            document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
-                       } catch (e) {
-                            console.warn("Could not access iframe title after lang change.", e);
-                            const appNameParts = activeAppButton.dataset.app.split('/').pop().split('.');
-                            const appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-                            document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
-                       }
-                 }
+                const activeAppCard = document.querySelector('.tool-card[data-app].active');
+                if (activeAppCard && activeAppCard.dataset.app !== 'HOME') {
+                    if (iframe.contentWindow) {
+                        iframe.contentWindow.postMessage({
+                            lang: currentLang
+                        }, '*');
+                    }
+                    try {
+                        let appTitle = "";
+                        if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.readyState === 'complete') {
+                            appTitle = iframe.contentWindow.document.title;
+                        } else {
+                            const appNameParts = activeAppCard.dataset.app.split('/').pop().split('.');
+                            appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                        }
+                        document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+                    } catch (e) {
+                        console.warn("Could not access iframe title after lang change.", e);
+                        const appNameParts = activeAppCard.dataset.app.split('/').pop().split('.');
+                        const appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                        document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
+                    }
+                }
             });
 
             darkModeToggle.addEventListener('click', () => {
                 const isDark = !document.body.classList.contains('dark-mode');
                 applyDarkMode(isDark);
                 localStorage.setItem(darkModeKey, isDark ? 'dark' : 'light');
-                 if (iframe.contentWindow) {
-                     iframe.contentWindow.postMessage({
-                         theme: currentMode
-                     }, '*');
-                 }
+                if (iframe.contentWindow) {
+                    iframe.contentWindow.postMessage({
+                        theme: currentMode
+                    }, '*');
+                }
             });
 
             applyDarkMode(currentMode === 'dark');
             applyTranslations();
 
-             const initialApp = localStorage.getItem(lastActiveAppKey);
-             if (initialApp && initialApp !== 'HOME') {
-                 loadApp(initialApp);
-             } else {
-                 showHomeContent();
-             }
+            const initialApp = localStorage.getItem(lastActiveAppKey);
+            if (initialApp && initialApp !== 'HOME') {
+                loadApp(initialApp);
+            } else {
+                showHomeContent();
+            }
 
             window.addEventListener('message', (event) => {
-                // Check origin for security
-                // if (event.origin !== 'YOUR_EXPECTED_ORIGIN') return;
                 const message = event.data;
-                // console.log("Message from iframe:", message);
-                 if (message && message.type === 'appLoaded') {
-                     console.log(message.appName + ' inside iframe reported loaded.');
-                 }
+                if (message && message.type === 'appLoaded') {
+                    console.log(message.appName + ' inside iframe reported loaded.');
+                }
             });
-
         });
     </script>
-
 </body>
 </html>
