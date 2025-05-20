@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="app_title">मेरी डिजिटल डायरी</title>
+    <!-- jsPDF लाइब्रेरी -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="manifest" href="manifest.json"> <!-- PWA के लिए -->
+    <link rel="apple-touch-icon" href="diary-icon-192.png"> <!-- iOS आइकन -->
+    <link rel="icon" type="image/png" href="diary-icon-32.png" sizes="32x32"> <!-- Favicon -->
+    <link rel="icon" type="image/png" href="diary-icon-16.png" sizes="16x16"> <!-- Favicon -->
+
+
+    <style>
+        :root {
+            --bg-color: #eef1f5; --text-color: #333; --container-bg: #ffffff; --container-shadow: rgba(0,0,0,0.08);
+            --heading-color: #1a2533; --input-border-color: #ced4da; --input-focus-border: #007bff;
+            --input-focus-shadow: rgba(0,123,255,.25); --button-primary-bg: #007bff; --button-primary-hover-bg: #0056b3;
+            --button-secondary-bg: #6c757d; --button-secondary-hover-bg: #545b62; --button-tertiary-bg: #28a745; 
+            --button-tertiary-hover-bg: #218838; --button-warning-bg: #ffc107; --button-warning-hover-bg: #e0a800;
+            --entry-bg: #f8f9fa; --entry-border-left: #007bff; --entry-shadow: rgba(0,0,0,0.05);
+            --entry-text-color: #212529; --timestamp-color: #555;
+            --action-edit-bg: #ffc107; --action-edit-hover-bg: #e0a800; --action-delete-bg: #dc3545;
+            --action-delete-hover-bg: #c82333; --link-color: #007bff; --icon-button-fill: #333;
+            --icon-button-hover-bg: #e0e0e0; --calendar-day-hover: #e9ecef; --calendar-day-active: #007bff;
+            --calendar-day-active-text: white; --calendar-day-has-entry: #d1e7ff; --calendar-day-current: #a0d2a0; 
+            --stats-bg: #f1f3f5; --menu-bg: var(--container-bg); --menu-shadow: var(--container-shadow);
+            --menu-item-hover-bg: var(--icon-button-hover-bg); --tag-bg: #e9ecef; --tag-color: #495057;
+            --reminder-section-bg: var(--entry-bg); --pinned-entry-bg: #fff3cd; --pinned-entry-border: #ffeeba;
+            --entry-count-badge-bg: var(--button-primary-bg); --entry-count-badge-text: white;
+        }
+        body.dark-mode {
+            --bg-color: #121212; --text-color: #e0e0e0; --container-bg: #1e1e1e; --container-shadow: rgba(255,255,255,0.05);
+            --heading-color: #f0f0f0; --input-border-color: #444; --input-focus-border: #009bff;
+            --input-focus-shadow: rgba(0,155,255,.25); --button-primary-bg: #009bff; --button-primary-hover-bg: #007acc;
+            --button-secondary-bg: #4a4a4a; --button-secondary-hover-bg: #383838; --button-tertiary-bg: #218838; 
+            --button-tertiary-hover-bg: #1b6e2e; --button-warning-bg: #e0a800; --button-warning-hover-bg: #c09000;
+            --entry-bg: #2a2a2a; --entry-border-left: #009bff;
+            --entry-shadow: rgba(255,255,255,0.03); --entry-text-color: #d0d0d0; --timestamp-color: #aaa;
+            --action-edit-bg: #e0a800; --action-edit-hover-bg: #c09000; --action-delete-bg: #c82333;
+            --action-delete-hover-bg: #b01e2b; --link-color: #009bff; --icon-button-fill: #e0e0e0;
+            --icon-button-hover-bg: #333; --calendar-day-hover: #333; --calendar-day-active: #009bff;
+            --calendar-day-active-text: white; --calendar-day-has-entry: #004c7a; --calendar-day-current: #38761d; 
+            --stats-bg: #2c2c2c; --menu-bg: var(--container-bg); --menu-shadow: var(--container-shadow);
+            --menu-item-hover-bg: var(--icon-button-hover-bg); --tag-bg: #343a40; --tag-color: #adb5bd;
+            --reminder-section-bg: var(--entry-bg); --pinned-entry-bg: #3e3820; --pinned-entry-border: #5a501b;
+            --entry-count-badge-bg: var(--button-primary-bg); --entry-count-badge-text: white;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; transition: background-color 0.3s, color 0.3s; }
+        .container { max-width: 800px; margin: 20px auto; background-color: var(--container-bg); padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px var(--container-shadow); transition: background-color 0.3s; }
+        .header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; position: relative; }
+        .header-controls h1 { color: var(--heading-color); margin: 0; font-size: 1.8em; font-weight: 600; flex-grow: 1; }
+        .control-buttons { display: flex; gap: 10px; align-items: center; }
+        .icon-button { background: none; border: none; padding: 8px; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s; }
+        .icon-button:hover { background-color: var(--icon-button-hover-bg); }
+        .icon-button svg { width: 24px; height: 24px; fill: var(--icon-button-fill); }
+        .menu-button { position: relative; }
+        .dropdown-menu { display: none; position: absolute; top: 100%; right: 0; background-color: var(--menu-bg); box-shadow: 0 2px 10px var(--menu-shadow); border-radius: 6px; z-index: 1000; min-width: 200px; padding: 5px 0; }
+        .dropdown-menu.show { display: block; }
+        .dropdown-item { display: block; padding: 10px 15px; text-decoration: none; color: var(--text-color); font-size: 0.95em; cursor: pointer; white-space: nowrap; }
+        .dropdown-item:hover { background-color: var(--menu-item-hover-bg); }
+        .dropdown-divider { height: 1px; margin: .5rem 0; overflow: hidden; background-color: var(--input-border-color); }
+        #language_toggle_button { padding: 8px 12px; background-color: var(--button-secondary-bg); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background-color 0.2s ease-in-out; }
+        #language_toggle_button:hover { background-color: var(--button-secondary-hover-bg); }
+        #import_file_input_menu { display: none; }
+        .search-container { margin-bottom: 15px; } 
+        #search_box { width: 100%; padding: 12px 15px; border: 1px solid var(--input-border-color); border-radius: 6px; font-size: 1em; background-color: var(--container-bg); color: var(--text-color); box-sizing: border-box; }
+        #search_box:focus { border-color: var(--input-focus-border); outline: none; box-shadow: 0 0 0 0.2rem var(--input-focus-shadow); }
+        .tags-input-container { margin-bottom: 15px; }
+        #tags_input { width: 100%; padding: 10px 15px; border: 1px solid var(--input-border-color); border-radius: 6px; font-size: 0.9em; background-color: var(--container-bg); color: var(--text-color); box-sizing: border-box; }
+        #tags_input:focus { border-color: var(--input-focus-border); outline: none; box-shadow: 0 0 0 0.2rem var(--input-focus-shadow); }
+        .textarea-toolbar { display: flex; gap: 10px; margin-bottom: 5px; align-items: center;}
+        .toolbar-button { background-color: var(--button-secondary-bg); color:white; border:none; padding: 5px 8px; font-size:0.9em; border-radius:4px; cursor:pointer;}
+        .toolbar-button:hover { background-color: var(--button-secondary-hover-bg); }
+        #voice_input_button.recording { background-color: var(--action-delete-bg); }
+        textarea { width: 100%; min-height: 120px; margin-bottom: 10px; border: 1px solid var(--input-border-color); border-radius: 6px; padding: 15px; box-sizing: border-box; font-size: 1rem; resize: vertical; background-color: var(--container-bg); color: var(--text-color); }
+        textarea:focus { border-color: var(--input-focus-border); outline: none; box-shadow: 0 0 0 0.2rem var(--input-focus-shadow); }
+        .markdown-preview { border: 1px dashed var(--input-border-color); padding: 10px; margin-top: 0; margin-bottom:10px; min-height: 50px; border-radius: 6px; background-color: var(--entry-bg); font-size: 1rem; }
+        .button-container { display: flex; gap: 10px; margin-bottom: 15px; }
+        .button-primary { background-color: var(--button-primary-bg); color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 500; transition: background-color 0.2s ease-in-out, transform 0.1s ease; flex-grow: 1; }
+        .button-primary:hover { background-color: var(--button-primary-hover-bg); }
+        .button-secondary { background-color: var(--button-secondary-bg); color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 500; }
+        .stats-container { background-color: var(--stats-bg); padding:15px; border-radius: 8px; margin-bottom: 20px; }
+        .stats-container h3 { margin-top:0; color: var(--heading-color); font-size: 1.1em;}
+        .stats-container p { margin: 5px 0; font-size: 0.95em; }
+        .reminder-section { margin-top: 20px; padding: 15px; background-color: var(--reminder-section-bg); border-radius: 8px; border: 1px solid var(--input-border-color); margin-bottom: 20px; }
+        .reminder-section h3 { margin-top: 0; color: var(--heading-color); font-size: 1.1em; }
+        .reminder-section > div { margin-bottom: 10px; } 
+        .reminder-section label, .reminder-section input, .reminder-section select, .reminder-section button { margin-bottom: 5px; }
+        .reminder-section input[type="time"], .reminder-section input[type="date"], .reminder-section select { padding: 6px 8px; border: 1px solid var(--input-border-color); border-radius: 4px; background-color: var(--container-bg); color: var(--text-color); margin-right: 10px; }
+        .reminder-section button { background-color: var(--button-tertiary-bg); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+        .reminder-section button:hover { background-color: var(--button-tertiary-hover-bg); }
+        #active_reminder_info { font-size: 0.85em; color: var(--timestamp-color); margin-top: 5px; }
+        .reminder-days-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;}
+        .reminder-days-grid label { margin-right:5px; font-size:0.9em; display:inline-flex; align-items:center; }
+        .reminder-days-grid input[type="checkbox"] { margin-right: 3px; transform: scale(0.9); }
+        .calendar-toggle-container { text-align: right; margin-bottom: 10px; }
+        .calendar-wrapper { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--input-border-color); }
+        .calendar-wrapper.show { display: block; }
+        .calendar-container h3 { margin-top:0; color: var(--heading-color); font-size: 1.1em;}
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .calendar-header button { background: var(--button-secondary-bg); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .calendar-header button:hover { background: var(--button-secondary-hover-bg); }
+        .calendar-header #go_to_today_button { font-size: 0.8em; padding: 4px 8px; margin: 0 5px;}
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; }
+        .calendar-day-name { font-weight: bold; font-size: 0.85em; padding-bottom: 5px; color: var(--timestamp-color); }
+        .calendar-day { padding: 8px 5px; border-radius: 4px; cursor: pointer; transition: background-color 0.2s; font-size:0.9em; position:relative; }
+        .calendar-day:hover { background-color: var(--calendar-day-hover); }
+        .calendar-day.other-month { color: #ccc; cursor: default; }
+        body.dark-mode .calendar-day.other-month { color: #555; }
+        .calendar-day.has-entry { background-color: var(--calendar-day-has-entry); font-weight:bold; }
+        .calendar-day.current-day { box-shadow: 0 0 0 2px var(--button-primary-bg) inset; }
+        body.dark-mode .calendar-day.current-day { box-shadow: 0 0 0 2px var(--button-primary-bg) inset; }
+        .calendar-day.selected-day { background-color: var(--calendar-day-active); color: var(--calendar-day-active-text); }
+        .entry-count-badge { position: absolute; top: 2px; right: 2px; background-color: var(--entry-count-badge-bg); color: var(--entry-count-badge-text); font-size: 0.65em; padding: 1px 4px; border-radius: 50%; line-height: 1; }
+        #entries_container { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--input-border-color); }
+        #entries_container_title { color: var(--heading-color); margin-bottom: 15px; font-weight: 500; font-size: 1.3em; }
+        .entry { background-color: var(--entry-bg); padding: 18px; margin-bottom: 15px; border-radius: 8px; border-left: 5px solid var(--entry-border-left); box-shadow: 0 2px 5px var(--entry-shadow); transition: background-color 0.3s; }
+        .entry.pinned { background-color: var(--pinned-entry-bg); border-left-color: var(--pinned-entry-border); } 
+        .entry-text-content { margin: 0 0 10px 0; white-space: pre-wrap; color: var(--entry-text-color); overflow-wrap: break-word; word-wrap: break-word; cursor: pointer; transition: max-height 0.3s ease-out, color 0.3s; }
+        .entry-text-content.collapsed { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .entry-text-content.expanded { -webkit-line-clamp: unset; }
+        .entry .timestamp { font-size: 0.85em; color: var(--timestamp-color); display: block; margin-bottom: 10px; }
+        .entry .actions { display: flex; gap: 8px; margin-top:10px; align-items: center; }
+        .action-button { border: none; padding: 6px 10px; font-size: 0.85em; border-radius: 4px; cursor: pointer; transition: background-color 0.2s ease; }
+        .pin-button { background-color: transparent; padding: 4px;} 
+        .pin-button svg { width: 18px; height: 18px; fill: var(--icon-button-fill); }
+        .pin-button.pinned svg { fill: var(--button-primary-bg); } 
+        .edit-button { background-color: var(--action-edit-bg); color: #212529; }
+        .edit-button:hover { background-color: var(--action-edit-hover-bg); }
+        .delete-button { background-color: var(--action-delete-bg); color: white; }
+        .delete-button:hover { background-color: var(--action-delete-hover-bg); }
+        .no-entries { color: var(--timestamp-color); font-style: italic; text-align: center; padding: 20px 0; }
+        .read-more-less { font-size: 0.9em; color: var(--link-color); cursor: pointer; text-decoration: underline; display: block; margin-top: 5px; }
+        .tag-filter-container { margin-bottom: 15px; }
+        .tag-filter-container h4 { margin-top:0; margin-bottom:10px; color: var(--heading-color); font-size: 1.1em; }
+        .tag-filter-container button { margin-right: 5px; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-controls">
+            <h1 id="main_heading"></h1>
+            <div class="control-buttons">
+                <button id="language_toggle_button" class="text-button"></button>
+                <button id="theme_toggle_button" class="icon-button" aria-label="Toggle theme"></button>
+                <div class="menu-button">
+                    <button id="main_menu_button" class="icon-button" aria-label="Menu"></button>
+                    <div id="dropdown_menu_app" class="dropdown-menu">
+                        <a href="#" id="export_entries_json_menu_item" class="dropdown-item"></a>
+                        <a href="#" id="export_entries_txt_menu_item" class="dropdown-item"></a>
+                        <a href="#" id="export_entries_pdf_menu_item" class="dropdown-item"></a>
+                        <div class="dropdown-divider"></div>
+                        <label for="import_file_input_menu" id="import_entries_menu_item_label" class="dropdown-item"></label>
+                        <input type="file" id="import_file_input_menu" accept=".json" style="display:none;">
+                        <div class="dropdown-divider"></div>
+                        <a href="#" id="set_reminder_menu_item" class="dropdown-item"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="search-container">
+            <input type="search" id="search_box" aria-label="Search entries">
+        </div>
+
+        <div class="tags-input-container">
+            <input type="text" id="tags_input">
+        </div>
+        <div class="textarea-toolbar">
+            <button id="voice_input_button" class="toolbar-button" title="आवाज से टाइप करें">🎤</button>
+        </div>
+        <textarea id="diary_entry_text"></textarea>
+        <div id="markdown_preview_area" class="markdown-preview" style="display:none;"></div>
+
+        <div class="button-container">
+            <button class="button-primary" id="save_update_button"></button>
+            <button class="button-secondary" id="cancel_edit_button" style="display:none;"></button>
+        </div>
+        
+        <div class="stats-container">
+             <h3 id="stats_title"></h3>
+             <p><span id="stats_total_entries_label"></span> <span id="stats_total_entries">0</span></p>
+             <p><span id="stats_current_month_entries_label"></span> <span id="stats_current_month_entries">0</span></p>
+        </div>
+
+        <div class="reminder-section" id="reminder_section_main" style="display:none;">
+            <h3 id="reminder_section_title"></h3>
+            <div>
+                <label for="reminder_type" id="reminder_type_label"></label>
+                <select id="reminder_type">
+                    <option value="daily" id="reminder_type_daily"></option>
+                    <option value="weekly" id="reminder_type_weekly"></option>
+                    <option value="once" id="reminder_type_once"></option>
+                </select>
+            </div>
+            <div id="reminder_weekly_days_container" style="display:none;" class="reminder-days-grid"></div>
+            <div id="reminder_once_date_container" style="display:none;">
+                <label for="reminder_once_date" id="reminder_date_label"></label>
+                <input type="date" id="reminder_once_date">
+            </div>
+            <div>
+                <label for="reminder_time" id="reminder_time_label"></label>
+                <input type="time" id="reminder_time" required>
+            </div>
+            <div>
+                <button id="set_reminder_button"></button>
+                <button id="clear_reminder_button" style="display:none;"></button>
+            </div>
+            <p id="active_reminder_info"></p>
+        </div>
+
+        <div class="calendar-toggle-container">
+            <button id="calendar_toggle_button" class="icon-button" aria-label="Toggle Calendar"></button>
+        </div>
+        <div id="calendar_wrapper" class="calendar-wrapper">
+            <div class="calendar-container">
+                <h3 id="calendar_title"></h3>
+                <div class="calendar-header">
+                    <button id="prev_month_button">&lt;</button>
+                    <button id="go_to_today_button"></button> 
+                    <span id="month_year_display"></span>
+                    <button id="next_month_button">&gt;</button>
+                </div>
+                <div class="calendar-grid" id="calendar_grid"></div>
+            </div>
+        </div>
+        
+        <div class="tag-filter-container" id="tag_filter_container" style="margin-top:20px;"></div>
+
+        <div id="entries_container">
+            <h2 id="entries_container_title"></h2>
+            <div id="entries_list"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- UI स्ट्रिंग्स --- (जैसे पिछले उत्तर में, सभी भाषाओं के लिए पूरी)
+        const uiStrings = {
+            hi: {
+                appTitle: "मेरी डिजिटल डायरी", mainHeading: "मेरी डिजिटल डायरी", langToggleButton: "English",
+                themeToggleDarkLabel: "डार्क मोड", themeToggleLightLabel: "लाइट मोड",
+                searchPlaceholder: "एंट्रीज़ खोजें...", searchAriaLabel: "एंट्रीज़ खोजें",
+                diaryPlaceholder: "आज आपके मन में क्या है...", tagsInputPlaceholder: "टैग्स (कॉमा से अलग करें)...",
+                markdownPreviewLabel: "मार्कडाउन प्रीव्यू",
+                saveEntryButton: "एंट्री सेव करें", updateEntryButton: "एंट्री अपडेट करें",
+                cancelEditButton: "एडिट कैंसिल करें", entriesContainerTitle: "पुरानी एंट्रीज़",
+                readMore: "और पढ़ें", readLess: "कम पढ़ें",
+                editButton: "एडिट", deleteButton: "डिलीट",
+                alertEmptyEntry: "कृपया डायरी में कुछ लिखें!",
+                confirmDeleteEntry: "क्या आप वाकई इस एंट्री को डिलीट करना चाहते हैं?",
+                noEntriesFound: "खोज/फ़िल्टर से मिलती कोई एंट्री नहीं मिली।",
+                noEntriesYet: "अभी कोई एंट्री सेव नहीं की गई है।",
+                entryDeleted: "एंट्री डिलीट कर दी गई है।",
+                localeForDate: 'hi-IN', dateLabel: "दिनांक:",
+                exportEntriesJsonMenuItem: "JSON एक्सपोर्ट", exportEntriesTxtMenuItem: "TXT एक्सपोर्ट", exportEntriesPdfMenuItem: "PDF एक्सपोर्ट",
+                importEntriesMenuItemLabel: "एंट्रीज़ इम्पोर्ट करें", setReminderMenuItem: "रिमाइंडर कॉन्फ़िगर करें",
+                importSuccess: "एंट्रीज़ सफलतापूर्वक इम्पोर्ट की गईं!",
+                importErrorInvalidFile: "अमान्य फ़ाइल! कृपया एक JSON फ़ाइल चुनें।",
+                importErrorReadFile: "फ़ाइल पढ़ने में त्रुटि हुई।",
+                statsTitle: "आँकड़े", totalEntriesLabel: "कुल एंट्रीज़:", currentMonthEntriesLabel: "इस महीने की एंट्रीज़:",
+                calendarTitle: "कैलेंडर", calendarToggleLabel: "कैलेंडर दिखाएं/छिपाएं", goToTodayButton: "आज",
+                mainMenuLabel: "मुख्य मेनू",
+                reminderSectionTitle: "रिमाइंडर कॉन्फ़िगर करें", reminderTimeLabel: "समय:", reminderTypeLabel: "रिमाइंडर प्रकार:",
+                reminderTypeDaily: "दैनिक", reminderTypeWeekly: "साप्ताहिक", reminderTypeOnce: "एकमुश्त",
+                reminderDaysLabel: "दिन चुनें:", reminderDateLabel: "तारीख:",
+                setReminderButton: "रिमाइंडर सेट करें", clearReminderButton: "रिमाइंडर हटाएं",
+                reminderSetAt: "रिमाइंडर सेट है:", noActiveReminder: "कोई सक्रिय रिमाइंडर नहीं है।",
+                reminderNotToday: "आज के लिए कोई रिमाइंडर नहीं (सेटिंग्स के अनुसार)।",
+                notificationTitle: "डायरी रिमाइंडर", notificationBody: "आज अपनी डायरी में लिखने का समय!",
+                filterByTagLabel: "टैग द्वारा फ़िल्टर करें:",
+                voiceInputTitle: "आवाज से टाइप करें", voiceInputStart: "बोलना शुरू करें...",
+                voiceInputStop: "रिकॉर्डिंग रोकें", voiceInputNoSupport: "आपका ब्राउज़र आवाज पहचान का समर्थन नहीं करता है।",
+                pinEntry: "पिन करें", unpinEntry: "अनपिन करें",
+                pinnedSectionTitle: "पिन की गई एंट्रीज़", allEntriesSectionTitle: "सभी एंट्रीज़",
+                daysOfWeek: ["रवि", "सोम", "मंगल", "बुध", "गुरु", "शुक्र", "शनि"], 
+                months: ["जनवरी", "फ़रवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर"]
+            },
+            en: { 
+                appTitle: "My Digital Diary", mainHeading: "My Digital Diary", langToggleButton: "हिन्दी",
+                themeToggleDarkLabel: "Activate Dark Mode", themeToggleLightLabel: "Activate Light Mode",
+                searchPlaceholder: "Search entries...", searchAriaLabel: "Search entries",
+                diaryPlaceholder: "What's on your mind today...", tagsInputPlaceholder: "Tags (comma-separated)...",
+                markdownPreviewLabel: "Markdown Preview",
+                saveEntryButton: "Save Entry", updateEntryButton: "Update Entry",
+                cancelEditButton: "Cancel Edit", entriesContainerTitle: "Past Entries",
+                readMore: "Read more", readLess: "Read less",
+                editButton: "Edit", deleteButton: "Delete",
+                alertEmptyEntry: "Please write something in the diary!",
+                confirmDeleteEntry: "Are you sure you want to delete this entry?",
+                noEntriesFound: "No entries found matching your search/filter.",
+                noEntriesYet: "No entries saved yet.",
+                entryDeleted: "Entry deleted.",
+                localeForDate: 'en-US', dateLabel: "Date:",
+                exportEntriesJsonMenuItem: "Export JSON", exportEntriesTxtMenuItem: "Export TXT", exportEntriesPdfMenuItem: "Export PDF",
+                importEntriesMenuItemLabel: "Import Entries", setReminderMenuItem: "Configure Reminder",
+                importSuccess: "Entries imported successfully!",
+                importErrorInvalidFile: "Invalid file! Please select a JSON file.",
+                importErrorReadFile: "Error reading file.",
+                statsTitle: "Statistics", totalEntriesLabel: "Total Entries:", currentMonthEntriesLabel: "Entries This Month:",
+                calendarTitle: "Calendar", calendarToggleLabel: "Show/Hide Calendar", goToTodayButton: "Today",
+                mainMenuLabel: "Main Menu",
+                reminderSectionTitle: "Configure Reminder", reminderTimeLabel: "Time:", reminderTypeLabel: "Reminder Type:",
+                reminderTypeDaily: "Daily", reminderTypeWeekly: "Weekly", reminderTypeOnce: "One-time",
+                reminderDaysLabel: "Select Days:", reminderDateLabel: "Date:",
+                setReminderButton: "Set Reminder", clearReminderButton: "Clear Reminder",
+                reminderSetAt: "Reminder set for:", noActiveReminder: "No active reminder.",
+                reminderNotToday: "No reminder scheduled for today based on settings.",
+                notificationTitle: "Diary Reminder", notificationBody: "Time to write in your diary today!",
+                filterByTagLabel: "Filter by Tag:",
+                voiceInputTitle: "Type with voice", voiceInputStart: "Start Speaking...",
+                voiceInputStop: "Stop Recording", voiceInputNoSupport: "Your browser doesn't support voice recognition.",
+                pinEntry: "Pin Entry", unpinEntry: "Unpin Entry",
+                pinnedSectionTitle: "Pinned Entries", allEntriesSectionTitle: "All Entries",
+                daysOfWeek: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], 
+                months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+            }
+        };
+        
+        // --- SVG आइकन्स ---
+        const sunIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.75a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0112 3.75zM4.509 4.509a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.06L4.509 5.57a.75.75 0 010-1.06zM19.53 5.57a.75.75 0 010 1.06L18.47 7.72a.75.75 0 01-1.06-1.06l1.06-1.061a.75.75 0 011.06 0zM3.75 12a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5A.75.75 0 013.75 12zm15.75 0a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zM7.72 16.28a.75.75 0 010-1.06l1.06-1.061a.75.75 0 111.061 1.06l-1.06 1.061a.75.75 0 01-1.061 0zm9.621-1.06a.75.75 0 011.06 0l1.06 1.06a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zM12 18a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0112 18zm-5.25 2.25a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.06a.75.75 0 011.061 0zm10.5 0a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 01-1.061-1.06l1.06-1.06a.75.75 0 011.06 0zM12 6.75a5.25 5.25 0 100 10.5 5.25 5.25 0 000-10.5z"/></svg>`;
+        const moonIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.03 2.59a.75.75 0 01.098 1.054 8.25 8.25 0 00-2.062 5.576c0 4.557 3.693 8.25 8.25 8.25.783 0 1.544-.108 2.273-.312a.75.75 0 01.89.667 9.75 9.75 0 01-8.062 5.676A9.75 9.75 0 013 12.75c0-4.472 2.973-8.258 7.03-9.476a.75.75 0 011 .316z"/></svg>`;
+        const calendarIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M5.75 3a.75.75 0 00-1.5 0V4.5H3a.75.75 0 000 1.5h1.25V19.5a.75.75 0 001.5 0V6h12V4.5H19.75a.75.75 0 000-1.5H18.5V3a.75.75 0 00-1.5 0V4.5H7.25V3zM6 7.5h12v12H6V7.5zm1.5 1.5v1.5h1.5V9H7.5zm3.75 0v1.5h1.5V9h-1.5zm3.75 0v1.5h1.5V9h-1.5zm-7.5 3.75v1.5h1.5v-1.5H7.5zm3.75 0v1.5h1.5v-1.5h-1.5zm3.75 0v1.5h1.5v-1.5h-1.5z"/></svg>`;
+        const menuIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12.75A.75.75 0 013.75 12h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12.75zM3.75 18a.75.75 0 000 1.5h16.5a.75.75 0 000-1.5H3.75z"/></svg>`;
+        const pinIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16 3.99998C16 4.55226 15.5523 4.99998 15 4.99998H9.00001C8.44772 4.99998 8.00001 4.55226 8.00001 3.99998C8.00001 3.4477 8.44772 2.99998 9.00001 2.99998H15C15.5523 2.99998 16 3.4477 16 3.99998ZM13 5.99998V10.7612L14.5303 12.2915C14.9291 12.6902 15.0105 13.3232 14.7335 13.8049L14.6202 14.0303L12.7071 17.8588C12.563 18.1469 12.2864 18.3333 11.9823 18.3333C11.6782 18.3333 11.4016 18.1469 11.2575 17.8588L9.38244 14.1054C9.08633 13.5139 9.18984 12.8028 9.63923 12.3534L9.70711 12.2915L11 11.03V5.99998H13Z M12 20.9999C12.2884 20.9999 12.551 20.8925 12.7384 20.707L14.2324 19.2131C14.5449 18.9006 15.0028 18.6725 15.4638 18.5431L15.5259 18.5259C16.3294 18.2998 17.1064 17.9433 17.7929 17.4268C18.4794 16.9102 19.0551 16.2283 19.4742 15.4313L19.5258 15.3315C19.8632 14.6525 20 13.8667 20 13V8.99998H4.00001V13C4.00001 13.8667 4.13681 14.6525 4.47424 15.3315L4.52583 15.4313C4.94494 16.2283 5.52065 16.9102 6.20712 17.4268C6.89359 17.9433 7.67062 18.2998 8.47411 18.5259L8.53624 18.5431C8.99719 18.6725 9.45512 18.9006 9.76763 19.2131L11.2616 20.707C11.449 20.8925 11.7116 20.9999 12 20.9999Z"/></svg>`;
+        const unpinIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16 3.99998C16 4.55226 15.5523 4.99998 15 4.99998H9.00001C8.44772 4.99998 8.00001 4.55226 8.00001 3.99998C8.00001 3.4477 8.44772 2.99998 9.00001 2.99998H15C15.5523 2.99998 16 3.4477 16 3.99998ZM13 5.99998V10.7612L14.5303 12.2915C14.9291 12.6902 15.0105 13.3232 14.7335 13.8049L14.6202 14.0303L12.7071 17.8588C12.563 18.1469 12.2864 18.3333 11.9823 18.3333C11.6782 18.3333 11.4016 18.1469 11.2575 17.8588L9.38244 14.1054C9.08633 13.5139 9.18984 12.8028 9.63923 12.3534L9.70711 12.2915L11 11.03V5.99998H13Z M12 20.9999C12.2884 20.9999 12.551 20.8925 12.7384 20.707L14.2324 19.2131C14.5449 18.9006 15.0028 18.6725 15.4638 18.5431L15.5259 18.5259C16.3294 18.2998 17.1064 17.9433 17.7929 17.4268C18.4794 16.9102 19.0551 16.2283 19.4742 15.4313L19.5258 15.3315C19.8632 14.6525 20 13.8667 20 13V8.99998H4.00001V13C4.00001 13.8667 4.13681 14.6525 4.47424 15.3315L4.52583 15.4313C4.94494 16.2283 5.52065 16.9102 6.20712 17.4268C6.89359 17.9433 7.67062 18.2998 8.47411 18.5259L8.53624 18.5431C8.99719 18.6725 9.45512 18.9006 9.76763 19.2131L11.2616 20.707C11.449 20.8925 11.7116 20.9999 12 20.9999Z M21.7071 5.29289C22.0976 5.68342 22.0976 6.31658 21.7071 6.70711L6.70711 21.7071C6.31658 22.0976 5.68342 22.0976 5.29289 21.7071C4.90237 21.3166 4.90237 20.6834 5.29289 20.2929L20.2929 5.29289C20.6834 4.90237 21.3166 4.90237 21.7071 5.29289Z"/></svg>`; // क्रॉस वाला पिन
+
+
+        let currentlyEditingId = null; let currentLang = 'hi'; let autoSaveTimeout = null;
+        const AUTO_SAVE_DELAY = 2000; let calendarCurrentDate = new Date(); 
+        let selectedCalendarDate = null; let activeTagFilter = null; let reminderIntervalId = null;
+        let recognition = null; let isRecognizing = false;
+
+        const themeToggleButton = document.getElementById('theme_toggle_button');
+        const langToggleButton = document.getElementById('language_toggle_button');
+        const searchBox = document.getElementById('search_box');
+        const diaryEntryText = document.getElementById('diary_entry_text');
+        const saveUpdateBtn = document.getElementById('save_update_button');
+        const cancelEditBtn = document.getElementById('cancel_edit_button');
+        const calendarToggleButton = document.getElementById('calendar_toggle_button');
+        const calendarWrapper = document.getElementById('calendar_wrapper');
+        const calendarGrid = document.getElementById('calendar_grid');
+        const monthYearDisplay = document.getElementById('month_year_display');
+        const prevMonthButton = document.getElementById('prev_month_button');
+        const nextMonthButton = document.getElementById('next_month_button');
+        const goToTodayButton = document.getElementById('go_to_today_button');
+        const mainMenuButton = document.getElementById('main_menu_button');
+        const dropdownMenu = document.getElementById('dropdown_menu_app');
+        const exportEntriesJsonMenuItem = document.getElementById('export_entries_json_menu_item');
+        const exportEntriesTxtMenuItem = document.getElementById('export_entries_txt_menu_item');
+        const exportEntriesPdfMenuItem = document.getElementById('export_entries_pdf_menu_item');
+        const importFileInputMenu = document.getElementById('import_file_input_menu');
+        const importEntriesMenuItemLabel = document.getElementById('import_entries_menu_item_label');
+        const setReminderMenuItem = document.getElementById('set_reminder_menu_item');
+        const tagsInput = document.getElementById('tags_input');
+        const markdownPreviewArea = document.getElementById('markdown_preview_area');
+        const tagFilterContainer = document.getElementById('tag_filter_container');
+        const reminderSectionMain = document.getElementById('reminder_section_main');
+        const reminderTypeSelect = document.getElementById('reminder_type');
+        const reminderWeeklyDaysContainer = document.getElementById('reminder_weekly_days_container');
+        const reminderOnceDateContainer = document.getElementById('reminder_once_date_container');
+        const reminderOnceDateInput = document.getElementById('reminder_once_date');
+        const reminderTimeInput = document.getElementById('reminder_time');
+        const setReminderButton = document.getElementById('set_reminder_button');
+        const clearReminderButton = document.getElementById('clear_reminder_button');
+        const activeReminderInfo = document.getElementById('active_reminder_info');
+        const voiceInputButton = document.getElementById('voice_input_button');
+
+        // --- भाषा और थीम ---
+        function applyLanguage(lang) {
+            currentLang = lang; document.documentElement.lang = lang; const s = uiStrings[lang];
+            document.getElementById('app_title').textContent = s.appTitle; document.getElementById('main_heading').textContent = s.mainHeading;
+            langToggleButton.textContent = s.langToggleButton; searchBox.placeholder = s.searchPlaceholder;
+            searchBox.setAttribute('aria-label', s.searchAriaLabel); diaryEntryText.placeholder = s.diaryPlaceholder;
+            tagsInput.placeholder = s.tagsInputPlaceholder;
+            if (currentlyEditingId === null) saveUpdateBtn.textContent = s.saveEntryButton; else saveUpdateBtn.textContent = s.updateEntryButton;
+            cancelEditBtn.textContent = s.cancelEditButton; 
+            document.getElementById('entries_container_title').textContent = activeTagFilter ? `${s.filterByTagLabel} "${activeTagFilter}"` : s.entriesContainerTitle;
+            document.getElementById('stats_title').textContent = s.statsTitle;
+            document.getElementById('stats_total_entries_label').textContent = s.totalEntriesLabel;
+            document.getElementById('stats_current_month_entries_label').textContent = s.currentMonthEntriesLabel;
+            document.getElementById('calendar_title').textContent = s.calendarTitle;
+            calendarToggleButton.setAttribute('aria-label', s.calendarToggleLabel); goToTodayButton.textContent = s.goToTodayButton;
+            mainMenuButton.setAttribute('aria-label', s.mainMenuLabel); 
+            exportEntriesJsonMenuItem.textContent = s.exportEntriesJsonMenuItem;
+            exportEntriesTxtMenuItem.textContent = s.exportEntriesTxtMenuItem;
+            exportEntriesPdfMenuItem.textContent = s.exportEntriesPdfMenuItem;
+            importEntriesMenuItemLabel.textContent = s.importEntriesMenuItemLabel; setReminderMenuItem.textContent = s.setReminderMenuItem;
+            document.getElementById('reminder_section_title').textContent = s.reminderSectionTitle;
+            document.getElementById('reminder_time_label').textContent = s.reminderTimeLabel;
+            document.getElementById('reminder_type_label').textContent = s.reminderTypeLabel;
+            document.getElementById('reminder_type_daily').textContent = s.reminderTypeDaily;
+            document.getElementById('reminder_type_weekly').textContent = s.reminderTypeWeekly;
+            document.getElementById('reminder_type_once').textContent = s.reminderTypeOnce;
+            setReminderButton.textContent = s.setReminderButton; clearReminderButton.textContent = s.clearReminderButton;
+            voiceInputButton.title = isRecognizing ? s.voiceInputStop : s.voiceInputStart;
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            themeToggleButton.setAttribute('aria-label', isDarkMode ? s.themeToggleLightLabel : s.themeToggleDarkLabel);
+            renderWeeklyDayCheckboxes(lang); loadEntries(); updateReminderInfo();
+        }
+        function toggleLanguage() { const newLang = currentLang === 'hi' ? 'en' : 'hi'; localStorage.setItem('diaryLanguage', newLang); applyLanguage(newLang); }
+        function applyTheme(theme) {
+            if (theme === 'dark') { document.body.classList.add('dark-mode'); themeToggleButton.innerHTML = sunIconSVG; } 
+            else { document.body.classList.remove('dark-mode'); themeToggleButton.innerHTML = moonIconSVG; }
+            themeToggleButton.setAttribute('aria-label', uiStrings[currentLang][theme === 'dark' ? 'themeToggleLightLabel' : 'themeToggleDarkLabel']);
+        }
+        function toggleTheme() { const currentTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark'; localStorage.setItem('diaryTheme', currentTheme); applyTheme(currentTheme); }
+        function autoSaveDraft() { if (currentlyEditingId === null) localStorage.setItem('diaryDraft', diaryEntryText.value); }
+        function loadDraft() { if (currentlyEditingId === null) { const draft = localStorage.getItem('diaryDraft'); if (draft) {diaryEntryText.value = draft; markdownPreviewArea.innerHTML = simpleMarkdownToHtml(draft); markdownPreviewArea.style.display = "block";} } }
+        function toggleCalendar() { calendarWrapper.classList.toggle('show'); }
+        function toggleMainMenu(event) { event.stopPropagation(); dropdownMenu.classList.toggle('show'); }
+        document.addEventListener('click', (event) => { if (mainMenuButton && !mainMenuButton.contains(event.target) && dropdownMenu && !dropdownMenu.contains(event.target)) dropdownMenu.classList.remove('show'); });
+        
+        function simpleMarkdownToHtml(text) {
+            let html = text;
+            html = html.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/__(.*?)__/g, '<strong>$1</strong>');
+            html = html.replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<em>$1</em>').replace(/(?<!_)_(?!_)(.*?)(?!_)_/g, '<em>$1</em>');
+            html = html.replace(/`(.*?)`/g, '<code>$1</code>');
+            html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color:var(--link-color)">$1</a>');
+            html = html.replace(/^### (.*$)/gm, '<h3>$1</h3>');
+            html = html.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+            html = html.replace(/^# (.*$)/gm, '<h1>$1</h1>');
+            html = html.replace(/^\s*-\s+(.*)/gm, '<li>$1</li>');
+            html = html.replace(/^\s*\*\s+(.*)/gm, '<li>$1</li>');
+            // This regex for UL is very basic and might not handle all cases perfectly
+            html = html.replace(/(<li>.*?<\/li>)/gs, '<ul>$1</ul>').replace(/<\/ul>\s*<ul>/g, ''); // Combine adjacent ULs
+            html = html.replace(/\n/g, '<br>'); 
+            return html;
+        }
+
+        diaryEntryText.addEventListener('input', () => {
+            if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(autoSaveDraft, AUTO_SAVE_DELAY);
+            if (diaryEntryText.value.trim() !== "") {
+                markdownPreviewArea.innerHTML = simpleMarkdownToHtml(diaryEntryText.value);
+                markdownPreviewArea.style.display = "block";
+            } else { markdownPreviewArea.style.display = "none"; markdownPreviewArea.innerHTML = ""; }
+        });
+
+        function handleSaveOrUpdate() {
+            const entryTextVal = diaryEntryText.value;
+            const tagsVal = tagsInput.value.split(',').map(tag => tag.trim().toLowerCase()).filter(tag => tag !== "" && tag.length < 30);
+            if (entryTextVal.trim() === "") { alert(uiStrings[currentLang].alertEmptyEntry); return; }
+            if (currentlyEditingId !== null) processUpdateEntry(entryTextVal, tagsVal);
+            else processSaveNewEntry(entryTextVal, tagsVal);
+            localStorage.removeItem('diaryDraft'); tagsInput.value = ""; markdownPreviewArea.style.display = "none"; markdownPreviewArea.innerHTML = "";
+        }
+        function getStoredEntries() { return JSON.parse(localStorage.getItem('diaryEntries')) || []; }
+        function saveEntriesToStorage(entries) { localStorage.setItem('diaryEntries', JSON.stringify(entries)); }
+        
+        function processSaveNewEntry(text, tags) {
+            const newEntry = { id: Date.now(), text: text, tags: tags || [], datetime: new Date().toISOString(), pinned: false };
+            let entries = getStoredEntries(); entries.unshift(newEntry);
+            saveEntriesToStorage(entries); diaryEntryText.value = ""; loadEntries();
+        }
+        function processUpdateEntry(updatedText, updatedTags) {
+            let entries = getStoredEntries();
+            const entryIndex = entries.findIndex(entry => entry.id === currentlyEditingId);
+            if (entryIndex > -1) {
+                entries[entryIndex].text = updatedText; entries[entryIndex].tags = updatedTags || [];
+                entries[entryIndex].datetime = new Date().toISOString(); 
+                saveEntriesToStorage(entries);
+            }
+            cancelEditMode(); loadEntries();
+        }
+        function prepareEditEntry(entryId) {
+            let entries = getStoredEntries();
+            const entryToEdit = entries.find(entry => entry.id === entryId);
+            if (entryToEdit) {
+                diaryEntryText.value = entryToEdit.text; tagsInput.value = (entryToEdit.tags || []).join(', ');
+                currentlyEditingId = entryId; saveUpdateBtn.textContent = uiStrings[currentLang].updateEntryButton;
+                cancelEditBtn.style.display = "inline-block"; diaryEntryText.focus();
+                markdownPreviewArea.innerHTML = simpleMarkdownToHtml(entryToEdit.text); markdownPreviewArea.style.display = "block";
+                localStorage.removeItem('diaryDraft'); window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+        function cancelEditMode() {
+            diaryEntryText.value = ""; tagsInput.value = ""; currentlyEditingId = null;
+            saveUpdateBtn.textContent = uiStrings[currentLang].saveEntryButton;
+            cancelEditBtn.style.display = "none"; markdownPreviewArea.style.display = "none"; markdownPreviewArea.innerHTML = ""; loadDraft(); 
+        }
+        
+        function loadEntries() {
+            const entriesListDiv = document.getElementById('entries_list'); entriesListDiv.innerHTML = ""; 
+            let allEntries = getStoredEntries(); const searchTerm = searchBox.value.toLowerCase().trim();
+            let filteredEntries = allEntries;
+
+            if (activeTagFilter) {
+                filteredEntries = filteredEntries.filter(entry => entry.tags && entry.tags.map(t=>t.toLowerCase()).includes(activeTagFilter.toLowerCase()));
+            }
+            if (selectedCalendarDate) { 
+                const selectedDateString = selectedCalendarDate.toISOString().slice(0, 10);
+                filteredEntries = filteredEntries.filter(entry => entry.datetime.startsWith(selectedDateString));
+            } else if (searchTerm && !activeTagFilter) { 
+                filteredEntries = filteredEntries.filter(entry => 
+                    entry.text.toLowerCase().includes(searchTerm) ||
+                    (entry.tags && entry.tags.some(tag => tag.toLowerCase().includes(searchTerm))) ||
+                    new Date(entry.datetime).toLocaleDateString(uiStrings[currentLang].localeForDate).toLowerCase().includes(searchTerm) ||
+                    new Date(entry.datetime).toLocaleString(uiStrings[currentLang].localeForDate, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            filteredEntries.sort((a,b) => {
+                if (a.pinned && !b.pinned) return -1; if (!a.pinned && b.pinned) return 1;
+                return new Date(b.datetime) - new Date(a.datetime);
+            }); 
+
+            const s = uiStrings[currentLang]; 
+            if (filteredEntries.length === 0) {
+                let message = s.noEntriesYet;
+                if (searchTerm || selectedCalendarDate || activeTagFilter) message = s.noEntriesFound;
+                entriesListDiv.innerHTML = `<p class='no-entries'>${message}</p>`;
+            } else {
+                const pinnedEntries = filteredEntries.filter(e => e.pinned);
+                const unpinnedEntries = filteredEntries.filter(e => !e.pinned);
+
+                if(pinnedEntries.length > 0 && !activeTagFilter && !selectedCalendarDate && !searchTerm) { 
+                    const pinnedTitle = document.createElement('h3');
+                    pinnedTitle.textContent = s.pinnedSectionTitle;
+                    pinnedTitle.style.color = 'var(--heading-color)'; pinnedTitle.style.fontSize = '1.2em';
+                    entriesListDiv.appendChild(pinnedTitle);
+                    pinnedEntries.forEach(entry => renderEntryDOM(entry, entriesListDiv, s));
+                    
+                    if (unpinnedEntries.length > 0) {
+                        const allEntriesTitle = document.createElement('h3');
+                        allEntriesTitle.textContent = s.allEntriesSectionTitle;
+                        allEntriesTitle.style.color = 'var(--heading-color)'; allEntriesTitle.style.marginTop = "20px"; allEntriesTitle.style.fontSize = '1.2em';
+                        entriesListDiv.appendChild(allEntriesTitle);
+                    }
+                    unpinnedEntries.forEach(entry => renderEntryDOM(entry, entriesListDiv, s));
+                } else {
+                    filteredEntries.forEach(entry => renderEntryDOM(entry, entriesListDiv, s));
+                }
+            }
+            updateStats(); renderCalendar(); renderTagFilters();
+        }
+
+        function renderEntryDOM(entry, parentDiv, langStrings) {
+            const entryDiv = document.createElement('div'); entryDiv.classList.add('entry');
+            if (entry.pinned) entryDiv.classList.add('pinned');
+            const textP = document.createElement('div'); textP.classList.add('entry-text-content', 'collapsed');
+            textP.innerHTML = simpleMarkdownToHtml(entry.text);
+            const readMoreSpan = document.createElement('span'); readMoreSpan.classList.add('read-more-less'); readMoreSpan.textContent = langStrings.readMore;
+            const approxLines = entry.text.split('\n').length + Math.floor(entry.text.length / 80);
+            if (approxLines <= 3 && entry.text.length < 250) { readMoreSpan.style.display = 'none'; textP.classList.remove('collapsed'); }
+            entryDiv.onclick = (e) => {
+                if (e.target.classList.contains('action-button') || e.target.closest('.actions') || e.target.classList.contains('tag-item') || e.target.tagName === 'A') return;
+                textP.classList.toggle('collapsed'); textP.classList.toggle('expanded');
+                readMoreSpan.textContent = textP.classList.contains('expanded') ? langStrings.readLess : langStrings.readMore;
+            };
+            const timeP = document.createElement('p'); timeP.classList.add('timestamp');
+            const entryDate = new Date(entry.datetime); 
+            timeP.textContent = `${langStrings.dateLabel} ${entryDate.toLocaleString(langStrings.localeForDate, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}`; 
+            const tagsDiv = document.createElement('div'); tagsDiv.classList.add('entry-tags');
+            if (entry.tags && entry.tags.length > 0) {
+                entry.tags.forEach(tag => {
+                    const tagSpan = document.createElement('span'); tagSpan.classList.add('tag-item');
+                    tagSpan.textContent = tag;
+                    tagSpan.onclick = (e) => { e.stopPropagation(); filterByTag(tag); };
+                    tagsDiv.appendChild(tagSpan);
+                });
+            }
+            const actionsDiv = document.createElement('div'); actionsDiv.classList.add('actions');
+            const pinButton = document.createElement('button'); pinButton.classList.add('action-button', 'pin-button');
+            pinButton.innerHTML = entry.pinned ? unpinIconSVG : pinIconSVG;
+            pinButton.title = entry.pinned ? langStrings.unpinEntry : langStrings.pinEntry;
+            if(entry.pinned) pinButton.classList.add('pinned');
+            pinButton.onclick = (e) => { e.stopPropagation(); togglePinEntry(entry.id); };
+            const editButton = document.createElement('button'); editButton.classList.add('action-button', 'edit-button'); editButton.textContent = langStrings.editButton; editButton.setAttribute('title', langStrings.editButton);
+            editButton.onclick = (e) => { e.stopPropagation(); prepareEditEntry(entry.id); };
+            const deleteButton = document.createElement('button'); deleteButton.classList.add('action-button', 'delete-button'); deleteButton.textContent = langStrings.deleteButton; deleteButton.setAttribute('title', langStrings.deleteButton);
+            deleteButton.onclick = (e) => { e.stopPropagation(); confirmDelete(entry.id); };
+            actionsDiv.appendChild(pinButton); actionsDiv.appendChild(editButton); actionsDiv.appendChild(deleteButton);
+            entryDiv.appendChild(timeP); entryDiv.appendChild(textP);
+            if (readMoreSpan.style.display !== 'none') entryDiv.appendChild(readMoreSpan);
+            if (entry.tags && entry.tags.length > 0) entryDiv.appendChild(tagsDiv);
+            entryDiv.appendChild(actionsDiv);
+            parentDiv.appendChild(entryDiv);
+        }
+        function confirmDelete(entryId) { if (confirm(uiStrings[currentLang].confirmDeleteEntry)) deleteEntry(entryId); }
+        function deleteEntry(entryIdToDelete) {
+            let entries = getStoredEntries(); entries = entries.filter(entry => entry.id !== entryIdToDelete);
+            saveEntriesToStorage(entries); if (currentlyEditingId === entryIdToDelete) cancelEditMode(); loadEntries();
+        }
+        function togglePinEntry(entryId) {
+            let entries = getStoredEntries();
+            const entryIndex = entries.findIndex(entry => entry.id === entryId);
+            if (entryIndex > -1) { entries[entryIndex].pinned = !entries[entryIndex].pinned; saveEntriesToStorage(entries); loadEntries(); }
+        }
+        
+        function exportEntries(format = 'json') {
+            const entries = getStoredEntries(); if(entries.length === 0){alert(uiStrings[currentLang].noEntriesYet); return;}
+            let dataStr = ""; let mimeType = ""; let fileExtension = "";
+            if (format === 'json') { dataStr = JSON.stringify(entries, null, 2); mimeType = 'application/json'; fileExtension = '.json'; } 
+            else if (format === 'txt') {
+                dataStr = entries.map(entry => {
+                    const d = new Date(entry.datetime); const dateStr = d.toLocaleString(uiStrings[currentLang].localeForDate, { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'});
+                    const tagsStr = (entry.tags && entry.tags.length > 0) ? `\nTags: ${entry.tags.join(', ')}` : "";
+                    return `--- ${uiStrings[currentLang].dateLabel} ${dateStr} ---\n${entry.text}${tagsStr}\n\n`;
+                }).join('');
+                mimeType = 'text/plain'; fileExtension = '.txt';
+            } else if (format === 'pdf') {
+                const { jsPDF } = window.jspdf; if (!jsPDF) { alert("PDF लाइब्रेरी लोड नहीं हुई।"); return; }
+                const doc = new jsPDF(); let yPos = 10; const pageWidth = doc.internal.pageSize.getWidth() - 20;
+                const s = uiStrings[currentLang];
+                // हिंदी फॉन्ट के लिए (यदि आवश्यक हो)
+                // doc.addFont('NotoSansDevanagari-Regular.ttf', 'NotoSansDevanagari', 'normal');
+                // doc.setFont('NotoSansDevanagari');
+
+                entries.sort((a,b) => new Date(a.datetime) - new Date(b.datetime)); // PDF के लिए पुराने से नया
+
+                entries.forEach((entry, index) => {
+                    if (yPos > 260) { doc.addPage(); yPos = 10; } // पेज ब्रेक यदि कंटेंट नीचे जा रहा है
+                    else if (index > 0) { yPos+=5; doc.setLineWidth(0.2).line(10, yPos, pageWidth + 10, yPos); yPos += 7; }
+
+                    const d = new Date(entry.datetime); const dateStr = d.toLocaleString(s.localeForDate, { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'});
+                    
+                    doc.setFontSize(10); doc.setTextColor(80,80,80);
+                    doc.text(`${s.dateLabel} ${dateStr}`, 10, yPos); yPos += 7;
+
+                    if (entry.tags && entry.tags.length > 0) { 
+                        doc.setFontSize(9); doc.setTextColor(100,100,100); 
+                        doc.text(`Tags: ${entry.tags.join(', ')}`, 10, yPos); yPos += 7; 
+                    }
+                    
+                    doc.setFontSize(12); doc.setTextColor(50,50,50);
+                    const lines = doc.splitTextToSize(entry.text, pageWidth); 
+                    doc.text(lines, 10, yPos);
+                    yPos += (lines.length * 6) + 5; // लाइन हाइट थोड़ी कम करें
+                });
+                doc.save(`diary_entries_${new Date().toISOString().slice(0,10)}.pdf`); return;
+            }
+            const dataUri = `data:${mimeType};charset=utf-8,`+ encodeURIComponent(dataStr);
+            const exportFileDefaultName = `diary_entries_${new Date().toISOString().slice(0,10)}${fileExtension}`;
+            let linkElement = document.createElement('a'); linkElement.setAttribute('href', dataUri); linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click(); linkElement.remove();
+        }
+        function importEntries(event) {
+            const file = event.target.files[0]; if (!file) return;
+            if (file.type !== "application/json") { alert(uiStrings[currentLang].importErrorInvalidFile); event.target.value = null; return; }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedEntriesRaw = JSON.parse(e.target.result);
+                    if (!Array.isArray(importedEntriesRaw)) throw new Error("Imported data is not an array.");
+                    const validImportedEntries = importedEntriesRaw.filter(entry => entry && typeof entry.id === 'number' && typeof entry.text === 'string' && typeof entry.datetime === 'string' && !isNaN(new Date(entry.datetime)));
+                    if (validImportedEntries.length === 0 && importedEntriesRaw.length > 0) { alert(uiStrings[currentLang].importErrorInvalidFile + " (Invalid entry structure)"); return; }
+                    let currentEntries = getStoredEntries(); const entryMap = new Map(currentEntries.map(e => [e.id, e]));
+                    validImportedEntries.forEach(importedEntry => {
+                        importedEntry.pinned = importedEntry.pinned || false; // सुनिश्चित करें कि पिन प्रॉपर्टी मौजूद है
+                        entryMap.set(importedEntry.id, importedEntry);
+                    });
+                    currentEntries = Array.from(entryMap.values());
+                    currentEntries.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+                    saveEntriesToStorage(currentEntries); selectedCalendarDate = null; activeTagFilter = null; searchBox.value = ''; loadEntries();
+                    alert(uiStrings[currentLang].importSuccess);
+                } catch (error) { console.error("Error processing imported file:", error); alert(uiStrings[currentLang].importErrorReadFile + "\n" + error.message);
+                } finally { event.target.value = null; }
+            };
+            reader.onerror = () => { alert(uiStrings[currentLang].importErrorReadFile); event.target.value = null; };
+            reader.readAsText(file);
+        }
+        function updateStats() {
+            const entries = getStoredEntries(); document.getElementById('stats_total_entries').textContent = entries.length;
+            const currentDisplayMonth = calendarCurrentDate.getMonth(); const currentDisplayYear = calendarCurrentDate.getFullYear();
+            const entriesThisDisplayMonth = entries.filter(entry => { const entryDate = new Date(entry.datetime); return entryDate.getMonth() === currentDisplayMonth && entryDate.getFullYear() === currentDisplayYear; }).length;
+            document.getElementById('stats_current_month_entries').textContent = entriesThisDisplayMonth;
+        }
+        function renderCalendar() {
+            calendarGrid.innerHTML = ''; const s = uiStrings[currentLang];
+            monthYearDisplay.textContent = `${s.months[calendarCurrentDate.getMonth()]} ${calendarCurrentDate.getFullYear()}`;
+            s.daysOfWeek.forEach(dayName => { const d=document.createElement('div');d.className='calendar-day-name';d.textContent=dayName;calendarGrid.appendChild(d);});
+            const year = calendarCurrentDate.getFullYear(); const month = calendarCurrentDate.getMonth();
+            const firstDayOfMonth = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const entries = getStoredEntries();
+            const entriesCountByDate = {};
+            entries.forEach(e => { const ed = new Date(e.datetime); if (ed.getFullYear()===year && ed.getMonth()===month) { const day = ed.getDate(); entriesCountByDate[day] = (entriesCountByDate[day]||0)+1;} });
+            const todayFull = new Date(); const todayDate = (todayFull.getFullYear()===year && todayFull.getMonth()===month) ? todayFull.getDate() : -1;
+            for (let i=0; i<firstDayOfMonth; i++) { const e=document.createElement('div');e.className='calendar-day other-month';calendarGrid.appendChild(e);}
+            for (let day=1; day<=daysInMonth; day++) {
+                const dayDiv = document.createElement('div'); dayDiv.className='calendar-day'; dayDiv.textContent=day;
+                const currentDateObj = new Date(year, month, day); dayDiv.dataset.date = currentDateObj.toISOString().slice(0,10);
+                if (entriesCountByDate[day]) { 
+                    dayDiv.classList.add('has-entry');
+                    const countBadge = document.createElement('span'); countBadge.className='entry-count-badge'; countBadge.textContent=entriesCountByDate[day]; dayDiv.appendChild(countBadge);
+                }
+                if (day === todayDate) dayDiv.classList.add('current-day');
+                if (selectedCalendarDate && dayDiv.dataset.date === selectedCalendarDate.toISOString().slice(0,10)) dayDiv.classList.add('selected-day');
+                dayDiv.addEventListener('click', function() {
+                    const clickedDate = new Date(this.dataset.date + "T00:00:00Z"); 
+                     if (selectedCalendarDate && selectedCalendarDate.toISOString().slice(0,10) === this.dataset.date) { selectedCalendarDate = null; activeTagFilter = null; } 
+                     else { selectedCalendarDate = clickedDate; activeTagFilter = null; searchBox.value = '';}
+                    loadEntries(); 
+                });
+                calendarGrid.appendChild(dayDiv);
+            }
+        }
+        function changeMonth(offset) { calendarCurrentDate.setMonth(calendarCurrentDate.getMonth()+offset); selectedCalendarDate=null; activeTagFilter=null; searchBox.value = ''; loadEntries();}
+        function goToToday() { calendarCurrentDate = new Date(); selectedCalendarDate = null; activeTagFilter = null; searchBox.value = ''; loadEntries(); }
+        function getAllUniqueTags() { const entries = getStoredEntries(); const allTags = new Set(); entries.forEach(entry => { if (entry.tags) entry.tags.forEach(tag => allTags.add(tag.trim().toLowerCase())); }); return Array.from(allTags).sort(); }
+        function renderTagFilters() {
+            tagFilterContainer.innerHTML = ""; const uniqueTags = getAllUniqueTags(); const s = uiStrings[currentLang];
+            if (uniqueTags.length > 0) {
+                 const title = document.createElement('h4'); title.textContent = s.filterByTagLabel; tagFilterContainer.appendChild(title);
+            }
+            uniqueTags.forEach(tag => {
+                const tagButton = document.createElement('button'); tagButton.classList.add('tag-item');
+                if (tag === activeTagFilter) tagButton.classList.add('active-tag-filter');
+                tagButton.textContent = tag; tagButton.onclick = () => filterByTag(tag); tagFilterContainer.appendChild(tagButton);
+            });
+        }
+        function filterByTag(tag) {
+            if (activeTagFilter === tag.toLowerCase()) activeTagFilter = null; else activeTagFilter = tag.toLowerCase();
+            selectedCalendarDate = null; searchBox.value = ""; loadEntries();
+        }
+        
+        function toggleVoiceInput() {
+            const s = uiStrings[currentLang];
+            if (!recognition) {
+                const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognitionAPI) { alert(s.voiceInputNoSupport); return; }
+                recognition = new SpeechRecognitionAPI();
+                recognition.continuous = true; recognition.interimResults = true; recognition.lang = currentLang;
+                recognition.onstart = () => { voiceInputButton.classList.add('recording'); voiceInputButton.title = s.voiceInputStop; isRecognizing = true;};
+                recognition.onend = () => { voiceInputButton.classList.remove('recording'); voiceInputButton.title = s.voiceInputStart; isRecognizing = false; };
+                recognition.onerror = (event) => { console.error('Speech recognition error:', event.error); voiceInputButton.classList.remove('recording'); voiceInputButton.title = s.voiceInputStart; isRecognizing = false;};
+                recognition.onresult = (event) => {
+                    let interimTranscript = ''; let finalTranscript = '';
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
+                        else interimTranscript += event.results[i][0].transcript;
+                    }
+                    const currentDiaryText = diaryEntryText.value;
+                    const spaceIfNeeded = (currentDiaryText && !currentDiaryText.endsWith(' ') && !currentDiaryText.endsWith('\n')) ? ' ' : '';
+                    diaryEntryText.value = currentDiaryText + spaceIfNeeded + finalTranscript + interimTranscript;
+                    diaryEntryText.dispatchEvent(new Event('input')); 
+                };
+            }
+            if (isRecognizing) { recognition.stop(); } 
+            else { 
+                if (diaryEntryText.value && !diaryEntryText.value.endsWith(' ') && !diaryEntryText.value.endsWith('\n')) diaryEntryText.value += ' ';
+                try { recognition.start(); } catch(e) { console.error("Error starting recognition:", e); isRecognizing = false; voiceInputButton.classList.remove('recording'); voiceInputButton.title = s.voiceInputStart; }
+            }
+        }
+        
+        // --- Reminders (Service Worker based) ---
+        let serviceWorkerRegistration = null;
+        async function registerServiceWorker() {
+            if ('serviceWorker' in navigator && 'Notification' in window) {
+                try {
+                    serviceWorkerRegistration = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+                    console.log('Service Worker Registered successfully:', serviceWorkerRegistration);
+                    navigator.serviceWorker.addEventListener('message', event => {
+                        if (event.data && event.data.action === 'swRequestsRemindersLoad') {
+                            console.log('Main app received request from SW to load reminders.');
+                            loadAndSendRemindersToSW();
+                        } else if (event.data && event.data.action === 'reminderCleared' && event.data.reminderId === 'mainDiaryReminder') {
+                            console.log('Main app received info that one-time reminder was cleared by SW.');
+                            const reminder = JSON.parse(localStorage.getItem('diaryReminder'));
+                            if (reminder && reminder.type === 'once') { localStorage.removeItem('diaryReminder'); updateReminderInfo(); }
+                        }
+                    });
+                    if (serviceWorkerRegistration.active) { loadAndSendRemindersToSW(); }
+                    else { // Wait for SW to become active if it's installing/waiting
+                        serviceWorkerRegistration.addEventListener('updatefound', () => {
+                            const newWorker = serviceWorkerRegistration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'activated') { loadAndSendRemindersToSW(); }
+                            });
+                        });
+                    }
+                } catch (error) { console.error('Service Worker registration failed:', error); }
+            } else { console.log('Service Worker or Notifications not supported.'); }
+        }
+        function loadAndSendRemindersToSW() {
+            if (serviceWorkerRegistration && serviceWorkerRegistration.active) {
+                const reminder = JSON.parse(localStorage.getItem('diaryReminder'));
+                if (reminder) {
+                    const s = uiStrings[currentLang];
+                    serviceWorkerRegistration.active.postMessage({
+                        action: 'setReminder',
+                        reminder: { ...reminder, id: 'mainDiaryReminder', title: s.notificationTitle, body: s.notificationBody, icon: 'diary-icon-192.png' }
+                    });
+                } else { serviceWorkerRegistration.active.postMessage({ action: 'clearReminder', reminderId: 'mainDiaryReminder' }); }
+            } else if (navigator.serviceWorker && navigator.serviceWorker.controller) { // If controller exists but registration.active is null
+                 navigator.serviceWorker.controller.postMessage({ action: 'loadRemindersFallback', reminder: JSON.parse(localStorage.getItem('diaryReminder'))});
+            }
+             else { console.warn("SW not ready to receive reminders."); }
+        }
+        function setReminder() {
+            const type = reminderTypeSelect.value; const time = reminderTimeInput.value; let days = null; let date = null;
+            if (!time) { alert(uiStrings[currentLang].alertEmptyEntry.replace(uiStrings[currentLang].diaryPlaceholder.split(" ")[2], uiStrings[currentLang].reminderTimeLabel.slice(0,-1))); return; }
+            const reminderData = { id: 'mainDiaryReminder', type: type, time: time };
+            if (type === 'weekly') {
+                days = Array.from(document.querySelectorAll('.reminder-day-checkbox:checked')).map(cb => parseInt(cb.value));
+                if (days.length === 0) { alert("कृपया साप्ताहिक रिमाइंडर के लिए कम से कम एक दिन चुनें।"); return; }
+                reminderData.days = days;
+            } else if (type === 'once') {
+                date = reminderOnceDateInput.value; if (!date) { alert("कृपया एकमुश्त रिमाइंडर के लिए तारीख चुनें।"); return; }
+                const todayForCheck = new Date(); const selectedFullDate = new Date(date + "T" + time);
+                todayForCheck.setHours(0,0,0,0); const selectedDateOnly = new Date(date + "T00:00:00");
+                if (type === 'once' && selectedFullDate < new Date() && selectedDateOnly.toDateString() !== todayForCheck.toDateString()) { alert("एकमुश्त रिमाइंडर के लिए भविष्य की तारीख और समय चुनें।"); return; }
+                reminderData.date = date;
+            }
+            localStorage.setItem('diaryReminder', JSON.stringify(reminderData)); updateReminderInfo(); 
+            if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                 Notification.requestPermission().then(p => { if (p==="granted") loadAndSendRemindersToSW(); });
+            } else { loadAndSendRemindersToSW(); }
+            reminderSectionMain.style.display = 'none'; 
+        }
+        function clearReminder() { 
+            localStorage.removeItem('diaryReminder'); updateReminderInfo(); 
+            if (serviceWorkerRegistration && serviceWorkerRegistration.active) {
+                serviceWorkerRegistration.active.postMessage({ action: 'clearReminder', reminderId: 'mainDiaryReminder' });
+            } else if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({ action: 'clearReminder', reminderId: 'mainDiaryReminder' });
+            }
+        }
+        function updateReminderInfo() {
+            const reminder = JSON.parse(localStorage.getItem('diaryReminder')); const s = uiStrings[currentLang];
+            if (reminder && reminder.time && reminder.type) {
+                const tempDate = new Date(`1970-01-01T${reminder.time}:00`);
+                const formattedTime = tempDate.toLocaleTimeString(s.localeForDate, {hour:'2-digit',minute:'2-digit',hour12:true});
+                let details = "";
+                if (reminder.type === 'daily') details = `${s.reminderTypeDaily} ${s.reminderSetAt.toLowerCase()} ${formattedTime}`;
+                else if (reminder.type === 'weekly' && reminder.days) details = `${s.reminderTypeWeekly} - ${s.reminderSetForDays} ${reminder.days.map(dI=>s.daysOfWeek[dI]).join(', ')} ${s.reminderSetAt.toLowerCase()} ${formattedTime}`;
+                else if (reminder.type === 'once' && reminder.date) { const oDate = new Date(reminder.date+"T00:00:00Z"); details = `${s.reminderTypeOnce} - ${s.reminderSetForDate} ${oDate.toLocaleDateString(s.localeForDate)} ${s.reminderSetAt.toLowerCase()} ${formattedTime}`; }
+                activeReminderInfo.textContent = details; reminderTimeInput.value = reminder.time; reminderTypeSelect.value = reminder.type;
+                reminderWeeklyDaysContainer.style.display = reminder.type === 'weekly' ? 'block' : 'none';
+                reminderOnceDateContainer.style.display = reminder.type === 'once' ? 'block' : 'none';
+                if (reminder.type === 'weekly' && reminder.days) {
+                    renderWeeklyDayCheckboxes(currentLang); 
+                    document.querySelectorAll('.reminder-day-checkbox').forEach(cb => cb.checked = reminder.days.includes(parseInt(cb.value)));
+                }
+                if (reminder.type === 'once' && reminder.date) reminderOnceDateInput.value = reminder.date;
+                setReminderButton.style.display = 'none'; clearReminderButton.style.display = 'inline-block';
+            } else {
+                activeReminderInfo.textContent = s.noActiveReminder; reminderTimeInput.value = ""; reminderOnceDateInput.value = "";
+                renderWeeklyDayCheckboxes(currentLang); 
+                document.querySelectorAll('.reminder-day-checkbox').forEach(cb => cb.checked = false);
+                reminderTypeSelect.value = 'daily';
+                reminderWeeklyDaysContainer.style.display = 'none'; reminderOnceDateContainer.style.display = 'none';
+                setReminderButton.style.display = 'inline-block'; clearReminderButton.style.display = 'none';
+            }
+        }
+        function renderWeeklyDayCheckboxes(lang) {
+            const s = uiStrings[lang]; let dayContainer = reminderWeeklyDaysContainer;
+            let labelElement = dayContainer.querySelector('label#reminder_days_label_dynamic');
+            if (!labelElement) {
+                labelElement = document.createElement('label');
+                labelElement.id = 'reminder_days_label_dynamic';
+                dayContainer.insertBefore(document.createElement('br'), dayContainer.firstChild); // BR पहले डालें
+                dayContainer.insertBefore(labelElement, dayContainer.firstChild); // फिर लेबल
+            }
+            labelElement.textContent = s.reminderDaysLabel;
+
+            // मौजूदा चेकबॉक्स हटाएं (लेबल को छोड़कर)
+            Array.from(dayContainer.children).forEach(child => {
+                if (child !== labelElement && child.tagName !== 'BR') child.remove();
+            });
+            
+            s.daysOfWeek.forEach((dayName, index) => {
+                const checkboxId = `reminder_day_cb_${index}`;
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox'; checkbox.id = checkboxId; checkbox.value = index; checkbox.classList.add('reminder-day-checkbox');
+                const label = document.createElement('label');
+                label.htmlFor = checkboxId; label.textContent = dayName; label.style.marginRight = "10px";
+                dayContainer.appendChild(checkbox); dayContainer.appendChild(label);
+            });
+        }
+        
+        // --- onLoad और Event Listeners ---
+        window.onload = function() {
+            registerServiceWorker();
+            const savedLang = localStorage.getItem('diaryLanguage') || 'hi';
+            const savedTheme = localStorage.getItem('diaryTheme') || 'light';
+            applyTheme(savedTheme); applyLanguage(savedLang); loadDraft(); 
+            calendarToggleButton.innerHTML = calendarIconSVG; mainMenuButton.innerHTML = menuIconSVG; 
+            updateReminderInfo(); 
+        };
+        themeToggleButton.addEventListener('click', toggleTheme); langToggleButton.addEventListener('click', toggleLanguage);
+        searchBox.addEventListener('input', () => { selectedCalendarDate = null; activeTagFilter = null; loadEntries(); });
+        saveUpdateBtn.addEventListener('click', handleSaveOrUpdate); cancelEditBtn.addEventListener('click', cancelEditMode);
+        calendarToggleButton.addEventListener('click', toggleCalendar); goToTodayButton.addEventListener('click', goToToday);
+        mainMenuButton.addEventListener('click', toggleMainMenu);
+        exportEntriesJsonMenuItem.addEventListener('click', () => { exportEntries('json'); dropdownMenu.classList.remove('show'); });
+        exportEntriesTxtMenuItem.addEventListener('click', () => { exportEntries('txt'); dropdownMenu.classList.remove('show'); });
+        exportEntriesPdfMenuItem.addEventListener('click', () => { exportEntries('pdf'); dropdownMenu.classList.remove('show'); });
+        importFileInputMenu.addEventListener('change', (event) => { importEntries(event); dropdownMenu.classList.remove('show'); });
+        setReminderMenuItem.addEventListener('click', () => {
+            reminderSectionMain.style.display = reminderSectionMain.style.display === 'none' ? 'block' : 'none';
+            if (reminderSectionMain.style.display === 'block') updateReminderInfo(); 
+            dropdownMenu.classList.remove('show');
+        });
+        setReminderButton.addEventListener('click', setReminder); clearReminderButton.addEventListener('click', clearReminder);
+        prevMonthButton.addEventListener('click', () => changeMonth(-1)); nextMonthButton.addEventListener('click', () => changeMonth(1));
+        reminderTypeSelect.addEventListener('change', function() {
+            reminderWeeklyDaysContainer.style.display = this.value === 'weekly' ? 'block' : 'none';
+            reminderOnceDateContainer.style.display = this.value === 'once' ? 'block' : 'none';
+            if(this.value === 'weekly') renderWeeklyDayCheckboxes(currentLang);
+        });
+        voiceInputButton.addEventListener('click', toggleVoiceInput);
+    </script>
+</body>
+</html>
