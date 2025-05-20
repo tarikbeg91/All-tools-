@@ -6,319 +6,136 @@
     <title data-translate-key="hubTitle">मेरा टूल हब</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        /* --- CSS वेरिएबल्स और स्टाइल्स --- */
         :root {
-            --bg-color-light: #f0f0f0;
-            --text-color-light: #333;
-            --iframe-border-light: #ccc;
-            --header-bg-light: #e9ecef;
-            --header-text-color-light: #212529;
-            --control-icon-color-light: #495057;
-            --control-icon-bg-light: #ffffff;
-            --control-icon-hover-bg-light: #d3d4d5;
-            --control-icon-active-bg-light: #b8c7fa;
-            --card-bg-light: #fff;
-            --card-border-light: #ccc;
-            --card-shadow-light: rgba(0,0,0,0.2);
-            --card-hover-bg-light: #e9ecef;
-
-            --bg-color-dark: #1a1a1a;
-            --text-color-dark: #f0f0f0;
-            --iframe-border-dark: #444;
-            --header-bg-dark: #343a40;
-            --header-text-color-dark: #f8f9fa;
-            --control-icon-color-dark: #adb5bd;
-            --control-icon-bg-dark: #2c3034;
-            --control-icon-hover-bg-dark: #4a4e52;
-            --control-icon-active-bg-dark: #1e3a8a;
-            --card-bg-dark: #222;
-            --card-border-dark: #444;
-            --card-shadow-dark: rgba(0,0,0,0.5);
-            --card-hover-bg-dark: #444;
+            /* Light Mode Base Colors */
+            --bg-color-light: #f0f0f0; --text-color-light: #333; --iframe-border-light: #ccc; --header-bg-light: #e9ecef; --header-text-color-light: #212529; --control-icon-color-light: #495057; --control-icon-bg-light: #ffffff; --control-icon-hover-bg-light: #dcdcdc; --card-bg-light: #fff; --card-border-light: #ccc; --card-shadow-light: rgba(0,0,0,0.1); --card-hover-bg-light: #f8f9fa;
+            /* Dark Mode Base Colors */
+            --bg-color-dark: #1a1a1a; --text-color-dark: #f0f0f0; --iframe-border-dark: #444; --header-bg-dark: #343a40; --header-text-color-dark: #f8f9fa; --control-icon-color-dark: #adb5bd; --control-icon-bg-dark: #2c3034; --control-icon-hover-bg-dark: #3e444a; --card-bg-dark: #222; --card-border-dark: #444; --card-shadow-dark: rgba(0,0,0,0.3); --card-hover-bg-dark: #333;
+            
+            /* Accent Color Variables (Default: Blue) */
+            --accent-color-primary: #007bff;
+            --accent-color-primary-hover: #0056b3;
+            --accent-color-primary-text: #ffffff;
+            /* Accent for Dark Mode (can be same or slightly different) */
+            --accent-color-primary-dark: #4da3ff;
+            --accent-color-primary-hover-dark: #1e90ff;
+            --accent-color-primary-text-dark: #1a1a1a; /* Dark text for lighter accents in dark mode */
         }
 
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            background-color: var(--bg-color-light);
-            color: var(--text-color-light);
-            transition: background-color 0.3s, color 0.3s;
+        /* Accent Theme Classes (applied to body) */
+        body.accent-theme-blue { /* Default, so technically not needed if vars are blue by default */
+            --accent-color-primary: #007bff; --accent-color-primary-hover: #0056b3; --accent-color-primary-dark: #4da3ff; --accent-color-primary-hover-dark: #1e90ff;
+            --accent-color-primary-text: #ffffff; --accent-color-primary-text-dark: #1a1a1a;
+        }
+        body.accent-theme-green {
+            --accent-color-primary: #28a745; --accent-color-primary-hover: #1e7e34; --accent-color-primary-dark: #5cb85c; --accent-color-primary-hover-dark: #4cae4c;
+            --accent-color-primary-text: #ffffff; --accent-color-primary-text-dark: #1a1a1a;
+        }
+        body.accent-theme-orange {
+            --accent-color-primary: #fd7e14; --accent-color-primary-hover: #c65e0a; --accent-color-primary-dark: #ff9a40; --accent-color-primary-hover-dark: #f0882b;
+            --accent-color-primary-text: #ffffff; --accent-color-primary-text-dark: #1a1a1a;
         }
 
-        body.dark-mode {
-            background-color: var(--bg-color-dark);
-            color: var(--text-color-dark);
+        body { font-family: Arial, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; background-color: var(--bg-color-light); color: var(--text-color-light); transition: background-color 0.3s, color 0.3s; }
+        body.dark-mode { background-color: var(--bg-color-dark); color: var(--text-color-dark); }
+        
+        .app-header { background-color: var(--header-bg-light); color: var(--header-text-color-light); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); position: relative; z-index: 10; }
+        body.dark-mode .app-header { background-color: var(--header-bg-dark); color: var(--header-text-color-dark); }
+        .app-header h1 { margin: 0; font-size: 1.5em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+        .header-controls { display: flex; align-items: center; gap: 10px; }
+        .control-icon { background-color: var(--control-icon-bg-light); border: 1px solid var(--control-icon-color-light); font-size: 1.5em; cursor: pointer; color: var(--control-icon-color-light); padding: 10px; border-radius: 8px; transition: background-color 0.2s, color 0.2s, transform 0.2s; line-height: 1; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        body.dark-mode .control-icon { background-color: var(--control-icon-bg-dark); border: 1px solid var(--control-icon-color-dark); color: var(--control-icon-color-dark); }
+        .control-icon:hover { background-color: var(--control-icon-hover-bg-light); transform: scale(1.1); }
+        body.dark-mode .control-icon:hover { background-color: var(--control-icon-hover-bg-dark); }
+        
+        /* Active state using accent color */
+        .control-icon.active, .control-icon:active {
+            background-color: var(--accent-color-primary);
+            color: var(--accent-color-primary-text);
+            border-color: var(--accent-color-primary-hover);
+        }
+        body.dark-mode .control-icon.active, body.dark-mode .control-icon:active {
+            background-color: var(--accent-color-primary-dark);
+            color: var(--accent-color-primary-text-dark);
+            border-color: var(--accent-color-primary-hover-dark);
         }
 
-        .app-header {
-            background-color: var(--header-bg-light);
-            color: var(--header-text-color-light);
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: relative;
-            z-index: 10;
-        }
+        #appContainer { flex-grow: 1; overflow: hidden; border-top: 1px solid var(--iframe-border-light); position: relative; box-sizing: border-box; display: flex; flex-direction: column; }
+        body.dark-mode #appContainer { border-top: 1px solid var(--iframe-border-dark); }
+        iframe { width: 100%; height: 100%; border: none; display: none; /* Hidden by default */ }
+        
+        #homeContent { padding-top: 15px; padding-left: 20px; padding-right: 20px; padding-bottom: 20px; display: none; /* Shown by JS */ text-align: center; flex-grow: 1; align-items: center; justify-content: flex-start; flex-direction: column; width: 100%; overflow-y: auto; box-sizing: border-box; }
+        .tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding-top: 10px; max-width: 1200px; width: 100%; box-sizing: border-box; }
+        .tool-card { background-color: var(--card-bg-light); border: 1px solid var(--card-border-light); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s, transform 0.2s, border-color 0.2s; box-shadow: 0 2px 5px var(--card-shadow-light); }
+        body.dark-mode .tool-card { background-color: var(--card-bg-dark); border: 1px solid var(--card-border-dark); box-shadow: 0 2px 5px var(--card-shadow-dark); }
+        .tool-card:hover { background-color: var(--card-hover-bg-light); transform: translateY(-3px) scale(1.02); border-color: var(--accent-color-primary); }
+        body.dark-mode .tool-card:hover { background-color: var(--card-hover-bg-dark); border-color: var(--accent-color-primary-dark); }
+        .tool-card i { font-size: 2em; margin-bottom: 10px; color: var(--accent-color-primary); transition: color 0.3s;}
+        body.dark-mode .tool-card i { color: var(--accent-color-primary-dark); }
+        .tool-card span { font-size: 1em; text-align: center; }
+        
+        .loading-message { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.2em; color: var(--text-color-light); display: none; z-index: 5; }
+        body.dark-mode .loading-message { color: var(--text-color-dark); }
+        .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
-        body.dark-mode .app-header {
-            background-color: var(--header-bg-dark);
-            color: var(--header-text-color-dark);
-        }
-
-        .app-header h1 {
-            margin: 0;
-            font-size: 1.5em;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            flex-shrink: 0;
-        }
-
-        .header-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .header-controls .control-icon {
-            background-color: var(--control-icon-bg-light);
-            border: 1px solid var(--control-icon-color-light);
-            font-size: 1.5em;
-            cursor: pointer;
-            color: var(--control-icon-color-light);
-            padding: 10px;
-            border-radius: 8px;
-            transition: background-color 0.2s, color 0.2s, transform 0.2s;
-            line-height: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        body.dark-mode .header-controls .control-icon {
-            background-color: var(--control-icon-bg-dark);
-            border: 1px solid var(--control-icon-color-dark);
-            color: var(--control-icon-color-dark);
-        }
-
-        .header-controls .control-icon:hover {
-            background-color: var(--control-icon-hover-bg-light);
-            transform: scale(1.1);
-        }
-
-        body.dark-mode .header-controls .control-icon:hover {
-            background-color: var(--control-icon-hover-bg-dark);
-        }
-
-        .header-controls .control-icon:active {
-            background-color: var(--control-icon-active-bg-light);
-        }
-
-        body.dark-mode .header-controls .control-icon:active {
-            background-color: var(--control-icon-active-bg-dark);
-        }
-
-        #appContainer {
-            flex-grow: 1;
-            overflow: hidden;
-            border-top: 1px solid var(--iframe-border-light);
-            position: relative;
-            box-sizing: border-box;
-        }
-
-        body.dark-mode #appContainer {
-            border-top: 1px solid var(--iframe-border-dark);
-        }
-
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block; /* Default to block, JS will hide if needed */
-        }
-
-        #homeContent {
-            padding: 20px;
-            display: none; /* Initially hidden */
-            text-align: center;
-            flex-grow: 1;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            width: 100%;
-            height: 100%;
-        }
-
-        .tool-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            max-width: 1200px;
-            width: 100%;
-        }
-
-        .tool-card {
-            background-color: var(--card-bg-light);
-            border: 1px solid var(--card-border-light);
-            border-radius: 8px;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.2s;
-            box-shadow: 0 2px 5px var(--card-shadow-light);
-        }
-
-        body.dark-mode .tool-card {
-            background-color: var(--card-bg-dark);
-            border: 1px solid var(--card-border-dark);
-            box-shadow: 0 2px 5px var(--card-shadow-dark);
-        }
-
-        .tool-card:hover {
-            background-color: var(--card-hover-bg-light);
-            transform: scale(1.05);
-        }
-
-        body.dark-mode .tool-card:hover {
-            background-color: var(--card-hover-bg-dark);
-        }
-
-        .tool-card i {
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
-
-        .tool-card span {
-            font-size: 1em;
-            text-align: center;
-        }
-
-        .loading-message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 1.2em;
-            color: var(--text-color-light);
-            display: none;
-            z-index: 5; /* Ensure it's above homeContent if both briefly visible */
-        }
-
-        body.dark-mode .loading-message {
-            color: var(--text-color-dark);
-        }
+        .theme-popup { position: absolute; top: 55px; right: 10px; background-color: var(--control-icon-bg-light); border: 1px solid var(--card-border-light); border-radius: 8px; box-shadow: 0 4px 12px var(--card-shadow-light); padding: 8px; z-index: 100; display: none; flex-direction: column; gap: 5px; min-width: 150px; }
+        body.dark-mode .theme-popup { background-color: var(--control-icon-bg-dark); border: 1px solid var(--card-border-dark); box-shadow: 0 4px 12px var(--card-shadow-dark); }
+        .theme-popup button { background-color: transparent; border: 1px solid transparent; color: var(--text-color-light); padding: 8px 10px; border-radius: 4px; cursor: pointer; text-align: left; width: 100%; font-size: 0.95em; transition: background-color 0.2s; }
+        body.dark-mode .theme-popup button { color: var(--text-color-dark); }
+        .theme-popup button:hover { background-color: var(--control-icon-hover-bg-light); }
+        body.dark-mode .theme-popup button:hover { background-color: var(--control-icon-hover-bg-dark); }
+        .theme-popup button.active-theme { background-color: var(--accent-color-primary); color: var(--accent-color-primary-text); font-weight: bold; }
+        body.dark-mode .theme-popup button.active-theme { background-color: var(--accent-color-primary-dark); color: var(--accent-color-primary-text-dark); }
     </style>
 </head>
 <body>
     <header class="app-header">
         <h1 data-translate-key="hubMainTitle">मेरा टूल हब</h1>
         <div class="header-controls">
-            <button id="homeButton" class="control-icon" data-translate-key-title="titleHome"><i class="fas fa-home"></i></button>
-            <button id="langToggle" class="control-icon" data-translate-key-title="titleLangToggle"><i class="fas fa-globe"></i></button>
-            <button id="darkModeToggle" class="control-icon" data-translate-key-title="titleThemeToggle"><i class="fas fa-moon"></i></button>
+            <button id="homeButton" class="control-icon" data-translate-key-title="titleHome" aria-label="होम"><i class="fas fa-home"></i></button>
+            <button id="langToggle" class="control-icon" data-translate-key-title="titleLangToggle" aria-label="भाषा बदलें"><i class="fas fa-globe"></i></button>
+            <button id="accentThemeSwitcherButton" class="control-icon" data-translate-key-title="titleAccentThemeSwitcher" aria-label="एक्सेंट थीम चुनें"><i class="fas fa-fill-drip"></i></button>
+            <button id="darkModeToggle" class="control-icon" data-translate-key-title="titleDarkModeToggle" aria-label="डार्क/लाइट मोड" aria-pressed="false"><i class="fas fa-moon"></i></button>
         </div>
     </header>
 
     <div id="appContainer">
         <div class="loading-message" id="loadingMessage" data-translate-key="loadingText">लोड हो रहा है...</div>
-        <iframe id="appFrame" title="मुख्य एप्लीकेशन क्षेत्र" src="about:blank"></iframe> <!-- Start with about:blank -->
+        <iframe id="appFrame" title="मुख्य एप्लीकेशन क्षेत्र" src="about:blank"></iframe>
         <div id="homeContent">
-            <h2 data-translate-key="homeWelcomeTitle">टूल हब में आपका स्वागत है!</h2>
-            <p data-translate-key="homeWelcomeMsg">नीचे दिए गए टूल्स में से एक चुनें।</p>
             <div class="tool-grid">
-                <div class="tool-card" data-app="land_area_calculator.html" data-translate-key="navLandArea">
-                    <i class="fas fa-ruler-combined"></i>
-                    <span>ज़मीन का क्षेत्रफल</span>
-                </div>
-                <div class="tool-card" data-app="attendance_tracker.html" data-translate-key="navAttendance">
-                    <i class="fas fa-user-check"></i>
-                    <span>अटेंडेंस ट्रैकर</span>
-                </div>
-                <div class="tool-card" data-app="kharch_tracker.html" data-translate-key="navExpense">
-                    <i class="fas fa-wallet"></i>
-                    <span>खर्च ट्रैकर</span>
-                </div>
-                <div class="tool-card" data-app="combined_calculator.html" data-translate-key="navCalculator">
-                    <i class="fas fa-calculator"></i>
-                    <span>कैलकुलेटर</span>
-                </div>
-                <div class="tool-card" data-app="unit_converter.html" data-translate-key="navUnitConverter">
-                    <i class="fas fa-exchange-alt"></i>
-                    <span>यूनिट कन्वर्टर</span>
-                </div>
-                <div class="tool-card" data-app="Sheet-layout.html" data-translate-key="navSheetLayout">
-                    <i class="fas fa-table"></i>
-                    <span>Sheet layout</span>
-                </div>
-                <div class="tool-card" data-app="tile-calculator.html" data-translate-key="navTileCalculator">
-                    <i class="fas fa-border-all"></i>
-                    <span>टाइल कैलकुलेटर</span>
-                </div>
-                <div class="tool-card" data-app="Fm_radio.html" data-translate-key="navFmRadio">
-                    <i class="fas fa-radio"></i>
-                    <span>एफएम रेडियो</span>
-                </div>
-                <div class="tool-card" data-app="diary.html" data-translate-key="navDiary">
-                    <i class="fas fa-book"></i>
-                    <span>डायरी</span>
-                </div>
+                <div class="tool-card" data-app="land_area_calculator.html" data-translate-key="navLandArea"><i class="fas fa-ruler-combined"></i><span>ज़मीन का क्षेत्रफल</span></div>
+                <div class="tool-card" data-app="attendance_tracker.html" data-translate-key="navAttendance"><i class="fas fa-user-check"></i><span>अटेंडेंस ट्रैकर</span></div>
+                <div class="tool-card" data-app="kharch_tracker.html" data-translate-key="navExpense"><i class="fas fa-wallet"></i><span>खर्च ट्रैकर</span></div>
+                <div class="tool-card" data-app="combined_calculator.html" data-translate-key="navCalculator"><i class="fas fa-calculator"></i><span>कैलकुलेटर</span></div>
+                <div class="tool-card" data-app="unit_converter.html" data-translate-key="navUnitConverter"><i class="fas fa-exchange-alt"></i><span>यूनिट कन्वर्टर</span></div>
+                <div class="tool-card" data-app="Sheet-layout.html" data-translate-key="navSheetLayout"><i class="fas fa-table"></i><span>Sheet layout</span></div>
+                <div class="tool-card" data-app="tile-calculator.html" data-translate-key="navTileCalculator"><i class="fas fa-border-all"></i><span>टाइल कैलकुलेटर</span></div>
+                <div class="tool-card" data-app="Fm_radio.html" data-translate-key="navFmRadio"><i class="fas fa-radio"></i><span>एफएम रेडियो</span></div>
+                <div class="tool-card" data-app="diary.html" data-translate-key="navDiary"><i class="fas fa-book"></i><span>डायरी</span></div>
             </div>
         </div>
     </div>
+    <div id="accentThemeSelectorPopup" class="theme-popup">
+        <button data-accent-theme="default" data-translate-key="accentThemeDefault">डिफ़ॉल्ट (नीला)</button>
+        <button data-accent-theme="green" data-translate-key="accentThemeGreen">हरा</button>
+        <button data-accent-theme="orange" data-translate-key="accentThemeOrange">नारंगी</button>
+    </div>
+    <div class="visually-hidden" aria-live="polite" id="theme-status"></div>
 
     <script>
         const translations = {
             hi: {
-                hubTitle: "मेरा टूल हब",
-                hubMainTitle: "मेरा टूल हब",
-                titleHome: "होम",
-                titleLangToggle: "भाषा बदलें (Change Language)",
-                titleThemeToggle: "थीम बदलें (Toggle Theme)",
-                navLandArea: "ज़मीन का क्षेत्रफल",
-                navAttendance: "अटेंडेंस ट्रैकर",
-                navExpense: "खर्च ट्रैकर",
-                navCalculator: "कैलकुलेटर",
-                navUnitConverter: "यूनिट कन्वर्टर",
-                navSheetLayout: "Sheet layout",
-                navTileCalculator: "टाइल कैलकुलेटर",
-                navFmRadio: "एफएम रेडियो",
-                navDiary: "डायरी",
-                homeWelcomeTitle: "टूल हब में आपका स्वागत है!",
-                homeWelcomeMsg: "नीचे दिए गए टूल्स में से एक चुनें।",
-                loadingText: "लोड हो रहा है...",
-                errorLoadingApp: "टूल लोड करने में त्रुटि। कृपया पुनः प्रयास करें।"
+                hubTitle: "मेरा टूल हब", hubMainTitle: "मेरा टूल हब", titleHome: "होम", titleLangToggle: "भाषा बदलें", titleAccentThemeSwitcher: "एक्सेंट थीम", titleDarkModeToggle: "डार्क/लाइट मोड",
+                navLandArea: "ज़मीन का क्षेत्रफल", navAttendance: "अटेंडेंस ट्रैकर", navExpense: "खर्च ट्रैकर", navCalculator: "कैलकुलेटर", navUnitConverter: "यूनिट कन्वर्टर", navSheetLayout: "Sheet layout", navTileCalculator: "टाइल कैलकुलेटर", navFmRadio: "एफएम रेडियो", navDiary: "डायरी",
+                loadingText: "लोड हो रहा है...", errorLoadingApp: "टूल लोड करने में त्रुटि।", statusDarkModeOn: "डार्क मोड सक्रिय।", statusLightModeOn: "लाइट मोड सक्रिय।",
+                accentThemeDefault: "डिफ़ॉल्ट (नीला)", accentThemeBlue: "नीला", accentThemeGreen: "हरा", accentThemeOrange: "नारंगी"
             },
             en: {
-                hubTitle: "My Tool Hub",
-                hubMainTitle: "My Tool Hub",
-                titleHome: "Home",
-                titleLangToggle: "Change Language (भाषा बदलें)",
-                titleThemeToggle: "Toggle Theme (थीम बदलें)",
-                navLandArea: "Land Area Calculator",
-                navAttendance: "Attendance Tracker",
-                navExpense: "Expense Tracker",
-                navCalculator: "Calculator",
-                navUnitConverter: "Unit Converter",
-                navSheetLayout: "Sheet layout",
-                navTileCalculator: "Tile Calculator",
-                navFmRadio: "FM Radio",
-                navDiary: "Diary",
-                homeWelcomeTitle: "Welcome to the Tool Hub!",
-                homeWelcomeMsg: "Select a tool from below.",
-                loadingText: "Loading...",
-                errorLoadingApp: "Error loading app. Please try again."
+                hubTitle: "My Tool Hub", hubMainTitle: "My Tool Hub", titleHome: "Home", titleLangToggle: "Change Language", titleAccentThemeSwitcher: "Accent Theme", titleDarkModeToggle: "Dark/Light Mode",
+                navLandArea: "Land Area Calc", navAttendance: "Attendance Tracker", navExpense: "Expense Tracker", navCalculator: "Calculator", navUnitConverter: "Unit Converter", navSheetLayout: "Sheet layout", navTileCalculator: "Tile Calculator", navFmRadio: "FM Radio", navDiary: "Diary",
+                loadingText: "Loading...", errorLoadingApp: "Error loading app.", statusDarkModeOn: "Dark mode activated.", statusLightModeOn: "Light mode activated.",
+                accentThemeDefault: "Default (Blue)", accentThemeBlue: "Blue", accentThemeGreen: "Green", accentThemeOrange: "Orange"
             }
         };
 
@@ -327,22 +144,31 @@
             const appCards = document.querySelectorAll('.tool-card[data-app]');
             const homeButton = document.getElementById('homeButton');
             const langToggle = document.getElementById('langToggle');
+            const accentThemeSwitcherButton = document.getElementById('accentThemeSwitcherButton');
             const darkModeToggle = document.getElementById('darkModeToggle');
             const homeContentDiv = document.getElementById('homeContent');
             const loadingMessageDiv = document.getElementById('loadingMessage');
+            const themeStatusDiv = document.getElementById('theme-status');
+            const accentThemeSelectorPopup = document.getElementById('accentThemeSelectorPopup');
+            const accentThemeButtons = accentThemeSelectorPopup.querySelectorAll('button[data-accent-theme]');
 
-            const darkModeKey = 'hubDarkMode';
+            const darkModeKey = 'hubDarkMode_v2';
+            const accentThemeKey = 'hubAccentTheme_v1';
             const langKey = 'hubLanguage';
 
+            const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
             let currentLang = localStorage.getItem(langKey) || 'hi';
-            let currentMode = localStorage.getItem(darkModeKey) || 'light';
+            // Initialize currentDarkMode based on localStorage or system preference
+            let initialDarkMode = localStorage.getItem(darkModeKey);
+            let currentDarkMode = initialDarkMode === null ? prefersDarkScheme.matches : (initialDarkMode === 'true');
+            let currentAccentTheme = localStorage.getItem(accentThemeKey) || 'default';
 
-            function applyTranslations() {
+            function applyTranslations() { /* ... (पहले जैसा) ... */
                 document.querySelectorAll('[data-translate-key]').forEach(el => {
                     const key = el.getAttribute('data-translate-key');
                     if (translations[currentLang] && translations[currentLang][key]) {
                         const span = el.querySelector('span');
-                        if (el.tagName === 'P' || el.tagName === 'H1' || el.tagName === 'H2' || el.id === 'loadingMessage') {
+                        if (el.tagName === 'P' || el.tagName === 'H1' || el.tagName === 'H2' || el.id === 'loadingMessage' || el.closest('.theme-popup')) {
                              el.textContent = translations[currentLang][key];
                         } else if (span && el.classList.contains('tool-card')) {
                             span.textContent = translations[currentLang][key];
@@ -360,188 +186,135 @@
                 document.documentElement.lang = currentLang;
             }
 
-            function applyDarkMode(isDark) {
+            function applyCurrentDarkMode(isDark) {
+                currentDarkMode = isDark;
+                document.body.classList.toggle('dark-mode', isDark);
+                darkModeToggle.setAttribute('aria-pressed', isDark.toString());
                 const icon = darkModeToggle.querySelector('i');
-                currentMode = isDark ? 'dark' : 'light';
-                if (isDark) {
-                    document.body.classList.add('dark-mode');
-                    icon.classList.remove('fa-moon');
-                    icon.classList.add('fa-sun');
-                } else {
-                    document.body.classList.remove('dark-mode');
-                    icon.classList.remove('fa-sun');
-                    icon.classList.add('fa-moon');
+                icon.classList.toggle('fa-sun', isDark);
+                icon.classList.toggle('fa-moon', !isDark);
+
+                if (themeStatusDiv && translations[currentLang]) {
+                    const statusKey = isDark ? 'statusDarkModeOn' : 'statusLightModeOn';
+                    if (translations[currentLang][statusKey]) themeStatusDiv.textContent = translations[currentLang][statusKey];
                 }
+                localStorage.setItem(darkModeKey, isDark);
+
                 const currentIframeSrc = iframe.getAttribute('src');
                 if (iframe.contentWindow && currentIframeSrc && currentIframeSrc !== 'about:blank') {
-                    iframe.contentWindow.postMessage({ theme: currentMode }, '*');
+                    iframe.contentWindow.postMessage({ theme: isDark ? 'dark' : 'light' }, '*');
                 }
             }
 
-            function showHomeContent() {
-                loadingMessageDiv.style.display = 'none';
-                iframe.style.display = 'none';
-                homeContentDiv.style.display = 'flex';
+            function applyCurrentAccentTheme(themeName) {
+                document.body.classList.forEach(className => {
+                    if (className.startsWith('accent-theme-')) document.body.classList.remove(className);
+                });
+                if (themeName !== 'default') document.body.classList.add(`accent-theme-${themeName}`);
                 
+                currentAccentTheme = themeName;
+                accentThemeButtons.forEach(btn => btn.classList.toggle('active-theme', btn.dataset.accentTheme === themeName));
+                localStorage.setItem(accentThemeKey, themeName);
+            }
+
+            darkModeToggle.addEventListener('click', () => applyCurrentDarkMode(!currentDarkMode));
+
+            accentThemeSwitcherButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                const isPopupVisible = accentThemeSelectorPopup.style.display === 'block';
+                accentThemeSelectorPopup.style.display = isPopupVisible ? 'none' : 'block';
+                if (!isPopupVisible) { // Update active button when opening
+                    accentThemeButtons.forEach(btn => btn.classList.toggle('active-theme', btn.dataset.accentTheme === currentAccentTheme));
+                }
+            });
+            accentThemeButtons.forEach(button => button.addEventListener('click', () => {
+                applyCurrentAccentTheme(button.dataset.accentTheme);
+                accentThemeSelectorPopup.style.display = 'none';
+            }));
+            document.addEventListener('click', (event) => {
+                if (!accentThemeSelectorPopup.contains(event.target) && event.target !== accentThemeSwitcherButton && !accentThemeSwitcherButton.contains(event.target)) {
+                    accentThemeSelectorPopup.style.display = 'none';
+                }
+            });
+            prefersDarkScheme.addEventListener('change', e => {
+                 // Only if no explicit choice was made by user yet for dark mode via toggle
+                if (localStorage.getItem(darkModeKey) === null) {
+                    applyCurrentDarkMode(e.matches);
+                }
+            });
+
+            function showHomeContent() { /* ... (पहले जैसा) ... */
+                loadingMessageDiv.style.display = 'none'; iframe.style.display = 'none'; homeContentDiv.style.display = 'flex';
                 document.title = translations[currentLang]?.hubMainTitle || "Tool Hub";
                 appCards.forEach(card => card.classList.remove('active'));
-
                 const currentIframeSrc = iframe.getAttribute('src');
-                if (currentIframeSrc && currentIframeSrc !== 'about:blank') {
-                    iframe.setAttribute('src', 'about:blank'); 
-                }
+                if (currentIframeSrc && currentIframeSrc !== 'about:blank') iframe.setAttribute('src', 'about:blank');
             }
-
-            function loadApp(appUrl) {
-                if (appUrl === 'HOME') { // यह केस अब इस्तेमाल नहीं होना चाहिए, लेकिन सुरक्षा के लिए रखा है
-                    showHomeContent();
-                    return;
-                }
-
-                homeContentDiv.style.display = 'none';
-                iframe.style.display = 'none'; // iframe को पहले छिपाएं
+            function loadApp(appUrl) { /* ... (पहले जैसा) ... */
+                homeContentDiv.style.display = 'none'; iframe.style.display = 'none'; 
                 loadingMessageDiv.textContent = translations[currentLang]?.loadingText || "Loading...";
-                loadingMessageDiv.style.display = 'block';
-
-                iframe.setAttribute('src', appUrl); // अब src सेट करें
-                console.log('Loading app:', appUrl);
-
-                appCards.forEach(card => {
-                    card.classList.toggle('active', card.dataset.app === appUrl);
-                });
+                loadingMessageDiv.style.display = 'block'; iframe.setAttribute('src', appUrl);
+                appCards.forEach(card => card.classList.toggle('active', card.dataset.app === appUrl));
             }
-
-            iframe.onload = () => {
+            iframe.onload = () => { /* ... (पहले जैसा, theme: currentDarkMode ? 'dark' : 'light' भेजें) ... */
                 const currentIframeSrc = iframe.getAttribute('src');
                 if (!currentIframeSrc || currentIframeSrc === 'about:blank') {
-                    iframe.style.display = 'none';
-                    loadingMessageDiv.style.display = 'none';
-                    // होम स्क्रीन पर टाइटल showHomeContent द्वारा सेट किया जाता है
-                    return; 
+                    iframe.style.display = 'none'; loadingMessageDiv.style.display = 'none'; return; 
                 }
-
-                // यह एक वास्तविक ऐप के लिए है
-                iframe.style.display = 'block';
-                loadingMessageDiv.style.display = 'none';
-                
+                iframe.style.display = 'block'; loadingMessageDiv.style.display = 'none';
                 try {
-                    let appTitle = "";
-                    if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.title) {
-                        appTitle = iframe.contentWindow.document.title;
-                    } else {
-                        const appNameParts = currentIframeSrc.split('/').pop().split('.');
-                        appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-                    }
-                    
-                    if (appTitle) {
-                        document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
-                    } else {
-                         document.title = translations[currentLang]?.hubMainTitle || "Tool Hub";
-                    }
-
-                    if (iframe.contentWindow) {
-                        iframe.contentWindow.postMessage({ theme: currentMode, lang: currentLang }, '*');
-                    }
-                } catch (e) {
-                    console.warn("Could not access iframe title or postMessage after load.", e);
-                    const appNameParts = currentIframeSrc.split('/').pop().split('.');
-                    const appTitleFallback = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-                    document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitleFallback;
-                }
+                    let appTitle = iframe.contentWindow?.document?.title || 
+                                   currentIframeSrc.split('/').pop().split('.')[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                    document.title = `${translations[currentLang]?.hubMainTitle || "Tool Hub"} - ${appTitle}`;
+                    iframe.contentWindow?.postMessage({ theme: currentDarkMode ? 'dark' : 'light', lang: currentLang, request: 'initialConfigDone' }, '*');
+                } catch (e) { console.warn("Iframe access error:", e); }
             };
-
-            iframe.onerror = () => {
+            iframe.onerror = () => { /* ... (पहले जैसा) ... */
                 loadingMessageDiv.textContent = translations[currentLang]?.errorLoadingApp || "Error loading app.";
-                loadingMessageDiv.style.display = 'block';
-                iframe.style.display = 'none';
-                console.error("Failed to load iframe:", iframe.getAttribute('src'));
-                // त्रुटि पर iframe को खाली करें ताकि अगला प्रयास साफ हो
-                iframe.setAttribute('src', 'about:blank'); 
+                loadingMessageDiv.style.display = 'block'; iframe.style.display = 'none';
+                iframe.setAttribute('src', 'about:blank');
             };
-            
-            // onbeforeunload को सावधानी से इस्तेमाल करें या हटा दें अगर यह समस्या पैदा कर रहा है
-            // iframe.onbeforeunload = () => { 
-            //     const currentIframeSrc = iframe.getAttribute('src');
-            //     if (currentIframeSrc && currentIframeSrc !== 'about:blank') {
-            //          loadingMessageDiv.style.display = 'block';
-            //     }
-            // };
-
-            appCards.forEach(card => {
-                card.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const appToLoad = card.dataset.app;
-                    if (appToLoad) {
-                        loadApp(appToLoad);
-                    } else {
-                        console.error("Tool card is missing data-app attribute:", card);
-                    }
-                });
-            });
-
-            homeButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                showHomeContent();
-            });
-
-            langToggle.addEventListener('click', () => {
+            appCards.forEach(card => card.addEventListener('click', (e) => { e.preventDefault(); loadApp(card.dataset.app); }));
+            homeButton.addEventListener('click', (e) => { e.preventDefault(); showHomeContent(); });
+            langToggle.addEventListener('click', () => { /* ... (पहले जैसा, theme: currentDarkMode ? 'dark' : 'light' का ध्यान रखें) ... */
                 currentLang = (currentLang === 'hi') ? 'en' : 'hi';
                 localStorage.setItem(langKey, currentLang);
                 applyTranslations(); 
-
-                if (homeContentDiv.style.display === 'flex') {
-                    showHomeContent(); 
-                } else {
+                if (homeContentDiv.style.display === 'flex') { showHomeContent(); } 
+                else {
                     const currentIframeSrc = iframe.getAttribute('src');
                     if (iframe.contentWindow && currentIframeSrc && currentIframeSrc !== 'about:blank') {
-                        iframe.contentWindow.postMessage({ lang: currentLang }, '*');
-                        // iframe.onload में टाइटल अपडेट हो जाएगा, या हम यहां फोर्स कर सकते हैं
-                        // For simplicity, let iframe.onload handle title on next interaction or app reload message
-                        // Or, try to update title based on current loaded app's name if possible
+                        iframe.contentWindow.postMessage({ lang: currentLang }, '*'); // Theme is already set
                         try {
-                            let appTitle = "";
-                            if (iframe.contentWindow && iframe.contentWindow.document && iframe.contentWindow.document.title) {
-                                appTitle = iframe.contentWindow.document.title;
-                            } else {
-                                const appNameParts = currentIframeSrc.split('/').pop().split('.');
-                                appTitle = appNameParts[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
-                            }
-                            if(appTitle) document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + appTitle;
-
+                            let appTitle = iframe.contentWindow?.document?.title || 
+                                           currentIframeSrc.split('/').pop().split('.')[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                            if(appTitle) document.title = `${translations[currentLang]?.hubMainTitle || "Tool Hub"} - ${appTitle}`;
                         } catch (e) { /*ignore*/ }
-                    } else {
-                         document.title = translations[currentLang]?.hubTitle || "Tool Hub";
-                    }
+                    } else { document.title = translations[currentLang]?.hubTitle || "Tool Hub"; }
                 }
             });
-
-            darkModeToggle.addEventListener('click', () => {
-                const isDark = !document.body.classList.contains('dark-mode');
-                applyDarkMode(isDark);
-                localStorage.setItem(darkModeKey, isDark ? 'dark' : 'light');
-            });
-
-            applyDarkMode(currentMode === 'dark');
-            applyTranslations();
-            showHomeContent(); // हमेशा होम स्क्रीन पर शुरू करें
-
-            window.addEventListener('message', (event) => {
+            window.addEventListener('message', (event) => { /* ... (पहले जैसा, theme: currentDarkMode ? 'dark' : 'light' भेजें) ... */
                 const message = event.data;
+                // Add origin check for security: if (event.origin !== window.location.origin) return;
                 if (message && message.type === 'appLoaded' && message.title) {
-                    console.log(message.appName + ' inside iframe reported loaded with title: ' + message.title);
                     const currentIframeSrc = iframe.getAttribute('src');
-                    // केवल तभी टाइटल अपडेट करें जब यह ऐप अभी भी सक्रिय iframe में हो
-                    if (currentIframeSrc && currentIframeSrc.includes(message.appName) ) {
-                         document.title = (translations[currentLang]?.hubMainTitle || "Tool Hub") + " - " + message.title;
+                    if (currentIframeSrc && message.appName && currentIframeSrc.includes(message.appName) ) {
+                         document.title = `${translations[currentLang]?.hubMainTitle || "Tool Hub"} - ${message.title}`;
                     }
                 }
                 if (message && message.request === 'initialConfig') {
                     const currentIframeSrcCheck = iframe.getAttribute('src');
                     if (iframe.contentWindow && currentIframeSrcCheck && currentIframeSrcCheck !== 'about:blank') {
-                         iframe.contentWindow.postMessage({ theme: currentMode, lang: currentLang }, '*');
+                         iframe.contentWindow.postMessage({ theme: currentDarkMode ? 'dark' : 'light', lang: currentLang, request: 'initialConfigDone' }, '*');
                     }
                 }
             });
+
+            // Initial setup
+            applyTranslations();
+            applyCurrentDarkMode(currentDarkMode); // Apply stored/system dark mode
+            applyCurrentAccentTheme(currentAccentTheme); // Apply stored accent theme
+            showHomeContent();
         });
     </script>
 </body>
