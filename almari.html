@@ -1,0 +1,2331 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>अलमारी ड्राइंग टूल (अपडेटेड फीचर्स)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 10px; 
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+            overflow: hidden; 
+        }
+        h1 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 1.3em; 
+        }
+        .controls-toolbar {
+            width: 100%;
+            max-width: 1200px; 
+            margin-bottom: 10px;
+            padding: 6px; 
+            background-color: #e9e9e9;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            flex-wrap: wrap; 
+            gap: 5px; 
+            justify-content: center; 
+        }
+        .tool-group {
+            display: flex;
+            flex-wrap: wrap; 
+            align-items: center;
+            gap: 4px; 
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+        .tool-group h3 {
+            width: 100%;
+            margin: 0 0 4px 0;
+            font-size: 0.7em;
+            color: #5a2d0c;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 2px;
+            text-align: center;
+        }
+        .tool-group label, .tool-group span {
+            margin-right: 2px;
+            font-size: 0.7em; 
+            white-space: nowrap; 
+        }
+        .tool-group input[type="number"], 
+        .tool-group input[type="text"],
+        .tool-group select { 
+            width: auto; 
+            min-width: 35px; 
+            max-width: 70px; 
+            padding: 2px; 
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 0.7em;
+            box-sizing: border-box;
+        }
+         .tool-group input[type="text"]#textInput { 
+            width: 60px;
+         }
+        .tool-group button {
+            padding: 2px 6px; 
+            background-color: #5a2d0c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7em;
+        }
+        .tool-group button:hover {
+            background-color: #7b4a2b;
+        }
+        .tool-group button.active {
+            background-color: #3a1d0c;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        }
+        .options-popup { 
+            display: none;
+            position: absolute; 
+            top: 100px; 
+            left: 50%;
+            transform: translateX(-50%);
+            width: 280px; 
+            max-height: calc(100vh - 120px); 
+            overflow-y: auto;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1001; 
+            flex-direction: column;
+            gap: 5px;
+        }
+        .options-popup h3 { font-size: 0.9em; margin-bottom: 8px; text-align:center; }
+        .options-popup label { display: block; font-size:0.8em; margin-bottom:2px; }
+        .options-popup input, .options-popup select, .options-popup button { 
+            width: calc(100% - 10px); 
+            margin-bottom: 5px; 
+            font-size:0.8em;
+            padding: 4px;
+        }
+        #partsListPopup table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85em; 
+        }
+        #partsListPopup th, #partsListPopup td {
+            border: 1px solid #ddd;
+            padding: 5px; 
+            text-align: left;
+        }
+        #partsListPopup th {
+            background-color: #f2f2f2;
+        }
+        #moduleCreator { margin-top: 10px; }
+        #moduleInputsContainer div { margin-bottom: 5px; padding: 5px; border: 1px solid #eee; }
+        #cuttingLayoutPopup {
+             width: auto; min-width: 400px; max-width: 90%; top: 50px;
+        }
+        #layoutCanvasContainer {
+             width: 100%; height: 400px; overflow: auto; 
+             border: 1px solid #ccc; background-color: #e0e0e0;
+             display: flex; flex-wrap: wrap; gap: 10px; padding: 5px;
+        }
+        #layoutCanvasContainer canvas {
+            border: 1px solid black;
+            margin: 5px;
+        }
+        
+        .canvas-wrapper { 
+            width: 100%;
+            max-width: 1200px; 
+            display: flex;
+            justify-content: center;
+        }
+        #drawingCanvas {
+            border: 2px solid #333;
+            background-color: #fff;
+            touch-action: none; 
+        }
+        .snap-indicator {
+            position: absolute;
+            width: 8px; 
+            height: 8px;
+            background-color: rgba(255, 0, 0, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            display: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>अलमारी ड्राइंग टूल</h1>
+
+    <div class="controls-toolbar">
+        <div class="tool-group">
+            <button id="selectModeBtn" title="सेलेक्ट (S)">सेलेक्ट</button>
+            <button id="lineModeBtn" title="लाइन (L)">लाइन</button>
+            <button id="textModeBtn" title="टेक्स्ट (T)">टेक्स्ट</button>
+            <button id="deleteBtn" title="हटाएं (Delete)">हटाएं</button>
+        </div>
+
+        <div class="tool-group">
+            <button id="undoBtn" title="अनडू (Ctrl+Z)">अनडू</button>
+            <button id="redoBtn" title="रीडू (Ctrl+Y)">रीडू</button>
+            <button id="clearCanvasBtn">साफ़ करें</button>
+        </div>
+        
+        <div class="tool-group">
+            <button id="orthoModeBtn" title="ऑर्थो (O)">ऑर्थो</button>
+            <label for="lineWidthInputCm">मोटाई(cm):</label>
+            <input type="number" id="lineWidthInputCm" value="1.8" min="0.1" max="10" step="0.1">
+        </div>
+
+        <div class="tool-group">
+            <label for="scaleInput">1cm =</label>
+            <input type="number" id="scaleInput" value="1" min="1" max="100">
+            <span>px</span>
+        </div>
+        
+        <div class="tool-group" id="textToolOptions" style="display:none;">
+            <label for="textInput">टेक्स्ट:</label>
+            <input type="text" id="textInput" value="टेक्स्ट">
+            <label for="fontSizeInput">साइज़ (px वर्ल्ड):</label>
+            <input type="number" id="fontSizeInput" value="16" min="8" max="72">
+        </div>
+
+        <div class="tool-group">
+            <button id="toggleModuleCreatorBtn" title="मॉड्यूल बनाएं (M)">मॉड्यूल बनाएं/संपादित करें</button>
+        </div>
+        <div class="tool-group">
+            <h3>ज़ूम</h3>
+            <button id="zoomInBtn" title="ज़ूम इन (+)">+</button>
+            <button id="zoomOutBtn" title="ज़ूम आउट (-)">-</button>
+            <button id="zoomResetBtn" title="ज़ूम रीसेट (100%)">100%</button>
+        </div>
+        <div class="tool-group"> 
+             <button id="toggleDoorOptionsBtn" title="डोर विकल्प (D)">डोर विकल्प</button>
+        </div>
+        <div class="tool-group">
+            <button id="togglePartitionOptionsBtn" title="पार्टिशन विकल्प (K)">पार्टिशन विकल्प</button>
+        </div>
+         <div class="tool-group">
+            <button id="showPartsListBtn" title="पार्ट्स लिस्ट (B)">पार्ट्स लिस्ट</button>
+        </div>
+        <div class="tool-group">
+            <button id="showCuttingLayoutBtn" title="कटिंग लेआउट (C)">कटिंग लेआउट</button>
+        </div>
+    </div>
+
+    <div id="moduleCreatorPopup" class="options-popup" style="width:350px;">
+        <h3>मॉड्यूल निर्माता (cm)</h3>
+        <div id="moduleInputsContainer">
+            {/* मॉड्यूल इनपुट्स यहाँ JS से जोड़े जाएंगे */}
+        </div>
+        <button id="addModuleInputBtn" style="background-color: #5cb85c;">+ मॉड्यूल जोड़ें</button>
+        <button id="createMultiStructureBtn">सभी मॉड्यूल बनाएं</button>
+        <button id="closeModuleCreatorPopupBtn" style="background-color: #aaa;">बंद करें</button>
+    </div>
+
+    <div id="doorOptionsPopup" class="options-popup">
+        <h3>डोर सेटिंग्स</h3>
+        <label for="doorTargetSelect">किस मॉड्यूल/कम्पार्टमेंट पर:</label>
+        <select id="doorTargetSelect">
+            {/* विकल्प JS से भरे जाएंगे */}
+        </select>
+        <label for="doorCountInput">पल्लों की संख्या:</label>
+        <input type="number" id="doorCountInput" value="2" min="1" max="4">
+        <label for="sideMarginInput">साइड मार्जिन (cm):</label>
+        <input type="number" id="sideMarginInput" value="0.3" min="0" step="0.1">
+        <label for="interDoorMarginInput">मध्य मार्जिन (cm):</label>
+        <input type="number" id="interDoorMarginInput" value="0.3" min="0" step="0.1">
+        <button id="applyDoorsBtn">डोर लागू करें</button>
+        <button id="removeDoorsBtn" style="background-color: #d9534f;">सभी डोर हटाएं</button>
+        <button id="closeDoorPopupBtn" style="background-color: #aaa;">बंद करें</button>
+    </div>
+
+    <div id="partitionOptionsPopup" class="options-popup">
+        <h3>पार्टिशन/शेल्फ सेटिंग्स</h3>
+        <label for="partitionTargetSelect">किस मॉड्यूल पर:</label>
+        <select id="partitionTargetSelect">
+             {/* विकल्प JS से भरे जाएंगे */}
+        </select>
+        <label for="partitionTypeSelect">प्रकार:</label>
+        <select id="partitionTypeSelect">
+            <option value="v_partition_click">वर्टिकल (क्लिक से)</option>
+            <option value="h_shelf_click">हॉरिजॉन्टल (क्लिक से)</option>
+            <option value="shelf_between_supports">शेल्फ (सपोर्ट के बीच)</option>
+            <option value="v_partition_sized">वर्टिकल (साइज़ से)</option>
+            <option value="h_shelf_sized">हॉरिजॉन्टल (साइज़ से)</option>
+            <option value="v_partition_equal">वर्टिकल (बराबर हिस्से)</option>
+            <option value="h_shelf_equal">हॉरिजॉन्टल (बराबर हिस्से)</option>
+        </select>
+        
+        <div id="partitionSizedOptions" style="display:none;">
+            <label for="partitionOffsetInput">किनारे से दूरी (cm):</label>
+            <input type="number" id="partitionOffsetInput" step="0.1" value="20">
+            <label for="partitionSideSelect">किस किनारे से:</label>
+            <select id="partitionSideSelect">
+                <option value="left">बाएं से</option>
+                <option value="right">दाएं से</option>
+                <option value="top">ऊपर से</option>
+                <option value="bottom">नीचे से</option>
+            </select>
+        </div>
+        <div id="partitionEqualOptions" style="display:none;">
+            <label for="numEqualPartsInput">कितने हिस्से (पार्टिशन+1):</label>
+            <input type="number" id="numEqualPartsInput" value="3" min="2">
+        </div>
+        <button id="applyPartitionShelfBtn">पार्टिशन/शेल्फ लागू करें</button>
+        <button id="closePartitionPopupBtn" style="background-color: #aaa;">बंद करें</button>
+    </div>
+    
+    <div id="partsListPopup" class="options-popup" style="width: auto; min-width: 450px; max-width: 700px;">
+        <h3>कटिंग लिस्ट / पार्ट्स लिस्ट</h3>
+        <div id="partsListContent" style="max-height: 400px; overflow-y: auto;"></div>
+        <button id="closePartsListPopupBtn" style="background-color: #aaa;">बंद करें</button>
+    </div>
+
+    <div id="cuttingLayoutPopup" class="options-popup">
+        <h3>कटिंग लेआउट (सरल विज़ुअलाइज़ेशन)</h3>
+        <div>
+            <label for="sheetWidthInput">शीट चौड़ाई (cm):</label>
+            <input type="number" id="sheetWidthInput" value="122">
+            <label for="sheetLengthInput">शीट लंबाई (cm):</label>
+            <input type="number" id="sheetLengthInput" value="244">
+            <label for="kerfInput">ब्लेड केरफ़ (cm):</label>
+            <input type="number" id="kerfInput" value="0.3" step="0.1">
+            <button id="generateLayoutBtn">लेआउट बनाएं</button>
+        </div>
+        <div id="layoutCanvasContainer">
+            {/* कैनवास यहाँ JS से जोड़े जाएंगे */}
+        </div>
+        <p>कुल शीट्स: <span id="totalSheetsUsed">0</span></p>
+        <button id="closeLayoutPopupBtn" style="background-color: #aaa;">बंद करें</button>
+    </div>
+
+
+    <div class="canvas-wrapper">
+        <canvas id="drawingCanvas" width="800" height="550"></canvas> 
+    </div>
+    <div class="snap-indicator" id="snapIndicator"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('drawingCanvas');
+            const ctx = canvas.getContext('2d');
+
+            const selectModeBtn = document.getElementById('selectModeBtn');
+            const lineModeBtn = document.getElementById('lineModeBtn');
+            const textModeBtn = document.getElementById('textModeBtn');
+            const toggleDoorOptionsBtn = document.getElementById('toggleDoorOptionsBtn'); 
+            const doorOptionsPopup = document.getElementById('doorOptionsPopup');
+            const doorTargetSelect = document.getElementById('doorTargetSelect');
+            const doorCountInput = document.getElementById('doorCountInput');
+            const sideMarginInput = document.getElementById('sideMarginInput');
+            const interDoorMarginInput = document.getElementById('interDoorMarginInput');
+            const applyDoorsBtn = document.getElementById('applyDoorsBtn');
+            const removeDoorsBtn = document.getElementById('removeDoorsBtn');
+            const togglePartitionOptionsBtn = document.getElementById('togglePartitionOptionsBtn');
+            const partitionOptionsPopup = document.getElementById('partitionOptionsPopup');
+            const partitionTargetSelect = document.getElementById('partitionTargetSelect');
+            const partitionTypeSelect = document.getElementById('partitionTypeSelect');
+            const partitionSizedOptions = document.getElementById('partitionSizedOptions');
+            const partitionEqualOptions = document.getElementById('partitionEqualOptions');
+            const partitionOffsetInput = document.getElementById('partitionOffsetInput');
+            const partitionSideSelect = document.getElementById('partitionSideSelect');
+            const numEqualPartsInput = document.getElementById('numEqualPartsInput');
+            const applyPartitionShelfBtn = document.getElementById('applyPartitionShelfBtn');
+            const closePartitionPopupBtn = document.getElementById('closePartitionPopupBtn');
+            const closeDoorPopupBtn = document.getElementById('closeDoorPopupBtn');
+            const deleteBtn = document.getElementById('deleteBtn');
+            const undoBtn = document.getElementById('undoBtn');
+            const redoBtn = document.getElementById('redoBtn');
+            const clearCanvasBtn = document.getElementById('clearCanvasBtn');
+            const orthoModeBtn = document.getElementById('orthoModeBtn');
+            const lineWidthInputCm = document.getElementById('lineWidthInputCm');
+            const scaleInput = document.getElementById('scaleInput');
+            const textToolOptions = document.getElementById('textToolOptions');
+            const textInput = document.getElementById('textInput');
+            const fontSizeInput = document.getElementById('fontSizeInput');
+            const snapIndicator = document.getElementById('snapIndicator');
+            
+            const toggleModuleCreatorBtn = document.getElementById('toggleModuleCreatorBtn');
+            const moduleCreatorPopup = document.getElementById('moduleCreatorPopup');
+            const moduleInputsContainer = document.getElementById('moduleInputsContainer');
+            const addModuleInputBtn = document.getElementById('addModuleInputBtn');
+            const createMultiStructureBtn = document.getElementById('createMultiStructureBtn');
+            const closeModuleCreatorPopupBtn = document.getElementById('closeModuleCreatorPopupBtn');
+
+            const zoomInBtn = document.getElementById('zoomInBtn');
+            const zoomOutBtn = document.getElementById('zoomOutBtn');
+            const zoomResetBtn = document.getElementById('zoomResetBtn');
+            const showPartsListBtn = document.getElementById('showPartsListBtn');
+            const partsListPopup = document.getElementById('partsListPopup');
+            const partsListContent = document.getElementById('partsListContent');
+            const closePartsListPopupBtn = document.getElementById('closePartsListPopupBtn');
+            const showCuttingLayoutBtn = document.getElementById('showCuttingLayoutBtn');
+            const cuttingLayoutPopup = document.getElementById('cuttingLayoutPopup');
+            const sheetWidthInput = document.getElementById('sheetWidthInput');
+            const sheetLengthInput = document.getElementById('sheetLengthInput');
+            const kerfInput = document.getElementById('kerfInput');
+            const generateLayoutBtn = document.getElementById('generateLayoutBtn');
+            const layoutCanvasContainer = document.getElementById('layoutCanvasContainer');
+            const totalSheetsUsed = document.getElementById('totalSheetsUsed');
+            const closeLayoutPopupBtn = document.getElementById('closeLayoutPopupBtn');
+
+
+            let currentMode = 'line'; 
+            let isDrawing = false; 
+            let isMovingObject = false; 
+            let movingObjectIndex = -1;
+            let startX_world, startY_world; 
+            let currentMouseX_world, currentMouseY_world; 
+
+            let currentScale = 1.0;
+            let offsetX = 0;
+            let offsetY = 0;
+            let isPanning = false;
+            let lastPanX_screen, lastPanY_screen; 
+            const MIN_SCALE = 0.1;
+            const MAX_SCALE = 10.0;
+            const ZOOM_SENSITIVITY_WHEEL = 0.001;
+            const ZOOM_SENSITIVITY_BUTTON = 0.2; 
+
+            let initialTouchDistance = null;
+            let lastTouchMidpoint = null; 
+            let isPinching = false;
+
+            let isPlacingShelfBetweenSupports = false; 
+            let firstShelfSupport = null; 
+
+
+            let orthoModeActive = false;
+            let pixelsPerCm = parseInt(scaleInput.value, 10) || 1;
+
+            let objects = []; 
+            let selectedObjectIndex = -1; 
+
+            const SNAP_DISTANCE_SCREEN = 10; 
+            const HISTORY_MAX_SIZE = 30; 
+            let history = []; 
+            let historyIndex = -1; 
+            let moduleCounter = 0;
+
+
+            ctx.lineCap = 'round'; 
+            
+            function initializeApp() {
+                pixelsPerCm = parseInt(scaleInput.value, 10) || 1;
+                addModuleInputEntry(); 
+                updateButtonStates(); 
+                saveStateToHistory(); 
+                updateCursor(); 
+                setMode('line'); 
+                redrawCanvas(); 
+            }
+            initializeApp();
+
+
+            function setMode(mode) {
+                currentMode = mode;
+                isDrawing = false; 
+                isMovingObject = false; 
+                movingObjectIndex = -1;
+                isPanning = false; 
+                isPlacingShelfBetweenSupports = false; 
+                firstShelfSupport = null;
+                
+                if (mode !== 'module_creator_active' && moduleCreatorPopup) moduleCreatorPopup.style.display = 'none';
+                if (mode !== 'add_door_options_active' && doorOptionsPopup) doorOptionsPopup.style.display = 'none';
+                if (mode !== 'partition_options_active' && 
+                    mode !== 'v_partition_click' && 
+                    mode !== 'h_shelf_click' &&
+                    mode !== 'shelf_between_supports' && 
+                    partitionOptionsPopup) {
+                    partitionOptionsPopup.style.display = 'none';
+                }
+                 if (mode !== 'parts_list_active' && partsListPopup) {
+                    partsListPopup.style.display = 'none';
+                }
+                if (mode !== 'cutting_layout_active' && cuttingLayoutPopup) {
+                    cuttingLayoutPopup.style.display = 'none';
+                }
+                
+                updateButtonStates();
+                updateCursor();
+                if (textToolOptions) textToolOptions.style.display = (mode === 'text') ? 'flex' : 'none'; 
+            }
+
+            if (selectModeBtn) selectModeBtn.addEventListener('click', () => setMode('select'));
+            if (lineModeBtn) lineModeBtn.addEventListener('click', () => setMode('line'));
+            if (textModeBtn) textModeBtn.addEventListener('click', () => setMode('text'));
+            
+            if (toggleModuleCreatorBtn) toggleModuleCreatorBtn.addEventListener('click', () => {
+                const currentlyVisible = moduleCreatorPopup.style.display === 'flex';
+                if (doorOptionsPopup) doorOptionsPopup.style.display = 'none';
+                if (partitionOptionsPopup) partitionOptionsPopup.style.display = 'none'; 
+                if (partsListPopup) partsListPopup.style.display = 'none';
+                if (cuttingLayoutPopup) cuttingLayoutPopup.style.display = 'none';
+                moduleCreatorPopup.style.display = currentlyVisible ? 'none' : 'flex';
+                if (!currentlyVisible) setMode('module_creator_active');
+                else if (currentMode === 'module_creator_active') setMode('select');
+                updateButtonStates();
+            });
+            if (closeModuleCreatorPopupBtn) closeModuleCreatorPopupBtn.addEventListener('click', () => {
+                if (moduleCreatorPopup) moduleCreatorPopup.style.display = 'none';
+                if (currentMode === 'module_creator_active') setMode('select');
+                updateButtonStates();
+            });
+
+            if (toggleDoorOptionsBtn) toggleDoorOptionsBtn.addEventListener('click', () => {
+                const currentlyVisible = doorOptionsPopup.style.display === 'flex';
+                if (moduleCreatorPopup) moduleCreatorPopup.style.display = 'none';
+                if (partitionOptionsPopup) partitionOptionsPopup.style.display = 'none'; 
+                if (partsListPopup) partsListPopup.style.display = 'none';
+                if (cuttingLayoutPopup) cuttingLayoutPopup.style.display = 'none';
+                doorOptionsPopup.style.display = currentlyVisible ? 'none' : 'flex';
+                if (!currentlyVisible) {
+                    setMode('add_door_options_active'); 
+                    populateDoorTargetSelect(); 
+                } else if (currentMode === 'add_door_options_active') {
+                    setMode('select'); 
+                }
+                updateButtonStates();
+            });
+            if (closeDoorPopupBtn) closeDoorPopupBtn.addEventListener('click', () => {
+                if (doorOptionsPopup) doorOptionsPopup.style.display = 'none';
+                if(currentMode === 'add_door_options_active') setMode('select');
+                updateButtonStates();
+            });
+
+            if (togglePartitionOptionsBtn) togglePartitionOptionsBtn.addEventListener('click', () => {
+                const currentlyVisible = partitionOptionsPopup.style.display === 'flex';
+                if (moduleCreatorPopup) moduleCreatorPopup.style.display = 'none';
+                if (doorOptionsPopup) doorOptionsPopup.style.display = 'none'; 
+                if (partsListPopup) partsListPopup.style.display = 'none';
+                if (cuttingLayoutPopup) cuttingLayoutPopup.style.display = 'none';
+                partitionOptionsPopup.style.display = currentlyVisible ? 'none' : 'flex';
+                 if (!currentlyVisible) {
+                    setMode('partition_options_active');
+                    populatePartitionTargetSelect();
+                    handlePartitionTypeChange(); 
+                } else if (currentMode === 'partition_options_active' || currentMode === 'v_partition_click' || currentMode === 'h_shelf_click' || currentMode === 'shelf_between_supports') {
+                    setMode('select');
+                }
+                updateButtonStates();
+            });
+            if (closePartitionPopupBtn) closePartitionPopupBtn.addEventListener('click', () => {
+                if (partitionOptionsPopup) partitionOptionsPopup.style.display = 'none';
+                if(currentMode === 'partition_options_active' || currentMode === 'v_partition_click' || currentMode === 'h_shelf_click' || currentMode === 'shelf_between_supports') setMode('select');
+                updateButtonStates();
+            });
+
+            if (partitionTypeSelect) partitionTypeSelect.addEventListener('change', handlePartitionTypeChange);
+
+            function handlePartitionTypeChange() {
+                const type = partitionTypeSelect.value;
+                if (partitionSizedOptions) partitionSizedOptions.style.display = (type.includes('_sized')) ? 'block' : 'none';
+                if (partitionEqualOptions) partitionEqualOptions.style.display = (type.includes('_equal')) ? 'block' : 'none';
+                
+                if (type === 'v_partition_click') setMode('v_partition_click');
+                else if (type === 'h_shelf_click') setMode('h_shelf_click');
+                else if (type === 'shelf_between_supports') setMode('shelf_between_supports');
+                else if (currentMode !== 'partition_options_active') setMode('partition_options_active'); 
+            }
+
+
+            function updateButtonStates() {
+                if (selectModeBtn) selectModeBtn.classList.toggle('active', currentMode === 'select');
+                if (lineModeBtn) lineModeBtn.classList.toggle('active', currentMode === 'line');
+                if (textModeBtn) textModeBtn.classList.toggle('active', currentMode === 'text');
+                if (toggleModuleCreatorBtn && moduleCreatorPopup) toggleModuleCreatorBtn.classList.toggle('active', moduleCreatorPopup.style.display === 'flex');
+                if (toggleDoorOptionsBtn && doorOptionsPopup) toggleDoorOptionsBtn.classList.toggle('active', doorOptionsPopup.style.display === 'flex' || currentMode === 'add_door_options_active');
+                if (togglePartitionOptionsBtn && partitionOptionsPopup) togglePartitionOptionsBtn.classList.toggle('active', partitionOptionsPopup.style.display === 'flex' || currentMode === 'partition_options_active' || currentMode === 'v_partition_click' || currentMode === 'h_shelf_click' || currentMode === 'shelf_between_supports');
+                if (showPartsListBtn && partsListPopup) showPartsListBtn.classList.toggle('active', partsListPopup.style.display === 'flex');
+                if (showCuttingLayoutBtn && cuttingLayoutPopup) showCuttingLayoutBtn.classList.toggle('active', cuttingLayoutPopup.style.display === 'flex');
+
+
+                if (orthoModeBtn) orthoModeBtn.classList.toggle('active', orthoModeActive); 
+                if (deleteBtn) deleteBtn.disabled = selectedObjectIndex === -1; 
+                if (undoBtn) undoBtn.disabled = historyIndex <= 0; 
+                if (redoBtn) redoBtn.disabled = historyIndex >= history.length - 1; 
+            }
+            
+            function updateCursor() {
+                if (isPanning) canvas.style.cursor = 'grabbing';
+                else if (isMovingObject) {
+                    if (objects[movingObjectIndex]?.type === 'partition_v') canvas.style.cursor = 'ew-resize';
+                    else if (objects[movingObjectIndex]?.type === 'h_shelf') canvas.style.cursor = 'ns-resize';
+                    else canvas.style.cursor = 'move'; 
+                }
+                else if (currentMode === 'line') canvas.style.cursor = 'crosshair';
+                else if (currentMode === 'select') canvas.style.cursor = 'default';
+                else if (currentMode === 'text') canvas.style.cursor = 'text';
+                else if (currentMode === 'v_partition_click') canvas.style.cursor = 'col-resize'; 
+                else if (currentMode === 'h_shelf_click') canvas.style.cursor = 'row-resize'; 
+                else if (currentMode === 'shelf_between_supports') canvas.style.cursor = 'copy'; 
+                else if (currentMode === 'module_creator_active' || currentMode === 'add_door_options_active' || currentMode === 'partition_options_active' || currentMode === 'parts_list_active' || currentMode === 'cutting_layout_active') canvas.style.cursor = 'default'; 
+                else canvas.style.cursor = 'default';
+            }
+
+            function saveStateToHistory() {
+                if (historyIndex < history.length - 1) { 
+                    history = history.slice(0, historyIndex + 1); 
+                }
+                history.push({ 
+                    objects: JSON.parse(JSON.stringify(objects)), 
+                    selectedIndex: selectedObjectIndex,
+                    scale: currentScale, 
+                    offsetX: offsetX,
+                    offsetY: offsetY
+                });
+                if (history.length > HISTORY_MAX_SIZE) {
+                    history.shift(); 
+                }
+                historyIndex = history.length - 1; 
+                updateButtonStates(); 
+            }
+
+            function restoreStateFromHistory(index) {
+                 if (index >= 0 && index < history.length) {
+                    const state = JSON.parse(JSON.stringify(history[index])); 
+                    objects = state.objects;
+                    selectedObjectIndex = state.selectedIndex; 
+                    currentScale = state.scale || 1.0; 
+                    offsetX = state.offsetX || 0;
+                    offsetY = state.offsetY || 0;
+                    redrawCanvas(); 
+                    updateButtonStates(); 
+                }
+            }
+
+            if (undoBtn) undoBtn.addEventListener('click', () => {
+                if (historyIndex > 0) { 
+                    historyIndex--;
+                    restoreStateFromHistory(historyIndex);
+                }
+            });
+
+            if (redoBtn) redoBtn.addEventListener('click', () => {
+                if (historyIndex < history.length - 1) { 
+                    historyIndex++;
+                    restoreStateFromHistory(historyIndex);
+                }
+            });
+            
+            if (clearCanvasBtn) clearCanvasBtn.addEventListener('click', () => {
+                if (confirm("क्या आप वाकई पूरा कैनवास साफ़ करना चाहते हैं?")) {
+                    objects = []; 
+                    selectedObjectIndex = -1; 
+                    saveStateToHistory(); 
+                    redrawCanvas(); 
+                }
+            });
+            
+            function screenToWorld(screenX, screenY) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: (screenX - rect.left - offsetX) / currentScale,
+                    y: (screenY - rect.top - offsetY) / currentScale
+                };
+            }
+            function worldToScreen(worldX, worldY) {
+                return {
+                    x: worldX * currentScale + offsetX,
+                    y: worldY * currentScale + offsetY
+                };
+            }
+            
+            function findSnapPoint(worldX, worldY, excludePointObj = null) {
+                let closestSnap = null;
+                let minDistWorld = SNAP_DISTANCE_SCREEN / currentScale; 
+
+                for (let i = 0; i < objects.length; i++) {
+                    const obj = objects[i];
+                    if (obj.type !== 'line' && obj.type !== 'partition_v' && obj.type !== 'h_shelf' && obj.type !== 'door' && 
+                        obj.type !== 'module_bounds' && obj.type !== 'structure_bounds') continue; 
+
+                    const pointsToCheck = [];
+                    if (obj.type === 'line' || (obj.isStructureLine && obj.type !=='module_bounds' && obj.type !== 'structure_bounds') ) { 
+                        pointsToCheck.push({x: obj.x1, y: obj.y1}, {x: obj.x2, y: obj.y2});
+                    } else if (obj.type === 'partition_v') {
+                         pointsToCheck.push({x: obj.x, y: obj.y1}, {x: obj.x, y: obj.y2});
+                    } else if (obj.type === 'h_shelf') {
+                         pointsToCheck.push({x: obj.x1, y: obj.y}, {x: obj.x2, y: obj.y});
+                    } else if (obj.type === 'door') {
+                         pointsToCheck.push({x: obj.x, y: obj.y}, {x: obj.x + obj.width, y: obj.y},
+                                             {x: obj.x, y: obj.y + obj.height}, {x: obj.x + obj.width, y: obj.y + obj.height});
+                    } else if (obj.type === 'module_bounds' || obj.type === 'structure_bounds') {
+                        if (obj.frontFaceProjected) { 
+                            const fp = obj.frontFaceProjected;
+                            pointsToCheck.push(fp.pA, fp.pB, fp.pC, fp.pD);
+                        }
+                    }
+                    
+                    for (const pt of pointsToCheck) {
+                        if (!pt || typeof pt.x === 'undefined' || typeof pt.y === 'undefined') continue; 
+                        if (excludePointObj && pt.x === excludePointObj.x && pt.y === excludePointObj.y) {
+                            continue;
+                        }
+                        const distWorld = Math.hypot(worldX - pt.x, worldY - pt.y); 
+                        if (distWorld < minDistWorld) { 
+                            minDistWorld = distWorld;
+                            closestSnap = { x: pt.x, y: pt.y };
+                        }
+                    }
+                }
+                return closestSnap; 
+            }
+
+            function showSnapIndicator(worldX, worldY) { 
+                const screenPos = worldToScreen(worldX, worldY);
+                const canvasRect = canvas.getBoundingClientRect(); 
+                if (snapIndicator) {
+                    snapIndicator.style.left = `${canvasRect.left + screenPos.x - snapIndicator.offsetWidth / 2 + window.scrollX}px`;
+                    snapIndicator.style.top = `${canvasRect.top + screenPos.y - snapIndicator.offsetHeight / 2 + window.scrollY}px`;
+                    snapIndicator.style.display = 'block';
+                }
+            }
+            function hideSnapIndicator() { 
+                 if (snapIndicator) snapIndicator.style.display = 'none';
+            }
+
+            function getEffectiveLineWidthPx() {
+                const cm = parseFloat(lineWidthInputCm.value);
+                if (isNaN(cm) || cm <=0) return 1.8 * pixelsPerCm; 
+                return cm * pixelsPerCm; 
+            }
+
+
+            function handlePointerDown_Interaction(clientX, clientY) { 
+                const pos_world = screenToWorld(clientX, clientY); 
+                startX_world = pos_world.x; 
+                startY_world = pos_world.y; 
+                currentMouseX_world = startX_world;
+                currentMouseY_world = startY_world;
+
+                if (currentMode === 'module_creator_active' || currentMode === 'add_door_options_active' || currentMode === 'partition_options_active' || currentMode === 'parts_list_active' || currentMode === 'cutting_layout_active') {
+                    return; 
+                }
+
+                if (currentMode === 'line') {
+                    isDrawing = true; 
+                    let snappedStart = findSnapPoint(startX_world, startY_world); 
+                    if (snappedStart) { startX_world = snappedStart.x; startY_world = snappedStart.y; showSnapIndicator(startX_world, startY_world); } 
+                    else { hideSnapIndicator(); }
+                } else if (currentMode === 'select') {
+                    selectedObjectIndex = getObjectAtPosition(pos_world.x, pos_world.y); 
+                    if (selectedObjectIndex !== -1 && (objects[selectedObjectIndex].type === 'partition_v' || objects[selectedObjectIndex].type === 'h_shelf')) {
+                        isMovingObject = true; 
+                        movingObjectIndex = selectedObjectIndex;
+                    } else {
+                        isMovingObject = false;
+                        movingObjectIndex = -1;
+                    }
+                    if (selectedObjectIndex !== -1) {
+                        const selectedObj = objects[selectedObjectIndex];
+                        if (selectedObj.type === 'line' || selectedObj.type === 'partition_v' || selectedObj.type === 'h_shelf' || selectedObj.type === 'door') {
+                            if (lineWidthInputCm && selectedObj.lineWidth) lineWidthInputCm.value = (selectedObj.lineWidth / pixelsPerCm).toFixed(1);
+                        } else if (selectedObj.type === 'text') {
+                            if (textInput) textInput.value = selectedObj.text;
+                            if (fontSizeInput) fontSizeInput.value = selectedObj.fontSize;
+                        }
+                    }
+                    updateButtonStates();
+                    redrawCanvas();
+                } else if (currentMode === 'text') {
+                    const textContent = textInput ? textInput.value : "टेक्स्ट";
+                    const fontSize = fontSizeInput ? parseInt(fontSizeInput.value, 10) : 16; 
+                    objects.push({ 
+                        type: 'text',
+                        x: startX_world, y: startY_world,
+                        text: textContent, fontSize: fontSize, 
+                        color: '#333' 
+                    });
+                    saveStateToHistory(); 
+                    redrawCanvas();
+                } else if (currentMode === 'v_partition_click' || currentMode === 'h_shelf_click') {
+                    const targetModule = getModuleAtPosition(pos_world.x, pos_world.y, true); 
+                    if (!targetModule) { alert("क्लिक किसी मॉड्यूल के भीतर होना चाहिए।"); return; }
+
+                    const { pA, pB, pD } = targetModule.frontFaceProjected; 
+                    const partLineWidthPx = getEffectiveLineWidthPx();
+
+                    if (currentMode === 'v_partition_click') {
+                         objects.push({
+                            type: 'partition_v',
+                            x: pos_world.x, 
+                            y1: pA.y, y2: pD.y, 
+                            lineWidth: Math.max(pixelsPerCm * 0.1, partLineWidthPx / 1.5), 
+                            color: '#555',
+                            moduleId: targetModule.id 
+                        });
+                        saveStateToHistory(); redrawCanvas();
+                    } else if (currentMode === 'h_shelf_click') {
+                         objects.push({
+                            type: 'h_shelf',
+                            y: pos_world.y, 
+                            x1: pA.x, x2: pB.x, 
+                            lineWidth: Math.max(pixelsPerCm * 0.1, partLineWidthPx / 1.5),
+                            color: '#555',
+                            moduleId: targetModule.id
+                        });
+                        saveStateToHistory(); redrawCanvas();
+                    }
+                } else if (currentMode === 'shelf_between_supports') {
+                    const targetModule = getModuleAtPosition(pos_world.x, pos_world.y, true);
+                    if (!targetModule) { alert("क्लिक किसी मॉड्यूल के भीतर होना चाहिए। पहला सपोर्ट रीसेट।"); firstShelfSupport = null; return; }
+
+                    let clickedSupport = getNearestVerticalSupport(pos_world.x, targetModule); 
+                    if (clickedSupport) {
+                        if (!firstShelfSupport) {
+                            firstShelfSupport = {...clickedSupport, moduleId: targetModule.id}; 
+                            alert(`पहली सपोर्ट लाइन X=${(firstShelfSupport.x / pixelsPerCm).toFixed(1)}cm पर चुनी।\nअब इसी मॉड्यूल में दूसरी सपोर्ट लाइन पर क्लिक करें।`);
+                        } else {
+                            if (firstShelfSupport.moduleId !== targetModule.id ) {
+                                alert("दोनों सपोर्ट एक ही मॉड्यूल में होने चाहिए। पहला सपोर्ट रीसेट।");
+                                firstShelfSupport = null; return;
+                            }
+                            if (clickedSupport.x === firstShelfSupport.x) {
+                                alert("कृपया एक अलग सपोर्ट लाइन चुनें। पहला सपोर्ट रीसेट कर दी गई है।");
+                                firstShelfSupport = null; 
+                                return;
+                            }
+                            
+                            let leftSupport = firstShelfSupport.x < clickedSupport.x ? firstShelfSupport : clickedSupport;
+                            let rightSupport = firstShelfSupport.x < clickedSupport.x ? clickedSupport : firstShelfSupport;
+                            const shelfY_world = pos_world.y; 
+
+                            const shelfMinY = targetModule.frontFaceProjected.pA.y + (getEffectiveLineWidthPx() / 1.5 / 2);
+                            const shelfMaxY = targetModule.frontFaceProjected.pD.y - (getEffectiveLineWidthPx() / 1.5 / 2);
+
+                            if (shelfY_world < shelfMinY || shelfY_world > shelfMaxY) {
+                                alert("शेल्फ मॉड्यूल की ऊंचाई के भीतर होनी चाहिए।");
+                                firstShelfSupport = null; return;
+                            }
+                            
+                            const shelfLineWidthPx = getEffectiveLineWidthPx() / 1.5; 
+                            const rightSuppHalfWidthWorld = (rightSupport.isSide ? 0 : rightSupport.width_world / 2) ; 
+                            const leftSuppHalfWidthWorld = (leftSupport.isSide ? 0 : firstShelfSupport.width_world / 2);
+
+
+                            if ((rightSupport.x - rightSuppHalfWidthWorld) <= (leftSupport.x + leftSuppHalfWidthWorld)) {
+                                alert("चुने गए सपोर्ट्स के बीच शेल्फ के लिए कोई जगह नहीं है। सपोर्ट्स रीसेट।");
+                                firstShelfSupport = null; return;
+                            }
+
+                            objects.push({
+                                type: 'h_shelf', 
+                                y: shelfY_world,
+                                x1: leftSupport.x + leftSuppHalfWidthWorld, 
+                                x2: rightSupport.x - rightSuppHalfWidthWorld,
+                                lineWidth: Math.max(pixelsPerCm * 0.1, shelfLineWidthPx), color: '#555',
+                                moduleId: targetModule.id
+                            });
+                            saveStateToHistory(); redrawCanvas();
+                            alert("शेल्फ लग गई।");
+                            firstShelfSupport = null; 
+                            setMode('select'); 
+                            if (partitionOptionsPopup && partitionOptionsPopup.style.display === 'flex') {
+                                 partitionOptionsPopup.style.display = 'none';
+                                 if (togglePartitionOptionsBtn) togglePartitionOptionsBtn.classList.remove('active');
+                            }
+                        }
+                    } else { 
+                        alert("कोई मान्य वर्टिकल सपोर्ट लाइन नहीं मिली। कृपया पार्टिशन या मॉड्यूल की साइड पर क्लिक करें।" + (firstShelfSupport ? " पहला सपोर्ट रीसेट किया गया।" : ""));
+                        firstShelfSupport = null; 
+                    }
+                }
+                updateCursor(); 
+            }
+            
+            function handlePointerMove_Interaction(clientX, clientY) { 
+                const pos_world = screenToWorld(clientX, clientY); 
+                const dx_world = pos_world.x - currentMouseX_world;
+                const dy_world = pos_world.y - currentMouseY_world;
+
+                if (isDrawing && currentMode === 'line') {
+                    currentMouseX_world = pos_world.x;
+                    currentMouseY_world = pos_world.y;
+                    let tempEndX_world = currentMouseX_world;
+                    let tempEndY_world = currentMouseY_world;
+
+                    if (orthoModeActive) { 
+                        const deltaX = Math.abs(currentMouseX_world - startX_world);
+                        const deltaY = Math.abs(currentMouseY_world - startY_world);
+                        if (deltaX > deltaY) { tempEndY_world = startY_world; } else { tempEndX_world = startX_world; }
+                    }
+                    
+                    let snappedEnd = findSnapPoint(tempEndX_world, tempEndY_world, {x:startX_world, y:startY_world}); 
+                    if (snappedEnd) { tempEndX_world = snappedEnd.x; tempEndY_world = snappedEnd.y; showSnapIndicator(tempEndX_world, tempEndY_world); }
+                    else { hideSnapIndicator(); }
+
+                    redrawCanvas(); 
+
+                    ctx.save();
+                    ctx.setTransform(1, 0, 0, 1, 0, 0); 
+                    ctx.translate(offsetX, offsetY);
+                    ctx.scale(currentScale, currentScale);
+                    
+                    const currentLineDrawWidthPx = getEffectiveLineWidthPx();
+                    ctx.beginPath();
+                    ctx.moveTo(startX_world, startY_world);
+                    ctx.lineTo(tempEndX_world, tempEndY_world);
+                    ctx.lineWidth = currentLineDrawWidthPx / currentScale; 
+                    ctx.strokeStyle = '#777'; 
+                    ctx.setLineDash([5 / currentScale, 3 / currentScale]); 
+                    ctx.stroke();
+                    ctx.setLineDash([]); 
+                    displayLength(startX_world, startY_world, tempEndX_world, tempEndY_world, 'green', currentLineDrawWidthPx); 
+                    
+                    ctx.restore();
+
+
+                } else if (isMovingObject && movingObjectIndex !== -1) {
+                    const objToMove = objects[movingObjectIndex];
+                    const targetModule = objects.find(mod => mod.id === objToMove.moduleId && (mod.type === 'module_bounds' || mod.type === 'structure_bounds'));
+                    
+                    if (objToMove && targetModule) {
+                        const { pA, pB, pD } = targetModule.frontFaceProjected; 
+                        const objEffectiveLineWidthWorld = objToMove.lineWidth / 2; 
+
+                        if (objToMove.type === 'partition_v') {
+                            let newX_world = objToMove.x + dx_world; 
+                            const minX_world = pA.x + objEffectiveLineWidthWorld ; 
+                            const maxX_world = pB.x - objEffectiveLineWidthWorld;
+                            objToMove.x = Math.max(minX_world, Math.min(newX_world, maxX_world));
+                            redrawCanvas();
+                        } else if (objToMove.type === 'h_shelf') {
+                            let newY_world = objToMove.y + dy_world;
+                            const minY_world = pA.y + objEffectiveLineWidthWorld ;
+                            const maxY_world = pD.y - objEffectiveLineWidthWorld;
+                            objToMove.y = Math.max(minY_world, Math.min(newY_world, maxY_world));
+                            redrawCanvas();
+                        }
+                    }
+                }
+                currentMouseX_world = pos_world.x; 
+                currentMouseY_world = pos_world.y;
+            }
+
+            function handlePointerUp_Interaction(clientX, clientY) { 
+                if (isDrawing && currentMode === 'line') { 
+                    isDrawing = false;
+                    hideSnapIndicator();
+
+                    let finalEndX_world = currentMouseX_world; 
+                    let finalEndY_world = currentMouseY_world;
+
+                    if (orthoModeActive) {
+                        const dx = Math.abs(finalEndX_world - startX_world);
+                        const dy = Math.abs(finalEndY_world - startY_world);
+                        if (dx > dy) { finalEndY_world = startY_world; } else { finalEndX_world = startX_world; }
+                    }
+
+                    let snappedEnd = findSnapPoint(finalEndX_world, finalEndY_world, {x:startX_world, y:startY_world});
+                     if (snappedEnd) { finalEndX_world = snappedEnd.x; finalEndY_world = snappedEnd.y; }
+
+                    const lengthWorld = Math.hypot(finalEndX_world - startX_world, finalEndY_world - startY_world);
+
+                    if (lengthWorld * currentScale > 1) { 
+                        objects.push({
+                            type: 'line',
+                            x1: startX_world, y1: startY_world,
+                            x2: finalEndX_world, y2: finalEndY_world,
+                            lineWidth: getEffectiveLineWidthPx(),
+                            color: '#333' 
+                        });
+                        saveStateToHistory(); 
+                    }
+                } else if (isMovingObject) {
+                    isMovingObject = false;
+                    movingObjectIndex = -1;
+                    saveStateToHistory(); 
+                }
+                isDrawing = false; 
+                updateCursor();
+                redrawCanvas(); 
+            }
+
+            function handlePointerOut_Interaction(clientX, clientY) { 
+                if (isDrawing && currentMode === 'line') {
+                     handlePointerUp_Interaction(null, null); 
+                } else if (isMovingObject) {
+                    isMovingObject = false;
+                    movingObjectIndex = -1;
+                    updateCursor();
+                    saveStateToHistory();
+                    redrawCanvas();
+                }
+                hideSnapIndicator(); 
+            }
+
+            if (canvas) {
+                canvas.addEventListener('mousedown', (e) => {
+                    if (isPinching || (moduleCreatorPopup && moduleCreatorPopup.style.display === 'flex') || (doorOptionsPopup && doorOptionsPopup.style.display === 'flex') || (partitionOptionsPopup && partitionOptionsPopup.style.display === 'flex')  || (partsListPopup && partsListPopup.style.display === 'flex')  || (cuttingLayoutPopup && cuttingLayoutPopup.style.display === 'flex') ) return;
+                    if (e.altKey || e.button === 1) { 
+                        isPanning = true;
+                        lastPanX_screen = e.clientX;
+                        lastPanY_screen = e.clientY;
+                        e.preventDefault();
+                    } else { 
+                        handlePointerDown_Interaction(e.clientX, e.clientY);
+                    }
+                    updateCursor();
+                });
+
+                canvas.addEventListener('mousemove', (e) => {
+                    if (isPinching || (moduleCreatorPopup && moduleCreatorPopup.style.display === 'flex') || (doorOptionsPopup && doorOptionsPopup.style.display === 'flex') || (partitionOptionsPopup && partitionOptionsPopup.style.display === 'flex') || (partsListPopup && partsListPopup.style.display === 'flex') || (cuttingLayoutPopup && cuttingLayoutPopup.style.display === 'flex') ) return;
+                    if (isPanning) {
+                        const dx_screen = e.clientX - lastPanX_screen;
+                        const dy_screen = e.clientY - lastPanY_screen;
+                        offsetX += dx_screen;
+                        offsetY += dy_screen;
+                        lastPanX_screen = e.clientX;
+                        lastPanY_screen = e.clientY;
+                        redrawCanvas();
+                    } else {
+                        handlePointerMove_Interaction(e.clientX, e.clientY);
+                    }
+                });
+
+                canvas.addEventListener('mouseup', (e) => {
+                    if (isPinching) return;
+                    if (isPanning) {
+                        isPanning = false;
+                    } else {
+                         if (!((moduleCreatorPopup && moduleCreatorPopup.style.display === 'flex') ||
+                               (doorOptionsPopup && doorOptionsPopup.style.display === 'flex') || 
+                               (partitionOptionsPopup && partitionOptionsPopup.style.display === 'flex') ||
+                               (partsListPopup && partsListPopup.style.display === 'flex') ||
+                               (cuttingLayoutPopup && cuttingLayoutPopup.style.display === 'flex'))) {
+                            handlePointerUp_Interaction(e.clientX, e.clientY);
+                        }
+                    }
+                    updateCursor();
+                });
+                
+                canvas.addEventListener('mouseleave', (e) => { 
+                    if (isPinching) return;
+                    if (isPanning) {
+                        isPanning = false;
+                    } else {
+                        if (isDrawing || isMovingObject) {
+                            handlePointerOut_Interaction(null, null);
+                        }
+                    }
+                    updateCursor();
+                });
+
+
+                canvas.addEventListener('wheel', (e) => {
+                    if (isPinching || (moduleCreatorPopup && moduleCreatorPopup.style.display === 'flex') ||(doorOptionsPopup && doorOptionsPopup.style.display === 'flex') || (partitionOptionsPopup && partitionOptionsPopup.style.display === 'flex') || (partsListPopup && partsListPopup.style.display === 'flex') || (cuttingLayoutPopup && cuttingLayoutPopup.style.display === 'flex') ) return;
+                    e.preventDefault(); 
+                    const rect = canvas.getBoundingClientRect();
+                    const mouseX_screen = e.clientX - rect.left; 
+                    const mouseY_screen = e.clientY - rect.top;  
+
+                    const world_before_zoom = screenToWorld(e.clientX, e.clientY); 
+
+                    const delta = e.deltaY * ZOOM_SENSITIVITY_WHEEL;
+                    let newScale = currentScale * (1 - delta); 
+                    newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+
+                    offsetX = mouseX_screen - world_before_zoom.x * newScale;
+                    offsetY = mouseY_screen - world_before_zoom.y * newScale;
+                    currentScale = newScale;
+
+                    redrawCanvas();
+                });
+            } 
+            
+            function applyZoom(zoomFactor, pivotScreenX = canvas.width / 2, pivotScreenY = canvas.height / 2) {
+                const world_pivot_before = screenToWorld(canvas.getBoundingClientRect().left + pivotScreenX, 
+                                                         canvas.getBoundingClientRect().top + pivotScreenY);
+                
+                let newScale = currentScale * zoomFactor;
+                newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+
+                offsetX = pivotScreenX - world_pivot_before.x * newScale;
+                offsetY = pivotScreenY - world_pivot_before.y * newScale;
+                currentScale = newScale;
+                redrawCanvas();
+            }
+
+            if (zoomInBtn) zoomInBtn.addEventListener('click', () => applyZoom(1 + ZOOM_SENSITIVITY_BUTTON));
+            if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => applyZoom(1 - ZOOM_SENSITIVITY_BUTTON));
+            if (zoomResetBtn) zoomResetBtn.addEventListener('click', () => {
+                currentScale = 1.0;
+                offsetX = 0;
+                offsetY = 0;
+                redrawCanvas();
+            });
+            
+            function getObjectAtPosition(worldX, worldY, getModuleOnly = false) { 
+                for (let i = objects.length - 1; i >= 0; i--) { 
+                    const obj = objects[i];
+                    
+                    if (getModuleOnly && (obj.type === 'module_bounds' || obj.type === 'structure_bounds')) {
+                        if (obj.frontFaceProjected && 
+                            worldX >= obj.frontFaceProjected.pA.x && worldX <= obj.frontFaceProjected.pB.x &&
+                            worldY >= obj.frontFaceProjected.pA.y && worldY <= obj.frontFaceProjected.pD.y) {
+                            return obj; 
+                        }
+                        continue; 
+                    }
+                    if (getModuleOnly) continue; 
+
+                    const objLineWidthWorld = obj.lineWidth || (1.8 * pixelsPerCm) ; 
+                    const clickToleranceWorld = SNAP_DISTANCE_SCREEN / 2 / currentScale + objLineWidthWorld / 2 / currentScale;
+
+
+                    if (obj.type === 'line') {
+                        const distToSegment = pointToLineSegmentDistance(worldX, worldY, obj.x1, obj.y1, obj.x2, obj.y2);
+                        if (distToSegment < clickToleranceWorld) { 
+                            return i; 
+                        }
+                    } else if (obj.type === 'text') {
+                        const objFontSize = obj.fontSize || 16; 
+                        ctx.font = `${objFontSize}px Arial`; 
+                        const textWidthWorld = ctx.measureText(obj.text).width; 
+                        const textHeightWorld = objFontSize; 
+                        
+                        if (worldX >= obj.x && worldX <= obj.x + textWidthWorld && 
+                            worldY >= obj.y - textHeightWorld && worldY <= obj.y + textHeightWorld * 0.2) { 
+                            return i;
+                        }
+                    } else if (obj.type === 'partition_v') {
+                        if (worldX >= obj.x - clickToleranceWorld && worldX <= obj.x + clickToleranceWorld &&
+                            worldY >= obj.y1 && worldY <= obj.y2) {
+                            return i;
+                        }
+                    } else if (obj.type === 'h_shelf') {
+                        if (worldY >= obj.y - clickToleranceWorld && worldY <= obj.y + clickToleranceWorld &&
+                            worldX >= obj.x1 && worldX <= obj.x2) {
+                            return i;
+                        }
+                    } else if (obj.type === 'door') {
+                        if (worldX >= obj.x && worldX <= obj.x + obj.width &&
+                            worldY >= obj.y && worldY <= obj.y + obj.height) {
+                            return i;
+                        }
+                    }
+                }
+                return getModuleOnly ? null : -1; 
+            }
+            
+            function pointToLineSegmentDistance(px, py, x1, y1, x2, y2) { 
+                const l2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1); 
+                if (l2 === 0) return Math.hypot(px - x1, py - y1); 
+                
+                let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
+                t = Math.max(0, Math.min(1, t)); 
+                
+                const closestX = x1 + t * (x2 - x1); 
+                const closestY = y1 + t * (y2 - y1); 
+                
+                return Math.hypot(px - closestX, py - closestY); 
+            }
+
+            function displayLength(x1, y1, x2, y2, color, objLineWidthWorld) { 
+                const lengthWorld = Math.hypot(x2 - x1, y2 - y1); 
+                if (lengthWorld * currentScale < 10 && currentScale > 0.2) return;  
+
+                const finalLengthCm = (lengthWorld / pixelsPerCm).toFixed(1);
+
+                const midX = (x1 + x2) / 2; 
+                const midY = (y1 + y2) / 2; 
+
+                ctx.save(); 
+                ctx.translate(midX, midY); 
+                let angle = Math.atan2(y2 - y1, x2 - x1); 
+                if (angle < -Math.PI / 2 || angle > Math.PI / 2) { angle += Math.PI; } 
+                ctx.rotate(angle); 
+                ctx.fillStyle = color;
+                ctx.textAlign = 'center';
+                const displayFontSize = Math.max(6, 11 / Math.sqrt(currentScale)); 
+                ctx.font = `${displayFontSize}px Arial`; 
+                const yOffsetForText = -4 - ( (objLineWidthWorld / 2 ) ); // objLineWidthWorld वर्ल्ड पिक्सेल में है
+                ctx.fillText(`${finalLengthCm}cm`, 0, yOffsetForText / currentScale ); 
+                ctx.restore(); 
+            }
+
+            function redrawCanvas() {
+                ctx.save();
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                ctx.translate(offsetX, offsetY);
+                ctx.scale(currentScale, currentScale);
+                
+                objects.forEach((obj, index) => {
+                    let currentObjLineWidth_world = obj.lineWidth || getEffectiveLineWidthPx() ; 
+                    let currentColor = obj.color || '#333'; 
+                    let screenLineWidth = Math.max(0.5, currentObjLineWidth_world / currentScale); 
+
+                    if (index === selectedObjectIndex) { 
+                        currentColor = '#007bff'; 
+                        screenLineWidth = Math.max(0.7, (currentObjLineWidth_world + (0.2 * pixelsPerCm) ) / currentScale); 
+                    }
+
+                    if (obj.type === 'line' || (obj.isStructureLine && obj.type !=='module_bounds' && obj.type !== 'structure_bounds') ) { 
+                        ctx.beginPath();
+                        ctx.moveTo(obj.x1, obj.y1);
+                        ctx.lineTo(obj.x2, obj.y2);
+                        ctx.lineWidth = screenLineWidth;
+                        ctx.strokeStyle = currentColor; 
+                        ctx.stroke();
+                        if (obj.type === 'line' && selectedObjectIndex !== index) { 
+                             displayLength(obj.x1, obj.y1, obj.x2, obj.y2, '#444', currentObjLineWidth_world);
+                        } else if (obj.type === 'line' && selectedObjectIndex === index) {
+                             displayLength(obj.x1, obj.y1, obj.x2, obj.y2, currentColor, currentObjLineWidth_world);
+                        }
+                    } else if (obj.type === 'text') {
+                        const objFontSize = obj.fontSize || 16; 
+                        const displayFontSize = Math.max(6, objFontSize / Math.sqrt(currentScale)); 
+                        ctx.font = `${displayFontSize}px Arial`;
+                        ctx.fillStyle = currentColor;
+                        ctx.textAlign = 'left'; 
+                        ctx.textBaseline = 'alphabetic'; 
+                        ctx.fillText(obj.text, obj.x, obj.y);
+                    } else if (obj.type === 'partition_v') {
+                        ctx.beginPath();
+                        ctx.moveTo(obj.x, obj.y1);
+                        ctx.lineTo(obj.x, obj.y2);
+                        ctx.lineWidth = screenLineWidth;
+                        ctx.strokeStyle = currentColor;
+                        ctx.stroke();
+                        if (selectedObjectIndex !== index && currentScale > 0.15) {
+                            const heightWorld = Math.abs(obj.y2 - obj.y1);
+                            const heightCm = (heightWorld / pixelsPerCm).toFixed(1);
+                            ctx.save(); ctx.fillStyle = '#333';
+                            const fontSize = Math.max(5, 8 / Math.sqrt(currentScale));
+                            ctx.font = `${fontSize}px Arial`; ctx.textAlign = 'center';
+                            ctx.translate(obj.x + (10 / currentScale), obj.y1 + heightWorld / 2); 
+                            ctx.rotate(Math.PI / 2); ctx.fillText(`${heightCm}cm`, 0, 0);
+                            ctx.restore();
+                        }
+                    } else if (obj.type === 'h_shelf') {
+                        ctx.beginPath();
+                        ctx.moveTo(obj.x1, obj.y);
+                        ctx.lineTo(obj.x2, obj.y);
+                        ctx.lineWidth = screenLineWidth;
+                        ctx.strokeStyle = currentColor;
+                        ctx.stroke();
+                         if (selectedObjectIndex !== index && currentScale > 0.15) {
+                            const widthWorld = Math.abs(obj.x2 - obj.x1);
+                            const widthCm = (widthWorld / pixelsPerCm).toFixed(1);
+                            ctx.save(); ctx.fillStyle = '#333';
+                            const fontSize = Math.max(5, 8 / Math.sqrt(currentScale));
+                            ctx.font = `${fontSize}px Arial`; ctx.textAlign = 'center';
+                            ctx.fillText(`${widthCm}cm`, obj.x1 + widthWorld / 2, obj.y - (5 / currentScale)); 
+                            ctx.restore();
+                        }
+                    } else if (obj.type === 'door') {
+                        ctx.beginPath();
+                        ctx.rect(obj.x, obj.y, obj.width, obj.height); 
+                        ctx.lineWidth = screenLineWidth;
+                        ctx.strokeStyle = currentColor;
+                        ctx.stroke();
+
+                        const handleWidth_world = obj.width * 0.05; 
+                        const handleHeight_world = obj.height * 0.15;
+                        const handleMargin_world = obj.width * 0.08;
+                        let handleX_world;
+
+                        if (obj.handleSide === 'right') {
+                            handleX_world = obj.x + obj.width - handleMargin_world - handleWidth_world;
+                        } else {
+                            handleX_world = obj.x + handleMargin_world;
+                        }
+                        const handleY_world = obj.y + obj.height / 2 - handleHeight_world / 2;
+
+                        ctx.fillStyle = (index === selectedObjectIndex) ? '#0056b3' : '#777'; 
+                        ctx.fillRect(handleX_world, handleY_world, handleWidth_world, handleHeight_world);
+                         if (selectedObjectIndex !== index && currentScale > 0.15) {
+                            const widthCm = (obj.width / pixelsPerCm).toFixed(1);
+                            const heightCm = (obj.height / pixelsPerCm).toFixed(1);
+                            ctx.save(); ctx.fillStyle = '#333';
+                            const fontSize = Math.max(5, 8 / Math.sqrt(currentScale));
+                            ctx.font = `${fontSize}px Arial`; ctx.textAlign = 'center';
+                            ctx.fillText(`${widthCm}x${heightCm}cm`, obj.x + obj.width / 2, obj.y + obj.height + (12 / currentScale) ); 
+                            ctx.restore();
+                        }
+                    } else if (obj.type === 'module_bounds' || obj.type === 'structure_bounds') {
+                        // ड्रॉ नहीं होता
+                    }
+                });
+                displayStructureInternalSizes(); 
+                
+                ctx.restore(); 
+                updateButtonStates(); 
+            }
+            
+            function displayStructureInternalSizes() {
+                const modules = objects.filter(obj => obj.type === 'module_bounds' || obj.type === 'structure_bounds');
+                if (modules.length === 0) return;
+
+                modules.forEach(structure => { 
+                    if (!structure || !structure.frontFaceProjected) return;
+
+                    const { pA, pB, pD } = structure.frontFaceProjected; 
+                    const frontLeftX_world = pA.x;
+                    const frontRightX_world = pB.x;
+                    const frontTopY_world = pA.y;
+                    const frontBottomY_world = pD.y;
+                    
+                    const v_displayYPos_world = frontTopY_world + (-20 / currentScale);
+                    const verticalPartitions = objects.filter(obj => obj.type === 'partition_v' && obj.moduleId === structure.id).sort((a, b) => a.x - b.x); 
+                    
+                    let lastX_world = frontLeftX_world;
+                    if (verticalPartitions.length > 0) {
+                        displaySingleSize(lastX_world, verticalPartitions[0].x, v_displayYPos_world, structure, 'horizontal');
+                        lastX_world = verticalPartitions[0].x;
+                    }
+                    for (let i = 0; i < verticalPartitions.length - 1; i++) {
+                        displaySingleSize(verticalPartitions[i].x, verticalPartitions[i+1].x, v_displayYPos_world, structure, 'horizontal');
+                        lastX_world = verticalPartitions[i+1].x;
+                    }
+                    if (verticalPartitions.length > 0) {
+                        displaySingleSize(lastX_world, frontRightX_world, v_displayYPos_world, structure, 'horizontal');
+                    } else { 
+                        displaySingleSize(frontLeftX_world, frontRightX_world, v_displayYPos_world, structure, 'horizontal');
+                    }
+
+                    const h_displayXPos_world = frontLeftX_world + (-20 / currentScale);
+                    const horizontalShelves = objects.filter(obj => obj.type === 'h_shelf' && obj.moduleId === structure.id).sort((a, b) => a.y - b.y);
+                    let lastY_world = frontTopY_world;
+                    if (horizontalShelves.length > 0) {
+                        displaySingleSize(lastY_world, horizontalShelves[0].y, h_displayXPos_world, structure, 'vertical');
+                        lastY_world = horizontalShelves[0].y;
+                    }
+                    for (let i = 0; i < horizontalShelves.length - 1; i++) {
+                        displaySingleSize(horizontalShelves[i].y, horizontalShelves[i+1].y, h_displayXPos_world, structure, 'vertical');
+                        lastY_world = horizontalShelves[i+1].y;
+                    }
+                    if (horizontalShelves.length > 0) {
+                        displaySingleSize(lastY_world, frontBottomY_world, h_displayXPos_world, structure, 'vertical');
+                    } else { 
+                         displaySingleSize(frontTopY_world, frontBottomY_world, h_displayXPos_world, structure, 'vertical');
+                    }
+                });
+            }
+
+            function displaySingleSize(coord1_world, coord2_world, fixedCoord_world, structureData, orientation = 'horizontal') {
+                const distanceWorld = Math.abs(coord2_world - coord1_world);
+                if (distanceWorld * currentScale < 10 && currentScale > 0.15) return; 
+
+                const distanceCm = (distanceWorld / pixelsPerCm).toFixed(1);
+                
+                const midCoord_world = (coord1_world + coord2_world) / 2;
+
+                ctx.save();
+                ctx.fillStyle = 'purple';
+                const displayFontSize = Math.max(5, 10 / Math.sqrt(currentScale)); 
+                ctx.font = `${displayFontSize}px Arial`;
+                ctx.textAlign = 'center';
+                
+                let textX_world, textY_world, lineX1_w, lineY1_w, lineX2_w, lineY2_w;
+                let arrow1_p1_w, arrow1_p2_w, arrow2_p1_w, arrow2_p2_w;
+                const arrowSizeWorld = Math.max(1.5, 3 / currentScale); 
+                const lineOffsetWorld = Math.max(1.5, 3 / currentScale);
+
+                if (orientation === 'horizontal') {
+                    textX_world = midCoord_world;
+                    textY_world = fixedCoord_world; 
+                    ctx.textBaseline = 'bottom';
+                    lineX1_w = coord1_world; lineY1_w = fixedCoord_world + lineOffsetWorld;
+                    lineX2_w = coord2_world; lineY2_w = fixedCoord_world + lineOffsetWorld;
+                    arrow1_p1_w = {x: lineX1_w + arrowSizeWorld, y: lineY1_w - arrowSizeWorld/2};
+                    arrow1_p2_w = {x: lineX1_w + arrowSizeWorld, y: lineY1_w + arrowSizeWorld/2};
+                    arrow2_p1_w = {x: lineX2_w - arrowSizeWorld, y: lineY2_w - arrowSizeWorld/2};
+                    arrow2_p2_w = {x: lineX2_w - arrowSizeWorld, y: lineY2_w + arrowSizeWorld/2};
+                    ctx.fillText(`${distanceCm}cm`, textX_world, textY_world);
+                } else { 
+                    textX_world = fixedCoord_world; 
+                    textY_world = midCoord_world;
+                    ctx.textBaseline = 'middle';
+                    
+                    const vTextX = fixedCoord_world - ( (displayFontSize * 0.6 + lineOffsetWorld + arrowSizeWorld) ); 
+                    const vTextY = midCoord_world;
+                    ctx.textAlign = 'right'; 
+                    ctx.fillText(`${distanceCm}cm`, vTextX, vTextY);
+
+                    lineX1_w = fixedCoord_world + lineOffsetWorld; lineY1_w = coord1_world;
+                    lineX2_w = fixedCoord_world + lineOffsetWorld; lineY2_w = coord2_world;
+                    arrow1_p1_w = {x: lineX1_w - arrowSizeWorld/2, y: lineY1_w + arrowSizeWorld};
+                    arrow1_p2_w = {x: lineX1_w + arrowSizeWorld/2, y: lineY1_w + arrowSizeWorld};
+                    arrow2_p1_w = {x: lineX2_w - arrowSizeWorld/2, y: lineY2_w - arrowSizeWorld};
+                    arrow2_p2_w = {x: lineX2_w + arrowSizeWorld/2, y: lineY2_w - arrowSizeWorld};
+                }
+                
+                ctx.beginPath();
+                ctx.moveTo(lineX1_w, lineY1_w);
+                ctx.lineTo(lineX2_w, lineY2_w);
+                ctx.strokeStyle = 'purple';
+                ctx.lineWidth = Math.max(0.2, 0.5 / currentScale); 
+                ctx.stroke();
+                
+                ctx.beginPath(); 
+                ctx.moveTo(lineX1_w, lineY1_w); ctx.lineTo(arrow1_p1_w.x, arrow1_p1_w.y); ctx.lineTo(arrow1_p2_w.x, arrow1_p2_w.y); 
+                ctx.closePath(); ctx.fill();
+                
+                ctx.beginPath(); 
+                ctx.moveTo(lineX2_w, lineY2_w); ctx.lineTo(arrow2_p1_w.x, arrow2_p1_w.y); ctx.lineTo(arrow2_p2_w.x, arrow2_p2_w.y); 
+                ctx.closePath(); ctx.fill();
+                
+                ctx.restore();
+            }
+
+            if(orthoModeBtn) orthoModeBtn.addEventListener('click', () => {
+                orthoModeActive = !orthoModeActive; 
+                updateButtonStates();
+            });
+            if(scaleInput) scaleInput.addEventListener('change', () => {
+                pixelsPerCm = parseInt(scaleInput.value, 10) || 1; 
+                if (pixelsPerCm < 1) pixelsPerCm = 1; 
+                redrawCanvas(); 
+            });
+            if(lineWidthInputCm) lineWidthInputCm.addEventListener('change', () => {
+                if(selectedObjectIndex !== -1 && objects[selectedObjectIndex]){
+                     const newWidthCm = parseFloat(lineWidthInputCm.value);
+                     if(!isNaN(newWidthCm) && newWidthCm > 0) {
+                         objects[selectedObjectIndex].lineWidth = newWidthCm * pixelsPerCm; 
+                         saveStateToHistory();
+                         redrawCanvas();
+                     }
+                }
+            });
+            if(fontSizeInput) fontSizeInput.addEventListener('change', () => {
+                 if(selectedObjectIndex !== -1 && objects[selectedObjectIndex]?.type === 'text'){
+                    objects[selectedObjectIndex].fontSize = parseInt(fontSizeInput.value, 10); 
+                    saveStateToHistory();
+                    redrawCanvas();
+                }
+            });
+            if(textInput) {
+                textInput.addEventListener('input', () => { 
+                     if(selectedObjectIndex !== -1 && objects[selectedObjectIndex]?.type === 'text'){
+                        objects[selectedObjectIndex].text = textInput.value;
+                        redrawCanvas(); 
+                    }
+                });
+                 textInput.addEventListener('change', () => { 
+                     if(selectedObjectIndex !== -1 && objects[selectedObjectIndex]?.type === 'text'){
+                        saveStateToHistory(); 
+                    }
+                });
+            }
+
+            if(applyDoorsBtn) applyDoorsBtn.addEventListener('click', () => {
+                const modules = objects.filter(obj => obj.type === 'module_bounds' || obj.type === 'structure_bounds');
+                if (modules.length === 0) { alert("पहले ढांचा बनाएं।"); return; }
+
+                const doorCount = parseInt(doorCountInput.value);
+                const sideMarginCm = parseFloat(sideMarginInput.value);
+                const interDoorMarginCm = parseFloat(interDoorMarginInput.value);
+
+                if (isNaN(doorCount) || doorCount < 1 || isNaN(sideMarginCm) || sideMarginCm < 0 || isNaN(interDoorMarginCm) || interDoorMarginCm < 0) {
+                    alert("कृपया दरवाजों के लिए मान्य मान दर्ज करें।"); return;
+                }
+
+                const targetValue = doorTargetSelect.value;
+                let targetSpace; 
+
+                if (targetValue === "full_structure") {
+                    if (modules.length === 0) { alert("दरवाजे लगाने के लिए कोई ढांचा नहीं मिला।"); return; }
+                    const mainStructure = modules[0]; 
+                    targetSpace = {
+                        x_world: mainStructure.frontFaceProjected.pA.x,
+                        y_world: mainStructure.frontFaceProjected.pA.y,
+                        width_world: mainStructure.frontFaceProjected.widthPx,
+                        height_world: mainStructure.frontFaceProjected.heightPx,
+                        scaleToFit: mainStructure.scaleToFit,
+                        id: mainStructure.id
+                    };
+                } else if (targetValue === "all_compartments") {
+                    const compartments = getCompartments();
+                    if (compartments.length === 0) { alert("दरवाजे लगाने के लिए कोई कम्पार्टमेंट नहीं मिला।"); return; }
+                    
+                    compartments.forEach(comp => {
+                        const parentModule = objects.find(m => m.id === comp.moduleId);
+                        if(!parentModule) return; // अगले कम्पार्टमेंट पर जाएं
+
+                        const compTargetSpace = {
+                            x_world: comp.x_world, y_world: comp.y_world,
+                            width_world: comp.width_world, height_world: comp.height_world,
+                            scaleToFit: parentModule.scaleToFit, id: comp.moduleId
+                        };
+                        applyDoorsToSpace(compTargetSpace, doorCount, sideMarginCm, interDoorMarginCm);
+                    });
+                    saveStateToHistory(); redrawCanvas();
+                    if (doorOptionsPopup) doorOptionsPopup.style.display = 'none'; 
+                    if (toggleDoorOptionsBtn) toggleDoorOptionsBtn.classList.remove('active');
+                    setMode('select'); 
+                    return; // फंक्शन समाप्त
+
+                } else if (targetValue.startsWith("comp_")) {
+                    const compIndex = parseInt(targetValue.split('_mod_')[0].split('_')[1]); 
+                    const modId = targetValue.split('_mod_')[1];
+                    const compartments = getCompartments().filter(c => c.moduleId === modId);
+                    
+                    if (compartments && compartments[compIndex]) {
+                        const comp = compartments[compIndex];
+                        const parentModule = objects.find(m => m.id === comp.moduleId);
+                        if(!parentModule) { alert("कम्पार्टमेंट का पैरेंट मॉड्यूल नहीं मिला।"); return; }
+                        targetSpace = {
+                            x_world: comp.x_world, y_world: comp.y_world,
+                            width_world: comp.width_world, height_world: comp.height_world,
+                            scaleToFit: parentModule.scaleToFit, id: comp.moduleId 
+                        };
+                    } else { alert("अमान्य कम्पार्टमेंट चुना गया।"); return; }
+                } else if (targetValue.startsWith("module_")) {
+                     const modId = targetValue.split('_')[1];
+                     const selectedModule = modules.find(m => m.id === modId);
+                     if (selectedModule) {
+                        targetSpace = {
+                            x_world: selectedModule.frontFaceProjected.pA.x,
+                            y_world: selectedModule.frontFaceProjected.pA.y,
+                            width_world: selectedModule.frontFaceProjected.widthPx,
+                            height_world: selectedModule.frontFaceProjected.heightPx,
+                            scaleToFit: selectedModule.scaleToFit,
+                            id: selectedModule.id
+                        };
+                     } else { alert("अमान्य मॉड्यूल चुना गया।"); return; }
+                } else {
+                    alert("दरवाजे लगाने के लिए कोई वैध लक्ष्य नहीं मिला।"); return;
+                }
+                
+                applyDoorsToSpace(targetSpace, doorCount, sideMarginCm, interDoorMarginCm);
+
+                saveStateToHistory();
+                redrawCanvas();
+                if (doorOptionsPopup) doorOptionsPopup.style.display = 'none'; 
+                if (toggleDoorOptionsBtn) toggleDoorOptionsBtn.classList.remove('active');
+                setMode('select'); 
+            });
+            
+            function applyDoorsToSpace(targetSpace, doorCount, sideMarginCm, interDoorMarginCm) {
+                // इस स्पेस के लिए मौजूदा दरवाजे हटाएं
+                objects = objects.filter(obj => !(
+                    obj.type === 'door' && 
+                    obj.moduleId === targetSpace.id &&
+                    obj.x >= targetSpace.x_world && 
+                    obj.x + obj.width <= targetSpace.x_world + targetSpace.width_world &&
+                    obj.y === targetSpace.y_world && 
+                    obj.height === targetSpace.height_world
+                ));
+
+                const effectivePixelsPerCmForTarget = pixelsPerCm / targetSpace.scaleToFit; 
+                const sideMargin_world = sideMarginCm * effectivePixelsPerCmForTarget;
+                const interDoorMargin_world = interDoorMarginCm * effectivePixelsPerCmForTarget;
+
+                let availableWidth_world = targetSpace.width_world - (2 * sideMargin_world);
+                if (doorCount > 1) {
+                    availableWidth_world -= (doorCount - 1) * interDoorMargin_world;
+                }
+
+                if (availableWidth_world < pixelsPerCm * 5 * doorCount / targetSpace.scaleToFit ) { 
+                    console.warn(`मॉड्यूल/कम्पार्टमेंट ID ${targetSpace.id} में दरवाजों के लिए चौड़ाई कम है।`);
+                    return; // इस स्पेस के लिए दरवाजे न लगाएं
+                }
+
+                const doorWidth_world = availableWidth_world / doorCount;
+                const doorHeight_world = targetSpace.height_world; 
+                const doorLineWidthPx = getEffectiveLineWidthPx() / 1.2;
+
+                let currentX_world = targetSpace.x_world + sideMargin_world;
+                for (let i = 0; i < doorCount; i++) {
+                    objects.push({
+                        type: 'door',
+                        x: currentX_world, y: targetSpace.y_world,
+                        width: doorWidth_world, height: doorHeight_world, 
+                        lineWidth: Math.max(pixelsPerCm * 0.1, doorLineWidthPx), 
+                        color: '#6B4226', 
+                        handleSide: (doorCount === 1) ? 'right' : ( (i < Math.ceil(doorCount / 2)) ? 'right' : 'left' ),
+                        moduleId: targetSpace.id
+                    });
+                    currentX_world += doorWidth_world + interDoorMargin_world;
+                }
+            }
+
+
+            if(removeDoorsBtn) removeDoorsBtn.addEventListener('click', () => {
+                const doorsExist = objects.some(obj => obj.type === 'door');
+                if (!doorsExist) {
+                    alert("हटाने के लिए कोई दरवाजा मौजूद नहीं है।");
+                    return;
+                }
+                if (confirm("क्या आप वाकई सभी दरवाजों को हटाना चाहते हैं?")) {
+                    objects = objects.filter(obj => obj.type !== 'door');
+                    selectedObjectIndex = -1; 
+                    saveStateToHistory();
+                    redrawCanvas();
+                }
+            });
+
+            if(applyPartitionShelfBtn) applyPartitionShelfBtn.addEventListener('click', () => {
+                const type = partitionTypeSelect.value;
+                const targetModuleId = partitionTargetSelect.value;
+                const targetModule = objects.find(m => m.id === targetModuleId && (m.type === 'module_bounds' || m.type === 'structure_bounds'));
+
+                 if (!targetModule) { alert("कृपया पहले एक वैध मॉड्यूल चुनें या ढांचा बनाएं।"); return; }
+
+                if (type.includes('_click') || type === 'shelf_between_supports') { 
+                    if (partitionOptionsPopup) partitionOptionsPopup.style.display = 'none';
+                    if (togglePartitionOptionsBtn) togglePartitionOptionsBtn.classList.remove('active');
+                    if (type === 'v_partition_click') setMode('v_partition_click');
+                    else if (type === 'h_shelf_click') setMode('h_shelf_click');
+                    else if (type === 'shelf_between_supports') {
+                        setMode('shelf_between_supports');
+                        isPlacingShelfBetweenSupports = true;
+                        firstShelfSupport = null;
+                        alert("शेल्फ लगाने के लिए पहली वर्टिकल सपोर्ट लाइन पर क्लिक करें।");
+                    }
+                } else if (type.includes('_sized')) {
+                    addSizedPartitionOrShelf(targetModule);
+                } else if (type.includes('_equal')) {
+                    addEqualPartitionsOrShelves(targetModule);
+                }
+            });
+
+            function addSizedPartitionOrShelf(targetModule) { 
+                const offsetCmText = partitionOffsetInput.value.trim();
+                if (!offsetCmText) { alert("दूरी दर्ज करें।"); return; }
+                const offsetCm = parseFloat(offsetCmText);
+                const side = partitionSideSelect.value;
+
+                if (isNaN(offsetCm) || offsetCm < 0) { alert("मान्य ऑफसेट दर्ज करें।"); return; }
+
+                const { pA, pB, pD } = targetModule.frontFaceProjected; 
+                const effectivePixelsPerCm = pixelsPerCm / targetModule.scaleToFit;
+                const offsetWorld = offsetCm * effectivePixelsPerCm;
+                const partLineWidthPx = getEffectiveLineWidthPx() / 1.5; 
+                const partColor = '#555';
+
+                let newObject = null;
+                if (side === 'left') { 
+                    const partX = pA.x + offsetWorld;
+                    if (partX < pB.x - (partLineWidthPx / 2 )) { 
+                        newObject = { type: 'partition_v', x: partX, y1: pA.y, y2: pD.y, lineWidth: Math.max(pixelsPerCm*0.1,partLineWidthPx), color: partColor, moduleId: targetModule.id };
+                    } else { alert("ऑफसेट बहुत अधिक है।"); return; }
+                } else if (side === 'right') { 
+                    const partX = pB.x - offsetWorld;
+                    if (partX > pA.x + (partLineWidthPx / 2 )) {
+                        newObject = { type: 'partition_v', x: partX, y1: pA.y, y2: pD.y, lineWidth: Math.max(pixelsPerCm*0.1,partLineWidthPx), color: partColor, moduleId: targetModule.id };
+                    } else { alert("ऑफसेट बहुत अधिक है।"); return; }
+                } else if (side === 'top') { 
+                    const partY = pA.y + offsetWorld;
+                    if (partY < pD.y - (partLineWidthPx / 2 )) {
+                        newObject = { type: 'h_shelf', y: partY, x1: pA.x, x2: pB.x, lineWidth: Math.max(pixelsPerCm*0.1,partLineWidthPx), color: partColor, moduleId: targetModule.id };
+                    } else { alert("ऑफसेट बहुत अधिक है।"); return; }
+                } else if (side === 'bottom') { 
+                    const partY = pD.y - offsetWorld;
+                     if (partY > pA.y + (partLineWidthPx / 2 )) {
+                        newObject = { type: 'h_shelf', y: partY, x1: pA.x, x2: pB.x, lineWidth: Math.max(pixelsPerCm*0.1,partLineWidthPx), color: partColor, moduleId: targetModule.id };
+                    } else { alert("ऑफसेट बहुत अधिक है।"); return; }
+                }
+                if (newObject) objects.push(newObject);
+                saveStateToHistory(); redrawCanvas();
+                if (partitionOptionsPopup) partitionOptionsPopup.style.display = 'none';
+                if (togglePartitionOptionsBtn) togglePartitionOptionsBtn.classList.remove('active');
+                setMode('select');
+            }
+
+            function addEqualPartitionsOrShelves(targetModule) { 
+                const numParts = parseInt(numEqualPartsInput.value); 
+                if (isNaN(numParts) || numParts < 2) { alert("कम से कम 2 हिस्से चुनें।"); return; }
+                const numPartitionsOrShelves = numParts - 1;
+
+                const type = partitionTypeSelect.value; 
+                const { pA, pB, pD } = targetModule.frontFaceProjected;
+                const partLineWidthPx = getEffectiveLineWidthPx() / 1.5; 
+                const partColor = '#555';
+
+                if (type === 'v_partition_equal') {
+                    const totalWidthWorld = pB.x - pA.x;
+                    const availableWidthForSpaces = totalWidthWorld - (numPartitionsOrShelves * partLineWidthPx);
+                    if (availableWidthForSpaces <= pixelsPerCm * 5 * numParts / targetModule.scaleToFit) { alert("पार्टिशन के लिए पर्याप्त जगह नहीं है।"); return; } 
+                    const spaceWidthWorld = availableWidthForSpaces / numParts;
+                    
+                    let currentX_world = pA.x;
+                    for (let i = 0; i < numPartitionsOrShelves; i++) {
+                        currentX_world += spaceWidthWorld;
+                        objects.push({ type: 'partition_v', x: currentX_world, y1: pA.y, y2: pD.y, lineWidth: Math.max(pixelsPerCm*0.1,partLineWidthPx), color: partColor, moduleId: targetModule.id });
+                        currentX_world += partLineWidthPx;
+                    }
+                } else if (type === 'h_shelf_equal') {
+                    const totalHeightWorld = pD.y - pA.y;
+                    const availableHeightForSpaces = totalHeightWorld - (numPartitionsOrShelves * partLineWidthPx);
+                    if (availableHeightForSpaces <= pixelsPerCm * 5 * numParts / targetModule.scaleToFit) { alert("शेल्फ के लिए पर्याप्त जगह नहीं है।"); return; }
+                    const spaceHeightWorld = availableHeightForSpaces / numParts;
+
+                    let currentY_world = pA.y;
+                    for (let i = 0; i < numPartitionsOrShelves; i++) {
+                        currentY_world += spaceHeightWorld;
+                        objects.push({ type: 'h_shelf', y: currentY_world, x1: pA.x, x2: pB.x, lineWidth: Math.max(pixelsPerCm*0.1,partLineWidthPx), color: partColor, moduleId: targetModule.id });
+                        currentY_world += partLineWidthPx;
+                    }
+                }
+                saveStateToHistory(); redrawCanvas();
+                if (partitionOptionsPopup) partitionOptionsPopup.style.display = 'none';
+                if (togglePartitionOptionsBtn) togglePartitionOptionsBtn.classList.remove('active');
+                setMode('select');
+            }
+            
+            function createMultiModules(moduleDefinitions) { 
+                if (!moduleDefinitions || moduleDefinitions.length === 0) return;
+
+                objects = objects.filter(obj => obj.type === 'text'); 
+                selectedObjectIndex = -1; 
+
+                const angle = Math.PI / 6; 
+                const depthFactor = 0.5; 
+                let totalLayoutWidth_world = 0; 
+                let maxLayoutHeight_world = 0;
+                const moduleLayoutInfos = [];
+                const mainBoardThicknessCm = parseFloat(lineWidthInputCm.value);
+                const mainBoardThicknessWorld = mainBoardThicknessCm * pixelsPerCm; 
+
+                moduleDefinitions.forEach((modData, index) => {
+                    const initialWidthPx_world = modData.widthCm * pixelsPerCm;
+                    const initialHeightPx_world = modData.heightCm * pixelsPerCm;
+                    const initialDepthPx_world = modData.depthCm * pixelsPerCm;
+                    
+                    const initial_dx_proj_world = initialDepthPx_world * Math.cos(angle) * depthFactor;
+                    const initial_dy_proj_world = initialDepthPx_world * Math.sin(angle) * depthFactor;
+
+                    const projectedWidth = initialWidthPx_world + initial_dx_proj_world;
+                    totalLayoutWidth_world += projectedWidth;
+                    if (index > 0) { 
+                        totalLayoutWidth_world += mainBoardThicknessWorld; 
+                    }
+                    maxLayoutHeight_world = Math.max(maxLayoutHeight_world, initialHeightPx_world + initial_dy_proj_world);
+                    
+                    moduleLayoutInfos.push({ 
+                        initialWidthPx_world, initialHeightPx_world, initialDepthPx_world,
+                        initial_dx_proj_world, initial_dy_proj_world,
+                        dimensionsCm: {depth: modData.depthCm, width: modData.widthCm, height: modData.heightCm},
+                        name: modData.name || `मॉड्यूल ${index + 1}`
+                    });
+                });
+
+                const canvasPadding_screen = 40; 
+                const availableCanvasWidth_world_no_zoom = (canvas.width - 2 * canvasPadding_screen); 
+                const availableCanvasHeight_world_no_zoom = (canvas.height - 2 * canvasPadding_screen);
+
+                let overallScaleToFit = 1.0; 
+                if (totalLayoutWidth_world > availableCanvasWidth_world_no_zoom && availableCanvasWidth_world_no_zoom > 0) {
+                    overallScaleToFit = Math.min(overallScaleToFit, availableCanvasWidth_world_no_zoom / totalLayoutWidth_world);
+                }
+                if (maxLayoutHeight_world > availableCanvasHeight_world_no_zoom && availableCanvasHeight_world_no_zoom > 0) {
+                    overallScaleToFit = Math.min(overallScaleToFit, availableCanvasHeight_world_no_zoom / maxLayoutHeight_world);
+                }
+
+                let currentStartX_s_no_zoom = (canvas.width - (totalLayoutWidth_world * overallScaleToFit)) / 2; 
+
+                moduleLayoutInfos.forEach((layoutInfo, index) => {
+                    const widthPx_s = layoutInfo.initialWidthPx_world * overallScaleToFit;
+                    const heightPx_s = layoutInfo.initialHeightPx_world * overallScaleToFit;
+                    
+                    const dx_proj_s = layoutInfo.initial_dx_proj_world * overallScaleToFit;
+                    const dy_proj_s = layoutInfo.initial_dy_proj_world * overallScaleToFit;
+
+                    const moduleTopOffset_s = (maxLayoutHeight_world * overallScaleToFit) - (heightPx_s + dy_proj_s);
+                    const startDrawY_for_A_s_no_zoom = canvasPadding_screen + moduleTopOffset_s + dy_proj_s;
+
+                    const startPos_world = screenToWorld(currentStartX_s_no_zoom + canvas.getBoundingClientRect().left, 
+                                                         startDrawY_for_A_s_no_zoom + canvas.getBoundingClientRect().top);
+
+                    const moduleId = Date.now() + "_mod" + index;
+                    const moduleBounds = { 
+                        type: 'module_bounds', id: moduleId, name: layoutInfo.name,
+                        frontFaceProjected: { 
+                            pA: { x: startPos_world.x, y: startPos_world.y },
+                            pB: { x: startPos_world.x + (widthPx_s / currentScale) , y: startPos_world.y }, 
+                            pC: { x: startPos_world.x + (widthPx_s / currentScale), y: startPos_world.y + (heightPx_s / currentScale) },
+                            pD: { x: startPos_world.x, y: startPos_world.y + (heightPx_s / currentScale) },
+                            widthPx: widthPx_s / currentScale, 
+                            heightPx: heightPx_s / currentScale
+                        }, 
+                        dimensionsCm: layoutInfo.dimensionsCm,
+                        scaleToFit: overallScaleToFit, 
+                        projection: { angle: angle, depthFactor: depthFactor, 
+                                      dx: dx_proj_s / currentScale, dy: dy_proj_s / currentScale } 
+                    };
+                    objects.push(moduleBounds);
+                    createModuleVisuals(moduleBounds);
+
+                    currentStartX_s_no_zoom += widthPx_s + (mainBoardThicknessWorld * overallScaleToFit);
+                });
+
+                saveStateToHistory();
+                redrawCanvas();
+                if (moduleCreatorPopup) moduleCreatorPopup.style.display = 'none';
+                setMode('select');
+            }
+
+            if (addModuleInputBtn) addModuleInputBtn.addEventListener('click', addModuleInputEntry);
+            if (createMultiStructureBtn) createMultiStructureBtn.addEventListener('click', () => {
+                 const moduleDefinitions = [];
+                 const moduleEntries = moduleInputsContainer.querySelectorAll('.module-entry');
+                 let allValid = true;
+                 moduleEntries.forEach((entry, index) => {
+                     const dStr = entry.querySelector(`.depth-input`).value.trim();
+                     const wStr = entry.querySelector(`.width-input`).value.trim();
+                     const hStr = entry.querySelector(`.height-input`).value.trim();
+                     if (dStr && wStr && hStr) {
+                         const d = parseFloat(dStr);
+                         const w = parseFloat(wStr);
+                         const h = parseFloat(hStr);
+                         if (!isNaN(d) && !isNaN(w) && !isNaN(h) && d > 0 && w > 0 && h > 0) {
+                             moduleDefinitions.push({ depthCm: d, widthCm: w, heightCm: h, name: `मॉड्यूल ${index + 1}` });
+                         } else {
+                             alert(`मॉड्यूल ${index + 1} के लिए अमान्य डाइमेंशन।`);
+                             allValid = false;
+                         }
+                     } else if (index === 0 && (!dStr || !wStr || !hStr)) { 
+                        alert("पहले मॉड्यूल के लिए सभी डाइमेंशन अनिवार्य हैं।");
+                        allValid = false;
+                     } else if (dStr || wStr || hStr) { 
+                        if (!dStr || !wStr || !hStr) {
+                            alert(`मॉड्यूल ${index + 1} के लिए सभी डाइमेंशन अनिवार्य हैं यदि कोई भी भरा है।`);
+                            allValid = false;
+                        }
+                     }
+                 });
+                 if (allValid && moduleDefinitions.length > 0) {
+                     createMultiModules(moduleDefinitions);
+                 } else if (allValid && moduleDefinitions.length === 0 && moduleEntries.length > 0 && 
+                            !(moduleEntries[0].querySelector(`.depth-input`).value.trim() === '' &&
+                              moduleEntries[0].querySelector(`.width-input`).value.trim() === '' &&
+                              moduleEntries[0].querySelector(`.height-input`).value.trim() === '') ) {
+                     alert("कृपया कम से कम एक मॉड्यूल के लिए डाइमेंशन दर्ज करें।")
+                 }
+            });
+
+            function addModuleInputEntry() {
+                moduleCounter++;
+                const entryDiv = document.createElement('div');
+                entryDiv.classList.add('module-entry');
+                entryDiv.dataset.moduleId = moduleCounter; 
+                entryDiv.innerHTML = `
+                    <h4>मॉड्यूल ${moduleCounter} (cm)</h4>
+                    <label>गहराई (D):</label> <input type="number" class="depth-input" value="${moduleCounter === 1 ? 60 : ''}">
+                    <label>चौड़ाई (W):</label> <input type="number" class="width-input" value="${moduleCounter === 1 ? 80 : ''}">
+                    <label>ऊंचाई (H):</label> <input type="number" class="height-input" value="${moduleCounter === 1 ? 180 : ''}">
+                    ${moduleCounter > 1 ? '<button class="remove-module-btn" style="font-size:0.7em; padding:1px 4px; background-color: #f44336;"> हटाएं</button>' : ''}
+                `;
+                if (moduleInputsContainer) moduleInputsContainer.appendChild(entryDiv);
+                
+                const removeBtn = entryDiv.querySelector('.remove-module-btn');
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', () => {
+                        entryDiv.remove();
+                    });
+                }
+            }
+
+
+            function createModuleVisuals(moduleData) {
+                const { pA, pB, pC, pD } = moduleData.frontFaceProjected;
+                const { dx, dy } = moduleData.projection; 
+                const lineWidth = getEffectiveLineWidthPx(); 
+                const color = '#333';
+                const isStructureLine = true; 
+
+                const pE = { x: pA.x + dx, y: pA.y - dy };
+                const pF = { x: pB.x + dx, y: pB.y - dy };
+                const pG = { x: pC.x + dx, y: pC.y - dy };
+
+                const moduleLines = [
+                    { type: 'line', x1: pA.x, y1: pA.y, x2: pB.x, y2: pB.y, lineWidth, color, isStructureLine, moduleId: moduleData.id },
+                    { type: 'line', x1: pB.x, y1: pB.y, x2: pC.x, y2: pC.y, lineWidth, color, isStructureLine, moduleId: moduleData.id },
+                    { type: 'line', x1: pC.x, y1: pC.y, x2: pD.x, y2: pD.y, lineWidth, color, isStructureLine, moduleId: moduleData.id },
+                    { type: 'line', x1: pD.x, y1: pD.y, x2: pA.x, y2: pA.y, lineWidth, color, isStructureLine, moduleId: moduleData.id },
+                    { type: 'line', x1: pE.x, y1: pE.y, x2: pF.x, y2: pF.y, lineWidth, color, isStructureLine, moduleId: moduleData.id },
+                    { type: 'line', x1: pF.x, y1: pF.y, x2: pG.x, y2: pG.y, lineWidth, color, isStructureLine, moduleId: moduleData.id },
+                    { type: 'line', x1: pA.x, y1: pA.y, x2: pE.x, y2: pE.y, lineWidth, color, isStructureLine, moduleId: moduleData.id },
+                    { type: 'line', x1: pB.x, y1: pB.y, x2: pF.x, y2: pF.y, lineWidth, color, isStructureLine, moduleId: moduleData.id },
+                    { type: 'line', x1: pC.x, y1: pC.y, x2: pG.x, y2: pG.y, lineWidth, color, isStructureLine, moduleId: moduleData.id },
+                ];
+                objects.push(...moduleLines);
+            }
+
+            function getCompartments() { 
+                const allCompartments = [];
+                const modules = objects.filter(obj => obj.type === 'module_bounds' || obj.type === 'structure_bounds');
+                
+                modules.forEach(structure => {
+                    const verticalPartitions = objects.filter(o => o.type === 'partition_v' && o.moduleId === structure.id).sort((a,b)=>a.x - b.x);
+                    
+                    let currentX_world_start_of_compartment = structure.frontFaceProjected.pA.x;
+                    const topY_world = structure.frontFaceProjected.pA.y;
+                    const height_world = structure.frontFaceProjected.heightPx; 
+                    
+                    for(let i=0; i <= verticalPartitions.length; i++) {
+                        let nextX_world_end_of_compartment;
+                        let currentPartEffectiveHalfWidth = 0; 
+                        if (i < verticalPartitions.length) {
+                            currentPartEffectiveHalfWidth = (verticalPartitions[i].lineWidth / structure.scaleToFit) / 2;
+                            nextX_world_end_of_compartment = verticalPartitions[i].x - currentPartEffectiveHalfWidth; 
+                        } else {
+                            nextX_world_end_of_compartment = structure.frontFaceProjected.pB.x; 
+                        }
+                        
+                        const compartmentWidthWorld = nextX_world_end_of_compartment - currentX_world_start_of_compartment;
+
+                        if (compartmentWidthWorld > (pixelsPerCm * 0.1 / structure.scaleToFit) ) { 
+                            allCompartments.push({
+                                x_world: currentX_world_start_of_compartment,
+                                y_world: topY_world,
+                                width_world: compartmentWidthWorld,
+                                height_world: height_world,
+                                name: `${structure.name || 'मॉड्यूल'}: कंप. ${i+1}`,
+                                moduleId: structure.id 
+                            });
+                        }
+                        if (i < verticalPartitions.length) {
+                            currentX_world_start_of_compartment = verticalPartitions[i].x + currentPartEffectiveHalfWidth;
+                        }
+                    }
+                });
+                return allCompartments;
+            }
+
+            function populateDoorTargetSelect() { 
+                if (!doorTargetSelect) return;
+                let optionsHtml = '';
+                const modules = objects.filter(obj => obj.type === 'module_bounds' || obj.type === 'structure_bounds');
+                
+                if (modules.length === 1) { // यदि केवल एक मुख्य ढांचा है
+                     optionsHtml += '<option value="full_structure">पूरी अलमारी</option>';
+                }
+
+                modules.forEach(mod => { // प्रत्येक मॉड्यूल को एक विकल्प के रूप में जोड़ें
+                     optionsHtml += `<option value="module_${mod.id}">${mod.name || 'मॉड्यूल'}</option>`;
+                });
+
+                const compartments = getCompartments();
+                compartments.forEach((comp, index) => { 
+                    const parentModule = objects.find(m => m.id === comp.moduleId);
+                    let compWidthCmDisplay = "N/A";
+                    if (parentModule && parentModule.scaleToFit > 0 && pixelsPerCm > 0) { 
+                         compWidthCmDisplay = (comp.width_world / (pixelsPerCm / parentModule.scaleToFit) ).toFixed(1) ;
+                    }
+                    // कम्पार्टमेंट के लिए यूनिक वैल्यू: comp_INDEX_mod_MODULEID
+                    optionsHtml += `<option value="comp_${index}_mod_${comp.moduleId}">${comp.name} (${compWidthCmDisplay}cm)</option>`;
+                });
+                doorTargetSelect.innerHTML = optionsHtml || '<option value="">कोई लक्ष्य नहीं</option>';
+                 if(modules.length === 1 && !optionsHtml.includes('full_structure')) { // यदि केवल एक मॉड्यूल है तो उसे डिफ़ॉल्ट करें
+                    doorTargetSelect.value = `module_${modules[0].id}`;
+                } else if (modules.length === 0 && !optionsHtml.includes('full_structure')){
+                     doorTargetSelect.innerHTML = '<option value="">पहले ढांचा बनाएं</option>';
+                } else if (optionsHtml.includes('full_structure')) {
+                    doorTargetSelect.value = 'full_structure';
+                }
+            }
+            
+            function populatePartitionTargetSelect() {
+                if (!partitionTargetSelect) return;
+                let optionsHtml = '';
+                const modules = objects.filter(obj => obj.type === 'module_bounds' || obj.type === 'structure_bounds');
+                modules.forEach(mod => {
+                     optionsHtml += `<option value="${mod.id}">${mod.name || 'मॉड्यूल'}</option>`;
+                });
+                partitionTargetSelect.innerHTML = optionsHtml || '<option value="">कोई मॉड्यूल नहीं</option>';
+                if (modules.length > 0) partitionTargetSelect.value = modules[0].id; 
+            }
+
+
+            if(showPartsListBtn) showPartsListBtn.addEventListener('click', () => {
+                generateAndShowPartsList();
+                if (partsListPopup) partsListPopup.style.display = 'flex';
+                if (moduleCreatorPopup) moduleCreatorPopup.style.display = 'none';
+                if (doorOptionsPopup) doorOptionsPopup.style.display = 'none';
+                if (partitionOptionsPopup) partitionOptionsPopup.style.display = 'none';
+                if (cuttingLayoutPopup) cuttingLayoutPopup.style.display = 'none';
+                setMode('parts_list_active'); 
+            });
+
+            if(closePartsListPopupBtn) closePartsListPopupBtn.addEventListener('click', () => {
+                if (partsListPopup) partsListPopup.style.display = 'none';
+                if (currentMode === 'parts_list_active') setMode('select');
+            });
+            
+            if(showCuttingLayoutBtn) showCuttingLayoutBtn.addEventListener('click', () => {
+                generateAndDisplayCuttingLayout(); // लेआउट बनाएं
+                if (cuttingLayoutPopup) cuttingLayoutPopup.style.display = 'flex';
+                if (moduleCreatorPopup) moduleCreatorPopup.style.display = 'none';
+                if (doorOptionsPopup) doorOptionsPopup.style.display = 'none';
+                if (partitionOptionsPopup) partitionOptionsPopup.style.display = 'none';
+                if (partsListPopup) partsListPopup.style.display = 'none';
+                setMode('cutting_layout_active');
+            });
+            if(closeLayoutPopupBtn) closeLayoutPopupBtn.addEventListener('click', () => {
+                if(cuttingLayoutPopup) cuttingLayoutPopup.style.display = 'none';
+                if(currentMode === 'cutting_layout_active') setMode('select');
+            });
+            if(generateLayoutBtn) generateLayoutBtn.addEventListener('click', generateAndDisplayCuttingLayout);
+
+
+            function generateAndShowPartsList() {
+                if (!partsListContent) return;
+                partsListContent.innerHTML = ""; 
+
+                const modules = objects.filter(obj => obj.type === 'module_bounds' || obj.type === 'structure_bounds');
+                if (modules.length === 0) {
+                    partsListContent.innerHTML = "<p>पहले अलमारी का ढांचा बनाएं।</p>";
+                    return;
+                }
+
+                let html = `<table><thead><tr><th>पार्ट</th><th>मात्रा</th><th>चौड़ाई (cm)</th><th>लंबाई (cm)</th><th>मोटाई (cm)</th><th>अनुमानित शीट्स</th></tr></thead><tbody>`;
+
+                const SHEET_LENGTH_CM = parseFloat(sheetLengthInput.value) || 244; 
+                const SHEET_WIDTH_CM = parseFloat(sheetWidthInput.value) || 122;  
+                const mainThicknessCm = parseFloat(lineWidthInputCm.value); 
+                const backPanelThicknessCm = 0.8;
+
+                modules.forEach((structure, moduleIdx) => {
+                    const effectivePPCM = pixelsPerCm / structure.scaleToFit; 
+                    html += `<tr><td colspan="6"><strong>${structure.name || `मॉड्यूल ${moduleIdx + 1}`}</strong></td></tr>`;
+                    
+                    let sheets_tb = estimateSheetsForPart(structure.dimensionsCm.depth, structure.dimensionsCm.width, 2, SHEET_LENGTH_CM, SHEET_WIDTH_CM); // चौड़ाई = गहराई, लंबाई = मॉड्यूल चौड़ाई
+                    html += `<tr><td>&nbsp;&nbsp;↳ टॉप/बॉटम</td><td>2</td><td>${structure.dimensionsCm.depth.toFixed(1)}</td><td>${structure.dimensionsCm.width.toFixed(1)}</td><td>${mainThicknessCm.toFixed(1)}</td><td>${sheets_tb}</td></tr>`;
+                    
+                    let numSidePanels = 2; 
+                    // TODO: यदि यह विभाजित मॉड्यूल का आंतरिक भाग है और साझा दीवार है, तो numSidePanels कम हो सकता है
+                    let sheets_sp = estimateSheetsForPart(structure.dimensionsCm.depth, structure.dimensionsCm.height, numSidePanels, SHEET_LENGTH_CM, SHEET_WIDTH_CM);
+                    if (numSidePanels > 0) html += `<tr><td>&nbsp;&nbsp;↳ साइड पैनल</td><td>${numSidePanels}</td><td>${structure.dimensionsCm.depth.toFixed(1)}</td><td>${structure.dimensionsCm.height.toFixed(1)}</td><td>${mainThicknessCm.toFixed(1)}</td><td>${sheets_sp}</td></tr>`;
+                    
+                    // बैक पैनल की गणना
+                    const backPanelWidthCm = structure.dimensionsCm.width;
+                    const backPanelHeightCm = structure.dimensionsCm.height;
+                    let backPanelsHtml = "";
+                    let totalBackPanelsNeeded = 0;
+
+                    if (backPanelWidthCm > SHEET_WIDTH_CM) {
+                        // यदि चौड़ाई शीट की चौड़ाई से अधिक है, तो देखें कि क्या पार्टिशन हैं
+                        const verticalPartitionsInModule = objects.filter(obj => obj.type === 'partition_v' && obj.moduleId === structure.id).sort((a, b) => a.x - b.x);
+                        if (verticalPartitionsInModule.length > 0) {
+                            let lastX = structure.frontFaceProjected.pA.x;
+                            let panelCount = 0;
+                            for (let i = 0; i <= verticalPartitionsInModule.length; i++) {
+                                let currentSplitX = (i < verticalPartitionsInModule.length) ? 
+                                                    verticalPartitionsInModule[i].x : 
+                                                    structure.frontFaceProjected.pB.x;
+                                let panelWidthWorld = currentSplitX - lastX;
+                                let panelWidthCm = (panelWidthWorld / effectivePPCM).toFixed(1);
+                                
+                                if (parseFloat(panelWidthCm) > 0) {
+                                    panelCount++;
+                                    let sheets_bp_part = estimateSheetsForPart(parseFloat(panelWidthCm), backPanelHeightCm, 1, SHEET_LENGTH_CM, SHEET_WIDTH_CM);
+                                    backPanelsHtml += `<tr><td>&nbsp;&nbsp;↳ बैक पैनल (भाग ${panelCount})</td><td>1</td><td>${panelWidthCm}</td><td>${backPanelHeightCm.toFixed(1)}</td><td>${backPanelThicknessCm.toFixed(1)}</td><td>${sheets_bp_part} (0.8cm)</td></tr>`;
+                                    totalBackPanelsNeeded += sheets_bp_part;
+                                }
+                                if (i < verticalPartitionsInModule.length) {
+                                    lastX = verticalPartitionsInModule[i].x; // अगली शुरुआत पार्टिशन के केंद्र से होगी
+                                }
+                            }
+                        } else { // कोई पार्टिशन नहीं, लेकिन चौड़ाई अधिक है
+                            let sheets_bp = estimateSheetsForPart(backPanelWidthCm, backPanelHeightCm, 1, SHEET_LENGTH_CM, SHEET_WIDTH_CM);
+                            backPanelsHtml = `<tr><td>&nbsp;&nbsp;↳ बैक पैनल</td><td>1</td><td>${backPanelWidthCm.toFixed(1)}</td><td>${backPanelHeightCm.toFixed(1)}</td><td>${backPanelThicknessCm.toFixed(1)}</td><td>${sheets_bp} (0.8cm, बड़ा)</td></tr>`;
+                        }
+                    } else { // चौड़ाई शीट के भीतर है
+                         let sheets_bp = estimateSheetsForPart(backPanelWidthCm, backPanelHeightCm, 1, SHEET_LENGTH_CM, SHEET_WIDTH_CM);
+                         backPanelsHtml = `<tr><td>&nbsp;&nbsp;↳ बैक पैनल</td><td>1</td><td>${backPanelWidthCm.toFixed(1)}</td><td>${backPanelHeightCm.toFixed(1)}</td><td>${backPanelThicknessCm.toFixed(1)}</td><td>${sheets_bp} (0.8cm)</td></tr>`;
+                    }
+                    html += backPanelsHtml;
+
+
+                    const moduleId = structure.id;
+
+                    const verticalPartitions = objects.filter(obj => obj.type === 'partition_v' && obj.moduleId === moduleId);
+                    if (verticalPartitions.length > 0) {
+                        html += "<tr><td colspan='6'>&nbsp;&nbsp;<strong><em>↳ खड़ी पार्टिशन</em></strong></td></tr>";
+                        verticalPartitions.forEach((part, i) => {
+                            const heightWorld = Math.abs(part.y2 - part.y1);
+                            const lengthCm = (heightWorld / effectivePPCM).toFixed(1); // लंबाई = ऊंचाई
+                            const widthCm = structure.dimensionsCm.depth.toFixed(1); // चौड़ाई = गहराई
+                            const thicknessCm = (part.lineWidth / pixelsPerCm).toFixed(1); 
+                            let sheets_vp = estimateSheetsForPart(parseFloat(widthCm), parseFloat(lengthCm), 1, SHEET_LENGTH_CM, SHEET_WIDTH_CM);
+                            html += `<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;↳ पार्टिशन ${i+1}</td><td>1</td><td>${widthCm}</td><td>${lengthCm}</td><td>${thicknessCm}</td><td>${sheets_vp}</td></tr>`;
+                        });
+                    }
+
+                    const horizontalShelves = objects.filter(obj => obj.type === 'h_shelf' && obj.moduleId === moduleId);
+                    if (horizontalShelves.length > 0) {
+                        html += "<tr><td colspan='6'>&nbsp;&nbsp;<strong><em>↳ हॉरिजॉन्टल शेल्फ</em></strong></td></tr>";
+                        horizontalShelves.forEach((shelf, i) => {
+                            const widthWorld = Math.abs(shelf.x2 - shelf.x1);
+                            const widthCmActual = (widthWorld / effectivePPCM).toFixed(1); 
+                            const lengthCm = structure.dimensionsCm.depth.toFixed(1); // गहराई को लंबाई मानें
+                            const thicknessCm = (shelf.lineWidth / pixelsPerCm).toFixed(1);
+                            let sheets_hs = estimateSheetsForPart(parseFloat(widthCmActual), parseFloat(lengthCm), 1, SHEET_LENGTH_CM, SHEET_WIDTH_CM);
+                            html += `<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;↳ शेल्फ ${i+1}</td><td>1</td><td>${widthCmActual}</td><td>${lengthCm}</td><td>${thicknessCm}</td><td>${sheets_hs}</td></tr>`;
+                        });
+                    }
+
+                    const doors = objects.filter(obj => obj.type === 'door' && obj.moduleId === moduleId);
+                    if (doors.length > 0) {
+                        html += "<tr><td colspan='6'>&nbsp;&nbsp;<strong><em>↳ दरवाजे</em></strong></td></tr>";
+                        doors.forEach((door, i) => {
+                            const widthCmActual = (door.width / effectivePPCM).toFixed(1); 
+                            const lengthCm = (door.height / effectivePPCM).toFixed(1); 
+                            const thicknessCm = (door.lineWidth / pixelsPerCm).toFixed(1); 
+                            let sheets_d = estimateSheetsForPart(parseFloat(widthCmActual), parseFloat(lengthCm), 1, SHEET_LENGTH_CM, SHEET_WIDTH_CM);
+                            html += `<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;↳ डोर पल्ला ${i+1}</td><td>1</td><td>${widthCmActual}</td><td>${lengthCm}</td><td>${thicknessCm}</td><td>${sheets_d}</td></tr>`;
+                        });
+                    }
+                });
+                
+                html += "</tbody></table>";
+                partsListContent.innerHTML = html || "<p>कोई पार्ट नहीं मिला।</p>";
+            }
+
+            function estimateSheetsForPart(partW_cm, partL_cm, quantity, sheetL_cm, sheetW_cm) {
+                if (partW_cm <= 0 || partL_cm <= 0 || quantity <= 0) return 0;
+
+                let pps1 = 0; // pieces per sheet, orientation 1
+                if (partL_cm <= sheetL_cm && partW_cm <= sheetW_cm) {
+                    pps1 = Math.floor(sheetL_cm / partL_cm) * Math.floor(sheetW_cm / partW_cm);
+                }
+                
+                let pps2 = 0; // pieces per sheet, orientation 2 (rotated part)
+                if (partW_cm <= sheetL_cm && partL_cm <= sheetW_cm) {
+                    pps2 = Math.floor(sheetL_cm / partW_cm) * Math.floor(sheetW_cm / partL_cm);
+                }
+
+                const maxPiecesPerSheet = Math.max(pps1, pps2);
+
+                if (maxPiecesPerSheet === 0) {
+                    return `(${quantity}) X (बड़ा)`; 
+                }
+                return Math.ceil(quantity / maxPiecesPerSheet);
+            }
+
+
+            if(canvas) {
+                canvas.addEventListener('touchstart', (e) => {
+                    const target = e.target;
+                    let popupHandled = false;
+                    [moduleCreatorPopup, doorOptionsPopup, partitionOptionsPopup, partsListPopup, cuttingLayoutPopup].forEach(popup => {
+                        if (popup && popup.style.display === 'flex') {
+                            let toggleButton;
+                            if (popup === moduleCreatorPopup) toggleButton = toggleModuleCreatorBtn;
+                            else if (popup === doorOptionsPopup) toggleButton = toggleDoorOptionsBtn;
+                            else if (popup === partitionOptionsPopup) toggleButton = togglePartitionOptionsBtn;
+                            else if (popup === partsListPopup) toggleButton = showPartsListBtn;
+                            else if (popup === cuttingLayoutPopup) toggleButton = showCuttingLayoutBtn;
+
+                            if (!popup.contains(target) && target !== toggleButton) {
+                                popup.style.display = 'none';
+                                if (currentMode.includes('_active') || currentMode.includes('_click') || currentMode.includes('_supports')) setMode('select');
+                                updateButtonStates(); 
+                                popupHandled = true;
+                            }
+                        }
+                    });
+                    if(popupHandled) return;
+
+
+                    if (e.touches.length === 1) {
+                        if (isPinching) return; 
+                        handlePointerDown_Interaction(e.touches[0].clientX, e.touches[0].clientY);
+                    } else if (e.touches.length === 2) {
+                        e.preventDefault();
+                        isDrawing = false; isMovingObject = false; isPanning = true; isPinching = true;
+                        initialTouchDistance = getTouchDistance(e.touches[0], e.touches[1]);
+                        lastTouchMidpoint = getTouchMidpoint(e.touches[0], e.touches[1]);
+                    }
+                    updateCursor();
+                }, { passive: false }); 
+
+                canvas.addEventListener('touchmove', (e) => {
+                    if ( (moduleCreatorPopup && moduleCreatorPopup.style.display === 'flex') ||
+                         (doorOptionsPopup && doorOptionsPopup.style.display === 'flex') || 
+                         (partitionOptionsPopup && partitionOptionsPopup.style.display === 'flex') ||
+                         (partsListPopup && partsListPopup.style.display === 'flex') ||
+                         (cuttingLayoutPopup && cuttingLayoutPopup.style.display === 'flex') ) return;
+
+                    if (e.touches.length === 1 && !isPinching) {
+                        if (isDrawing || isMovingObject) e.preventDefault();
+                        handlePointerMove_Interaction(e.touches[0].clientX, e.touches[0].clientY);
+                    } else if (e.touches.length === 2 && isPinching) {
+                        e.preventDefault();
+                        const currentTouchDistance = getTouchDistance(e.touches[0], e.touches[1]);
+                        const currentMidpoint = getTouchMidpoint(e.touches[0], e.touches[1]);
+
+                        if (initialTouchDistance > 0 && lastTouchMidpoint) { 
+                            const scaleFactor = currentTouchDistance / initialTouchDistance;
+                            let newScale = currentScale * scaleFactor;
+                            newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+                            const world_mid_before_zoom = screenToWorld(lastTouchMidpoint.x + canvas.getBoundingClientRect().left, lastTouchMidpoint.y + canvas.getBoundingClientRect().top);
+                            
+                            offsetX = currentMidpoint.x - world_mid_before_zoom.x * newScale;
+                            offsetY = currentMidpoint.y - world_mid_before_zoom.y * newScale;
+                            currentScale = newScale;
+                        
+                            offsetX += currentMidpoint.x - lastTouchMidpoint.x;
+                            offsetY += currentMidpoint.y - lastTouchMidpoint.y;
+                        }
+                        initialTouchDistance = currentTouchDistance;
+                        lastTouchMidpoint = currentMidpoint;
+                        redrawCanvas();
+                    }
+                }, { passive: false });
+
+                canvas.addEventListener('touchend', (e) => {
+                    if (isPinching && e.touches.length < 2) { 
+                        isPinching = false; isPanning = false;
+                        initialTouchDistance = null; lastTouchMidpoint = null;
+                        saveStateToHistory(); 
+                    } else if (!isPinching && e.changedTouches.length > 0) { 
+                        if (!((moduleCreatorPopup && moduleCreatorPopup.style.display === 'flex') ||
+                              (doorOptionsPopup && doorOptionsPopup.style.display === 'flex') || 
+                              (partitionOptionsPopup && partitionOptionsPopup.style.display === 'flex') ||
+                              (partsListPopup && partsListPopup.style.display === 'flex') ||
+                              (cuttingLayoutPopup && cuttingLayoutPopup.style.display === 'flex'))) {
+                            handlePointerUp_Interaction(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                        }
+                    }
+                    if (e.touches.length === 0) { 
+                        isPinching = false; isPanning = false; 
+                        initialTouchDistance = null; lastTouchMidpoint = null;
+                        if (isDrawing) isDrawing = false;
+                        if (isMovingObject) isMovingObject = false;
+                    }
+                    updateCursor();
+                });
+                
+                canvas.addEventListener('touchcancel', (e) => {
+                    isPinching = false; isPanning = false;
+                    initialTouchDistance = null; lastTouchMidpoint = null;
+                    if (isDrawing || isMovingObject) {
+                        handlePointerOut_Interaction(null, null);
+                    }
+                    updateCursor();
+                });
+            } 
+
+            function getTouchDistance(touch1, touch2) {
+                const dx = touch1.clientX - touch2.clientX;
+                const dy = touch1.clientY - touch2.clientY;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+            function getTouchMidpoint(touch1, touch2) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: (touch1.clientX + touch2.clientX) / 2 - rect.left,
+                    y: (touch1.clientY + touch2.clientY) / 2 - rect.top
+                };
+            }
+
+
+            document.addEventListener('keydown', (e) => {
+                const activeEl = document.activeElement;
+                if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'SELECT')) { 
+                    if (e.key === "Escape") { 
+                        let popupClosedByKey = false;
+                        [moduleCreatorPopup, doorOptionsPopup, partitionOptionsPopup, partsListPopup, cuttingLayoutPopup].forEach(popup => {
+                            if (popup && popup.style.display === 'flex') {
+                                popup.style.display = 'none';
+                                popupClosedByKey = true;
+                            }
+                        });
+                        if (popupClosedByKey) setMode('select');
+                        activeEl.blur(); 
+                        return;
+                    }
+                    if (!(e.ctrlKey && (e.key.toLowerCase() === 'z' || e.key.toLowerCase() === 'y'))) {
+                        return;
+                    }
+                }
+                 if ((moduleCreatorPopup && moduleCreatorPopup.style.display === 'flex') ||
+                     (doorOptionsPopup && doorOptionsPopup.style.display === 'flex') || 
+                     (partitionOptionsPopup && partitionOptionsPopup.style.display === 'flex') ||
+                     (partsListPopup && partsListPopup.style.display === 'flex') ||
+                     (cuttingLayoutPopup && cuttingLayoutPopup.style.display === 'flex')) {
+                    if (e.key === "Escape") {
+                        if (moduleCreatorPopup) moduleCreatorPopup.style.display = 'none';
+                        if (doorOptionsPopup) doorOptionsPopup.style.display = 'none';
+                        if (partitionOptionsPopup) partitionOptionsPopup.style.display = 'none';
+                        if (partsListPopup) partsListPopup.style.display = 'none';
+                        if (cuttingLayoutPopup) cuttingLayoutPopup.style.display = 'none';
+                        setMode('select');
+                    }
+                    return; 
+                }
+
+
+                if (e.ctrlKey && (e.key.toLowerCase() === 'z')) { 
+                    e.preventDefault(); if(undoBtn) undoBtn.click();
+                } else if (e.ctrlKey && (e.key.toLowerCase() === 'y')) { 
+                    e.preventDefault(); if(redoBtn) redoBtn.click();
+                } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                     if (selectedObjectIndex !== -1 && !isPanning) { 
+                        e.preventDefault(); if(deleteBtn) deleteBtn.click();
+                    }
+                } else if (!isPanning && e.key.toLowerCase() === 'l') { 
+                    e.preventDefault(); if(lineModeBtn) lineModeBtn.click();
+                } else if (!isPanning && e.key.toLowerCase() === 's') { 
+                     e.preventDefault(); if(selectModeBtn) selectModeBtn.click();
+                } else if (!isPanning && e.key.toLowerCase() === 't') { 
+                     e.preventDefault(); if(textModeBtn) textModeBtn.click();
+                } else if (!isPanning && e.key.toLowerCase() === 'o') { 
+                     e.preventDefault(); if(orthoModeBtn) orthoModeBtn.click();
+                } else if (!isPanning && e.key.toLowerCase() === 'p') { 
+                     e.preventDefault(); 
+                     if (partitionOptionsPopup && togglePartitionOptionsBtn && partitionTypeSelect) {
+                         if (partitionOptionsPopup.style.display !== 'flex') {
+                            togglePartitionOptionsBtn.click(); 
+                            partitionTypeSelect.value = 'v_partition_click'; 
+                            handlePartitionTypeChange(); 
+                         } else { 
+                            setMode('v_partition_click'); 
+                            partitionOptionsPopup.style.display = 'none';
+                            togglePartitionOptionsBtn.classList.remove('active');
+                         }
+                     }
+                } else if (!isPanning && e.key.toLowerCase() === 'h') { 
+                     e.preventDefault(); 
+                     if (partitionOptionsPopup && togglePartitionOptionsBtn && partitionTypeSelect) {
+                         if (partitionOptionsPopup.style.display !== 'flex') {
+                            togglePartitionOptionsBtn.click();
+                            partitionTypeSelect.value = 'h_shelf_click';
+                            handlePartitionTypeChange();
+                         } else {
+                            setMode('h_shelf_click');
+                            partitionOptionsPopup.style.display = 'none';
+                            togglePartitionOptionsBtn.classList.remove('active');
+                         }
+                     }
+                } else if (!isPanning && e.key.toLowerCase() === 'd') { 
+                     e.preventDefault(); if(toggleDoorOptionsBtn) toggleDoorOptionsBtn.click();
+                } else if (!isPanning && e.key.toLowerCase() === 'k') { 
+                     e.preventDefault(); if(togglePartitionOptionsBtn) togglePartitionOptionsBtn.click();
+                } else if (!isPanning && e.key.toLowerCase() === 'b') { 
+                     e.preventDefault(); if(showPartsListBtn) showPartsListBtn.click();
+                } else if (!isPanning && e.key.toLowerCase() === 'm') { 
+                     e.preventDefault(); if(toggleModuleCreatorBtn) toggleModuleCreatorBtn.click();
+                } else if (!isPanning && e.key.toLowerCase() === 'c') { // C for Cutting Layout
+                     e.preventDefault(); if(showCuttingLayoutBtn) showCuttingLayoutBtn.click();
+                }
+            });
+        }); 
+    </script>
+
+</body>
+</html>
