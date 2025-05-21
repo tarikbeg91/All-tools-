@@ -23,7 +23,7 @@
         }
 
         /* Accent Theme Classes (applied to body) */
-        body.accent-theme-blue { /* Default, so technically not needed if vars are blue by default */
+        body.accent-theme-blue { 
             --accent-color-primary: #007bff; --accent-color-primary-hover: #0056b3; --accent-color-primary-dark: #4da3ff; --accent-color-primary-hover-dark: #1e90ff;
             --accent-color-primary-text: #ffffff; --accent-color-primary-text-dark: #1a1a1a;
         }
@@ -48,7 +48,6 @@
         .control-icon:hover { background-color: var(--control-icon-hover-bg-light); transform: scale(1.1); }
         body.dark-mode .control-icon:hover { background-color: var(--control-icon-hover-bg-dark); }
         
-        /* Active state using accent color */
         .control-icon.active, .control-icon:active {
             background-color: var(--accent-color-primary);
             color: var(--accent-color-primary-text);
@@ -62,9 +61,9 @@
 
         #appContainer { flex-grow: 1; overflow: hidden; border-top: 1px solid var(--iframe-border-light); position: relative; box-sizing: border-box; display: flex; flex-direction: column; }
         body.dark-mode #appContainer { border-top: 1px solid var(--iframe-border-dark); }
-        iframe { width: 100%; height: 100%; border: none; display: none; /* Hidden by default */ }
+        iframe { width: 100%; height: 100%; border: none; display: none; }
         
-        #homeContent { padding-top: 15px; padding-left: 20px; padding-right: 20px; padding-bottom: 20px; display: none; /* Shown by JS */ text-align: center; flex-grow: 1; align-items: center; justify-content: flex-start; flex-direction: column; width: 100%; overflow-y: auto; box-sizing: border-box; }
+        #homeContent { padding-top: 15px; padding-left: 20px; padding-right: 20px; padding-bottom: 20px; display: none; text-align: center; flex-grow: 1; align-items: center; justify-content: flex-start; flex-direction: column; width: 100%; overflow-y: auto; box-sizing: border-box; }
         .tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding-top: 10px; max-width: 1200px; width: 100%; box-sizing: border-box; }
         .tool-card { background-color: var(--card-bg-light); border: 1px solid var(--card-border-light); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: background-color 0.2s, transform 0.2s, border-color 0.2s; box-shadow: 0 2px 5px var(--card-shadow-light); }
         body.dark-mode .tool-card { background-color: var(--card-bg-dark); border: 1px solid var(--card-border-dark); box-shadow: 0 2px 5px var(--card-shadow-dark); }
@@ -113,6 +112,12 @@
                 <div class="tool-card" data-app="tile-calculator.html" data-translate-key="navTileCalculator"><i class="fas fa-border-all"></i><span>टाइल कैलकुलेटर</span></div>
                 <div class="tool-card" data-app="Fm_radio.html" data-translate-key="navFmRadio"><i class="fas fa-radio"></i><span>एफएम रेडियो</span></div>
                 <div class="tool-card" data-app="diary.html" data-translate-key="navDiary"><i class="fas fa-book"></i><span>डायरी</span></div>
+                <!-- === नया टूल कार्ड === -->
+                <div class="tool-card" data-app="almari.html" data-translate-key="navAlmari">
+                    <i class="fas fa-archive"></i> 
+                    <span>अलमारी</span>
+                </div>
+                <!-- === नया टूल कार्ड समाप्त === -->
             </div>
         </div>
     </div>
@@ -128,12 +133,14 @@
             hi: {
                 hubTitle: "मेरा टूल हब", hubMainTitle: "मेरा टूल हब", titleHome: "होम", titleLangToggle: "भाषा बदलें", titleAccentThemeSwitcher: "एक्सेंट थीम", titleDarkModeToggle: "डार्क/लाइट मोड",
                 navLandArea: "ज़मीन का क्षेत्रफल", navAttendance: "अटेंडेंस ट्रैकर", navExpense: "खर्च ट्रैकर", navCalculator: "कैलकुलेटर", navUnitConverter: "यूनिट कन्वर्टर", navSheetLayout: "Sheet layout", navTileCalculator: "टाइल कैलकुलेटर", navFmRadio: "एफएम रेडियो", navDiary: "डायरी",
+                navAlmari: "अलमारी", // नया अनुवाद
                 loadingText: "लोड हो रहा है...", errorLoadingApp: "टूल लोड करने में त्रुटि।", statusDarkModeOn: "डार्क मोड सक्रिय।", statusLightModeOn: "लाइट मोड सक्रिय।",
                 accentThemeDefault: "डिफ़ॉल्ट (नीला)", accentThemeBlue: "नीला", accentThemeGreen: "हरा", accentThemeOrange: "नारंगी"
             },
             en: {
                 hubTitle: "My Tool Hub", hubMainTitle: "My Tool Hub", titleHome: "Home", titleLangToggle: "Change Language", titleAccentThemeSwitcher: "Accent Theme", titleDarkModeToggle: "Dark/Light Mode",
                 navLandArea: "Land Area Calc", navAttendance: "Attendance Tracker", navExpense: "Expense Tracker", navCalculator: "Calculator", navUnitConverter: "Unit Converter", navSheetLayout: "Sheet layout", navTileCalculator: "Tile Calculator", navFmRadio: "FM Radio", navDiary: "Diary",
+                navAlmari: "Almari", // New translation
                 loadingText: "Loading...", errorLoadingApp: "Error loading app.", statusDarkModeOn: "Dark mode activated.", statusLightModeOn: "Light mode activated.",
                 accentThemeDefault: "Default (Blue)", accentThemeBlue: "Blue", accentThemeGreen: "Green", accentThemeOrange: "Orange"
             }
@@ -155,15 +162,15 @@
             const darkModeKey = 'hubDarkMode_v2';
             const accentThemeKey = 'hubAccentTheme_v1';
             const langKey = 'hubLanguage';
+            const lastActiveAppKey = 'hubLastActiveApp'; // पिछली एक्टिव ऐप को याद रखने के लिए
 
             const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
             let currentLang = localStorage.getItem(langKey) || 'hi';
-            // Initialize currentDarkMode based on localStorage or system preference
             let initialDarkMode = localStorage.getItem(darkModeKey);
             let currentDarkMode = initialDarkMode === null ? prefersDarkScheme.matches : (initialDarkMode === 'true');
-            let currentAccentTheme = localStorage.getItem(accentThemeKey) || 'default';
+            let currentAccentTheme = localStorage.getItem(accentThemeKey) || 'default'; // 'default' ही 'blue' है
 
-            function applyTranslations() { /* ... (पहले जैसा) ... */
+            function applyTranslations() {
                 document.querySelectorAll('[data-translate-key]').forEach(el => {
                     const key = el.getAttribute('data-translate-key');
                     if (translations[currentLang] && translations[currentLang][key]) {
@@ -198,7 +205,7 @@
                     const statusKey = isDark ? 'statusDarkModeOn' : 'statusLightModeOn';
                     if (translations[currentLang][statusKey]) themeStatusDiv.textContent = translations[currentLang][statusKey];
                 }
-                localStorage.setItem(darkModeKey, isDark);
+                localStorage.setItem(darkModeKey, isDark.toString()); // Save as string 'true'/'false'
 
                 const currentIframeSrc = iframe.getAttribute('src');
                 if (iframe.contentWindow && currentIframeSrc && currentIframeSrc !== 'about:blank') {
@@ -207,14 +214,22 @@
             }
 
             function applyCurrentAccentTheme(themeName) {
-                document.body.classList.forEach(className => {
-                    if (className.startsWith('accent-theme-')) document.body.classList.remove(className);
-                });
-                if (themeName !== 'default') document.body.classList.add(`accent-theme-${themeName}`);
+                // Remove any existing accent theme class
+                document.body.className = document.body.className.replace(/\baccent-theme-.*?\b/g, '').trim();
+                // Add new accent theme class if it's not default
+                if (themeName && themeName !== 'default') { // 'default' is blue, no class needed
+                    document.body.classList.add(`accent-theme-${themeName}`);
+                }
                 
                 currentAccentTheme = themeName;
                 accentThemeButtons.forEach(btn => btn.classList.toggle('active-theme', btn.dataset.accentTheme === themeName));
                 localStorage.setItem(accentThemeKey, themeName);
+
+                // Send accent theme to iframe if needed
+                 const currentIframeSrc = iframe.getAttribute('src');
+                if (iframe.contentWindow && currentIframeSrc && currentIframeSrc !== 'about:blank') {
+                    iframe.contentWindow.postMessage({ accentTheme: currentAccentTheme }, '*');
+                }
             }
 
             darkModeToggle.addEventListener('click', () => applyCurrentDarkMode(!currentDarkMode));
@@ -223,7 +238,7 @@
                 event.stopPropagation();
                 const isPopupVisible = accentThemeSelectorPopup.style.display === 'block';
                 accentThemeSelectorPopup.style.display = isPopupVisible ? 'none' : 'block';
-                if (!isPopupVisible) { // Update active button when opening
+                if (!isPopupVisible) {
                     accentThemeButtons.forEach(btn => btn.classList.toggle('active-theme', btn.dataset.accentTheme === currentAccentTheme));
                 }
             });
@@ -237,26 +252,36 @@
                 }
             });
             prefersDarkScheme.addEventListener('change', e => {
-                 // Only if no explicit choice was made by user yet for dark mode via toggle
-                if (localStorage.getItem(darkModeKey) === null) {
+                if (localStorage.getItem(darkModeKey) === null) { // Only if user hasn't made a choice
                     applyCurrentDarkMode(e.matches);
                 }
             });
 
-            function showHomeContent() { /* ... (पहले जैसा) ... */
-                loadingMessageDiv.style.display = 'none'; iframe.style.display = 'none'; homeContentDiv.style.display = 'flex';
+            function showHomeContent() {
+                iframe.setAttribute('src', 'about:blank'); // Clear iframe
+                iframe.style.display = 'none';
+                loadingMessageDiv.style.display = 'none';
+                homeContentDiv.style.display = 'flex';
                 document.title = translations[currentLang]?.hubMainTitle || "Tool Hub";
                 appCards.forEach(card => card.classList.remove('active'));
-                const currentIframeSrc = iframe.getAttribute('src');
-                if (currentIframeSrc && currentIframeSrc !== 'about:blank') iframe.setAttribute('src', 'about:blank');
+                localStorage.removeItem(lastActiveAppKey); // Clear last active app when going home
             }
-            function loadApp(appUrl) { /* ... (पहले जैसा) ... */
-                homeContentDiv.style.display = 'none'; iframe.style.display = 'none'; 
+
+            function loadApp(appUrl) {
+                if (!appUrl || appUrl === 'HOME') { showHomeContent(); return; }
+
+                homeContentDiv.style.display = 'none';
+                iframe.style.display = 'none'; 
                 loadingMessageDiv.textContent = translations[currentLang]?.loadingText || "Loading...";
-                loadingMessageDiv.style.display = 'block'; iframe.setAttribute('src', appUrl);
+                loadingMessageDiv.style.display = 'block';
+                
+                iframe.setAttribute('src', appUrl);
+                localStorage.setItem(lastActiveAppKey, appUrl); // Save last active app
+
                 appCards.forEach(card => card.classList.toggle('active', card.dataset.app === appUrl));
             }
-            iframe.onload = () => { /* ... (पहले जैसा, theme: currentDarkMode ? 'dark' : 'light' भेजें) ... */
+
+            iframe.onload = () => {
                 const currentIframeSrc = iframe.getAttribute('src');
                 if (!currentIframeSrc || currentIframeSrc === 'about:blank') {
                     iframe.style.display = 'none'; loadingMessageDiv.style.display = 'none'; return; 
@@ -266,17 +291,19 @@
                     let appTitle = iframe.contentWindow?.document?.title || 
                                    currentIframeSrc.split('/').pop().split('.')[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
                     document.title = `${translations[currentLang]?.hubMainTitle || "Tool Hub"} - ${appTitle}`;
-                    iframe.contentWindow?.postMessage({ theme: currentDarkMode ? 'dark' : 'light', lang: currentLang, request: 'initialConfigDone' }, '*');
+                    iframe.contentWindow?.postMessage({ theme: currentDarkMode ? 'dark' : 'light', lang: currentLang, accentTheme: currentAccentTheme, request: 'initialConfigDone' }, '*');
                 } catch (e) { console.warn("Iframe access error:", e); }
             };
-            iframe.onerror = () => { /* ... (पहले जैसा) ... */
+            iframe.onerror = () => {
                 loadingMessageDiv.textContent = translations[currentLang]?.errorLoadingApp || "Error loading app.";
                 loadingMessageDiv.style.display = 'block'; iframe.style.display = 'none';
                 iframe.setAttribute('src', 'about:blank');
             };
+
             appCards.forEach(card => card.addEventListener('click', (e) => { e.preventDefault(); loadApp(card.dataset.app); }));
             homeButton.addEventListener('click', (e) => { e.preventDefault(); showHomeContent(); });
-            langToggle.addEventListener('click', () => { /* ... (पहले जैसा, theme: currentDarkMode ? 'dark' : 'light' का ध्यान रखें) ... */
+            
+            langToggle.addEventListener('click', () => {
                 currentLang = (currentLang === 'hi') ? 'en' : 'hi';
                 localStorage.setItem(langKey, currentLang);
                 applyTranslations(); 
@@ -284,7 +311,7 @@
                 else {
                     const currentIframeSrc = iframe.getAttribute('src');
                     if (iframe.contentWindow && currentIframeSrc && currentIframeSrc !== 'about:blank') {
-                        iframe.contentWindow.postMessage({ lang: currentLang }, '*'); // Theme is already set
+                        iframe.contentWindow.postMessage({ lang: currentLang }, '*');
                         try {
                             let appTitle = iframe.contentWindow?.document?.title || 
                                            currentIframeSrc.split('/').pop().split('.')[0].replace(/[_|-]/g, ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase());
@@ -293,9 +320,11 @@
                     } else { document.title = translations[currentLang]?.hubTitle || "Tool Hub"; }
                 }
             });
-            window.addEventListener('message', (event) => { /* ... (पहले जैसा, theme: currentDarkMode ? 'dark' : 'light' भेजें) ... */
+
+            window.addEventListener('message', (event) => {
+                // IMPORTANT: Check event.origin in production
+                // if (event.origin !== 'YOUR_HUB_ORIGIN_HERE') return; // Example
                 const message = event.data;
-                // Add origin check for security: if (event.origin !== window.location.origin) return;
                 if (message && message.type === 'appLoaded' && message.title) {
                     const currentIframeSrc = iframe.getAttribute('src');
                     if (currentIframeSrc && message.appName && currentIframeSrc.includes(message.appName) ) {
@@ -305,16 +334,22 @@
                 if (message && message.request === 'initialConfig') {
                     const currentIframeSrcCheck = iframe.getAttribute('src');
                     if (iframe.contentWindow && currentIframeSrcCheck && currentIframeSrcCheck !== 'about:blank') {
-                         iframe.contentWindow.postMessage({ theme: currentDarkMode ? 'dark' : 'light', lang: currentLang, request: 'initialConfigDone' }, '*');
+                         iframe.contentWindow.postMessage({ theme: currentDarkMode ? 'dark' : 'light', lang: currentLang, accentTheme: currentAccentTheme, request: 'initialConfigDone' }, '*');
                     }
                 }
             });
 
             // Initial setup
             applyTranslations();
-            applyCurrentDarkMode(currentDarkMode); // Apply stored/system dark mode
-            applyCurrentAccentTheme(currentAccentTheme); // Apply stored accent theme
-            showHomeContent();
+            applyCurrentDarkMode(currentDarkMode); 
+            applyCurrentAccentTheme(currentAccentTheme); 
+            
+            const lastApp = localStorage.getItem(lastActiveAppKey);
+            if (lastApp && lastApp !== 'HOME') { // 'HOME' is not a valid app URL here
+                loadApp(lastApp);
+            } else {
+                showHomeContent();
+            }
         });
     </script>
 </body>
