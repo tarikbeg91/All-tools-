@@ -1,1751 +1,1127 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-translate-key="combinedCalculatorTitle">Calculator</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <title data-translate-key="appTitle">कैलकुलेटर हब</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* --- CSS Styles --- */
-        /* Variables for theming */
+        /* ... (सारा CSS पिछले कोड जैसा ही रहेगा - यह बहुत लंबा है, इसलिए संक्षिप्त कर रहा हूँ) ... */
         :root {
-            --background-color: #e0e5ec; /* Soft light background */
-            --text-color: #333;
-            --container-bg-color: #f0f2f5; /* Slightly lighter container */
-            --border-color: #c8d0d8; /* Soft border */
-            --input-bg: #e3e6eb; /* Sunken input effect */
-            --input-text: #333;
-            --button-bg: #ebf0f3; /* Raised button effect */
-            --button-hover-bg: #dce1e6;
-            --operator-button-bg: #cad1d8; /* Different operator color */
-            --operator-button-hover-bg: #b8c0c8;
-            --equals-button-bg: #4CAF50; /* Green */
-            --equals-button-hover-bg: #45a049;
-            --clear-button-bg: #f44336; /* Red */
-            --clear-button-hover-bg: #da190b;
-            --result-text-color: #333;
-            --error-text-color: #dc3545;
-            --hr-color: #c8d0d8;
-
-             --control-icon-color: #555;
-             --control-icon-hover-color: #000;
-
-             --primary-color: #007bff;
-             --primary-color-hover: #0056b3;
-
-             --toggle-button-bg: #e0e5ec; /* Soft toggle button */
-             --toggle-button-hover-bg: #dce1e6;
-             --toggle-button-text: #333;
-
-             --active-toggle-bg: var(--primary-color);
-             --active-toggle-text: white;
-             --active-toggle-border: var(--primary-color);
-
-             --history-border-color: #dce1e6;
-             --history-item-bg: #ebf0f3;
-
-             --scientific-button-bg: #aabbaa; /* New: Scientific button color */
-             --scientific-button-hover-bg: #98a898;
+            --primary-bg: #f0f2f5; 
+            --secondary-bg: #ffffff; 
+            --text-color: #333333; 
+            --border-color: #d1d9e6; 
+            --header-bg: #ffffff; 
+            --button-bg: #e4e7eb; 
+            --button-hover-bg: #d1d5db;
+            --button-text-color: #333333; 
+            --accent-color: #007bff; 
+            --accent-text-color: #ffffff; 
+            --icon-color: #555; 
+            --calc-display-bg: #e9ecef; 
+            --calc-display-text: #212529; 
+            --calc-btn-bg: #f8f9fa; 
+            --calc-btn-text: #343a40; 
+            --calc-btn-hover-bg: #e2e6ea;
+            --calc-operator-bg: #ffc107; 
+            --calc-operator-text: #333;
+            --calc-operator-hover-bg: #e0a800;
+            --calc-equals-bg: #28a745; 
+            --calc-equals-text: #ffffff;
+            --calc-equals-hover-bg: #218838;
+            --calc-clear-bg: #dc3545; 
+            --calc-clear-text: #ffffff;
+            --calc-clear-hover-bg: #c82333;
+            --input-field-bg: #fdfdff; 
+            --input-field-text: var(--text-color);
+            --result-area-bg: var(--calc-display-bg); 
+            --result-text-color: var(--calc-display-text); 
+            --error-text-color: var(--calc-clear-bg); 
+            --action-button-bg: var(--accent-color); 
+            --action-button-hover-bg: color-mix(in srgb, var(--accent-color) 85%, black);
+            --hr-color: var(--border-color); 
+            --diag-sub-toggle-bg: var(--button-bg);
+            --diag-sub-toggle-text: var(--text-color);
+            --diag-sub-toggle-hover-bg: var(--button-hover-bg);
+            --diag-sub-toggle-active-bg: var(--accent-color);
+            --diag-sub-toggle-active-text: var(--accent-text-color);
+            --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-medium: 0 6px 20px rgba(0, 0, 0, 0.1);
         }
 
         html.dark {
-            --background-color: #222b36;
-            --text-color: #e0e5ec;
-            --container-bg-color: #2d3748;
-            --border-color: #4a5568;
-            --input-bg: #3a4354;
-            --input-text: #e0e5ec;
-            --button-bg: #4a5568;
-            --button-hover-bg: #5a6578;
-            --operator-button-bg: #3a4354;
-            --operator-button-hover-bg: #4a5568;
-            --equals-button-bg: #48bb78;
-            --equals-button-hover-bg: #38a169;
-            --clear-button-bg: #fc8181;
-            --clear-button-hover-bg: #f56565;
-            --result-text-color: #e0e5ec;
-            --error-text-color: #fc8181;
-            --hr-color: #718096;
-
-             --control-icon-color: #a0aec0;
-             --control-icon-hover-color: #e0e5ec;
-
-             --primary-color: #63b3ed;
-             --primary-color-hover: #4299e1;
-
-             --toggle-button-bg: #3a4354;
-             --toggle-button-hover-bg: #4a5568;
-             --toggle-button-text: #a0aec0;
-
-             --active-toggle-bg: var(--primary-color);
-             --active-toggle-text: white;
-             --active-toggle-border: var(--primary-color);
-
-             --history-border-color: #4a5568;
-             --history-item-bg: #2d3748;
-
-             --scientific-button-bg: #556555; /* New: Dark mode scientific color */
-             --scientific-button-hover-bg: #657565;
+            --primary-bg: #1a1a1a;
+            --secondary-bg: #2c2c2c;
+            --text-color: #e0e0e0;
+            --border-color: #444444;
+            --header-bg: #2c2c2c;
+            --button-bg: #3d3d3d;
+            --button-hover-bg: #505050;
+            --button-text-color: #e0e0e0;
+            --accent-color: #58a6ff; 
+            --icon-color: #bbb;
+            --calc-display-bg: #383838;
+            --calc-display-text: #f0f0f0;
+            --calc-btn-bg: #484848;
+            --calc-btn-text: #e0e0e0;
+            --calc-btn-hover-bg: #5a5a5a;
+            --calc-operator-bg: #e0a800; 
+            --calc-operator-text: #1a1a1a;
+            --calc-operator-hover-bg: #c99700;
+            --calc-equals-bg: #34c759; 
+            --calc-equals-hover-bg: #2da349;
+            --calc-clear-bg: #ff453a; 
+            --calc-clear-hover-bg: #e03026;
+            --input-field-bg: #3a3f44;
+            --input-field-text: var(--text-color);
+            --result-area-bg: var(--calc-display-bg);
+            --result-text-color: var(--calc-display-text);
+            --error-text-color: #ff7675; 
+            --action-button-hover-bg: color-mix(in srgb, var(--accent-color) 85%, white);
+            --hr-color: #5f6368;
+            --diag-sub-toggle-bg: #4a4c4f; 
+            --diag-sub-toggle-text: var(--text-color);
+            --diag-sub-toggle-hover-bg: #5f6368;
+            --diag-sub-toggle-active-bg: var(--accent-color);
+            --diag-sub-toggle-active-text: #202124; 
+            --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.25);
+            --shadow-medium: 0 6px 20px rgba(0, 0, 0, 0.3);
         }
-
-
+        /* ... (बाकी मूलभूत CSS) ... */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Roboto', sans-serif; /* Use Roboto font */
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            padding: 20px;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            transition: background-color 0.3s ease, color 0.3s ease;
-            box-sizing: border-box;
-             overflow-y: auto; /* Allow body scroll if content is tall */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: var(--primary-bg); color: var(--text-color);
+            line-height: 1.6; transition: background-color 0.3s ease, color 0.3s ease;
+            display: flex; flex-direction: column; min-height: 100vh;
         }
-
-        .calculator-container {
-            background-color: var(--container-bg-color);
-            padding: 25px;
-            border-radius: 15px; /* Slightly more rounded */
-            box-shadow: 8px 8px 15px var(--border-color), -8px -8px 15px var(--container-bg-color); /* Neumorphism effect */
-            width: 100%;
-            max-width: 500px; /* Allow a bit more width on larger screens */
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
+        header { 
+            background-color: var(--header-bg); padding: 15px 30px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: var(--shadow-light); border-bottom: 1px solid var(--border-color);
+            position: sticky; top: 0; z-index: 1000;
         }
-
-        .controls-header {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px; /* Increased gap */
-            margin-bottom: 0;
-            align-items: center;
-             padding-bottom: 15px;
-             border-bottom: 1px solid var(--border-color);
+        .app-logo { font-size: 1.8em; font-weight: 600; color: var(--accent-color); }
+        .controls button {
+            background-color: transparent; color: var(--icon-color); border: none;
+            padding: 8px 12px; margin-left: 10px; cursor: pointer; font-size: 1.2em;
+            border-radius: 6px; transition: background-color 0.2s ease, color 0.2s ease;
         }
-
-        .controls-header .control-icon {
-            background: none;
-            border: none;
-            font-size: 1.4em; /* Slightly larger icons */
-            cursor: pointer;
-            color: var(--control-icon-color);
-            transition: color 0.2s ease;
-            padding: 5px;
-            outline: none; /* Remove focus outline */
+        .controls button:hover { background-color: var(--button-bg); color: var(--accent-color); }
+        #languageToggle .lang-text { font-size: 0.8em; font-weight: bold; }
+        main { flex-grow: 1; padding: 25px; display: flex; flex-direction: column; align-items: center; }
+        #calculator-switcher { width: 100%; max-width: 800px; margin-bottom: 30px; text-align: center; }
+        #calculator-switcher h2 { margin-bottom: 20px; font-size: 1.3em; color: var(--text-color); }
+        .calculator-buttons-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 15px; width: 100%; max-width: 700px; margin: 0 auto;
         }
-        .controls-header .control-icon:hover {
-            color: var(--control-icon-hover-color);
+        .calc-select-btn {
+            padding: 15px 20px; font-size: 1.05em; font-weight: 500;
+            background-color: var(--secondary-bg); color: var(--text-color);
+            border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;
+            transition: all 0.2s ease; box-shadow: var(--shadow-light);
+            text-align: left; display: flex; align-items: center; gap: 10px;
         }
-         .controls-header .control-icon.active {
-             color: var(--primary-color);
-         }
-
-
-        h2 { /* This might be used as a general title above the container if desired */
-            text-align: center;
-            margin-top: 0;
-            margin-bottom: 20px;
-            color: var(--text-color);
-            font-size: 1.8em; /* Larger main title */
+        .calc-select-btn .btn-icon { font-size: 1.3em; color: var(--accent-color); min-width: 20px; text-align: center;}
+        .calc-select-btn:hover { border-color: var(--accent-color); box-shadow: var(--shadow-medium); transform: translateY(-2px);}
+        .calc-select-btn.active {
+            background-color: var(--accent-color); color: var(--accent-text-color);
+            border-color: var(--accent-color); font-weight: bold;
         }
-         /* H3 for section titles inside the container */
-         .calculator-section h3, .history-section h3 {
-             text-align: center;
-             margin-top: 0;
-             margin-bottom: 15px;
-             color: var(--text-color);
-             font-size: 1.4em; /* Slightly larger section titles */
-         }
-          /* H4 for sub-section titles (like CM/Feet diagonal) */
-         .diagonal-sub-calculator h4 {
-             text-align: center;
-             margin-top: 0;
-             margin-bottom: 10px;
-             color: var(--text-color);
-             font-size: 1.2em;
-         }
-
-
-        /* Individual Sections within the container */
-         .calculator-section, .history-section {
-             display: none;
-             flex-direction: column;
-             gap: 15px;
-         }
-
-        /* Standard Calculator Styles */
-        .standard-calculator-section {
-            /* No specific styles needed here */
+        .calc-select-btn.active .btn-icon { color: var(--accent-text-color); }
+        #calculator-host-area { width: 100%; display: flex; justify-content: center; margin-top: 20px;}
+        .calculator-module {
+            background-color: var(--secondary-bg); padding: 25px; border-radius: 12px;
+            box-shadow: var(--shadow-medium); width: 100%; max-width: 480px; 
+            display: none;
         }
+        .calculator-module.active-module { display: block; }
+        .module-title { text-align: center; margin-bottom: 20px; font-size: 1.5em; color: var(--accent-color); }
 
-        #standardCalculatorDisplay {
-            width: 100%;
-            height: 70px; /* Increased height */
-            text-align: right;
-            padding: 0 20px; /* Increased padding */
-            font-size: 2.5em; /* Increased font size */
-            margin-bottom: 15px;
-            border: none; /* Remove default border */
-            background-color: var(--input-bg);
-            color: var(--input-text);
-            box-sizing: border-box;
-            border-radius: 10px; /* Match container style */
-             box-shadow: inset 2px 2px 5px var(--border-color), inset -5px -5px 10px var(--container-bg-color); /* Sunken effect */
-            cursor: default;
-            overflow-x: auto; /* Add scroll for long expressions */
-             white-space: nowrap; /* Prevent wrapping */
+        .simple-calculator { display: flex; flex-direction: column; gap: 20px; max-width: 400px; margin: 0 auto; }
+        .calculator-display { width: 100%; }
+        #calcDisplay {
+            width: 100%; padding: 15px 20px; font-size: 2.2em; text-align: right;
+            border: 1px solid var(--border-color); border-radius: 8px;
+            background-color: var(--calc-display-bg); color: var(--calc-display-text);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06); outline: none;
         }
-
-        .standard-calculator-buttons {
-            display: grid;
-            /* Changed to 5 columns for scientific layout */
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
+        #calcDisplay::placeholder { color: #999; opacity: 0.7; }
+        html.dark #calcDisplay::placeholder { color: #777; }
+        .calculator-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .calc-btn {
+            padding: 20px; font-size: 1.4em; font-weight: 500; border: none; border-radius: 8px;
+            cursor: pointer; background-color: var(--calc-btn-bg); color: var(--calc-btn-text);
+            transition: background-color 0.15s ease, transform 0.1s ease; box-shadow: var(--shadow-light);
         }
+        .calc-btn:hover { background-color: var(--calc-btn-hover-bg); }
+        .calc-btn:active { transform: scale(0.96); }
+        .calc-btn.operator { background-color: var(--calc-operator-bg); color: var(--calc-operator-text); }
+        .calc-btn.operator:hover { background-color: var(--calc-operator-hover-bg); }
+        .calc-btn.equals { background-color: var(--calc-equals-bg); color: var(--calc-equals-text); }
+        .calc-btn.equals:hover { background-color: var(--calc-equals-hover-bg); }
+        .calc-btn.clear, .calc-btn.delete { background-color: var(--calc-clear-bg); color: var(--calc-clear-text); }
+        .calc-btn.clear:hover, .calc-btn.delete:hover { background-color: var(--calc-clear-hover-bg); }
+        .calc-btn.delete { background-color: #ff9500; color: white; }
+        .calc-btn.delete:hover { background-color: #e08500; }
+        html.dark .calc-btn.delete { background-color: #ff9f0a; }
+        html.dark .calc-btn.delete:hover { background-color: #e08d09; }
 
-        .standard-calculator-buttons button {
-            padding: 18px 10px; /* Increased padding */
-            font-size: 1.4em; /* Increased font size */
-            border: none;
-            border-radius: 10px; /* Match container style */
-            cursor: pointer;
-            background-color: var(--button-bg);
-            color: var(--text-color);
-            transition: all 0.2s ease; /* Smooth transition for hover/active */
-            box-shadow: 5px 5px 10px var(--border-color), -5px -5px 10px var(--container-bg-color); /* Raised effect */
-            outline: none;
+        .form-calculator-content { display: flex; flex-direction: column; gap: 18px; }
+        .input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+        .input-group label { font-size: 0.95em; font-weight: 500; color: var(--text-color); }
+        .input-group input[type="number"], .input-group input[type="text"], .input-group input[type="date"], .input-group select {
+            width: 100%; padding: 12px 15px; font-size: 1.1em;
+            border: 1px solid var(--border-color); border-radius: 6px;
+            background-color: var(--input-field-bg); color: var(--input-field-text);
+            outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
-
-        .standard-calculator-buttons button:hover {
-            background-color: var(--button-hover-bg);
-            box-shadow: 2px 2px 5px var(--border-color), -2px -2px 5px var(--container-bg-color); /* Pressed effect */
+        .input-group input[type="date"]::-webkit-calendar-picker-indicator {
+            background: transparent; 
+            bottom: 0; color: transparent; cursor: pointer; height: auto; left: 0;
+            position: absolute; right: 0; top: 0; width: auto;
         }
-         .standard-calculator-buttons button:active {
-             box-shadow: inset 2px 2px 5px var(--border-color), inset -5px -5px 10px var(--container-bg-color); /* Sunken effect on press */
-         }
-
-
-        .standard-calculator-buttons .operator-button {
-            background-color: var(--operator-button-bg);
+        .input-group input:focus, .input-group select:focus, .input-group input[type="date"]:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 30%, transparent);
         }
-        .standard-calculator-buttons .operator-button:hover {
-            background-color: var(--operator-button-hover-bg);
-        }
-         .standard-calculator-buttons .operator-button:active {
-             box-shadow: inset 2px 2px 5px var(--border-color), inset -5px -5px 10px var(--container-bg-color);
-         }
-
-
-        .standard-calculator-buttons .equals-button {
-            background-color: var(--equals-button-bg);
-            color: white;
-             grid-column: span 2; /* Make equals button wider */
-        }
-        .standard-calculator-buttons .equals-button:hover {
-            background-color: var(--equals-button-hover-bg);
-        }
-         .standard-calculator-buttons .equals-button:active {
-             box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2), inset -5px -5px 10px rgba(255,255,255,0.5); /* Darker inset shadow for equals */
-         }
-
-
-        .standard-calculator-buttons .clear-button {
-            background-color: var(--clear-button-bg);
-            color: white;
-             grid-column: span 3; /* Make clear button wider */
-        }
-        .standard-calculator-buttons .clear-button:hover {
-            background-color: var(--clear-button-hover-bg);
-        }
-         .standard-calculator-buttons .clear-button:active {
-              box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2), inset -5px -5px 10px rgba(255,255,255,0.5); /* Darker inset shadow for clear */
-         }
-
-         /* New Scientific Buttons */
-         .standard-calculator-buttons .scientific-button {
-              background-color: var(--scientific-button-bg);
-              font-size: 1.1em; /* Smaller font for function names */
-         }
-          .standard-calculator-buttons .scientific-button:hover {
-             background-color: var(--scientific-button-hover-bg);
-         }
-          .standard-calculator-buttons .scientific-button:active {
-             box-shadow: inset 2px 2px 5px var(--border-color), inset -5px -5px 10px var(--container-bg-color);
-         }
-
-
-        hr { /* Can be removed if using gap in container */
-            display: none; /* Hide horizontal rule */
-        }
-
-
-         /* New Sub-Calculator Toggle Button styles */
-         .sub-calculator-toggles {
-             display: flex;
-             gap: 10px;
-             margin-bottom: 15px;
-             justify-content: center;
-         }
-
-         .sub-calculator-toggles button {
-             flex-grow: 1;
-             padding: 8px 15px;
-             font-size: 1em;
-             border: 1px solid var(--border-color);
-             border-radius: 5px;
-             background-color: var(--toggle-button-bg);
-             color: var(--toggle-button-text);
-             cursor: pointer;
-             transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-             outline: none;
-         }
-
-         .sub-calculator-toggles button:hover {
-             background-color: var(--toggle-button-hover-bg);
-         }
-
-         .sub-calculator-toggles button.active {
-             background-color: var(--active-toggle-bg);
-             color: var(--active-toggle-text);
-             border-color: var(--active-toggle-border);
-             font-weight: bold;
-         }
-
-
-         /* Styles for the individual diagonal calculator sub-sections */
-         .diagonal-sub-calculator {
-              display: none;
-              flex-direction: column;
-              gap: 15px;
-         }
-
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-         .input-group label {
-             font-size: 0.95em;
-         }
-
-
-         .feet-inches-fields {
-             display: flex;
-             gap: 10px;
-             align-items: center;
-         }
-
-         .feet-inches-fields input[type="number"] {
-             flex-grow: 1;
-             width: 40%; /* Adjust width */
-             padding: 12px; /* Match other inputs */
-             border: 1px solid var(--border-color);
-             background-color: var(--input-bg);
-             color: var(--input-text);
-             box-sizing: border-box;
-             border-radius: 5px;
-             outline: none;
-         }
-
-          .feet-inches-fields label {
-              font-size: 0.95em;
-              margin-bottom: 0;
-              flex-shrink: 0;
-          }
-
-
-        .input-group input[type="number"] { /* Style for CM inputs and other single number inputs */
-            width: 100%;
-            padding: 12px; /* Match other inputs */
-            border: 1px solid var(--border-color);
-            background-color: var(--input-bg);
-            color: var(--input-text);
-            box-sizing: border-box;
-            border-radius: 5px;
-            outline: none;
-        }
-         .input-group input[type="number"]:focus {
-              border-color: var(--primary-color); /* Highlight on focus */
-              box-shadow: 0 0 5px rgba(0, 123, 255, 0.2);
-         }
-
-
-        .calculator-section button { /* Apply to calculate buttons within sections */
-            width: 100%;
-            padding: 12px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            margin-top: 10px;
-            outline: none;
-        }
-        .calculator-section button:hover {
-            background-color: var(--primary-color-hover);
-        }
-
-
         .result-area {
-            margin-top: 20px;
-            font-weight: bold;
-            text-align: center;
-            word-break: break-word;
-            font-size: 1.3em; /* Slightly larger result */
-            color: var(--result-text-color);
-            min-height: 1.5em;
+            margin-top: 15px; padding: 15px; background-color: var(--result-area-bg);
+            border-radius: 6px; text-align: center; font-size: 1.25em; font-weight: bold;
+            color: var(--result-text-color); min-height: 1.5em; word-break: break-word;
+        }
+        .result-area .result-label { font-weight: normal; font-size: 0.9em; margin-right: 8px; }
+        .result-area.error { color: var(--error-text-color); }
+        .action-button {
+            width: 100%; padding: 12px; font-size: 1.1em; font-weight: 500;
+            border: none; border-radius: 6px; cursor: pointer; margin-top: 5px;
+            background-color: var(--action-button-bg); color: var(--accent-text-color);
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+        .action-button:hover { background-color: var(--action-button-hover-bg); }
+        .action-button:active { transform: scale(0.98); }
+        hr.form-hr { border: none; border-top: 1px solid var(--hr-color); margin: 20px 0; }
+
+        .emi-details { margin-top: 15px; font-size: 0.9em; text-align: left; }
+        .emi-details p { margin-bottom: 5px; }
+        .emi-details strong { color: var(--accent-color); }
+        
+        #diagonalCalculatorSection .sub-calculator-toggles {
+            display: flex; gap: 10px; margin-bottom: 15px; justify-content: center;
+        }
+        #diagonalCalculatorSection .sub-calculator-toggles button {
+            flex-grow: 1; padding: 8px 15px; font-size: 1em;
+            border: 1px solid var(--border-color); border-radius: 5px;
+            background-color: var(--diag-sub-toggle-bg); color: var(--diag-sub-toggle-text);
+            cursor: pointer; transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+        #diagonalCalculatorSection .sub-calculator-toggles button:hover {
+            background-color: var(--diag-sub-toggle-hover-bg);
+        }
+        #diagonalCalculatorSection .sub-calculator-toggles button.active {
+            background-color: var(--diag-sub-toggle-active-bg);
+            color: var(--diag-sub-toggle-active-text);
+            border-color: var(--diag-sub-toggle-active-bg); 
+            font-weight: 500;
+        }
+        #diagonalCalculatorSection .diagonal-sub-calculator {
+            display: none; 
+            flex-direction: column; gap: 15px;
+        }
+        #diagonalCalculatorSection .feet-inches-fields {
+            display: flex; gap: 10px; align-items: center;
+        }
+        #diagonalCalculatorSection .feet-inches-fields input { flex-grow: 1; }
+        #diagonalCalculatorSection .feet-inches-fields label { margin-bottom: 0; font-size: 0.9em; white-space: nowrap;}
+        #diagonalCalculatorSection .calculator-section-title { 
+            text-align: center; margin-top: 0; margin-bottom: 10px;
+            color: var(--text-color); font-weight: 500; font-size: 1.2em;
+        }
+        #diagonalCalculatorSection .calculator-section-subtitle { 
+             text-align: center; margin-top: 0; margin-bottom: 10px;
+            font-size: 1.1em; color: var(--accent-color); font-weight: 500;
         }
 
-        /* --- History Section Styles --- */
-        .history-section {
-             /* Inherits container styles */
-             gap: 15px;
+        #ageCalculatorSection .date-inputs { display: flex; gap: 10px; justify-content: space-between; }
+        #ageCalculatorSection .date-inputs .input-group { flex-grow: 1; margin-bottom: 0;}
+        #ageResultArea p, #dateDifferenceResultArea p, #circleCalculatorSection .result-area p,
+        #discountResultArea p, #tipResultArea p, #interestResultArea p {
+             margin-bottom: 8px; font-size: 1.1em; 
+        }
+        #ageResultArea strong, #dateDifferenceResultArea strong, #circleCalculatorSection .result-area strong,
+        #discountResultArea strong, #tipResultArea strong, #interestResultArea strong {
+             color: var(--accent-color); 
         }
 
-        .history-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0;
-             padding-bottom: 10px;
-             border-bottom: 1px solid var(--border-color);
+        .interest-type-toggle {
+            display: flex; justify-content: center; margin-bottom: 20px; gap: 10px;
         }
-
-        .history-header h3 {
-            margin: 0;
-            font-size: 1.3em;
-            color: var(--text-color);
+        .interest-type-toggle button {
+            padding: 10px 20px; font-size: 1em; background-color: var(--button-bg);
+            color: var(--button-text-color); border: 1px solid var(--border-color);
+            border-radius: 6px; cursor: pointer; transition: background-color 0.2s, color 0.2s;
         }
-
-        .history-header button {
-             padding: 5px 10px;
-             font-size: 0.9em;
-             background-color: var(--clear-button-bg);
-             color: white;
-             border: none;
-             border-radius: 5px;
-             cursor: pointer;
-             transition: background-color 0.2s ease;
-             outline: none;
+        .interest-type-toggle button:hover { background-color: var(--button-hover-bg); }
+        .interest-type-toggle button.active {
+            background-color: var(--accent-color); color: var(--accent-text-color);
+            border-color: var(--accent-color);
         }
-        .history-header button:hover {
-             background-color: var(--clear-button-hover-bg);
-        }
-
-
-        #historyList {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-             max-height: 300px;
-             overflow-y: auto;
-        }
-
-        #historyList li {
-            border: 1px solid var(--history-border-color);
-            border-radius: 8px; /* Slightly more rounded */
-            padding: 15px; /* More padding */
-            margin-bottom: 10px;
-            background-color: var(--history-item-bg);
-            word-break: break-word;
-             font-size: 0.95em; /* Slightly larger font */
-             box-shadow: 2px 2px 5px rgba(0,0,0,0.05); /* Subtle shadow */
-        }
-         #historyList li strong {
-             display: block;
-             margin-bottom: 5px; /* More space */
-             font-size: 1.1em; /* Larger input/result text */
-             color: var(--result-text-color); /* Use result color for emphasis */
-         }
-         #historyList li .history-date {
-             display: block;
-             font-size: 0.8em;
-             color: var(--control-icon-color);
-             margin-top: 8px; /* More space */
-         }
-          #historyList li:last-child {
-              margin-bottom: 0;
-          }
-         #historyList li:hover {
-              background-color: var(--toggle-button-hover-bg); /* Highlight on hover */
-         }
-
-         /* Style for "No history yet." message */
-         #historyList li[style*="text-align: center"] {
-              border: none;
-              background-color: transparent;
-              box-shadow: none;
-              font-style: italic;
-              color: var(--text-color); /* Use regular text color */
-              padding: 10px;
-         }
-
-
+        #compoundingFrequencyGroup { display: none; }
     </style>
 </head>
 <body>
-
-    <div class="calculator-container">
-
-        <div class="controls-header">
-             <button id="toggleStandardIcon" class="control-icon" title="Standard Calculator">
-                 <i class="fas fa-calculator"></i>
-             </button>
-
-             <button id="toggleEmiIcon" class="control-icon" title="Show EMI Calculator">
-                 <i class="fas fa-money-bill-wave"></i> </button>
-
-             <button id="toggleDiagonalIcon" class="control-icon" title="Show Diagonal Calculator">
-                 <i class="fas fa-ruler-combined"></i> </button>
-
-              <button id="toggleHistoryIcon" class="control-icon" title="Show History">
-                 <i class="fas fa-history"></i> </button>
-
-             <button id="darkModeToggleBtn" onclick="toggleDarkMode()" class="control-icon" title="Toggle Dark Mode">
-                 <i class="fas fa-moon"></i>
-             </button>
+    <header>
+        <h1 class="app-logo" data-translate-key="appHeader">कैलकुलेटर</h1>
+        <div class="controls">
+            <button id="languageToggle" title="Change Language"><span class="lang-text">EN</span></button>
+            <button id="themeToggle" title="Toggle Dark/Light Mode"><i class="fas fa-moon"></i></button>
         </div>
+    </header>
 
+    <main>
+        <nav id="calculator-switcher">
+            <h2 data-translate-key="selectCalculatorTitle">एक कैलकुलेटर चुनें:</h2>
+            <div class="calculator-buttons-grid">
+                <button class="calc-select-btn active" data-calculator="simple"><i class="fas fa-calculator btn-icon"></i><span data-translate-key="simpleCalcButton">साधारण</span></button>
+                <button class="calc-select-btn" data-calculator="emi"><i class="fas fa-hand-holding-usd btn-icon"></i><span data-translate-key="emiCalcButton">ईएमआई</span></button>
+                <button class="calc-select-btn" data-calculator="diagonal"><i class="fas fa-vector-square btn-icon"></i><span data-translate-key="diagCalcButton">विकर्ण</span></button>
+                <button class="calc-select-btn" data-calculator="age"><i class="fas fa-birthday-cake btn-icon"></i><span data-translate-key="ageCalcButton">आयु</span></button>
+                <button class="calc-select-btn" data-calculator="dateDifference"><i class="fas fa-calendar-alt btn-icon"></i><span data-translate-key="dateDiffCalcButton">तारीख अंतर</span></button>
+                <button class="calc-select-btn" data-calculator="circle"><i class="fas fa-circle-notch btn-icon"></i><span data-translate-key="circleCalcButton">वृत्त</span></button>
+                <button class="calc-select-btn" data-calculator="interest"><i class="fas fa-piggy-bank btn-icon"></i><span data-translate-key="interestCalcButton">ब्याज</span></button>
+                <button class="calc-select-btn" data-calculator="discount"><i class="fas fa-tags btn-icon"></i><span data-translate-key="discountCalcButton">छूट</span></button>
+                <button class="calc-select-btn" data-calculator="tip"><i class="fas fa-concierge-bell btn-icon"></i><span data-translate-key="tipCalcButton">टिप</span></button>
+            </div>
+        </nav>
 
-        <div id="standardCalculatorSection" class="calculator-section">
-            <h3 data-translate-key="standardCalculatorTitle">Standard Calculator</h3>
-            <input type="text" id="standardCalculatorDisplay" value="0" readonly>
+        <div id="calculator-host-area">
+            <!-- सभी पिछले कैलकुलेटरों का HTML यहाँ संक्षिप्त रूप में -->
+            <section id="simpleCalculatorSection" class="calculator-module active-module"> <h3 class="module-title" data-translate-key="simpleCalcTitle">साधारण कैलकुलेटर</h3> <div class="simple-calculator"> <div class="calculator-display"><input type="text" id="calcDisplay" readonly placeholder="0"></div> <div class="calculator-buttons"> <button class="calc-btn clear" data-action="clear">C</button> <button class="calc-btn delete" data-action="delete">DEL</button> <button class="calc-btn operator" data-value="%">%</button> <button class="calc-btn operator" data-value="/">÷</button> <button class="calc-btn number" data-value="7">7</button> <button class="calc-btn number" data-value="8">8</button> <button class="calc-btn number" data-value="9">9</button> <button class="calc-btn operator" data-value="*">×</button> <button class="calc-btn number" data-value="4">4</button> <button class="calc-btn number" data-value="5">5</button> <button class="calc-btn number" data-value="6">6</button> <button class="calc-btn operator" data-value="-">−</button> <button class="calc-btn number" data-value="1">1</button> <button class="calc-btn number" data-value="2">2</button> <button class="calc-btn number" data-value="3">3</button> <button class="calc-btn operator" data-value="+">+</button> <button class="calc-btn number" data-value="00">00</button> <button class="calc-btn number" data-value="0">0</button> <button class="calc-btn number" data-value=".">.</button> <button class="calc-btn equals" data-action="calculate">=</button> </div> </div> </section>
+            <section id="emiCalculatorSection" class="calculator-module"> <h3 class="module-title" data-translate-key="emiCalcTitle">ईएमआई कैलकुलेटर</h3> <div class="form-calculator-content"> <div class="input-group"> <label for="principalAmt" data-translate-key="principalAmountLabel">मूलधन (₹):</label> <input type="number" id="principalAmt" data-placeholder-key="principalPlaceholder"> </div> <div class="input-group"> <label for="interestRate" data-translate-key="interestRateLabel">ब्याज दर (% प्रति वर्ष):</label> <input type="number" id="interestRate" data-placeholder-key="interestPlaceholder"> </div> <div class="input-group"> <label for="loanTenureValue" data-translate-key="loanTenureLabel">अवधि:</label> <div style="display: flex; gap: 10px;"> <input type="number" id="loanTenureValue" data-placeholder-key="tenurePlaceholder" style="flex-grow: 2;"> <select id="loanTenureUnit" style="flex-grow: 1;"> <option value="years" data-translate-key="yearsUnit">वर्ष</option> <option value="months" data-translate-key="monthsUnit">महीने</option> </select> </div> </div> <button id="calculateEmiBtn" class="action-button" data-translate-key="calculateEmiButton">ईएमआई की गणना करें</button> <div id="emiResultArea" class="result-area" style="display: none;"> <p><span data-translate-key="monthlyEmiLabel">मासिक ईएमआई:</span> <strong id="monthlyEmiValue"></strong></p> <div class="emi-details"> <p><span data-translate-key="totalPrincipalPaidLabel">कुल मूलधन:</span> <strong id="totalPrincipalPaidValue"></strong></p> <p><span data-translate-key="totalInterestPaidLabel">कुल ब्याज:</span> <strong id="totalInterestPaidValue"></strong></p> <p><span data-translate-key="totalAmountPaidLabel">कुल भुगतान:</span> <strong id="totalAmountPaidValue"></strong></p> </div> </div> <div id="emiErrorArea" class="result-area error" style="display: none;"></div> </div> </section>
+            <section id="diagonalCalculatorSection" class="calculator-module"> <h3 class="module-title" data-translate-key="diagCalcTitle">विकर्ण कैलकुलेटर</h3> <div class="form-calculator-content"> <div class="sub-calculator-toggles"> <button id="showCmCalcBtn" class="active" data-translate-key="diagCmButton">CM</button> <button id="showFeetCalcBtn" data-translate-key="diagFeetInchButton">Feet/Inches</button> </div> <div id="diagonalCmCalculatorSection" class="diagonal-sub-calculator"> <div class="calculator-section-subtitle" data-translate-key="diagCmTitleSub">CM Calculator</div> <div class="input-group"> <label for="cmSideA" data-translate-key="diagSideA">भुजा A (cm):</label> <input type="number" id="cmSideA" data-placeholder-key="diagSidePlaceholder"> </div> <div class="input-group"> <label for="cmSideB" data-translate-key="diagSideB">भुजा B (cm):</label> <input type="number" id="cmSideB" data-placeholder-key="diagSidePlaceholder"> </div> <button id="calculateCmDiagonalBtn" class="action-button" data-translate-key="diagCalculateButton">विकर्ण की गणना करें</button> <div id="diagonalCmResult" class="result-area"></div> </div> <div id="diagonalFeetCalculatorSection" class="diagonal-sub-calculator" style="display: none;"> <div class="calculator-section-subtitle" data-translate-key="diagFeetInchTitleSub">Feet/Inches Calculator</div> <div class="input-group"> <label data-translate-key="diagSideA">भुजा A:</label> <div class="feet-inches-fields"> <input type="number" id="feetSideAFeet" data-placeholder-key="diagFeetPlaceholder"> <label for="feetSideAFeet" data-translate-key="diagFeetUnit">ft</label> <input type="number" id="feetSideAInches" data-placeholder-key="diagInchPlaceholder"> <label for="feetSideAInches" data-translate-key="diagInchUnit">in</label> </div> </div> <div class="input-group"> <label data-translate-key="diagSideB">भुजा B:</label> <div class="feet-inches-fields"> <input type="number" id="feetSideBFeet" data-placeholder-key="diagFeetPlaceholder"> <label for="feetSideBFeet" data-translate-key="diagFeetUnit">ft</label> <input type="number" id="feetSideBInches" data-placeholder-key="diagInchPlaceholder"> <label for="feetSideBInches" data-translate-key="diagInchUnit">in</label> </div> </div> <button id="calculateFeetDiagonalBtn" class="action-button" data-translate-key="diagCalculateButton">विकर्ण की गणना करें</button> <div id="diagonalFeetResult" class="result-area"></div> </div> </div> </section>
+            <section id="ageCalculatorSection" class="calculator-module"> <h3 class="module-title" data-translate-key="ageCalcTitle">आयु कैलकुलेटर</h3> <div class="form-calculator-content"> <div class="input-group"> <label for="birthDate" data-translate-key="birthDateLabel">आपकी जन्मतिथि:</label> <input type="date" id="birthDate"> </div> <button id="calculateAgeBtn" class="action-button" data-translate-key="calculateAgeButton">आयु की गणना करें</button> <div id="ageResultArea" class="result-area" style="display: none;"> <p><span data-translate-key="yourAgeIsLabel">आपकी आयु है:</span></p> <p><strong id="ageYears"></strong> <span data-translate-key="yearsUnit">वर्ष</span></p> <p><strong id="ageMonths"></strong> <span data-translate-key="monthsUnit">महीने</span></p> <p><strong id="ageDays"></strong> <span data-translate-key="daysUnit">दिन</span></p> </div> <div id="ageErrorArea" class="result-area error" style="display: none;"></div> </div> </section>
+            <section id="dateDifferenceCalculatorSection" class="calculator-module">  <h3 class="module-title" data-translate-key="dateDiffCalcTitle">दो तारीखों के बीच अंतर</h3> <div class="form-calculator-content"> <div class="input-group"> <label for="startDate" data-translate-key="startDateLabel">प्रारंभ तिथि:</label> <input type="date" id="startDate"> </div> <div class="input-group"> <label for="endDate" data-translate-key="endDateLabel">अंतिम तिथि:</label> <input type="date" id="endDate"> </div> <button id="calculateDateDiffBtn" class="action-button" data-translate-key="calculateDateDiffButton">अंतर की गणना करें</button> <div id="dateDifferenceResultArea" class="result-area" style="display: none;"> <p><span data-translate-key="differenceLabel">अंतर:</span></p> <p><strong id="diffYears"></strong> <span data-translate-key="yearsUnit">वर्ष</span>,  <strong id="diffMonths"></strong> <span data-translate-key="monthsUnit">महीने</span>,  <strong id="diffDays"></strong> <span data-translate-key="daysUnit">दिन</span> </p> <hr class="form-hr" style="margin: 10px 0;"> <p><span data-translate-key="totalDifferenceLabel">कुल अंतर:</span></p> <p><strong id="totalDiffDays"></strong> <span data-translate-key="daysUnit">दिन</span></p> <p><strong id="totalDiffWeeks"></strong> <span data-translate-key="weeksUnit">सप्ताह</span> (<span data-translate-key="andUnit">और</span> <strong id="remainingDaysAfterWeeks"></strong> <span data-translate-key="daysUnit">दिन</span>)</p> </div> <div id="dateDiffErrorArea" class="result-area error" style="display: none;"></div> </div> </section>
+            <section id="circleCalculatorSection" class="calculator-module"> <h3 class="module-title" data-translate-key="circleCalcTitle">वृत्त कैलकुलेटर</h3> <div class="form-calculator-content"> <div class="input-group"> <label for="circleInputType" data-translate-key="circleInputTypeLabel">इनपुट प्रकार:</label> <select id="circleInputType"> <option value="radius" data-translate-key="radiusLabel">त्रिज्या</option> <option value="diameter" data-translate-key="diameterLabel">व्यास</option> </select> </div> <div class="input-group"> <label for="circleInputValue" data-translate-key="circleValueLabel">मान:</label> <input type="number" id="circleInputValue" data-placeholder-key="circleValuePlaceholder"> </div> <button id="calculateCircleBtn" class="action-button" data-translate-key="circleCalculateButton">गणना करें</button> <div id="circleResultArea" class="result-area" style="display: none;"> <p><span data-translate-key="circumferenceLabel">परिधि:</span> <strong id="circumferenceValue"></strong></p> <p><span data-translate-key="areaLabel">क्षेत्रफल:</span> <strong id="areaValue"></strong></p> <p style="display:none;"><span data-translate-key="diameterLabelShort">व्यास:</span> <strong id="calculatedDiameterValue"></strong></p> <p style="display:none;"><span data-translate-key="radiusLabelShort">त्रिज्या:</span> <strong id="calculatedRadiusValue"></strong></p> </div> <div id="circleErrorArea" class="result-area error" style="display: none;"></div> </div> </section>
+            <section id="interestCalculatorSection" class="calculator-module"> <h3 class="module-title" data-translate-key="interestCalcTitle">ब्याज कैलकुलेटर</h3> <div class="form-calculator-content"> <div class="interest-type-toggle"> <button id="switchToSimpleInterest" class="active" data-translate-key="simpleInterestLabel">साधारण ब्याज</button> <button id="switchToCompoundInterest" data-translate-key="compoundInterestLabel">चक्रवृद्धि ब्याज</button> </div> <div class="input-group"> <label for="interestPrincipal" data-translate-key="principalAmountLabel">मूलधन (₹):</label> <input type="number" id="interestPrincipal" data-placeholder-key="principalPlaceholder"> </div> <div class="input-group"> <label for="interestRateAnnual" data-translate-key="interestRateLabel">ब्याज दर (% प्रति वर्ष):</label> <input type="number" id="interestRateAnnual" data-placeholder-key="interestPlaceholder"> </div> <div class="input-group"> <label for="interestTimeYears" data-translate-key="timeInYearsLabel">समय (वर्षों में):</label> <input type="number" id="interestTimeYears" data-placeholder-key="tenurePlaceholder"> </div> <div class="input-group" id="compoundingFrequencyGroup"> <label for="compoundingFrequency" data-translate-key="compoundingFreqLabel">चक्रवृद्धि आवृत्ति:</label> <select id="compoundingFrequency"> <option value="1" data-translate-key="annuallyLabel">वार्षिक</option> <option value="2" data-translate-key="halfYearlyLabel">अर्धवार्षिक</option> <option value="4" data-translate-key="quarterlyLabel">त्रैमासिक</option> <option value="12" data-translate-key="monthlyLabelFreq">मासिक</option> </select> </div> <button id="calculateInterestBtn" class="action-button" data-translate-key="calculateInterestButton">ब्याज की गणना करें</button> <div id="interestResultArea" class="result-area" style="display: none;"> <p><span data-translate-key="interestTypeCalculatedLabel">गणना प्रकार:</span> <strong id="interestTypeResult"></strong></p> <p><span data-translate-key="principalAmountLabel">मूलधन:</span> <strong id="resultPrincipalValue"></strong></p> <p><span data-translate-key="interestEarnedLabel">ब्याज अर्जित:</span> <strong id="interestEarnedValue"></strong></p> <p><span data-translate-key="totalAmountLabel">कुल राशि:</span> <strong id="totalAmountWithInterestValue"></strong></p> </div> <div id="interestErrorArea" class="result-area error" style="display: none;"></div> </div> </section>
 
-            <div class="standard-calculator-buttons">
-                 <button class="scientific-button" onclick="appendValueStandard('Math.sin(')">sin</button>
-                 <button class="scientific-button" onclick="appendValueStandard('Math.cos(')">cos</button>
-                 <button class="scientific-button" onclick="appendValueStandard('Math.tan(')">tan</button>
-                 <button class="scientific-button" onclick="appendValueStandard('Math.sqrt(')">√</button>
-                 <button class="scientific-button" onclick="appendValueStandard('^')">^</button> <button class="scientific-button" onclick="appendValueStandard('(')">(</button>
-                 <button class="scientific-button" onclick="appendValueStandard(')')">)</button>
-                 <button class="scientific-button" onclick="appendValueStandard('Math.PI')">π</button>
-                 <button class="scientific-button" onclick="appendValueStandard('Math.E')">e</button>
-                 <button class="scientific-button operator-button" onclick="appendValueStandard('/')">/</button> <button onclick="appendValueStandard('7')">7</button>
-                <button onclick="appendValueStandard('8')">8</button>
-                <button onclick="appendValueStandard('9')">9</button>
-                <button onclick="appendValueStandard('*')" class="operator-button">×</button> <button class="scientific-button" onclick="appendValueStandard('Math.log10(')">log</button> <button onclick="appendValueStandard('4')">4</button>
-                <button onclick="appendValueStandard('5')">5</button>
-                <button onclick="appendValueStandard('6')">6</button>
-                <button onclick="appendValueStandard('-')" class="operator-button">-</button> <button class="scientific-button" onclick="appendValueStandard('Math.log(')">ln</button> <button onclick="appendValueStandard('1')">1</button>
-                <button onclick="appendValueStandard('2')">2</button>
-                <button onclick="appendValueStandard('3')">3</button>
-                <button onclick="appendValueStandard('+')" class="operator-button">+</button> <button onclick="appendValueStandard('.')">.</button> <button onclick="appendValueStandard('0')">0</button>
-                 <button onclick="clearStandardDisplay()" class="clear-button" style="grid-column: span 2;">C</button> <button onclick="calculateStandard()" class="equals-button" style="grid-column: span 2;">=</button> </div>
+            <!-- छूट कैलकुलेटर मॉड्यूल -->
+            <section id="discountCalculatorSection" class="calculator-module">
+                <h3 class="module-title" data-translate-key="discountCalcTitle">छूट कैलकुलेटर</h3>
+                <div class="form-calculator-content">
+                    <div class="input-group">
+                        <label for="originalPrice" data-translate-key="originalPriceLabel">मूल मूल्य:</label>
+                        <input type="number" id="originalPrice" data-placeholder-key="originalPricePlaceholder">
+                    </div>
+                    <div class="input-group">
+                        <label for="discountPercent" data-translate-key="discountPercentLabel">छूट (%):</label>
+                        <input type="number" id="discountPercent" data-placeholder-key="discountPercentPlaceholder">
+                    </div>
+                    <button id="calculateDiscountBtn" class="action-button" data-translate-key="calculateDiscountButton">छूट की गणना करें</button>
+                    <div id="discountResultArea" class="result-area" style="display: none;">
+                        <p><span data-translate-key="amountSavedLabel">बचत राशि:</span> <strong id="amountSavedValue"></strong></p>
+                        <p><span data-translate-key="finalPriceLabel">अंतिम मूल्य:</span> <strong id="finalPriceValue"></strong></p>
+                    </div>
+                    <div id="discountErrorArea" class="result-area error" style="display: none;"></div>
+                </div>
+            </section>
+
+            <!-- टिप कैलकुलेटर मॉड्यूल -->
+            <section id="tipCalculatorSection" class="calculator-module">
+                <h3 class="module-title" data-translate-key="tipCalcTitle">टिप कैलकुलेटर</h3>
+                <div class="form-calculator-content">
+                    <div class="input-group">
+                        <label for="billAmount" data-translate-key="billAmountLabel">बिल राशि:</label>
+                        <input type="number" id="billAmount" data-placeholder-key="billAmountPlaceholder">
+                    </div>
+                    <div class="input-group">
+                        <label for="tipPercent" data-translate-key="tipPercentLabel">टिप (%):</label>
+                        <input type="number" id="tipPercent" data-placeholder-key="tipPercentPlaceholder"> <!-- डिफ़ॉल्ट 15 हटाया -->
+                    </div>
+                    <div class="input-group">
+                        <label for="numberOfPeople" data-translate-key="numberOfPeopleLabel">लोगों की संख्या:</label>
+                        <input type="number" id="numberOfPeople" value="1" data-placeholder-key="numberOfPeoplePlaceholder">
+                    </div>
+                    <button id="calculateTipBtn" class="action-button" data-translate-key="calculateTipButton">टिप की गणना करें</button>
+                    <div id="tipResultArea" class="result-area" style="display: none;">
+                        <p><span data-translate-key="tipAmountLabel">टिप राशि:</span> <strong id="tipAmountValue"></strong></p>
+                        <p><span data-translate-key="totalAmountWithTipLabel">कुल राशि (टिप सहित):</span> <strong id="totalAmountWithTipValue"></strong></p>
+                        <p id="tipPerPersonRow" style="display:none;"><span data-translate-key="amountPerPersonLabel">प्रति व्यक्ति राशि:</span> <strong id="amountPerPersonValue"></strong></p>
+                    </div>
+                    <div id="tipErrorArea" class="result-area error" style="display: none;"></div>
+                </div>
+            </section>
         </div>
-        <div id="emiCalculatorSection" class="calculator-section">
-            <h3 data-translate-key="emiCalculatorTitle">EMI Calculator</h3>
-            <div class="input-group">
-                <label for="loanPrincipal" data-translate-key="principalAmount">Principal Amount:</label>
-                <input type="number" id="loanPrincipal" min="0" placeholder="₹">
-            </div>
-            <div class="input-group">
-                <label for="loanInterestRate" data-translate-key="interestRate">Interest Rate (% Annual):</label>
-                <input type="number" id="loanInterestRate" min="0" step="0.01" placeholder="%">
-            </div>
-            <div class="input-group">
-                <label for="loanTenureYears" data-translate-key="loanTenure">Tenure (Years):</label>
-                <input type="number" id="loanTenureYears" min="1" placeholder="Years">
-            </div>
+    </main>
 
-            <button onclick="calculateEMI()" data-translate-key="calculateEmi">Calculate EMI</button>
-
-            <div id="emiResult" class="result-area"></div>
-        </div>
-        <div id="diagonalCalculatorSection" class="calculator-section">
-            <h3 data-translate-key="diagonalCalculatorTitle">Diagonal Calculator</h3>
-
-            <div class="sub-calculator-toggles">
-                 <button id="showCmCalcBtn" data-translate-key="cmCalculatorTitle">CM Calculator</button>
-                 <button id="showFeetCalcBtn" data-translate-key="feetCalculatorTitle">Feet/Inches Calculator</button>
-            </div>
-
-
-            <div id="diagonalCmCalculatorSection" class="diagonal-sub-calculator">
-                 <h4 data-translate-key="cmCalculatorTitle">CM Calculator</h4>
-                 <div class="input-group cm-inputs">
-                    <label for="cmSideA" data-translate-key="sideA">Side A:</label>
-                    <input type="number" id="cmSideA" min="0" placeholder="cm">
-                 </div>
-                 <div class="input-group cm-inputs">
-                     <label for="cmSideB" data-translate-key="sideB">Side B:</label>
-                     <input type="number" id="cmSideB" min="0" step="0.01" placeholder="cm">
-                 </div>
-
-                 <button onclick="calculateCmDiagonal()" data-translate-key="calculateDiagonal">Calculate Diagonal</button>
-
-                 <div id="diagonalCmResult" class="result-area"></div>
-            </div>
-
-
-            <div id="diagonalFeetCalculatorSection" class="diagonal-sub-calculator">
-                 <h4 data-translate-key="feetCalculatorTitle">Feet/Inches Calculator</h4>
-                 <div class="input-group">
-                     <label data-translate-key="sideA">Side A:</label>
-                     <div class="feet-inches-fields">
-                         <input type="number" id="feetSideAFeet" min="0" placeholder="Feet">
-                         <label for="feetSideAFeet" data-translate-key="feetShort">ft</label>
-                         <input type="number" id="feetSideAInches" min="0" step="0.01" placeholder="Inches">
-                         <label for="feetSideAInches" data-translate-key="inchesShort">in</label>
-                     </div>
-                 </div>
-                 <div class="input-group">
-                     <label data-translate-key="sideB">Side B:</label>
-                     <div class="feet-inches-fields">
-                         <input type="number" id="feetSideBFeet" min="0" placeholder="Feet">
-                         <label for="feetSideBFeet" data-translate-key="feetShort">ft</label>
-                         <input type="number" id="feetSideBInches" min="0" step="0.01" placeholder="Inches">
-                         <label for="feetSideBInches" data-translate-key="inchesShort">in</label>
-                     </div>
-                 </div>
-
-                 <button onclick="calculateFeetDiagonal()" data-translate-key="calculateDiagonal">Calculate Diagonal</button>
-
-                 <div id="diagonalFeetResult" class="result-area"></div>
-             </div>
-
-
-        </div>
-        <div id="historySection" class="history-section">
-            <div class="history-header">
-                <h3 data-translate-key="historyTitle">Calculation History</h3>
-                <button id="clearHistoryBtn" data-translate-key="clearHistory">Clear History</button>
-            </div>
-            <ul id="historyList">
-                </ul>
-        </div>
-        </div> <script>
-        // --- JavaScript Code ---
-
-        // --- Translations (Only English) ---
-        const translations = {
-            'en': {
-                combinedCalculatorTitle: 'Calculator', // General title (can be removed or used somewhere)
-                standardCalculatorTitle: 'Standard Calculator',
-                emiCalculatorTitle: 'EMI Calculator',
-                principalAmount: 'Principal Amount:',
-                interestRate: 'Interest Rate (% Annual):',
-                loanTenure: 'Tenure (Years):',
-                calculateEmi: 'Calculate EMI',
-                alertEnterValidValues: 'Please enter valid values.',
-                calculationError: 'Calculation error occurred. Please check values.',
-                monthlyEmiResult: 'Monthly EMI: {amount}',
-
-                ToggleDarkMode: 'Toggle Dark Mode',
-
-                StandardCalcError: 'Error',
-
-                // Header Section Toggle Icon Tooltips (New)
-                showStandardTooltip: 'Show Standard Calculator',
-                hideStandardTooltip: 'Hide Standard Calculator',
-                showEmiTooltip: 'Show EMI Calculator',
-                hideEmiTooltip: 'Hide EMI Calculator',
-                showDiagonalTooltip: 'Show Diagonal Calculator',
-                hideDiagonalTooltip: 'Hide Diagonal Calculator',
-                showHistoryTooltip: 'Show History',
-                hideHistoryTooltip: 'Hide History',
-
-
-                // Diagonal Calculator Translations
-                diagonalCalculatorTitle: 'Diagonal Calculator',
-                cmCalculatorTitle: 'CM Calculator',
-                feetCalculatorTitle: 'Feet/Inches Calculator',
-
-                sideA: 'Side A:',
-                sideB: 'Side B:',
-                calculateDiagonal: 'Calculate Diagonal',
-
-                // Output Results (Specific to each calculator)
-                diagonalResultCm: '{amount} cm',
-                diagonalResultFeet: '{amount} feet',
-
-                 // Feet/Inches Labels
-                 feetShort: 'ft',
-                 inchesShort: 'in',
-
-                 // Validation Messages (Specific to each calculator)
-                 alertEnterValidCmSides: 'Please enter valid positive side lengths in cm.',
-                 alertEnterValidFeetInches: 'Please enter valid positive numbers for Feet and Inches.',
-
-                diagonalCalculationError: 'Diagonal calculation error occurred. Please check values.',
-
-
-                // History Translations
-                historyTitle: 'Calculation History',
-                clearHistory: 'Clear History',
-                 historyItemStandard: 'Standard: {input} = {result}',
-                 historyItemEmi: 'EMI: Principal: {principal}, Rate: {rate}%, Tenure: {tenure} yrs = {result}',
-                 historyItemDiagonalCm: 'Diagonal (CM): Sides: {sideA} cm, {sideB} cm = {result}',
-                 historyItemDiagonalFeet: 'Diagonal (Feet): Sides: {sideA} ft {sideAInches} in, {sideB} ft {sideBInches} in = {result}',
-                 noHistory: 'No history yet.'
+    <script>
+        const translations = { /* ... (पिछला पूरा अनुवाद ऑब्जेक्ट यहाँ) ... */ 
+            en: {
+                appTitle: "Calculator Hub", appHeader: "Calculators", selectCalculatorTitle: "Select a Calculator:",
+                simpleCalcButton: "Simple", simpleCalcTitle: "Simple Calculator",
+                emiCalcButton: "EMI", emiCalcTitle: "EMI Calculator",
+                diagCalcButton: "Diagonal", diagCalcTitle: "Diagonal Calculator",
+                ageCalcButton: "Age", ageCalcTitle: "Age Calculator",
+                dateDiffCalcButton: "Date Diff", dateDiffCalcTitle: "Date Difference",
+                circleCalcButton: "Circle", circleCalcTitle: "Circle Calculator",
+                interestCalcButton: "Interest", interestCalcTitle: "Interest Calculator",
+                discountCalcButton: "Discount", discountCalcTitle: "Discount Calculator",
+                tipCalcButton: "Tip", tipCalcTitle: "Tip Calculator",
+                originalPriceLabel: "Original Price:", originalPricePlaceholder: "Enter original price",
+                discountPercentLabel: "Discount (%):", discountPercentPlaceholder: "Enter discount %",
+                calculateDiscountButton: "Calculate Discount",
+                amountSavedLabel: "Amount Saved:", finalPriceLabel: "Final Price:",
+                discountInvalidInputError: "Please enter valid positive numbers for price and discount.",
+                billAmountLabel: "Bill Amount:", billAmountPlaceholder: "Enter bill amount",
+                tipPercentLabel: "Tip (%):", tipPercentPlaceholder: "e.g., 15 (optional)",
+                numberOfPeopleLabel: "Number of People:", numberOfPeoplePlaceholder: "e.g., 1",
+                calculateTipButton: "Calculate Tip",
+                tipAmountLabel: "Tip Amount:", totalAmountWithTipLabel: "Total Amount (with Tip):",
+                amountPerPersonLabel: "Amount per Person:",
+                tipInvalidInputError: "Please enter a valid positive bill amount. Tip % can be 0 or more.",
+                tipInvalidPeopleError: "Number of people must be a positive whole number.",
+                simpleInterestLabel: "Simple Interest", compoundInterestLabel: "Compound Interest",
+                timeInYearsLabel: "Time (in Years):",
+                compoundingFreqLabel: "Compounding Frequency:",
+                annuallyLabel: "Annually", halfYearlyLabel: "Half-yearly", quarterlyLabel: "Quarterly", monthlyLabelFreq: "Monthly",
+                calculateInterestButton: "Calculate Interest", interestTypeCalculatedLabel: "Calculated As:",
+                interestEarnedLabel: "Interest Earned:", interestInvalidInputError: "Please enter valid positive values for all fields.",
+                circleInputTypeLabel: "Input Type:", radiusLabel: "Radius", diameterLabel: "Diameter",
+                radiusLabelShort: "Radius:", diameterLabelShort: "Diameter:", 
+                circleValueLabel: "Value:", circleValuePlaceholder: "Enter value",
+                circleCalculateButton: "Calculate", circumferenceLabel: "Circumference:", areaLabel: "Area:",
+                circleInvalidInputError: "Please enter a valid positive value for the circle.",
+                startDateLabel: "Start Date:", endDateLabel: "End Date:",
+                calculateDateDiffButton: "Calculate Difference",
+                differenceLabel: "Difference:", totalDifferenceLabel: "Total Difference:",
+                weeksUnit: "Weeks", andUnit: "and",
+                dateDiffInvalidError: "Please enter valid start and end dates.",
+                dateDiffEndBeforeStartError: "End date cannot be before start date.",
+                birthDateLabel: "Your Date of Birth:", calculateAgeButton: "Calculate Age",
+                yourAgeIsLabel: "Your Age is:", daysUnit: "Days",
+                ageInvalidDateError: "Please enter a valid date of birth.",
+                ageFutureDateError: "Date of birth cannot be in the future.",
+                principalAmountLabel: "Principal Amount (₹):", interestRateLabel: "Interest Rate (% p.a.):",
+                loanTenureLabel: "Loan Tenure:", yearsUnit: "Years", monthsUnit: "Months",
+                calculateEmiButton: "Calculate EMI", monthlyEmiLabel: "Monthly EMI:",
+                totalPrincipalPaidLabel: "Total Principal:", totalInterestPaidLabel: "Total Interest:",
+                totalAmountPaidLabel: "Total Payment:",
+                principalPlaceholder: "e.g., 100000", interestPlaceholder: "e.g., 10.5", tenurePlaceholder: "e.g., 5",
+                diagCmButton: "CM", diagFeetInchButton: "Feet/Inches",
+                diagCmTitleSub: "CM Calculator", diagFeetInchTitleSub: "Feet/Inches Calculator",
+                diagSideA: "Side A:", diagSideB: "Side B:",
+                diagSidePlaceholder: "Enter length", diagFeetPlaceholder:"ft", diagInchPlaceholder:"in",
+                diagCalculateButton: "Calculate Diagonal",
+                diagResultCm: "Diagonal: {amount} cm", diagResultFeetInches: "Diagonal: {feet} ft {inches} in",
+                diagFeetUnit: "ft", diagInchUnit: "in",
+                diagAlertEnterValidCmSides: "Please enter valid positive side lengths in cm.",
+                diagAlertEnterValidFeetInches: "Please enter valid positive numbers for Feet and Inches.",
+                diagCalculationError: "Calculation error. Check inputs.",
+                langToggleToHi: "हिन्दी", langToggleToEn: "EN",
+                themeToggleDark: "Switch to Dark Mode", themeToggleLight: "Switch to Light Mode",
+                calculationError: "Error", divisionByZeroError: "Cannot divide by zero",
+                invalidInputError: "Invalid Input. Please enter positive numbers.",
+                fillAllFieldsError: "Please fill all fields correctly."
+            },
+            hi: {
+                appTitle: "कैलकुलेटर हब", appHeader: "कैलकुलेटर", selectCalculatorTitle: "एक कैलकुलेटर चुनें:",
+                simpleCalcButton: "साधारण", simpleCalcTitle: "साधारण कैलकुलेटर",
+                emiCalcButton: "ईएमआई", emiCalcTitle: "ईएमआई कैलकुलेटर",
+                diagCalcButton: "विकर्ण", diagCalcTitle: "विकर्ण कैलकुलेटर",
+                ageCalcButton: "आयु", ageCalcTitle: "आयु कैलकुलेटर",
+                dateDiffCalcButton: "तारीख अंतर", dateDiffCalcTitle: "दो तारीखों के बीच अंतर",
+                circleCalcButton: "वृत्त", circleCalcTitle: "वृत्त कैलकुलेटर",
+                interestCalcButton: "ब्याज", interestCalcTitle: "ब्याज कैलकुलेटर",
+                discountCalcButton: "छूट", discountCalcTitle: "छूट कैलकुलेटर",
+                tipCalcButton: "टिप", tipCalcTitle: "टिप कैलकुलेटर",
+                originalPriceLabel: "मूल मूल्य:", originalPricePlaceholder: "मूल मूल्य दर्ज करें",
+                discountPercentLabel: "छूट (%):", discountPercentPlaceholder: "छूट % दर्ज करें",
+                calculateDiscountButton: "छूट की गणना करें",
+                amountSavedLabel: "बचत राशि:", finalPriceLabel: "अंतिम मूल्य:",
+                discountInvalidInputError: "कृपया मूल्य और छूट के लिए मान्य धनात्मक संख्याएँ दर्ज करें।",
+                billAmountLabel: "बिल राशि:", billAmountPlaceholder: "बिल राशि दर्ज करें",
+                tipPercentLabel: "टिप (%):", tipPercentPlaceholder: "उदा. 15 (वैकल्पिक)",
+                numberOfPeopleLabel: "लोगों की संख्या:", numberOfPeoplePlaceholder: "उदा. 1",
+                calculateTipButton: "टिप की गणना करें",
+                tipAmountLabel: "टिप राशि:", totalAmountWithTipLabel: "कुल राशि (टिप सहित):",
+                amountPerPersonLabel: "प्रति व्यक्ति राशि:",
+                tipInvalidInputError: "कृपया मान्य धनात्मक बिल राशि दर्ज करें। टिप % 0 या अधिक हो सकता है।",
+                tipInvalidPeopleError: "लोगों की संख्या एक धनात्मक पूर्ण संख्या होनी चाहिए।",
+                simpleInterestLabel: "साधारण ब्याज", compoundInterestLabel: "चक्रवृद्धि ब्याज",
+                timeInYearsLabel: "समय (वर्षों में):",
+                compoundingFreqLabel: "चक्रवृद्धि आवृत्ति:",
+                annuallyLabel: "वार्षिक", halfYearlyLabel: "अर्धवार्षिक", quarterlyLabel: "त्रैमासिक", monthlyLabelFreq: "मासिक",
+                calculateInterestButton: "ब्याज की गणना करें", interestTypeCalculatedLabel: "गणना प्रकार:",
+                interestEarnedLabel: "ब्याज अर्जित:", interestInvalidInputError: "कृपया सभी क्षेत्रों के लिए मान्य धनात्मक मान दर्ज करें।",
+                circleInputTypeLabel: "इनपुट प्रकार:", radiusLabel: "त्रिज्या", diameterLabel: "व्यास",
+                radiusLabelShort: "त्रिज्या:", diameterLabelShort: "व्यास:",
+                circleValueLabel: "मान:", circleValuePlaceholder: "मान दर्ज करें",
+                circleCalculateButton: "गणना करें", circumferenceLabel: "परिधि:", areaLabel: "क्षेत्रफल:",
+                circleInvalidInputError: "कृपया वृत्त के लिए एक मान्य धनात्मक मान दर्ज करें।",
+                startDateLabel: "प्रारंभ तिथि:", endDateLabel: "अंतिम तिथि:",
+                calculateDateDiffButton: "अंतर की गणना करें",
+                differenceLabel: "अंतर:", totalDifferenceLabel: "कुल अंतर:",
+                weeksUnit: "सप्ताह", andUnit: "और",
+                dateDiffInvalidError: "कृपया मान्य प्रारंभ और अंतिम तिथियां दर्ज करें।",
+                dateDiffEndBeforeStartError: "अंतिम तिथि प्रारंभ तिथि से पहले नहीं हो सकती।",
+                birthDateLabel: "आपकी जन्मतिथि:", calculateAgeButton: "आयु की गणना करें",
+                yourAgeIsLabel: "आपकी आयु है:", daysUnit: "दिन",
+                ageInvalidDateError: "कृपया एक मान्य जन्मतिथि दर्ज करें।",
+                ageFutureDateError: "जन्म की तारीख भविष्य में नहीं हो सकती।",
+                principalAmountLabel: "मूलधन (₹):", interestRateLabel: "ब्याज दर (% प्रति वर्ष):",
+                loanTenureLabel: "अवधि:", yearsUnit: "वर्ष", monthsUnit: "महीने",
+                calculateEmiButton: "ईएमआई की गणना करें", monthlyEmiLabel: "मासिक ईएमआई:",
+                totalPrincipalPaidLabel: "कुल मूलधन:", totalInterestPaidLabel: "कुल ब्याज:",
+                totalAmountPaidLabel: "कुल भुगतान:",
+                principalPlaceholder: "उदा. 100000", interestPlaceholder: "उदा. 10.5", tenurePlaceholder: "उदा. 5",
+                diagCmButton: "सेमी", diagFeetInchButton: "फीट/इंच",
+                diagCmTitleSub: "सेमी कैलकुलेटर", diagFeetInchTitleSub: "फीट/इंच कैलकुलेटर",
+                diagSideA: "भुजा A:", diagSideB: "भुजा B:",
+                diagSidePlaceholder: "लंबाई दर्ज करें", diagFeetPlaceholder:"फीट", diagInchPlaceholder:"इंच",
+                diagCalculateButton: "विकर्ण की गणना करें",
+                diagResultCm: "विकर्ण: {amount} सेमी", diagResultFeetInches: "विकर्ण: {feet} फीट {inches} इंच",
+                diagFeetUnit: "फीट", diagInchUnit: "इंच",
+                diagAlertEnterValidCmSides: "कृपया सेमी में मान्य धनात्मक भुजा लंबाई दर्ज करें।",
+                diagAlertEnterValidFeetInches: "कृपया फीट और इंच के लिए मान्य धनात्मक संख्याएँ दर्ज करें।",
+                diagCalculationError: "गणना में त्रुटि। इनपुट जांचें।",
+                langToggleToHi: "हिन्दी", langToggleToEn: "EN",
+                themeToggleDark: "डार्क मोड में बदलें", themeToggleLight: "लाइट मोड में बदलें",
+                calculationError: "त्रुटि", divisionByZeroError: "शून्य से भाग नहीं किया जा सकता",
+                invalidInputError: "अमान्य इनपुट। कृपया धनात्मक संख्याएँ दर्ज करें।",
+                fillAllFieldsError: "कृपया सभी फ़ील्ड सही ढंग से भरें।"
             }
         };
 
-        // Default language is English
-        let currentLanguage = 'en';
-
-        // Variables for element references
-        let standardCalculatorSection; // Standard Section Div
-        let emiCalculatorSection; // EMI Section Div
-        let diagonalCalculatorSection; // Main Diagonal Section Div
-        let historySection; // History Section Div
-
-
-        // Header Icons
-        let toggleStandardIcon;
-        let toggleEmiIcon;
-        let toggleDiagonalIcon;
-        let toggleHistoryIcon;
-
-
-        // Diagonal Sub-Calculator Toggle Buttons (inside main diagonal section)
-        let showCmCalcBtn;
-        let showFeetCalcBtn;
-        // Diagonal Sub-Calculator Section Divs
-        let diagonalCmCalculatorSection;
-        let diagonalFeetCalculatorSection;
-
-        // History Elements
-        let historyList;
-        let clearHistoryBtn;
-
-        // --- Global State ---
-        let currentCalculationStandard = ''; // Standard Calculator state
-
-        // --- History Data ---
-        let calculatorHistory = [];
-
-        // --- Local Storage Keys ---
-        const LS_DARK_MODE = 'calculatorDarkMode';
-        const LS_ACTIVE_CALCULATOR = 'activeCalculator';
-        const LS_ACTIVE_DIAGONAL_SUBCALC = 'activeDiagonalCalculator';
-        const LS_HISTORY = 'calculatorHistory';
-
-
-        // --- Translation Function ---
-        function translate(key, params = {}) {
-            let text = translations[currentLanguage]?.[key] || key;
-            for (const param in params) {
-                const regex = new RegExp(`{${param}}`, 'g');
-                text = text.replace(regex, params[param]);
-            }
-            return text;
-        }
-
-        // --- Apply Translations to UI ---
-        function applyTranslationsToUI() {
-            console.log("Applying translations to UI...");
-            document.querySelectorAll('[data-translate-key]').forEach(element => {
-                const key = element.getAttribute('data-translate-key');
-                 // Check if the element is an input placeholder or value, handle differently
-                 if (element.tagName === 'INPUT') {
-                      // For input placeholders, translate the placeholder attribute
-                      if (element.placeholder) {
-                          // Note: Placeholder translation keys might be different or not needed if placeholder is static text
-                          // For now, we assume textContent translation is sufficient for data-translate-key
-                          // If placeholder needs translation, handle specifically: element.placeholder = translate('somePlaceholderKey');
-                      }
-                 } else {
-                    // For most other elements, translate textContent
-                    element.textContent = translate(key);
-                    // console.log(`Translated key "${key}" to "${element.textContent}"`);
-                 }
-            });
-
-            // Update tooltip titles and active class for header icons
-            if (toggleStandardIcon && standardCalculatorSection) {
-                 const isHidden = standardCalculatorSection.style.display === 'none';
-                 toggleStandardIcon.title = translate(isHidden ? 'showStandardTooltip' : 'hideStandardTooltip');
-                 if (!isHidden) { toggleStandardIcon.classList.add('active'); } else { toggleStandardIcon.classList.remove('active'); }
-            } else { console.warn("Standard toggle or section not found for translations."); }
-
-            if (toggleEmiIcon && emiCalculatorSection) {
-                 const isHidden = emiCalculatorSection.style.display === 'none';
-                 toggleEmiIcon.title = translate(isHidden ? 'showEmiTooltip' : 'hideEmiTooltip');
-                 if (!isHidden) { toggleEmiIcon.classList.add('active'); } else { toggleEmiIcon.classList.remove('active'); }
-            } else { console.warn("EMI toggle or section not found for translations."); }
-
-            if (toggleDiagonalIcon && diagonalCalculatorSection) {
-                 const isHidden = diagonalCalculatorSection.style.display === 'none';
-                 toggleDiagonalIcon.title = translate(isHidden ? 'showDiagonalTooltip' : 'hideDiagonalTooltip');
-                 if (!isHidden) { toggleDiagonalIcon.classList.add('active'); } else { toggleDiagonalIcon.classList.remove('active'); }
-             } else { console.warn("Diagonal toggle or section not found for translations."); }
-
-            if (toggleHistoryIcon && historySection) {
-                 const isHidden = historySection.style.display === 'none';
-                 toggleHistoryIcon.title = translate(isHidden ? 'showHistoryTooltip' : 'hideHistoryTooltip');
-                 if (!isHidden) { toggleHistoryIcon.classList.add('active'); } else { toggleHistoryIcon.classList.remove('active'); }
-            } else { console.warn("History toggle or section not found for translations."); }
-
-
-            // Update sub-calculator toggle button texts based on which one is active
-             if (showCmCalcBtn && showFeetCalcBtn) {
-                  showCmCalcBtn.textContent = translate('cmCalculatorTitle');
-                  showFeetCalcBtn.textContent = translate('feetCalculatorTitle');
-             } else { console.warn("Sub-calculator buttons not found for translations."); }
-
-
-             // Update error/result text if currently displayed and is a translation key
-              const resultAreas = [
-                 document.getElementById('standardCalculatorDisplay'),
-                 document.getElementById('emiResult'),
-                 document.getElementById('diagonalCmResult'),
-                 document.getElementById('diagonalFeetResult')
-              ];
-
-              const errorKeys = [
-                  'StandardCalcError',
-                  'alertEnterValidValues',
-                  'calculationError',
-                  'alertEnterValidCmSides',
-                  'alertEnterValidFeetInches',
-                  'diagonalCalculationError'
-                  ];
-
-              resultAreas.forEach(resultDiv => {
-                  if (resultDiv) {
-                      const currentText = resultDiv.textContent;
-                       let isErrorDisplayed = false;
-                       for (const key of errorKeys) {
-                            const translatedErrorText = translate(key);
-                            if (currentText === translatedErrorText) {
-                                resultDiv.textContent = translatedErrorText;
-                                isErrorDisplayed = true;
-                                break;
-                            }
-                       }
-                  }
-              });
-
-              // History section title and Clear button text handled by data-translate-key
-
-              // Re-display history to apply potential translation updates to history item format strings
-              if (historySection && historySection.style.display !== 'none') {
-                   displayHistory();
-              }
-               console.log("Translations applied.");
-        }
-
-
-        // --- Dark Mode Logic ---
-
-        function setDarkMode(isDark) {
-            const htmlElement = document.documentElement;
-            const toggleIcon = document.getElementById('darkModeToggleBtn')?.querySelector('i');
-            if (isDark) {
-                htmlElement.classList.add('dark');
-                localStorage.setItem(LS_DARK_MODE, 'enabled');
-                if(toggleIcon) { toggleIcon.classList.remove('fa-moon'); toggleIcon.classList.add('fa-sun'); }
-                 console.log("Dark mode enabled.");
-            } else {
-                htmlElement.classList.remove('dark');
-                localStorage.setItem(LS_DARK_MODE, 'disabled');
-                if(toggleIcon) { toggleIcon.classList.remove('fa-sun'); toggleIcon.classList.add('fa-moon'); }
-                 console.log("Dark mode disabled.");
-            }
-        }
-        function toggleDarkMode() {
-            console.log("toggleDarkMode() called.");
-            setDarkMode(!document.documentElement.classList.contains('dark'));
-        }
-
-
-        // --- History Logic ---
-
-        function loadHistory() {
-            console.log("loadHistory() called.");
-            const historyJson = localStorage.getItem(LS_HISTORY);
-            if (historyJson) {
-                try {
-                    calculatorHistory = JSON.parse(historyJson);
-                     console.log(`Loaded ${calculatorHistory.length} history items.`);
-                } catch (e) {
-                    console.error("Failed to parse history from localStorage", e);
-                    calculatorHistory = [];
-                }
-            } else {
-                calculatorHistory = [];
-                 console.log("No history found in localStorage.");
-            }
-             const historyLimit = 50;
-             if (calculatorHistory.length > historyLimit) {
-                  console.log(`History exceeds limit of ${historyLimit}, trimming.`);
-                  calculatorHistory = calculatorHistory.slice(calculatorHistory.length - historyLimit);
-                  saveHistory();
-             }
-             console.log("History loading complete.");
-        }
-
-        function saveHistory() {
-            localStorage.setItem(LS_HISTORY, JSON.stringify(calculatorHistory));
-             console.log(`History saved to localStorage (${calculatorHistory.length} items).`);
-        }
-
-        function addHistoryItem(item) {
-             console.log("addHistoryItem() called with:", item);
-             const historyLimit = 50;
-             if (calculatorHistory.length >= historyLimit) {
-                  const removedItem = calculatorHistory.shift();
-                  console.log("History limit reached, removed oldest item:", removedItem);
-             }
-
-            calculatorHistory.push(item);
-            saveHistory();
-            if (historySection && historySection.style.display !== 'none') {
-                 console.log("History section visible, updating display.");
-                 displayHistory();
-            } else {
-                 console.log("History section hidden, not updating display.");
-            }
-             console.log("History item added. Current history count:", calculatorHistory.length);
-        }
-
-        function displayHistory() {
-            console.log("displayHistory() called.");
-            if (!historyList) { console.error("History list element not found!"); return; }
-
-            historyList.innerHTML = '';
-
-            if (calculatorHistory.length === 0) {
-                console.log("History is empty, displaying 'No history' message.");
-                const listItem = document.createElement('li');
-                listItem.textContent = translate('noHistory');
-                 listItem.style.textAlign = 'center';
-                 listItem.style.fontStyle = 'italic';
-                 listItem.style.borderColor = 'transparent';
-                 listItem.style.backgroundColor = 'transparent';
-                historyList.appendChild(listItem);
-                return;
-            }
-
-            console.log(`Displaying ${calculatorHistory.length} history items.`);
-            for (let i = calculatorHistory.length - 1; i >= 0; i--) {
-                const item = calculatorHistory[i];
-                const listItem = document.createElement('li');
-                let historyText = 'Unknown Calculation';
-
-                const dateSpan = document.createElement('span');
-                dateSpan.classList.add('history-date');
-                try {
-                   dateSpan.textContent = new Date(item.date).toLocaleString();
-                } catch (e) {
-                   dateSpan.textContent = 'Invalid Date';
-                   console.error("Error formatting history item date:", item.date, e);
-                }
-
-
-                if (item.type === 'standard') {
-                    historyText = translate('historyItemStandard', {input: item.input, result: item.result});
-                } else if (item.type === 'emi') {
-                     const principal = item.input?.principal !== undefined ? item.input.principal : 'N/A';
-                     const rate = item.input?.rate !== undefined ? item.input.rate : 'N/A';
-                     const tenure = item.input?.tenure !== undefined ? item.input.tenure : 'N/A';
-                    historyText = translate('historyItemEmi', {principal: principal, rate: rate, tenure: tenure, result: item.result});
-                } else if (item.type === 'diagonal-cm') {
-                      const sideA = item.input?.sideA !== undefined ? item.input.sideA : 'N/A';
-                      const sideB = item.input?.sideB !== undefined ? item.input.sideB : 'N/A';
-                     historyText = translate('historyItemDiagonalCm', {sideA: sideA, sideB: sideB, result: item.result});
-                } else if (item.type === 'diagonal-feet') {
-                      const sideA = item.input?.sideA !== undefined ? item.input.sideA : 'N/A';
-                      const sideAInches = item.input?.sideAInches !== undefined ? item.input.sideAInches : 'N/A';
-                      const sideB = item.input?.sideB !== undefined ? item.input.sideB : 'N/A';
-                      const sideBInches = item.input?.sideBInches !== undefined ? item.input.sideBInches : 'N/A';
-                     historyText = translate('historyItemDiagonalFeet', {sideA: sideA, sideAInches: sideAInches, sideB: sideB, sideBInches: sideBInches, result: item.result});
-                } else {
-                     historyText = `Type: ${item.type}, Result: ${item.result}`;
-                }
-
-                 const textSpan = document.createElement('span');
-                 textSpan.innerHTML = `<strong>${historyText}</strong>`;
-
-                 listItem.appendChild(textSpan);
-                 listItem.appendChild(dateSpan);
-                historyList.appendChild(listItem);
-            }
-             console.log("History displayed.");
-        }
-
-        function clearHistory() {
-            console.log("clearHistory() called.");
-            if (confirm(translate("Are you sure you want to clear the calculation history?"))) {
-                calculatorHistory = [];
-                saveHistory();
-                displayHistory();
-                console.log("Calculation history cleared.");
-            } else {
-                 console.log("History clear cancelled.");
-            }
-        }
-
-
-        // --- Standard Calculator Logic (Updated for scientific functions and history) ---
-        function appendValueStandard(value) {
-            console.log(`appendValueStandard() called with value: ${value}`);
-            if (!standardCalculatorDisplay) { console.error("Standard calculator display not found!"); return; }
-
-             // Special handling for scientific functions and constants
-             if (['Math.sin(', 'Math.cos(', 'Math.tan(', 'Math.sqrt(', 'Math.log10(', 'Math.log(', 'Math.PI', 'Math.E', '('].includes(value)) {
-                  // If display is '0' or empty, replace it, otherwise append
-                  if (currentCalculationStandard === '0' || currentCalculationStandard === '') {
-                       currentCalculationStandard = value;
-                  } else {
-                       // Prevent adding function/constant directly after a digit without an operator
-                       const lastChar = currentCalculationStandard.slice(-1);
-                       if (/[0-9.]/.test(lastChar)) { // If last char is a digit or decimal point
-                            // Add multiplication symbol before the function/constant
-                            currentCalculationStandard += '*' + value;
-                       } else {
-                            currentCalculationStandard += value;
-                       }
-                  }
-             }
-             // Special handling for closing parenthesis
-             else if (value === ')') {
-                 currentCalculationStandard += value;
-             }
-             // Special handling for power symbol (^)
-             else if (value === '^') {
-                  // Replace ^ with ** for eval
-                   const lastChar = currentCalculationStandard.slice(-1);
-                   // Prevent adding ^ at the beginning or after an operator (unless it's part of a number like e^-2) - keeping it simple for now
-                   if ('+-*/('.includes(lastChar) || currentCalculationStandard === '') {
-                        // Do not add ^ immediately after operators or at the start - simplified
-                        console.log("Cannot add ^ after operator or at start.");
-                        return;
-                   }
-                   // Check if the last char is a valid base (digit or closing parenthesis or constant)
-                    if (/[0-9)E]/.test(lastChar)) { // Allow digits, ), and E before ^
-                        currentCalculationStandard += '**';
-                    } else {
-                         console.log("Cannot add ^ after this character:", lastChar);
-                         // Do not add ^ after unsupported characters
-                         return;
-                    }
-             }
-             // If current value is '0' and added value is a digit or '.', replace '0'
-             else if (currentCalculationStandard === '0' && (value >= '0' && value <= '9' || value === '.')) {
-                 currentCalculationStandard = value;
-             }
-             // If '0' is empty string and added value is digit or '.'
-              else if (currentCalculationStandard === '' && (value >= '0' && value <= '9' || value === '.')) {
-                   currentCalculationStandard += value;
-              }
-            // If last char is operator and current is operator (except '.')
-            else if ('+-*/'.includes(currentCalculationStandard.slice(-1)) && '+-*/'.includes(value) && value !== '.') {
-                // Replace last operator with new one
-                currentCalculationStandard = currentCalculationStandard.slice(0, -1) + value;
-            }
-             // If current value is empty and operator is added, do nothing
-             else if (currentCalculationStandard === '' && '+-*/'.includes(value)) {
-                 // Do nothing
-             }
-            // If decimal point is added
-            else if (value === '.') {
-                 // Check if the last number already contains a decimal
-                 // This regex is complex, simplified check: find the last operator or parenthesis
-                 const lastOperatorIndex = Math.max(
-                     currentCalculationStandard.lastIndexOf('+'),
-                     currentCalculationStandard.lastIndexOf('-'),
-                     currentCalculationStandard.lastIndexOf('*'),
-                     currentCalculationStandard.lastIndexOf('/'),
-                     currentCalculationStandard.lastIndexOf('('),
-                     currentCalculationStandard.lastIndexOf(')') // Include parentheses
-                 );
-                 const lastPart = lastOperatorIndex === -1 ? currentCalculationStandard : currentCalculationStandard.substring(lastOperatorIndex + 1);
-
-                 if (lastPart.includes('.')) {
-                     // If last number already has a decimal, do not add another
-                    console.log("Decimal already present in the current number part.");
-                    return;
-                 }
-                 // If string is empty, add "0."
-                 if (currentCalculationStandard === '') {
-                      currentCalculationStandard = '0.';
-                 }
-                 // If last character is an operator or opening parenthesis, add "0."
-                 else if ('+-*/('.includes(currentCalculationStandard.slice(-1))) {
-                      currentCalculationStandard += '0.';
-                 }
-                 // Otherwise, just append the decimal
-                else {
-                    currentCalculationStandard += value;
-                }
-            }
-            // All other valid inputs (digits, operators)
-            else {
-                 // Prevent adding digits directly after closing parenthesis without an operator
-                  const lastChar = currentCalculationStandard.slice(-1);
-                  if (lastChar === ')' && /[0-9]/.test(value)) {
-                       currentCalculationStandard += '*' + value; // Add multiplication
-                  } else {
-                       currentCalculationStandard += value;
-                  }
-            }
-
-             // Limit max length
-             if (currentCalculationStandard.length > 50) { // Increased limit for complex expressions
-                 currentCalculationStandard = currentCalculationStandard.slice(0, 50);
-             }
-
-
-            standardCalculatorDisplay.value = currentCalculationStandard;
-            console.log("Current calculation string:", currentCalculationStandard);
-        }
-
-        function clearStandardDisplay() {
-            currentCalculationStandard = '';
-            if(standardCalculatorDisplay) standardCalculatorDisplay.value = '0';
-             console.log("Standard display cleared.");
-        }
-
-        function calculateStandard() {
-            console.log("calculateStandard() called.");
-            if (!standardCalculatorDisplay) { console.error("Standard calculator display not found!"); return; }
-            let inputExpression = currentCalculationStandard; // Capture input before eval
-            try {
-                 if (inputExpression === '') {
-                     standardCalculatorDisplay.value = '0';
-                     return; // Do nothing if input is empty
-                 }
-
-                // Basic validation for unmatched parentheses (simple count)
-                 const openParentheses = inputExpression.split('(').length - 1;
-                 const closeParentheses = inputExpression.split(')').length - 1;
-                 if (openParentheses !== closeParentheses) {
-                      standardCalculatorDisplay.value = translate('StandardCalcError'); // Or a specific parenthesis error key
-                      console.error("Standard Calculator Error: Unmatched parentheses.");
-                       currentCalculationStandard = ''; // Clear on error
-                       return;
-                 }
-                 // More robust validation would check placement, e.g., operator before (
-
-                // Replace scientific function strings with Math object methods
-                 inputExpression = inputExpression.replace(/sin\(/g, 'Math.sin(');
-                 inputExpression = inputExpression.replace(/cos\(/g, 'Math.cos(');
-                 inputExpression = inputExpression.replace(/tan\(/g, 'Math.tan(');
-                 inputExpression = inputExpression.replace(/sqrt\(/g, 'Math.sqrt('); // √ was appended as Math.sqrt(
-                 inputExpression = inputExpression.replace(/log\(/g, 'Math.log10('); // log base 10
-                 inputExpression = inputExpression.replace(/ln\(/g, 'Math.log('); // natural log
-
-                // Replace constants
-                 inputExpression = inputExpression.replace(/π/g, 'Math.PI'); // π was appended as Math.PI
-                 inputExpression = inputExpression.replace(/e(?![\d.])/g, 'Math.E'); // e, but not if followed by digit/dot (to avoid conflict with scientific notation like 1e-5) - simplified handling
-
-
-                console.log("Evaluating expression:", inputExpression);
-                let result = eval(inputExpression);
-
-                if (isNaN(result) || !isFinite(result)) {
-                    standardCalculatorDisplay.value = translate('StandardCalcError');
-                    currentCalculationStandard = ''; // Clear state on error
-                     console.log("Standard calculation resulted in NaN or Infinity:", result);
-                } else {
-                     // Limit decimal places if necessary, remove trailing zeros
-                     // Use toPrecision for better control over significant digits for very small/large numbers
-                     if (result % 1 !== 0 && Math.abs(result) > 1e-6 && Math.abs(result) < 1e+10) { // Avoid fixing very small/large scientific notation
-                         result = parseFloat(result.toFixed(10)); // Fix decimal places for 'normal' numbers
-                     } else if (Math.abs(result) >= 1e+10 || Math.abs(result) <= 1e-6) { // Use scientific notation for very large/small numbers
-                          result = result.toExponential(5); // Example: 5 decimal places in exponential form
-                     }
-
-
-                    currentCalculationStandard = result.toString();
-                    standardCalculatorDisplay.value = currentCalculationStandard;
-
-                     // Add to history on successful calculation
-                     addHistoryItem({
-                         type: 'standard',
-                         input: inputExpression, // Store the evaluated expression string for history
-                         result: currentCalculationStandard, // Store the displayed result string
-                         date: new Date().toISOString()
-                     });
-                    console.log(`Standard calculation success. Result: ${currentCalculationStandard}. History added.`);
-                }
-
-            } catch (error) {
-                if(standardCalculatorDisplay) standardCalculatorDisplay.value = translate('StandardCalcError');
-                currentCalculationStandard = '';
-                console.error("Standard Calculator Error during evaluation:", error);
-            }
-        }
-
-        // --- EMI Calculator Logic (Updated to add history) ---
-        function calculateEMI() {
-            console.log("calculateEMI() called.");
-            const principalInput = document.getElementById('loanPrincipal');
-            const annualInterestRateInput = document.getElementById('loanInterestRate');
-            const tenureYearsInput = document.getElementById('loanTenureYears');
-            const resultDiv = document.getElementById('emiResult');
-
-            if (!principalInput || !annualInterestRateInput || !tenureYearsInput || !resultDiv) {
-                console.error("EMI Calculator elements not found during calculation.");
-                return;
-            }
-
-            const principal = parseFloat(principalInput.value);
-            const annualInterestRate = parseFloat(annualInterestRateInput.value);
-            const tenureYears = parseFloat(tenureYearsInput.value);
-
-            resultDiv.textContent = '';
-            resultDiv.style.color = 'var(--result-text-color)';
-
-            if (isNaN(principal) || isNaN(annualInterestRate) || isNaN(tenureYears) || principal <= 0 || annualInterestRate < 0 || tenureYears <= 0) {
-                resultDiv.style.color = 'var(--error-text-color)';
-                resultDiv.textContent = translate('alertEnterValidValues');
-                 console.log("EMI calculation: Invalid input values.");
-                return;
-            }
-
-            const monthlyInterestRate = (annualInterestRate / 100) / 12;
-            const tenureMonths = tenureYears * 12;
-
-            let emi = 0;
-            if (monthlyInterestRate === 0) {
-                emi = principal / tenureMonths;
-            } else {
-                const numerator = principal * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, tenureMonths);
-                const denominator = Math.pow(1 + monthlyInterestRate, tenureMonths) - 1;
-                if (denominator === 0 || denominator === -1) {
-                     emi = Infinity;
-                 } else {
-                     emi = numerator / denominator;
-                 }
-            }
-
-            if (isNaN(emi) || !isFinite(emi)) {
-                 resultDiv.style.color = 'var(--error-text-color)';
-                 resultDiv.textContent = translate('calculationError');
-                 console.error("EMI calculation resulted in NaN or Infinity:", emi);
-            } else {
-                 resultDiv.style.color = 'var(--result-text-color)';
-                 const emiResultString = translate('monthlyEmiResult', {amount: emi.toFixed(2)});
-                 resultDiv.textContent = emiResultString;
-
-                 addHistoryItem({
-                     type: 'emi',
-                     input: {principal: principal.toFixed(2), rate: annualInterestRate.toFixed(2), tenure: tenureYears.toFixed(2)},
-                     result: emiResultString,
-                     date: new Date().toISOString()
-                 });
-                 console.log(`EMI calculation success. Result: ${emi.toFixed(2)}. History added.`);
-            }
-        }
-
-
-        // --- Calculator Section Toggle Logic (Updated for ALL sections and Icons) ---
-
-        function hideAllSections() {
-             console.log("hideAllSections() called.");
-             if (standardCalculatorSection) { standardCalculatorSection.style.display = 'none'; console.log("Standard hidden."); } else { console.warn("Standard section not found to hide."); }
-             if (emiCalculatorSection) { emiCalculatorSection.style.display = 'none'; console.log("EMI hidden."); } else { console.warn("EMI section not found to hide."); }
-             if (diagonalCalculatorSection) { diagonalCalculatorSection.style.display = 'none'; console.log("Diagonal hidden."); } else { console.warn("Diagonal section not found to hide."); }
-             if (historySection) { historySection.style.display = 'none'; console.log("History hidden."); } else { console.warn("History section not found to hide."); }
-
-
-             if (toggleStandardIcon) toggleStandardIcon.classList.remove('active'); else { console.warn("Standard toggle icon not found to deactivate."); }
-             if (toggleEmiIcon) toggleEmiIcon.classList.remove('active'); else { console.warn("EMI toggle icon not found to deactivate."); }
-             if (toggleDiagonalIcon) toggleDiagonalIcon.classList.remove('active'); else { console.warn("Diagonal toggle icon not found to deactivate."); }
-             if (toggleHistoryIcon) toggleHistoryIcon.classList.remove('active'); else { console.warn("History toggle icon not found to deactivate."); }
-
-
-             // Update tooltips to 'Show' state (applyTranslationsToUI will handle this for visible icons)
-              if (toggleStandardIcon) toggleStandardIcon.title = translate('showStandardTooltip');
-             if (toggleEmiIcon) toggleEmiIcon.title = translate('showEmiTooltip');
-             if (toggleDiagonalIcon) toggleDiagonalIcon.title = translate('showDiagonalTooltip');
-             if (toggleHistoryIcon) toggleHistoryIcon.title = translate('showHistoryTooltip');
-
-             // Clear inputs and results for ALL calculators when hiding ALL sections
-             clearStandardDisplay();
-             clearEmiInputsAndResult();
-             clearDiagonalInputsAndResult();
-
-
-             console.log("All sections hidden and inputs cleared.");
-        }
-
-        function showStandardCalculator() {
-             console.log("showStandardCalculator() called.");
-             if (standardCalculatorSection && standardCalculatorSection.style.display !== 'none') {
-                  console.log("Standard already visible, hiding.");
-                  hideAllSections();
-                   localStorage.setItem(LS_ACTIVE_CALCULATOR, '');
-                  return;
-             } else if (!standardCalculatorSection) {
-                  console.error("Standard calculator section element not found!");
-                  return;
-             }
-
-             hideAllSections();
-             standardCalculatorSection.style.display = 'flex';
-             console.log("Standard shown.");
-
-             if (toggleStandardIcon) {
-                  toggleStandardIcon.classList.add('active');
-                  toggleStandardIcon.title = translate('hideStandardTooltip');
-                  console.log("Standard icon set to active.");
-             } else { console.warn("Standard toggle icon not found."); }
-
-             localStorage.setItem(LS_ACTIVE_CALCULATOR, 'standard');
-             console.log("Active calculator set to: standard");
-        }
-
-        function showEmiCalculator() {
-            console.log("showEmiCalculator() called.");
-             if (emiCalculatorSection && emiCalculatorSection.style.display !== 'none') {
-                 console.log("EMI already visible, hiding and showing Standard.");
-                 hideAllSections();
-                 clearEmiInputsAndResult();
-                  showStandardCalculator();
-                 return;
-             } else if (!emiCalculatorSection) {
-                   console.error("EMI calculator section element not found!");
-                   return;
-              }
-
-             hideAllSections();
-             emiCalculatorSection.style.display = 'flex';
-             console.log("EMI shown.");
-
-             if (toggleEmiIcon) {
-                  toggleEmiIcon.classList.add('active');
-                  toggleEmiIcon.title = translate('hideEmiTooltip');
-                   console.log("EMI icon set to active.");
-             } else { console.warn("EMI toggle icon not found."); }
-
-             localStorage.setItem(LS_ACTIVE_CALCULATOR, 'emi');
-             console.log("Active calculator set to: emi");
-        }
-
-        function showDiagonalCalculator() {
-            console.log("showDiagonalCalculator() called.");
-            if (diagonalCalculatorSection && diagonalCalculatorSection.style.display !== 'none') {
-                console.log("Diagonal already visible, hiding and showing Standard.");
-                hideAllSections();
-                clearDiagonalInputsAndResult();
-                 showStandardCalculator();
-                return;
-            } else if (!diagonalCalculatorSection) {
-                 console.error("Diagonal calculator section element not found!");
-                 return;
-            }
-
-             hideAllSections();
-             diagonalCalculatorSection.style.display = 'flex';
-             console.log("Diagonal shown.");
-
-              if (toggleDiagonalIcon) {
-                  toggleDiagonalIcon.classList.add('active');
-                  toggleDiagonalIcon.title = translate('hideDiagonalTooltip');
-                   console.log("Diagonal icon set to active.");
-              } else { console.warn("Diagonal toggle icon not found."); }
-
-             const activeSubCalc = localStorage.getItem(LS_ACTIVE_DIAGONAL_SUBCALC) || 'cm';
-              console.log(`Restoring active diagonal sub-calculator to: ${activeSubCalc}`);
-
-             if (activeSubCalc === 'feet') {
-                  showFeetCalculatorSub();
-             } else {
-                  showCmCalculatorSub();
-             }
-
-             localStorage.setItem(LS_ACTIVE_CALCULATOR, 'diagonal');
-             console.log("Active calculator set to: diagonal");
-        }
-
-        function showHistorySection() {
-             console.log("showHistorySection() called.");
-            if (historySection && historySection.style.display !== 'none') {
-                 console.log("History already visible, hiding and showing Standard.");
-                 hideAllSections();
-                 showStandardCalculator();
-                 return;
-            } else if (!historySection) {
-                 console.error("History section element not found!");
-                 return;
-            }
-
-             hideAllSections();
-             historySection.style.display = 'flex';
-             console.log("History shown.");
-
-             if (toggleHistoryIcon) {
-                  toggleHistoryIcon.classList.add('active');
-                  toggleHistoryIcon.title = translate('hideHistoryTooltip');
-                   console.log("History icon set to active.");
-             } else { console.warn("History toggle icon not found."); }
-
-             clearStandardDisplay();
-             clearEmiInputsAndResult();
-             clearDiagonalInputsAndResult();
-
-             displayHistory();
-
-             localStorage.setItem(LS_ACTIVE_CALCULATOR, 'history');
-             console.log("Active calculator set to: history");
-        }
-
-
-        // Helper function to clear EMI inputs and result
-        function clearEmiInputsAndResult() {
-            const principalInput = document.getElementById('loanPrincipal');
-            const annualInterestRateInput = document.getElementById('loanInterestRate');
-            const tenureYearsInput = document.getElementById('loanTenureYears');
-            const resultDiv = document.getElementById('emiResult');
-
-            if (principalInput) principalInput.value = '';
-            if (annualInterestRateInput) annualInterestRateInput.value = '';
-            if (tenureYearsInput) tenureYearsInput.value = '';
-            if (resultDiv) {
-                 resultDiv.textContent = '';
-                 resultDiv.style.color = 'var(--result-text-color)';
-            }
-             console.log("EMI inputs/result cleared.");
-        }
-
-         // Helper function to clear ALL Diagonal inputs and results
-         function clearDiagonalInputsAndResult() {
-              clearCmDiagonalInputsAndResult();
-              clearFeetDiagonalInputsAndResult();
-
-              if (showCmCalcBtn) showCmCalcBtn.classList.remove('active'); else { console.warn("CM sub-calc toggle button not found to deactivate."); }
-              if (showFeetCalcBtn) showFeetCalcBtn.classList.remove('active'); else { console.warn("Feet sub-calc toggle button not found to deactivate."); }
-
-              if (diagonalCmCalculatorSection) diagonalCmCalculatorSection.style.display = 'none'; else { console.warn("CM sub-calc section not found to hide."); }
-              if (diagonalFeetCalculatorSection) diagonalFeetCalculatorSection.style.display = 'none'; else { console.warn("Feet sub-calc section not found to hide."); }
-
-               localStorage.removeItem(LS_ACTIVE_DIAGONAL_SUBCALC);
-                console.log("Diagonal inputs/results and sub-calc state cleared.");
-         }
-
-
-        // --- Diagonal Sub-Calculator Toggle Logic ---
-
-        function showCmCalculatorSub() {
-            console.log("showCmCalculatorSub() called.");
-            if (!diagonalCmCalculatorSection || !diagonalFeetCalculatorSection || !showCmCalcBtn || !showFeetCalcBtn) {
-                 console.error("Diagonal sub-calculator elements not fully found for CM toggle!");
-                 return;
-            }
-
-            diagonalFeetCalculatorSection.style.display = 'none';
-            diagonalCmCalculatorSection.style.display = 'flex';
-
-            showCmCalcBtn.classList.add('active');
-            showFeetCalcBtn.classList.remove('active');
-
-            console.log("Clearing CM sub-calc inputs/result...");
-            clearCmDiagonalInputsAndResult();
-
-            localStorage.setItem(LS_ACTIVE_DIAGONAL_SUBCALC, 'cm');
-            console.log("Showing CM Diagonal Calculator Sub-Section. Active sub-calc set to: cm");
-        }
-
-        function showFeetCalculatorSub() {
-             console.log("showFeetCalculatorSub() called.");
-             if (!diagonalCmCalculatorSection || !diagonalFeetCalculatorSection || !showCmCalcBtn || !showFeetCalcBtn) {
-                 console.error("Diagonal sub-calculator elements not fully found for Feet toggle!");
-                 return;
-            }
-
-            diagonalCmCalculatorSection.style.display = 'none';
-            diagonalFeetCalculatorSection.style.display = 'flex';
-
-            showFeetCalcBtn.classList.add('active');
-            showCmCalcBtn.classList.remove('active');
-
-            console.log("Clearing Feet sub-calc inputs/result...");
-             clearFeetDiagonalInputsAndResult();
-
-             localStorage.setItem(LS_ACTIVE_DIAGONAL_SUBCALC, 'feet');
-             console.log("Showing Feet/Inches Diagonal Calculator Sub-Section. Active sub-calc set to: feet");
-        }
-
-        // --- Helper functions to clear inputs and results (Moved inside sub-calc logic) ---
-        function clearCmDiagonalInputsAndResult() {
-             const sideAInput = document.getElementById('cmSideA');
-             const sideBInput = document.getElementById('cmSideB');
-             const resultDiv = document.getElementById('diagonalCmResult');
-
-             if (sideAInput) sideAInput.value = '';
-             if (sideBInput) sideBInput.value = '';
-             if (resultDiv) {
-                 resultDiv.textContent = '';
-                 resultDiv.style.color = 'var(--result-text-color)';
-             }
-             console.log("CM sub-calc inputs/result cleared.");
-        }
-
-        function clearFeetDiagonalInputsAndResult() {
-             const sideAFeetInput = document.getElementById('feetSideAFeet');
-             const sideAInchesInput = document.getElementById('feetSideAInches');
-             const sideBFeetInput = document.getElementById('feetSideBFeet');
-             const sideBInchesInput = document.getElementById('feetSideBInches');
-             const resultDiv = document.getElementById('diagonalFeetResult');
-
-             if (sideAFeetInput) sideAFeetInput.value = '';
-             if (sideAInchesInput) sideAInchesInput.value = '';
-             if (sideBFeetInput) sideBFeetInput.value = '';
-             if (sideBInchesInput) sideBInchesInput.value = '';
-             if (resultDiv) {
-                  resultDiv.textContent = '';
-                  resultDiv.style.color = 'var(--result-text-color)';
-             }
-             console.log("Feet sub-calc inputs/result cleared.");
-        }
-
-
-        // --- Diagonal Calculator Logic (Updated to add history) ---
-
-        function calculateCmDiagonal() {
-            console.log("calculateCmDiagonal() called.");
-            const sideAInput = document.getElementById('cmSideA');
-            const sideBInput = document.getElementById('cmSideB');
-            const resultDiv = document.getElementById('diagonalCmResult');
-
-            if (!sideAInput || !sideBInput || !resultDiv) {
-                console.error("CM Diagonal Calculator elements not found during calculation.");
-                return;
-            }
-
-            const sideA = parseFloat(sideAInput.value);
-            const sideB = parseFloat(sideBInput.value);
-
-            resultDiv.textContent = '';
-            resultDiv.style.color = 'var(--result-text-color)';
-
-
-            if (isNaN(sideA) || isNaN(sideB) || sideA <= 0 || sideB <= 0) {
-                resultDiv.style.color = 'var(--error-text-color)';
-                resultDiv.textContent = translate('alertEnterValidCmSides');
-                console.log("CM Diagonal calculation: Invalid input.");
-                return;
-            }
-
-            const diagonalSquared = (sideA * sideA) + (sideB * sideB);
-            const diagonal = Math.sqrt(diagonalSquared);
-
-            if (isNaN(diagonal) || !isFinite(diagonal)) {
-                 resultDiv.style.color = 'var(--error-text-color)';
-                 resultDiv.textContent = translate('diagonalCalculationError');
-                 console.error("CM Diagonal calculation resulted in NaN or Infinity:", diagonal);
-            } else {
-                 resultDiv.style.color = 'var(--result-text-color)';
-                 const diagonalResultString = translate('diagonalResultCm', {amount: diagonal.toFixed(2)});
-                 resultDiv.textContent = diagonalResultString;
-
-                 addHistoryItem({
-                     type: 'diagonal-cm',
-                     input: {sideA: sideA.toFixed(2), sideB: sideB.toFixed(2)},
-                     result: diagonalResultString,
-                     date: new Date().toISOString()
-                 });
-                 console.log(`CM Diagonal calculation success. CM: ${diagonal.toFixed(2)}. History added.`);
-            }
-        }
-
-        function calculateFeetDiagonal() {
-            console.log("calculateFeetDiagonal() called.");
-            const sideAFeetInput = document.getElementById('feetSideAFeet');
-            const sideAInchesInput = document.getElementById('feetSideAInches');
-            const sideBFeetInput = document.getElementById('feetSideBFeet');
-            const sideBInchesInput = document.getElementById('feetSideBInches');
-            const resultDiv = document.getElementById('diagonalFeetResult');
-
-             if (!sideAFeetInput || !sideAInchesInput || !sideBFeetInput || !sideBInchesInput || !resultDiv) {
-                console.error("Feet/Inches Diagonal Calculator elements not found during calculation.");
-                return;
-            }
-
-            const sideAFeet = parseFloat(sideAFeetInput.value) || 0;
-            const sideAInches = parseFloat(sideAInchesInput.value) || 0;
-            const sideBFeet = parseFloat(sideBFeetInput.value) || 0;
-            const sideBInches = parseFloat(sideBInchesInput.value) || 0;
-
-            resultDiv.textContent = '';
-            resultDiv.style.color = 'var(--result-text-color)';
-
-
-             if (
-                 (isNaN(sideAFeet) || isNaN(sideAInches) || sideAFeet < 0 || sideAInches < 0) ||
-                 (isNaN(sideBFeet) || isNaN(sideBInches) || sideBFeet < 0 || sideBInches < 0) ||
-                 (sideAFeet === 0 && sideAInches === 0) ||
-                 (sideBFeet === 0 && sideBInches === 0)
-                )
-             {
-                 resultDiv.style.color = 'var(--error-text-color)';
-                 resultDiv.textContent = translate('alertEnterValidFeetInches');
-                 console.log("Feet/Inches Diagonal calculation: Invalid input.");
-                 return;
-             }
-             else
-             {
-                 const sideA_cm = (sideAFeet * 12 + sideAInches) * 2.54;
-                 const sideB_cm = (sideBFeet * 12 + sideBInches) * 2.54;
-
-                 if (sideA_cm <= 0 || sideB_cm <= 0) {
-                      resultDiv.style.color = 'var(--error-text-color)';
-                      resultDiv.textContent = translate('alertEnterValidFeetInches');
-                       console.log("Feet/Inches Diagonal calculation: Converted input resulted in non-positive side.");
-                      return;
-                 }
-
-                const diagonalSquared = (sideA_cm * sideA_cm) + (sideB_cm * sideB_cm);
-                const diagonal_cm = Math.sqrt(diagonalSquared);
-
-                if (isNaN(diagonal_cm) || !isFinite(diagonal_cm)) {
-                     resultDiv.style.color = 'var(--error-text-color)';
-                     resultDiv.textContent = translate('diagonalCalculationError');
-                     console.error("Feet/Inches Diagonal calculation resulted in NaN or Infinity:", diagonal_cm);
-                } else {
-                     const diagonalFeet = diagonal_cm / 30.48;
-                     resultDiv.style.color = 'var(--result-text-color)';
-                     const diagonalResultString = translate('diagonalResultFeet', {amount: diagonalFeet.toFixed(2)});
-                     resultDiv.textContent = diagonalResultString;
-
-                     addHistoryItem({
-                         type: 'diagonal-feet',
-                         input: {sideA: sideAFeet, sideAInches: sideAInches, sideB: sideBFeet, sideBInches: sideBInches},
-                         result: diagonalResultString,
-                         date: new Date().toISOString()
-                     });
-
-                     console.log(`Feet/Inches Diagonal calculation success. CM: ${diagonal_cm.toFixed(2)}, Feet: ${diagonalFeet.toFixed(2)}. History added.`);
-                }
-             }
-        }
-
-
-        // --- Initialization (DOMContentLoaded) ---
         document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOMContentLoaded fired.");
-            // Get element references for main sections
-            standardCalculatorSection = document.getElementById('standardCalculatorSection');
-            emiCalculatorSection = document.getElementById('emiCalculatorSection');
-            diagonalCalculatorSection = document.getElementById('diagonalCalculatorSection');
-            historySection = document.getElementById('historySection');
+            // --- सभी DOM तत्वों की घोषणाएँ ---
+            // (यह बहुत लंबा है, इसलिए संक्षिप्त कर रहा हूँ, लेकिन यह सब स्क्रिप्ट में मौजूद है)
+            const themeToggleButton = document.getElementById('themeToggle'); 
+            const themeIcon = themeToggleButton.querySelector('i');
+            const languageToggleButton = document.getElementById('languageToggle');
+            const languageToggleText = languageToggleButton.querySelector('.lang-text');
+            const calculatorSwitcherButtons = document.querySelectorAll('.calc-select-btn');
+            const calculatorModules = document.querySelectorAll('.calculator-module');
+            const calcDisplay = document.getElementById('calcDisplay'); 
+            const simpleCalcButtons = document.querySelectorAll('#simpleCalculatorSection .calc-btn');
+            const principalAmtInput = document.getElementById('principalAmt'); 
+            const interestRateInput = document.getElementById('interestRate');
+            const loanTenureValueInput = document.getElementById('loanTenureValue');
+            const loanTenureUnitSelect = document.getElementById('loanTenureUnit');
+            const calculateEmiBtn = document.getElementById('calculateEmiBtn');
+            const emiResultArea = document.getElementById('emiResultArea');
+            const monthlyEmiValueEl = document.getElementById('monthlyEmiValue');
+            const totalPrincipalPaidEl = document.getElementById('totalPrincipalPaidValue');
+            const totalInterestPaidEl = document.getElementById('totalInterestPaidValue');
+            const totalAmountPaidEl = document.getElementById('totalAmountPaidValue');
+            const emiErrorArea = document.getElementById('emiErrorArea');
+            const showCmCalcBtn = document.getElementById('showCmCalcBtn'); 
+            const showFeetCalcBtn = document.getElementById('showFeetCalcBtn');
+            const diagonalCmCalculatorSection = document.getElementById('diagonalCmCalculatorSection');
+            const diagonalFeetCalculatorSection = document.getElementById('diagonalFeetCalculatorSection');
+            const cmSideAInput = document.getElementById('cmSideA');
+            const cmSideBInput = document.getElementById('cmSideB');
+            const calculateCmDiagonalBtn = document.getElementById('calculateCmDiagonalBtn');
+            const diagonalCmResultDiv = document.getElementById('diagonalCmResult');
+            const feetSideAFeetInput = document.getElementById('feetSideAFeet');
+            const feetSideAInchesInput = document.getElementById('feetSideAInches');
+            const feetSideBFeetInput = document.getElementById('feetSideBFeet');
+            const feetSideBInchesInput = document.getElementById('feetSideBInches');
+            const calculateFeetDiagonalBtn = document.getElementById('calculateFeetDiagonalBtn');
+            const diagonalFeetResultDiv = document.getElementById('diagonalFeetResult');
+            const birthDateInput = document.getElementById('birthDate'); 
+            const calculateAgeBtn = document.getElementById('calculateAgeBtn');
+            const ageResultArea = document.getElementById('ageResultArea');
+            const ageYearsEl = document.getElementById('ageYears');
+            const ageMonthsEl = document.getElementById('ageMonths');
+            const ageDaysEl = document.getElementById('ageDays');
+            const ageErrorArea = document.getElementById('ageErrorArea');
+            const startDateInput = document.getElementById('startDate'); 
+            const endDateInput = document.getElementById('endDate');
+            const calculateDateDiffBtn = document.getElementById('calculateDateDiffBtn');
+            const dateDiffResultArea = document.getElementById('dateDifferenceResultArea');
+            const diffYearsEl = document.getElementById('diffYears');
+            const diffMonthsEl = document.getElementById('diffMonths');
+            const diffDaysEl = document.getElementById('diffDays');
+            const totalDiffDaysEl = document.getElementById('totalDiffDays');
+            const totalDiffWeeksEl = document.getElementById('totalDiffWeeks');
+            const remainingDaysAfterWeeksEl = document.getElementById('remainingDaysAfterWeeks');
+            const dateDiffErrorArea = document.getElementById('dateDiffErrorArea');
+            const circleInputTypeSelect = document.getElementById('circleInputType');
+            const circleInputValueInput = document.getElementById('circleInputValue');
+            const calculateCircleBtn = document.getElementById('calculateCircleBtn');
+            const circleResultArea = document.getElementById('circleResultArea');
+            const circumferenceValueEl = document.getElementById('circumferenceValue');
+            const areaValueEl = document.getElementById('areaValue');
+            const calculatedDiameterEl = document.getElementById('calculatedDiameterValue');
+            const calculatedRadiusEl = document.getElementById('calculatedRadiusValue');
+            const circleErrorArea = document.getElementById('circleErrorArea');
+            const switchToSimpleInterestBtn = document.getElementById('switchToSimpleInterest');
+            const switchToCompoundInterestBtn = document.getElementById('switchToCompoundInterest');
+            const interestPrincipalInput = document.getElementById('interestPrincipal');
+            const interestRateAnnualInput = document.getElementById('interestRateAnnual');
+            const interestTimeYearsInput = document.getElementById('interestTimeYears');
+            const compoundingFrequencyGroup = document.getElementById('compoundingFrequencyGroup');
+            const compoundingFrequencySelect = document.getElementById('compoundingFrequency');
+            const calculateInterestBtn = document.getElementById('calculateInterestBtn');
+            const interestResultArea = document.getElementById('interestResultArea');
+            const interestTypeResultEl = document.getElementById('interestTypeResult');
+            const resultPrincipalValueEl = document.getElementById('resultPrincipalValue');
+            const interestEarnedValueEl = document.getElementById('interestEarnedValue');
+            const totalAmountWithInterestValueEl = document.getElementById('totalAmountWithInterestValue');
+            const interestErrorArea = document.getElementById('interestErrorArea');
+            const originalPriceInput = document.getElementById('originalPrice');
+            const discountPercentInput = document.getElementById('discountPercent');
+            const calculateDiscountBtn = document.getElementById('calculateDiscountBtn');
+            const discountResultArea = document.getElementById('discountResultArea');
+            const amountSavedValueEl = document.getElementById('amountSavedValue');
+            const finalPriceValueEl = document.getElementById('finalPriceValue');
+            const discountErrorArea = document.getElementById('discountErrorArea');
+            const billAmountInput = document.getElementById('billAmount');
+            const tipPercentInput = document.getElementById('tipPercent');
+            const numberOfPeopleInput = document.getElementById('numberOfPeople');
+            const calculateTipBtn = document.getElementById('calculateTipBtn');
+            const tipResultArea = document.getElementById('tipResultArea');
+            const tipAmountValueEl = document.getElementById('tipAmountValue');
+            const totalAmountWithTipValueEl = document.getElementById('totalAmountWithTipValue');
+            const tipPerPersonRowEl = document.getElementById('tipPerPersonRow');
+            const amountPerPersonValueEl = document.getElementById('amountPerPersonValue');
+            const tipErrorArea = document.getElementById('tipErrorArea');
 
+            let currentLanguage = localStorage.getItem('language') || 'hi';
+            let isDarkMode = localStorage.getItem('theme') === 'dark';
+            let currentInput = '', previousInput = '', operator = null, shouldResetDisplay = false;
+            let currentInterestMode = 'simple';
 
-            // Get references for Header Icons
-            toggleStandardIcon = document.getElementById('toggleStandardIcon');
-            toggleEmiIcon = document.getElementById('toggleEmiIcon');
-            toggleDiagonalIcon = document.getElementById('toggleDiagonalIcon');
-            toggleHistoryIcon = document.getElementById('toggleHistoryIcon');
-
-
-             // Get references for Diagonal Sub-Calculator Toggles and Sections
-            showCmCalcBtn = document.getElementById('showCmCalcBtn');
-            showFeetCalcBtn = document.getElementById('showFeetCalcBtn');
-            diagonalCmCalculatorSection = document.getElementById('diagonalCmCalculatorSection');
-            diagonalFeetCalculatorSection = document.getElementById('diagonalFeetCalculatorSection');
-
-            // Get references for History Elements
-            historyList = document.getElementById('historyList');
-            clearHistoryBtn = document.getElementById('clearHistoryBtn');
-
-
-             console.log("Elements found:", {
-                 standardCalculatorSection: !!standardCalculatorSection,
-                 emiCalculatorSection: !!emiCalculatorSection,
-                 diagonalCalculatorSection: !!diagonalCalculatorSection,
-                 historySection: !!historySection,
-
-                 toggleStandardIcon: !!toggleStandardIcon,
-                 toggleEmiIcon: !!toggleEmiIcon,
-                 toggleDiagonalIcon: !!toggleDiagonalIcon,
-                 toggleHistoryIcon: !!toggleHistoryIcon,
-
-                 showCmCalcBtn: !!showCmCalcBtn,
-                 showFeetCalcBtn: !!showFeetCalcBtn,
-                 diagonalCmCalculatorSection: !!diagonalCmCalculatorSection,
-                 diagonalFeetCalculatorSection: !!diagonalFeetCalculatorSection,
-
-                 historyList: !!historyList,
-                 clearHistoryBtn: !!clearHistoryBtn
+            function initializeApp() { /* ... (अपरिवर्तित) ... */
+                applyTheme(); applyLanguage();
+                const lastSelectedCalc = localStorage.getItem('selectedCalculator') || 'simple';
+                showCalculatorModule(lastSelectedCalc);
+                updateSwitcherButtons(lastSelectedCalc);
+                if (document.getElementById('simpleCalculatorSection')?.classList.contains('active-module')) clearSimpleDisplay();
+                if (document.getElementById('emiCalculatorSection')?.classList.contains('active-module')) clearEmiFields();
+                if (document.getElementById('diagonalCalculatorSection')?.classList.contains('active-module')) initializeDiagonalCalculator();
+                if (document.getElementById('ageCalculatorSection')?.classList.contains('active-module')) clearAgeFields();
+                if (document.getElementById('dateDifferenceCalculatorSection')?.classList.contains('active-module')) clearDateDiffFields();
+                if (document.getElementById('circleCalculatorSection')?.classList.contains('active-module')) clearCircleFields();
+                if (document.getElementById('interestCalculatorSection')?.classList.contains('active-module')) initializeInterestCalculator();
+                if (document.getElementById('discountCalculatorSection')?.classList.contains('active-module')) clearDiscountFields();
+                if (document.getElementById('tipCalculatorSection')?.classList.contains('active-module')) clearTipFields();
+            }
+            function _translate(key, params = {}) { /* ... (अपरिवर्तित) ... */
+                let langToUse = translations[currentLanguage] ? currentLanguage : 'en';
+                let text = translations[langToUse]?.[key] || translations['en']?.[key] || key; 
+                for (const param in params) {
+                    text = text.replace(new RegExp(`{${param}}`, 'g'), params[param]);
+                }
+                return text;
+            }
+            function applyTheme() { /* ... (अपरिवर्तित) ... */
+                document.documentElement.classList.toggle('dark', isDarkMode);
+                themeIcon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+                themeToggleButton.title = _translate(isDarkMode ? 'themeToggleLight' : 'themeToggleDark');
+            }
+            themeToggleButton.addEventListener('click', () => {
+                isDarkMode = !isDarkMode; localStorage.setItem('theme', isDarkMode ? 'dark' : 'light'); applyTheme();
+            });
+            function applyLanguage() { /* ... (अपरिवर्तित) ... */
+                 document.documentElement.lang = currentLanguage;
+                languageToggleText.textContent = _translate(currentLanguage === 'hi' ? 'langToggleToEn' : 'langToggleToHi');
+                languageToggleButton.title = (currentLanguage === 'hi') ? "अंग्रेजी में बदलें" : "Switch to Hindi";
+                
+                document.querySelectorAll('[data-translate-key]').forEach(el => {
+                    const key = el.dataset.translateKey;
+                    if (el.tagName === 'OPTION') { 
+                        el.label = _translate(key); 
+                        el.textContent = _translate(key);
+                    } else {
+                        el.textContent = _translate(key);
+                    }
+                });
+                document.querySelectorAll('[data-placeholder-key]').forEach(el => {
+                    const key = el.dataset.placeholderKey;
+                     if (el.tagName === 'INPUT' && (!el.value || el.value === "0" || el.classList.contains('error-message-placeholder'))) {
+                        el.placeholder = _translate(key) || (el.type === "number" ? "0" : "");
+                    }
+                });
+                applyTheme(); 
+                 const errorElementsConfig = [
+                    { el: calcDisplay, type: 'value', keys: ['calculationError', 'divisionByZeroError'] },
+                    { el: emiErrorArea, type: 'textContent', keys: ['invalidInputError', 'fillAllFieldsError'] },
+                    { el: diagonalCmResultDiv, type: 'textContent', keys: ['diagAlertEnterValidCmSides', 'diagCalculationError'] },
+                    { el: diagonalFeetResultDiv, type: 'textContent', keys: ['diagAlertEnterValidFeetInches', 'diagCalculationError'] },
+                    { el: ageErrorArea, type: 'textContent', keys: ['ageInvalidDateError', 'ageFutureDateError'] },
+                    { el: dateDiffErrorArea, type: 'textContent', keys: ['dateDiffInvalidError', 'dateDiffEndBeforeStartError'] },
+                    { el: circleErrorArea, type: 'textContent', keys: ['circleInvalidInputError']},
+                    { el: interestErrorArea, type: 'textContent', keys: ['interestInvalidInputError', 'fillAllFieldsError']},
+                    { el: discountErrorArea, type: 'textContent', keys: ['discountInvalidInputError', 'fillAllFieldsError']},
+                    { el: tipErrorArea, type: 'textContent', keys: ['tipInvalidInputError', 'tipInvalidPeopleError', 'fillAllFieldsError']}
+                ];
+                errorElementsConfig.forEach(config => {
+                    if (config.el && ( (config.el.style.display !== 'none' && config.el.textContent !== '') || (config.type === 'value' && config.el.value !== '') ) ) {
+                        const currentText = config.type === 'value' ? config.el.value : config.el.textContent;
+                        const otherLang = currentLanguage === 'hi' ? 'en' : 'hi';
+                        config.keys.forEach(key => {
+                            if (currentText === translations[otherLang]?.[key]) { 
+                                if (config.type === 'value') config.el.value = _translate(key);
+                                else config.el.textContent = _translate(key);
+                            }
+                        });
+                    }
+                });
+            }
+            languageToggleButton.addEventListener('click', () => {
+                currentLanguage = (currentLanguage === 'hi') ? 'en' : 'hi';
+                localStorage.setItem('language', currentLanguage); applyLanguage();
+            });
+            function showCalculatorModule(calculatorId) { /* ... (अपरिवर्तित) ... */
+                calculatorModules.forEach(module => {
+                    module.classList.toggle('active-module', module.id === `${calculatorId}CalculatorSection`);
+                });
+                localStorage.setItem('selectedCalculator', calculatorId);
+                if (calculatorId === 'simple' && calcDisplay) clearSimpleDisplay();
+                else if (calculatorId === 'emi' && principalAmtInput) clearEmiFields();
+                else if (calculatorId === 'diagonal' && showCmCalcBtn) initializeDiagonalCalculator();
+                else if (calculatorId === 'age' && birthDateInput) clearAgeFields();
+                else if (calculatorId === 'dateDifference' && startDateInput) clearDateDiffFields();
+                else if (calculatorId === 'circle' && circleInputValueInput) clearCircleFields();
+                else if (calculatorId === 'interest' && interestPrincipalInput) initializeInterestCalculator();
+                else if (calculatorId === 'discount' && originalPriceInput) clearDiscountFields();
+                else if (calculatorId === 'tip' && billAmountInput) clearTipFields();
+            }
+            function updateSwitcherButtons(activeCalculatorId) { /* ... (अपरिवर्तित) ... */
+                calculatorSwitcherButtons.forEach(button => {
+                    button.classList.toggle('active', button.dataset.calculator === activeCalculatorId);
+                });
+            }
+            calculatorSwitcherButtons.forEach(button => { /* ... (अपरिवर्तित) ... */
+                button.addEventListener('click', () => {
+                    const calculatorId = button.dataset.calculator;
+                    showCalculatorModule(calculatorId); updateSwitcherButtons(calculatorId);
+                });
             });
 
-            // Apply dark mode preference on load
-            if (localStorage.getItem(LS_DARK_MODE) === 'enabled') {
-                setDarkMode(true);
-            } else {
-                setDarkMode(false);
+            // --- प्रत्येक कैलकुलेटर का लॉजिक ---
+            // (Simple, EMI, Diagonal, Age, Date Difference, Circle, Interest का लॉजिक अपरिवर्तित)
+            // ... (सारा पिछला कोड यहाँ डालें)
+            function updateSimpleDisplay(value) { if (calcDisplay) calcDisplay.value = value; }
+            function appendToSimpleDisplay(value) {
+                if (!calcDisplay) return; if (shouldResetDisplay) { currentInput = ''; shouldResetDisplay = false; }
+                if (value === '.' && currentInput.includes('.')) return; if (currentInput === '0' && value !== '.') currentInput = '';
+                if (currentInput.length >= 16 && value !== '.') return; currentInput += value; updateSimpleDisplay(currentInput);
             }
-
-            // --- Set initial active section visibility based on localStorage or default (Standard) ---
-             const activeSection = localStorage.getItem(LS_ACTIVE_CALCULATOR) || 'standard';
-             console.log("Initial load, active section preference:", activeSection);
-
-             // Hide all first and clear all inputs/results
-             hideAllSections(); // Also removes 'active' class from header icons
-
-             // Use a small timeout to ensure display: none is applied before showing the correct one
-             // This can sometimes prevent brief flickering
-             setTimeout(() => {
-                 if (activeSection === 'emi' && emiCalculatorSection) {
-                      showEmiCalculator();
-                 } else if (activeSection === 'diagonal' && diagonalCalculatorSection) {
-                      showDiagonalCalculator();
-                 } else if (activeSection === 'history' && historySection) {
-                      showHistorySection();
-                 }
-                 else { // Default to standard (or if preferred section not found)
-                      if (standardCalculatorSection) {
-                           showStandardCalculator();
-                      } else {
-                           console.error("Standard Calculator Section element not found on initial load!");
-                           if (historySection) showHistorySection();
-                           else if (emiCalculatorSection) showEmiCalculator(); // Fallback
-                           else if (diagonalCalculatorSection) showDiagonalCalculator(); // Fallback
-                      }
-                 }
-                  console.log(`Initial section "${activeSection}" shown.`);
-
-                 // Apply translations after initial visibility is set and icons are updated
-                 applyTranslationsToUI();
-
-             }, 50);
-
-
-            // --- Add event listeners ---
-
-            // Header Icon Toggles
-            if (toggleStandardIcon) { toggleStandardIcon.addEventListener('click', showStandardCalculator); console.log("Standard Icon listener added."); } else { console.error("Standard toggle icon not found for listener."); }
-            if (toggleEmiIcon) { toggleEmiIcon.addEventListener('click', showEmiCalculator); console.log("EMI Icon listener added."); } else { console.error("EMI toggle icon not found for listener."); }
-            if (toggleDiagonalIcon) { toggleDiagonalIcon.addEventListener('click', showDiagonalCalculator); console.log("Diagonal Icon listener added."); } else { console.error("Diagonal toggle icon not found for listener."); }
-            if (toggleHistoryIcon) { toggleHistoryIcon.addEventListener('click', showHistorySection); console.log("History Icon listener added."); } else { console.error("History toggle icon not found for listener."); }
-
-
-             // Diagonal Sub-Calculator Toggle Buttons
-             if (showCmCalcBtn) {
-                 showCmCalcBtn.addEventListener('click', showCmCalculatorSub);
-                 console.log("CM Calculator Sub-Toggle Button event listener added.");
-             } else {
-                  console.error("CM Calculator Sub-Toggle Button not found!");
-             }
-
-              if (showFeetCalcBtn) {
-                 showFeetCalcBtn.addEventListener('click', showFeetCalculatorSub);
-                 console.log("Feet Calculator Sub-Toggle Button event listener added.");
-             } else {
-                  console.error("Feet Calculator Sub-Toggle Button not found!");
-             }
-
-            // History Clear Button
-            if (clearHistoryBtn) {
-                clearHistoryBtn.addEventListener('click', clearHistory);
-                console.log("Clear History Button event listener added.");
-            } else {
-                 console.error("Clear History Button not found!");
+            function clearSimpleDisplay() {
+                currentInput = '0'; previousInput = ''; operator = null; shouldResetDisplay = false;
+                if (calcDisplay) updateSimpleDisplay(currentInput);
             }
+            function deleteLastSimple() {
+                if (!calcDisplay) return; if (shouldResetDisplay) { clearSimpleDisplay(); return; }
+                currentInput = (currentInput.length > 1) ? currentInput.slice(0, -1) : '0'; updateSimpleDisplay(currentInput);
+            }
+            function selectSimpleOperator(selectedOp) {
+                if (!calcDisplay || (currentInput === '' && previousInput === '')) return;
+                if (shouldResetDisplay && previousInput === '') { previousInput = currentInput; currentInput = ''; shouldResetDisplay = false; }
+                if (currentInput === '' && operator && previousInput !== '') { operator = selectedOp; return; }
+                if (previousInput !== '' && !shouldResetDisplay && currentInput !== '') { calculateSimple(); }
+                operator = selectedOp; if (!shouldResetDisplay) { previousInput = currentInput; currentInput = ''; } shouldResetDisplay = false;
+            }
+            function calculateSimple() {
+                if (!calcDisplay || previousInput === '' || !operator || (currentInput === '' && !shouldResetDisplay)) return;
+                let result; const prev = parseFloat(previousInput); const current = (currentInput === '' && shouldResetDisplay) ? prev : parseFloat(currentInput);
+                if (isNaN(prev) || isNaN(current)) {
+                    updateSimpleDisplay(_translate('calculationError')); currentInput = ''; previousInput = ''; operator = null; shouldResetDisplay = true; return;
+                }
+                switch (operator) {
+                    case '+': result = prev + current; break; case '-': result = prev - current; break;
+                    case '*': result = prev * current; break;
+                    case '/': if (current === 0) { updateSimpleDisplay(_translate('divisionByZeroError')); currentInput = ''; previousInput = ''; operator = null; shouldResetDisplay = true; return; } result = prev / current; break;
+                    case '%': result = (operator && (operator === '+' || operator === '-')) ? prev + (prev * current / 100) * (operator === '+' ? 1 : -1) : (operator && (operator === '*' || operator === '/')) ? prev * (current / 100) : prev / 100; break;
+                    default: return;
+                }
+                currentInput = parseFloat(result.toPrecision(12)).toString(); operator = null; previousInput = ''; shouldResetDisplay = true; updateSimpleDisplay(currentInput);
+            }
+            if (simpleCalcButtons && simpleCalcButtons.length > 0 && calcDisplay) {
+                simpleCalcButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const value = button.dataset.value; const action = button.dataset.action;
+                        if (value) { (['+', '-', '*', '/', '%'].includes(value)) ? selectSimpleOperator(value) : appendToSimpleDisplay(value); }
+                        else if (action) {
+                            if (action === 'clear') clearSimpleDisplay(); if (action === 'delete') deleteLastSimple(); if (action === 'calculate') calculateSimple();
+                        }
+                    });
+                });
+            }
+            function clearEmiFields() { 
+                if(principalAmtInput) principalAmtInput.value = '';
+                if(interestRateInput) interestRateInput.value = '';
+                if(loanTenureValueInput) loanTenureValueInput.value = '';
+                if(loanTenureUnitSelect) loanTenureUnitSelect.value = 'years';
+                if(emiResultArea) emiResultArea.style.display = 'none';
+                if(emiErrorArea) emiErrorArea.style.display = 'none';
+            }
+            function calculateAndDisplayEmi() { 
+                emiResultArea.style.display = 'none'; emiErrorArea.style.display = 'none';
+                const P = parseFloat(principalAmtInput.value); const annualRate = parseFloat(interestRateInput.value);
+                let tenureValue = parseFloat(loanTenureValueInput.value); const tenureUnit = loanTenureUnitSelect.value;
+                if (isNaN(P) || isNaN(annualRate) || isNaN(tenureValue) || P <= 0 || annualRate < 0 || tenureValue <= 0) { 
+                    emiErrorArea.textContent = _translate('invalidInputError'); emiErrorArea.style.display = 'block'; return;
+                }
+                if (!principalAmtInput.value || !interestRateInput.value || !loanTenureValueInput.value){
+                    emiErrorArea.textContent = _translate('fillAllFieldsError'); emiErrorArea.style.display = 'block'; return;
+                }
+                const monthlyRate = (annualRate / 12) / 100; const N = (tenureUnit === 'years') ? tenureValue * 12 : tenureValue;
+                if (monthlyRate === 0 && annualRate === 0) { 
+                     const emi = P / N;
+                     monthlyEmiValueEl.textContent = `₹ ${emi.toFixed(2)}`; totalPrincipalPaidEl.textContent = `₹ ${P.toFixed(2)}`;
+                     totalInterestPaidEl.textContent = `₹ 0.00`; totalAmountPaidEl.textContent = `₹ ${P.toFixed(2)}`;
+                     emiResultArea.style.display = 'block'; return;
+                }
+                const emiNumerator = P * monthlyRate * Math.pow(1 + monthlyRate, N);
+                const emiDenominator = Math.pow(1 + monthlyRate, N) - 1; 
+                if (emiDenominator === 0) { 
+                     emiErrorArea.textContent = _translate('calculationError'); emiErrorArea.style.display = 'block'; return;
+                }
+                const emi = emiNumerator / emiDenominator;
+                const totalAmountPaid = emi * N; const totalInterest = totalAmountPaid - P;
+                monthlyEmiValueEl.textContent = `₹ ${emi.toFixed(2)}`; totalPrincipalPaidEl.textContent = `₹ ${P.toFixed(2)}`;
+                totalInterestPaidEl.textContent = `₹ ${totalInterest.toFixed(2)}`; totalAmountPaidEl.textContent = `₹ ${totalAmountPaid.toFixed(2)}`;
+                emiResultArea.style.display = 'block';
+            }
+            if (calculateEmiBtn) calculateEmiBtn.addEventListener('click', calculateAndDisplayEmi);
+            [principalAmtInput, interestRateInput, loanTenureValueInput, loanTenureUnitSelect].forEach(el => {
+                if(el) el.addEventListener('input', () => {
+                    if (emiResultArea.style.display !== 'none' || emiErrorArea.style.display !== 'none') {
+                        emiResultArea.style.display = 'none'; emiErrorArea.style.display = 'none';
+                    }
+                });
+            });
+             function clearCmDiagonalInputsAndResult() {
+                if (cmSideAInput) cmSideAInput.value = ''; if (cmSideBInput) cmSideBInput.value = '';
+                if (diagonalCmResultDiv) { diagonalCmResultDiv.textContent = ''; diagonalCmResultDiv.classList.remove('error'); }
+            }
+            function clearFeetDiagonalInputsAndResult() {
+                if (feetSideAFeetInput) feetSideAFeetInput.value = ''; if (feetSideAInchesInput) feetSideAInchesInput.value = '';
+                if (feetSideBFeetInput) feetSideBFeetInput.value = ''; if (feetSideBInchesInput) feetSideBInchesInput.value = '';
+                if (diagonalFeetResultDiv) { diagonalFeetResultDiv.textContent = ''; diagonalFeetResultDiv.classList.remove('error'); }
+            }
+            function showDiagCmCalculatorSub() {
+                if (!diagonalCmCalculatorSection || !diagonalFeetCalculatorSection || !showCmCalcBtn || !showFeetCalcBtn) return;
+                diagonalFeetCalculatorSection.style.display = 'none'; diagonalCmCalculatorSection.style.display = 'flex'; 
+                showCmCalcBtn.classList.add('active'); showFeetCalcBtn.classList.remove('active');
+                clearCmDiagonalInputsAndResult();
+            }
+            function showDiagFeetCalculatorSub() {
+                if (!diagonalCmCalculatorSection || !diagonalFeetCalculatorSection || !showCmCalcBtn || !showFeetCalcBtn) return;
+                diagonalCmCalculatorSection.style.display = 'none'; diagonalFeetCalculatorSection.style.display = 'flex'; 
+                showFeetCalcBtn.classList.add('active'); showCmCalcBtn.classList.remove('active');
+                clearFeetDiagonalInputsAndResult();
+            }
+            function _calculateCmDiagonal() {
+                if (!cmSideAInput || !cmSideBInput || !diagonalCmResultDiv) return;
+                const sideA = parseFloat(cmSideAInput.value); const sideB = parseFloat(cmSideBInput.value);
+                diagonalCmResultDiv.textContent = ''; diagonalCmResultDiv.classList.remove('error');
+                if (isNaN(sideA) || isNaN(sideB) || sideA <= 0 || sideB <= 0) {
+                    diagonalCmResultDiv.textContent = _translate('diagAlertEnterValidCmSides'); diagonalCmResultDiv.classList.add('error'); return;
+                }
+                const diagonal = Math.sqrt(sideA * sideA + sideB * sideB);
+                diagonalCmResultDiv.textContent = _translate('diagResultCm', { amount: diagonal.toFixed(2) });
+            }
+            function _calculateFeetDiagonal() {
+                if (!feetSideAFeetInput || !feetSideAInchesInput || !feetSideBFeetInput || !feetSideBInchesInput || !diagonalFeetResultDiv) return;
+                const sideAFeet = parseFloat(feetSideAFeetInput.value) || 0; const sideAInches = parseFloat(feetSideAInchesInput.value) || 0;
+                const sideBFeet = parseFloat(feetSideBFeetInput.value) || 0; const sideBInches = parseFloat(feetSideBInchesInput.value) || 0;
+                diagonalFeetResultDiv.textContent = ''; diagonalFeetResultDiv.classList.remove('error');
+                if ((sideAFeet < 0 || sideAInches < 0 || sideBFeet < 0 || sideBInches < 0) || (sideAFeet === 0 && sideAInches === 0) || (sideBFeet === 0 && sideBInches === 0)) {
+                    diagonalFeetResultDiv.textContent = _translate('diagAlertEnterValidFeetInches'); diagonalFeetResultDiv.classList.add('error'); return;
+                }
+                const totalInchesA = (sideAFeet * 12) + sideAInches; const totalInchesB = (sideBFeet * 12) + sideBInches;
+                const diagonalInches = Math.sqrt(totalInchesA * totalInchesA + totalInchesB * totalInchesB);
+                if (isNaN(diagonalInches) || !isFinite(diagonalInches)) {
+                    diagonalFeetResultDiv.textContent = _translate('diagCalculationError'); diagonalFeetResultDiv.classList.add('error');
+                } else {
+                    const totalFeet = Math.floor(diagonalInches / 12); const remainingInches = (diagonalInches % 12);
+                    diagonalFeetResultDiv.textContent = _translate('diagResultFeetInches', { feet: totalFeet, inches: remainingInches.toFixed(2) });
+                }
+            }
+            function initializeDiagonalCalculator() { showDiagCmCalculatorSub(); clearCmDiagonalInputsAndResult(); clearFeetDiagonalInputsAndResult(); }
+            if(showCmCalcBtn) showCmCalcBtn.addEventListener('click', showDiagCmCalculatorSub);
+            if(showFeetCalcBtn) showFeetCalcBtn.addEventListener('click', showDiagFeetCalculatorSub);
+            if(calculateCmDiagonalBtn) calculateCmDiagonalBtn.addEventListener('click', _calculateCmDiagonal);
+            if(calculateFeetDiagonalBtn) calculateFeetDiagonalBtn.addEventListener('click', _calculateFeetDiagonal);
+             function clearAgeFields() {
+                if(birthDateInput) birthDateInput.value = ''; 
+                if(ageResultArea) ageResultArea.style.display = 'none';
+                if(ageErrorArea) ageErrorArea.style.display = 'none';
+            }
+            function calculateAndDisplayAge() {
+                if (!birthDateInput || !ageResultArea || !ageErrorArea || !ageYearsEl || !ageMonthsEl || !ageDaysEl) return;
+                ageResultArea.style.display = 'none'; ageErrorArea.style.display = 'none';
+                const birthDateStr = birthDateInput.value;
+                if (!birthDateStr) {
+                    ageErrorArea.textContent = _translate('ageInvalidDateError'); ageErrorArea.style.display = 'block'; return;
+                }
+                const birthDate = new Date(birthDateStr); const today = new Date();
+                if (isNaN(birthDate.getTime())) {
+                    ageErrorArea.textContent = _translate('ageInvalidDateError'); ageErrorArea.style.display = 'block'; return;
+                }
+                if (birthDate > today) {
+                    ageErrorArea.textContent = _translate('ageFutureDateError'); ageErrorArea.style.display = 'block'; return;
+                }
+                let years = today.getFullYear() - birthDate.getFullYear();
+                let months = today.getMonth() - birthDate.getMonth();
+                let days = today.getDate() - birthDate.getDate();
+                if (days < 0) {
+                    months--; days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+                }
+                if (months < 0) { years--; months += 12; }
+                ageYearsEl.textContent = years; ageMonthsEl.textContent = months; ageDaysEl.textContent = days;
+                ageResultArea.style.display = 'block';
+            }
+            if (calculateAgeBtn) calculateAgeBtn.addEventListener('click', calculateAndDisplayAge);
+            if(birthDateInput) {
+                birthDateInput.addEventListener('input', () => {
+                     if (ageResultArea.style.display !== 'none' || ageErrorArea.style.display !== 'none') {
+                        ageResultArea.style.display = 'none'; ageErrorArea.style.display = 'none';
+                    }
+                });
+            }
+             function clearDateDiffFields() {
+                if (startDateInput) startDateInput.value = ''; if (endDateInput) endDateInput.value = '';
+                if (dateDiffResultArea) dateDiffResultArea.style.display = 'none';
+                if (dateDiffErrorArea) dateDiffErrorArea.style.display = 'none';
+            }
+            function calculateAndDisplayDateDifference() {
+                if (!startDateInput || !endDateInput || !dateDiffResultArea || !dateDiffErrorArea) return;
+                dateDiffResultArea.style.display = 'none'; dateDiffErrorArea.style.display = 'none';
+                const startDateStr = startDateInput.value; const endDateStr = endDateInput.value;
+                if (!startDateStr || !endDateStr) {
+                    dateDiffErrorArea.textContent = _translate('dateDiffInvalidError'); dateDiffErrorArea.style.display = 'block'; return;
+                }
+                const startDate = new Date(startDateStr); const endDate = new Date(endDateStr);
+                if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                    dateDiffErrorArea.textContent = _translate('dateDiffInvalidError'); dateDiffErrorArea.style.display = 'block'; return;
+                }
+                if (endDate < startDate) {
+                    dateDiffErrorArea.textContent = _translate('dateDiffEndBeforeStartError'); dateDiffErrorArea.style.display = 'block'; return;
+                }
+                let years = endDate.getFullYear() - startDate.getFullYear();
+                let months = endDate.getMonth() - startDate.getMonth();
+                let days = endDate.getDate() - startDate.getDate();
+                if (days < 0) { months--; days += new Date(endDate.getFullYear(), endDate.getMonth(), 0).getDate(); }
+                if (months < 0) { years--; months += 12; }
+                const timeDiff = Math.abs(endDate.getTime() - startDate.getTime()); const totalDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                const totalWeeks = Math.floor(totalDays / 7); const remainingDays = totalDays % 7;
+                if(diffYearsEl) diffYearsEl.textContent = years; if(diffMonthsEl) diffMonthsEl.textContent = months;
+                if(diffDaysEl) diffDaysEl.textContent = days; if(totalDiffDaysEl) totalDiffDaysEl.textContent = totalDays;
+                if(totalDiffWeeksEl) totalDiffWeeksEl.textContent = totalWeeks; if(remainingDaysAfterWeeksEl) remainingDaysAfterWeeksEl.textContent = remainingDays;
+                dateDiffResultArea.style.display = 'block';
+            }
+            if (calculateDateDiffBtn) calculateDateDiffBtn.addEventListener('click', calculateAndDisplayDateDifference);
+            if (startDateInput && endDateInput) {
+                [startDateInput, endDateInput].forEach(input => {
+                    input.addEventListener('input', () => {
+                        if (dateDiffResultArea.style.display !== 'none' || dateDiffErrorArea.style.display !== 'none') {
+                            dateDiffResultArea.style.display = 'none'; dateDiffErrorArea.style.display = 'none';
+                        }
+                    });
+                });
+            }
+            function clearCircleFields() {
+                if (circleInputValueInput) circleInputValueInput.value = '';
+                if (circleInputTypeSelect) circleInputTypeSelect.value = 'radius';
+                if (circleResultArea) circleResultArea.style.display = 'none';
+                if (circleErrorArea) circleErrorArea.style.display = 'none';
+                const calculatedDiameterP = document.querySelector('#calculatedDiameterValue')?.parentElement;
+                const calculatedRadiusP = document.querySelector('#calculatedRadiusValue')?.parentElement;
+                if (calculatedDiameterP) calculatedDiameterP.style.display = 'none';
+                if (calculatedRadiusP) calculatedRadiusP.style.display = 'none';
+            }
+            function calculateAndDisplayCircleProperties() {
+                if (!circleInputTypeSelect || !circleInputValueInput || !circleResultArea || !circleErrorArea || !circumferenceValueEl || !areaValueEl || !calculatedDiameterEl || !calculatedRadiusEl) return;
+                hideCircleCalcOutputs(); 
+                const inputType = circleInputTypeSelect.value; const inputValue = parseFloat(circleInputValueInput.value);
+                if (isNaN(inputValue) || inputValue <= 0) {
+                    circleErrorArea.textContent = _translate('circleInvalidInputError'); circleErrorArea.style.display = 'block'; return;
+                }
+                let radius, diameter;
+                if (inputType === 'radius') {
+                    radius = inputValue; diameter = 2 * radius;
+                    calculatedDiameterEl.textContent = diameter.toFixed(3); calculatedDiameterEl.parentElement.style.display = 'block';
+                } else if (inputType === 'diameter') {
+                    diameter = inputValue; radius = diameter / 2;
+                    calculatedRadiusEl.textContent = radius.toFixed(3); calculatedRadiusEl.parentElement.style.display = 'block';
+                } else {
+                    circleErrorArea.textContent = _translate('calculationError'); circleErrorArea.style.display = 'block'; return;
+                }
+                const circumference = 2 * Math.PI * radius; const area = Math.PI * Math.pow(radius, 2);
+                circumferenceValueEl.textContent = circumference.toFixed(3); areaValueEl.textContent = area.toFixed(3);
+                circleResultArea.style.display = 'block';
+            }
+            if (calculateCircleBtn) calculateCircleBtn.addEventListener('click', calculateAndDisplayCircleProperties);
+             function hideCircleCalcOutputs() {
+                if (circleResultArea) circleResultArea.style.display = 'none';
+                if (circleErrorArea) circleErrorArea.style.display = 'none';
+                const calculatedDiameterP = document.querySelector('#calculatedDiameterValue')?.parentElement;
+                const calculatedRadiusP = document.querySelector('#calculatedRadiusValue')?.parentElement;
+                if (calculatedDiameterP) calculatedDiameterP.style.display = 'none';
+                if (calculatedRadiusP) calculatedRadiusP.style.display = 'none';
+            }
+            if (circleInputValueInput) circleInputValueInput.addEventListener('input', hideCircleCalcOutputs);
+            if (circleInputTypeSelect) circleInputTypeSelect.addEventListener('change', hideCircleCalcOutputs);
+            function clearInterestFields() {
+                if(interestPrincipalInput) interestPrincipalInput.value = '';
+                if(interestRateAnnualInput) interestRateAnnualInput.value = '';
+                if(interestTimeYearsInput) interestTimeYearsInput.value = '';
+                if(compoundingFrequencySelect) compoundingFrequencySelect.value = '1';
+                if(interestResultArea) interestResultArea.style.display = 'none';
+                if(interestErrorArea) interestErrorArea.style.display = 'none';
+            }
+            function setInterestMode(mode) {
+                currentInterestMode = mode;
+                clearInterestFields(); 
+                if (mode === 'simple') {
+                    if(switchToSimpleInterestBtn) switchToSimpleInterestBtn.classList.add('active');
+                    if(switchToCompoundInterestBtn) switchToCompoundInterestBtn.classList.remove('active');
+                    if(compoundingFrequencyGroup) compoundingFrequencyGroup.style.display = 'none';
+                } else { 
+                    if(switchToSimpleInterestBtn) switchToSimpleInterestBtn.classList.remove('active');
+                    if(switchToCompoundInterestBtn) switchToCompoundInterestBtn.classList.add('active');
+                    if(compoundingFrequencyGroup) compoundingFrequencyGroup.style.display = 'flex'; 
+                }
+            }
+            function initializeInterestCalculator() {
+                setInterestMode('simple'); 
+                clearInterestFields();
+            }
+            function calculateAndDisplayInterest() {
+                if (!interestPrincipalInput || !interestRateAnnualInput || !interestTimeYearsInput || !interestResultArea || !interestErrorArea) return;
+                interestResultArea.style.display = 'none'; interestErrorArea.style.display = 'none';
+                const P = parseFloat(interestPrincipalInput.value);
+                const R_annual = parseFloat(interestRateAnnualInput.value); 
+                const T_years = parseFloat(interestTimeYearsInput.value);
 
-            loadHistory();
+                if (isNaN(P) || isNaN(R_annual) || isNaN(T_years) || P <= 0 || R_annual < 0 || T_years <= 0) {
+                    interestErrorArea.textContent = _translate('interestInvalidInputError');
+                    interestErrorArea.style.display = 'block'; return;
+                }
+                let interestEarned, totalAmount;
+                if (currentInterestMode === 'simple') {
+                    interestEarned = (P * R_annual * T_years) / 100;
+                    totalAmount = P + interestEarned;
+                    if(interestTypeResultEl) interestTypeResultEl.textContent = _translate('simpleInterestLabel');
+                } else { 
+                    const n = parseInt(compoundingFrequencySelect.value); 
+                    const rate_decimal = R_annual / 100; 
+                    totalAmount = P * Math.pow((1 + rate_decimal / n), (n * T_years));
+                    interestEarned = totalAmount - P;
+                    if(interestTypeResultEl) interestTypeResultEl.textContent = _translate('compoundInterestLabel');
+                }
+                if(resultPrincipalValueEl) resultPrincipalValueEl.textContent = `₹ ${P.toFixed(2)}`;
+                if(interestEarnedValueEl) interestEarnedValueEl.textContent = `₹ ${interestEarned.toFixed(2)}`;
+                if(totalAmountWithInterestValueEl) totalAmountWithInterestValueEl.textContent = `₹ ${totalAmount.toFixed(2)}`;
+                interestResultArea.style.display = 'block';
+            }
+            if(switchToSimpleInterestBtn) switchToSimpleInterestBtn.addEventListener('click', () => setInterestMode('simple'));
+            if(switchToCompoundInterestBtn) switchToCompoundInterestBtn.addEventListener('click', () => setInterestMode('compound'));
+            if(calculateInterestBtn) calculateInterestBtn.addEventListener('click', calculateAndDisplayInterest);
+            [interestPrincipalInput, interestRateAnnualInput, interestTimeYearsInput, compoundingFrequencySelect].forEach(el => {
+                if(el) el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
+                    if (interestResultArea && interestResultArea.style.display !== 'none' || interestErrorArea && interestErrorArea.style.display !== 'none') {
+                       if(interestResultArea) interestResultArea.style.display = 'none'; if(interestErrorArea) interestErrorArea.style.display = 'none';
+                    }
+                });
+            });
+
+            // --- छूट कैल्क लॉजिक ---
+            function clearDiscountFields() {
+                if(originalPriceInput) originalPriceInput.value = '';
+                if(discountPercentInput) discountPercentInput.value = '';
+                if(discountResultArea) discountResultArea.style.display = 'none';
+                if(discountErrorArea) discountErrorArea.style.display = 'none';
+            }
+            function calculateAndDisplayDiscount() {
+                if (!originalPriceInput || !discountPercentInput || !discountResultArea || !discountErrorArea || !amountSavedValueEl || !finalPriceValueEl) return;
+                discountResultArea.style.display = 'none'; discountErrorArea.style.display = 'none';
+                const price = parseFloat(originalPriceInput.value);
+                const discount = parseFloat(discountPercentInput.value);
+                if (isNaN(price) || isNaN(discount) || price <= 0 || discount < 0 || discount > 100) {
+                    discountErrorArea.textContent = _translate('discountInvalidInputError');
+                    discountErrorArea.style.display = 'block'; return;
+                }
+                const amountSaved = (price * discount) / 100;
+                const finalPrice = price - amountSaved;
+                amountSavedValueEl.textContent = `₹ ${amountSaved.toFixed(2)}`;
+                finalPriceValueEl.textContent = `₹ ${finalPrice.toFixed(2)}`;
+                discountResultArea.style.display = 'block';
+            }
+            if(calculateDiscountBtn) calculateDiscountBtn.addEventListener('click', calculateAndDisplayDiscount);
+            [originalPriceInput, discountPercentInput].forEach(el => {
+                if(el) el.addEventListener('input', () => {
+                    if(discountResultArea && discountResultArea.style.display !== 'none' || discountErrorArea && discountErrorArea.style.display !== 'none') {
+                        if(discountResultArea) discountResultArea.style.display = 'none';
+                        if(discountErrorArea) discountErrorArea.style.display = 'none';
+                    }
+                });
+            });
+
+            // --- टिप कैल्क लॉजिक (सुधारित) ---
+            function clearTipFields() {
+                if(billAmountInput) billAmountInput.value = '';
+                if(tipPercentInput) tipPercentInput.value = ''; // खाली छोड़ दें, डिफ़ॉल्ट 0% होगा
+                if(numberOfPeopleInput) numberOfPeopleInput.value = '1';
+                if(tipResultArea) tipResultArea.style.display = 'none';
+                if(tipErrorArea) tipErrorArea.style.display = 'none';
+                if(tipPerPersonRowEl) tipPerPersonRowEl.style.display = 'none';
+            }
+            function calculateAndDisplayTip() {
+                if(!billAmountInput || !tipPercentInput || !numberOfPeopleInput || !tipResultArea || !tipErrorArea || !tipAmountValueEl || !totalAmountWithTipValueEl || !tipPerPersonRowEl || !amountPerPersonValueEl) return;
+                tipResultArea.style.display = 'none'; tipErrorArea.style.display = 'none';
+                tipPerPersonRowEl.style.display = 'none';
+
+                const bill = parseFloat(billAmountInput.value);
+                // यदि टिप प्रतिशत खाली है, तो 0 मानें, अन्यथा उसे पार्स करें
+                const tipPercentage = tipPercentInput.value === '' ? 0 : parseFloat(tipPercentInput.value);
+                const people = parseInt(numberOfPeopleInput.value);
+
+                if (isNaN(bill) || bill <= 0 ) {
+                    tipErrorArea.textContent = _translate('tipInvalidInputError');
+                    tipErrorArea.style.display = 'block'; return;
+                }
+                if (isNaN(tipPercentage) || tipPercentage < 0) { // टिप 0% हो सकती है
+                    tipErrorArea.textContent = _translate('tipInvalidInputError'); // या एक अलग त्रुटि संदेश
+                    tipErrorArea.style.display = 'block'; return;
+                }
+                if (isNaN(people) || people <= 0 || !Number.isInteger(parseFloat(numberOfPeopleInput.value))) {
+                    tipErrorArea.textContent = _translate('tipInvalidPeopleError');
+                    tipErrorArea.style.display = 'block'; return;
+                }
+
+                const tipAmount = (bill * tipPercentage) / 100;
+                const totalAmount = bill + tipAmount;
+                
+                tipAmountValueEl.textContent = `₹ ${tipAmount.toFixed(2)}`;
+                totalAmountWithTipValueEl.textContent = `₹ ${totalAmount.toFixed(2)}`;
+
+                if (people >= 1) { // प्रति व्यक्ति तभी दिखाएं जब लोग 1 या उससे अधिक हों
+                    const amountPerPerson = totalAmount / people;
+                    amountPerPersonValueEl.textContent = `₹ ${amountPerPerson.toFixed(2)}`;
+                    tipPerPersonRowEl.style.display = 'block';
+                }
+                tipResultArea.style.display = 'block';
+            }
+            if(calculateTipBtn) calculateTipBtn.addEventListener('click', calculateAndDisplayTip);
+            [billAmountInput, tipPercentInput, numberOfPeopleInput].forEach(el => {
+                if(el) el.addEventListener('input', () => {
+                     if(tipResultArea && tipResultArea.style.display !== 'none' || tipErrorArea && tipErrorArea.style.display !== 'none') {
+                        if(tipResultArea) tipResultArea.style.display = 'none';
+                        if(tipErrorArea) tipErrorArea.style.display = 'none';
+                        if(tipPerPersonRowEl) tipPerPersonRowEl.style.display = 'none';
+                    }
+                });
+            });
+            
+            initializeApp();
         });
     </script>
-
 </body>
 </html>
