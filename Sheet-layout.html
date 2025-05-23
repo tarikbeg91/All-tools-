@@ -674,7 +674,7 @@
     </div>
 
     <script>
-        // === वर्कर कोड (जैसा पहले था) ===
+        // === वर्कर कोड ===
         const workerCode = `
             let freeRectIdCounter_worker = 0;
             function isRectInside(rectA, rectB) { return rectA.x >= rectB.x && rectA.y >= rectB.y && rectA.x + rectA.width <= rectB.x + rectB.width && rectA.y + rectA.height <= rectB.y + rectB.height; }
@@ -1044,7 +1044,7 @@
                 "totalEdgeBandingResult": "कुल {length} {unit}"
             },
             "en": {
-                "appTitle": "Visual Layout ", "headerTitle": "Sheet Layout",
+                "appTitle": "Visual Sheet Layout Calculator", "headerTitle": "Sheet Layout",
                 "shareBtn": "Share", "printPdfBtnMenu": "Print as PDF",
                 "projectLocationLabel": "Project Location/Client:",
                 "projectLocationPlaceholder": "e.g., Kitchen - Mr. Sharma, or Site Address",
@@ -2355,7 +2355,7 @@
                         row.insertCell().textContent = offcut.id.slice(-6);
                         row.insertCell().textContent = convertFromCm(offcut.width, currentUnit);
                         row.insertCell().textContent = convertFromCm(offcut.length, currentUnit);
-                        row.insertCell().textContent = offcut.isIndividuallyAvailable ? (getLangString("availableLabel") || "उपलब्ध") : (getLangString("usedLabel") || "प्रयुक्त");
+                        row.insertCell().textContent = getLangString("availableLabel") || "उपलब्ध";
 
                         const deleteBtn = document.createElement('button');
                         deleteBtn.innerHTML = '&times;';
@@ -2675,9 +2675,10 @@
                     const pieceHeight_logical = p.placedLength * BASE_CANVAS_SCALE;
                     ctx.fillRect(pieceX_logical, pieceY_logical, pieceWidth_logical, pieceHeight_logical);
 
-                    const pieceBorderThickness = 0.3;
+                    // Piece border
+                    const pieceBorderThickness = 0.6; // Changed piece border thickness
                     ctx.save();
-                    ctx.strokeStyle = '#cccccc';
+                    ctx.strokeStyle = '#FFFFFF'; // Changed piece border color to white
                     ctx.lineWidth = pieceBorderThickness;
                     ctx.strokeRect(
                         pieceX_logical + pieceBorderThickness / 2,
@@ -2687,10 +2688,8 @@
                     );
                     ctx.restore();
 
-                    // केरफ़-जैसी लाइन (पीस के सामान्य बॉर्डर के बाहर)
-                    const kerfLineColor = "rgba(200, 200, 200, 0.6)"; // हल्का ग्रे केरफ़ लाइन
-                    const kerfLineWidth = BASE_CANVAS_SCALE * 0.2;   // केरफ़ लाइन की मोटाई
-
+                    const kerfLineColor = "rgba(200, 200, 200, 0.6)";
+                    const kerfLineWidth = BASE_CANVAS_SCALE * 0.2;
                     ctx.save();
                     ctx.strokeStyle = kerfLineColor;
                     ctx.lineWidth = kerfLineWidth;
@@ -2704,7 +2703,7 @@
 
                     overallTotalAreaUsed_cm2 += p.placedWidth * p.placedLength;
 
-                    // एज टेप विज़ुअलाइज़ेशन (सामान्य बॉर्डर के अंदर की तरफ)
+                    // Edge Tape Visualization
                     if (p.edgeBanding && (p.edgeBanding.L1 || p.edgeBanding.L2 || p.edgeBanding.W1 || p.edgeBanding.W2)) {
                         const edgeTapeColor = 'rgba(220, 0, 0, 0.9)';
                         const edgeTapeThickness = BASE_CANVAS_SCALE * 0.6;
@@ -2723,30 +2722,55 @@
                         const px = pieceX_logical;
                         const py = pieceY_logical;
 
-                        const innerOffset = pieceBorderThickness + (edgeTapeThickness / 2);
+                        const desiredInnerMarginPixels = BASE_CANVAS_SCALE * 1; // Adjusted inner margin
+                        const calculatedInnerOffset = desiredInnerMarginPixels + (edgeTapeThickness / 2);
 
-                        const cTopLeftInner = { x: px + innerOffset, y: py + innerOffset };
-                        const cTopRightInner = { x: px + pw_canvas - innerOffset, y: py + innerOffset };
-                        const cBottomLeftInner = { x: px + innerOffset, y: py + pl_canvas - innerOffset };
-                        const cBottomRightInner = { x: px + pw_canvas - innerOffset, y: py + pl_canvas - innerOffset };
+                        const maxPossibleOffsetW = (pw_canvas / 2) - (edgeTapeThickness / 2);
+                        const maxPossibleOffsetL = (pl_canvas / 2) - (edgeTapeThickness / 2);
 
-                        if (p.isRotated) {
-                            if (p.edgeBanding.L1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopRightInner.x, cTopLeftInner.y); }
-                            if (p.edgeBanding.L2) { ctx.moveTo(cBottomLeftInner.x, cBottomLeftInner.y); ctx.lineTo(cBottomRightInner.x, cBottomLeftInner.y); }
-                            if (p.edgeBanding.W1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopLeftInner.x, cBottomLeftInner.y); }
-                            if (p.edgeBanding.W2) { ctx.moveTo(cTopRightInner.x, cTopRightInner.y); ctx.lineTo(cTopRightInner.x, cBottomRightInner.y); }
+                        let effectiveOffsetX = calculatedInnerOffset;
+                        if (maxPossibleOffsetW > 0) {
+                            effectiveOffsetX = Math.min(calculatedInnerOffset, maxPossibleOffsetW);
+                        } else if (pw_canvas > edgeTapeThickness) {
+                            effectiveOffsetX = edgeTapeThickness / 2 + 0.1;
                         } else {
-                            if (p.edgeBanding.L1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopLeftInner.x, cBottomLeftInner.y); }
-                            if (p.edgeBanding.L2) { ctx.moveTo(cTopRightInner.x, cTopRightInner.y); ctx.lineTo(cTopRightInner.x, cBottomRightInner.y); }
-                            if (p.edgeBanding.W1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopRightInner.x, cTopLeftInner.y); }
-                            if (p.edgeBanding.W2) { ctx.moveTo(cBottomLeftInner.x, cBottomLeftInner.y); ctx.lineTo(cBottomRightInner.x, cBottomLeftInner.y); }
+                            effectiveOffsetX = pw_canvas / 2 - 0.1;
+                             if (effectiveOffsetX < 0) effectiveOffsetX = 0;
                         }
-                        ctx.stroke();
+
+                        let effectiveOffsetY = calculatedInnerOffset;
+                         if (maxPossibleOffsetL > 0) {
+                            effectiveOffsetY = Math.min(calculatedInnerOffset, maxPossibleOffsetL);
+                        } else if (pl_canvas > edgeTapeThickness) {
+                            effectiveOffsetY = edgeTapeThickness / 2 + 0.1;
+                        } else {
+                            effectiveOffsetY = pl_canvas / 2 - 0.1;
+                            if (effectiveOffsetY < 0) effectiveOffsetY = 0;
+                        }
+                        
+                        const cTopLeftInner     = { x: px + effectiveOffsetX,         y: py + effectiveOffsetY };
+                        const cTopRightInner    = { x: px + pw_canvas - effectiveOffsetX, y: py + effectiveOffsetY };
+                        const cBottomLeftInner  = { x: px + effectiveOffsetX,         y: py + pl_canvas - effectiveOffsetY };
+                        const cBottomRightInner = { x: px + pw_canvas - effectiveOffsetX, y: py + pl_canvas - effectiveOffsetY };
+
+                        if (cTopLeftInner.x < cTopRightInner.x && cTopLeftInner.y < cBottomLeftInner.y) {
+                            if (p.isRotated) {
+                                if (p.edgeBanding.L1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopRightInner.x, cTopLeftInner.y); }
+                                if (p.edgeBanding.L2) { ctx.moveTo(cBottomLeftInner.x, cBottomLeftInner.y); ctx.lineTo(cBottomRightInner.x, cBottomLeftInner.y); }
+                                if (p.edgeBanding.W1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopLeftInner.x, cBottomLeftInner.y); }
+                                if (p.edgeBanding.W2) { ctx.moveTo(cTopRightInner.x, cTopRightInner.y); ctx.lineTo(cTopRightInner.x, cBottomRightInner.y); }
+                            } else {
+                                if (p.edgeBanding.L1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopLeftInner.x, cBottomLeftInner.y); }
+                                if (p.edgeBanding.L2) { ctx.moveTo(cTopRightInner.x, cTopRightInner.y); ctx.lineTo(cTopRightInner.x, cBottomRightInner.y); }
+                                if (p.edgeBanding.W1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopRightInner.x, cTopLeftInner.y); }
+                                if (p.edgeBanding.W2) { ctx.moveTo(cBottomLeftInner.x, cBottomLeftInner.y); ctx.lineTo(cBottomRightInner.x, cBottomLeftInner.y); }
+                            }
+                            ctx.stroke();
+                        }
                         ctx.setLineDash([]);
                         ctx.restore();
                     }
 
-                    // === टेक्स्ट रेंडरिंग लॉजिक ===
                     ctx.fillStyle = '#101d2c';
                     let textX = pieceX_logical + pieceWidth_logical / 2;
                     let textY = pieceY_logical + pieceHeight_logical / 2;
@@ -2880,7 +2904,6 @@
                         ctx.textAlign = textAlign;
                         ctx.textBaseline = textBaseline;
                         ctx.font = fontStyle;
-                        ctx.fillStyle = ctx.fillStyle;
                         ctx.translate(textX, textY);
                         if (textAngle !== 0) {
                             ctx.rotate(textAngle * Math.PI / 180);
@@ -2915,7 +2938,7 @@
                  if (sheet.freeRects) {
                     sheet.freeRects.forEach(rect => {
                         allGeneratedFreeRects.push({ ...rect, sourceSheetId: sheet.id, sourceSheetName: sheet.name });
-                        if (rect.width > 0.1 && rect.height > 0.1) {
+                        if (rect.width > 0.01 && rect.height > 0.01) {
                             const rectX_logical = rect.x * BASE_CANVAS_SCALE;
                             const rectY_logical = rect.y * BASE_CANVAS_SCALE;
                             const rectWidth_logical = rect.width * BASE_CANVAS_SCALE;
@@ -2949,10 +2972,28 @@
                     checkbox.checked = cuttingListCheckboxStates[checkboxId] || false;
                     checkbox.onchange = () => { cuttingListCheckboxStates[checkboxId] = checkbox.checked; saveCuttingListCheckboxStates(); };
                     li.appendChild(checkbox);
-                    const label = document.createElement('label'); label.htmlFor = checkbox.id;
-                    const pieceWDisplay = convertFromCm(p.isRotated ? p.placedLength : p.placedWidth, currentUnit);
-                    const pieceLDisplay = convertFromCm(p.isRotated ? p.placedWidth : p.placedLength, currentUnit);
-                    label.innerHTML = ` ${p.name || ""} #${p.instanceNum} <span style="color: #007bff;">&rarr;</span> ${pieceWDisplay} × ${pieceLDisplay} ${currentUnit} ${p.isRotated ? '(R)' : ''}`;
+
+                    const label = document.createElement('label');
+                    label.htmlFor = checkbox.id;
+
+                    const displayedWidthOnCanvas = convertFromCm(p.isRotated ? p.placedLength : p.placedWidth, currentUnit);
+                    const displayedLengthOnCanvas = convertFromCm(p.isRotated ? p.placedWidth : p.placedLength, currentUnit);
+
+                    let labelText = ` ${p.name || ""} #${p.instanceNum} <span style="color: #007bff;">&rarr;</span> ${displayedWidthOnCanvas} × ${displayedLengthOnCanvas} ${currentUnit} ${p.isRotated ? '(R)' : ''}`;
+
+                    let appliedEdges = [];
+                    if (p.edgeBanding) {
+                        if (p.edgeBanding.L1) appliedEdges.push(getLangString("edgeTapeL1Btn") || "L1");
+                        if (p.edgeBanding.L2) appliedEdges.push(getLangString("edgeTapeL2Btn") || "L2");
+                        if (p.edgeBanding.W1) appliedEdges.push(getLangString("edgeTapeW1Btn") || "W1");
+                        if (p.edgeBanding.W2) appliedEdges.push(getLangString("edgeTapeW2Btn") || "W2");
+                    }
+
+                    if (appliedEdges.length > 0) {
+                        labelText += ` <span style="color: #dc3545; font-size:0.9em;">(${getLangString("tableEdges") || "टेप"}: ${appliedEdges.join(', ')})</span>`;
+                    }
+
+                    label.innerHTML = labelText;
                     li.appendChild(label);
                     ul.appendChild(li);
                 });
@@ -3204,9 +3245,6 @@
                     return;
                 }
             }
-            // else if (lastCalculatedSheetsData) {
-            //    // यदि आवश्यक हो, तो कैनवास अपडेट करें: displayLayoutOnCanvas(lastCalculatedSheetsData);
-            // }
 
             const originalDocumentTitle = document.title;
             let baseFilename = "";
@@ -3229,28 +3267,28 @@
             const year = today.getFullYear();
             const dateString = `${day}-${month}-${year}`;
 
-            let sanitizedBaseFilename = baseFilename.replace(/[<>:"/\\|?*\s~.]+/g, '_').replace(/_+/g, '_');
-            
-            if (!sanitizedBaseFilename) { // यदि सैनिटाइजेशन के बाद खाली हो जाए
+            let sanitizedBaseFilename = baseFilename.replace(/[<>:"/\\|?*.]+/g, '_').replace(/\s+/g, '_').replace(/_+/g, '_');
+
+            if (!sanitizedBaseFilename) {
                 sanitizedBaseFilename = layoutPrefix;
             }
-            
-            let newFilename = `${sanitizedBaseFilename}_${dateString}`;
-            newFilename = newFilename.substring(0, 80); // फ़ाइल नाम की अधिकतम लंबाई
 
-            document.title = newFilename;
+            let newDocumentTitle = `${sanitizedBaseFilename}_${dateString}`;
+            newDocumentTitle = newDocumentTitle.substring(0, 80);
+
+            document.title = newDocumentTitle;
 
             const afterPrintHandler = () => {
                 document.title = originalDocumentTitle;
                 window.removeEventListener('afterprint', afterPrintHandler);
+                if (loadingIndicatorEl) {
+                    loadingIndicatorEl.style.display = 'none';
+                }
             };
             window.addEventListener('afterprint', afterPrintHandler);
 
             setTimeout(() => {
                 window.print();
-                if (loadingIndicatorEl) {
-                    loadingIndicatorEl.style.display = 'none';
-                }
             }, 250);
         }
 
@@ -3393,7 +3431,7 @@
             if(wastageSectionEl) wastageSectionEl.style.display = 'none';
             if(totalWastagePiecesSummaryEl) totalWastagePiecesSummaryEl.style.display = 'none';
             if(usefulOffcutsSummaryEl) usefulOffcutsSummaryEl.style.display = 'none';
-            console.log("App initialized (PDF Filename with Date v2).");
+            console.log("App initialized (Cutting List Tape Info v1).");
         }
 
         function promptForOffcutSelection() {
