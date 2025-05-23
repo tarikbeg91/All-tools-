@@ -32,9 +32,7 @@
              font-size: 0.6em; margin-left: 4px; display: inline;
         }
         @media (max-width: 700px) {
-            #sharePdfExcelButton small {
-                 /* display: none; */
-            }
+            #sharePdfExcelButton small { }
         }
 
         .container {
@@ -87,16 +85,22 @@
         th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: left; }
         th { background-color: #edf2f7; font-weight: 600; }
         .table-summary-row { font-weight: bold; background-color: #f9fafb; }
-        .sheets-container { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px; justify-content: center;}
-        .sheet-wrapper { border: 1px solid #bdc3c7; padding: 10px; background-color: #ecf0f1; border-radius: 5px; margin-bottom:20px; }
+        .sheets-container { display: flex; flex-wrap: wrap; gap: 35px; margin-top: 20px; justify-content: center;}
+        .sheet-wrapper {
+            border: 1px solid #bdc3c7;
+            padding: 10px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            margin-bottom: 35px;
+        }
         .sheet-wrapper h3 { margin-top: 0; text-align: center; color: #34495e; font-size: 1.1em; }
-        
-        canvas { 
-            border: 1px solid #7f8c8d; 
+
+        canvas {
+            border: 1px solid #7f8c8d;
             background-color: white;
-            max-width: 100%; 
-            height: auto;     
-            display: block;   
+            max-width: 100%;
+            height: auto;
+            display: block;
         }
 
         .results-summary { font-size: 1.2em; font-weight: bold; text-align: center; margin-bottom: 15px;}
@@ -218,6 +222,38 @@
             font-weight: 500;
         }
 
+        .edge-banding-controls .edge-tape-btn {
+            padding: 8px 10px;
+            font-size: 0.85em;
+            min-width: 38px;
+            margin: 2px;
+            border: 1px solid #ccc;
+            background-color: #f0f0f0;
+            color: #333;
+            cursor: pointer;
+            border-radius: 4px;
+            flex-grow: 1;
+            text-align: center;
+        }
+        .edge-banding-controls .edge-tape-btn:hover {
+            background-color: #e0e0e0;
+        }
+        .edge-banding-controls .edge-tape-btn.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+        .edge-banding-controls .edge-tape-btn.all {
+            padding: 8px;
+            font-size: 1.1em;
+            flex-grow: 0;
+        }
+        #selectedEdgesDisplay {
+             font-size: 0.85em; margin-top: 8px; color: #4a5568;
+             padding: 5px; border: 1px dashed #eee; border-radius: 3px;
+             min-height: 1.2em;
+        }
+
 
         #loadingIndicator {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -308,6 +344,11 @@
             th { background-color: #f0f0f0 !important; }
             .table-summary-row { background-color: #f8f8f8 !important; }
             #addedPiecesSection .delete-btn, #addedPiecesSection .rotate-override-btn {display: none !important;}
+            #addedPiecesSection th:nth-child(5), #addedPiecesSection td:nth-child(5) { display: none !important;}
+            #addedPiecesSection th:nth-child(6), #addedPiecesSection td:nth-child(6) { display: table-cell !important;}
+            #addedPiecesSection th:nth-child(7), #addedPiecesSection td:nth-child(7) { display: table-cell !important;}
+
+
             .sheets-container { display: block !important; margin-top: 10px !important; gap: 0 !important; }
             .sheet-wrapper {
                 page-break-inside: avoid !important; border: 1px solid #ccc !important;
@@ -316,10 +357,10 @@
                 background-color: #fff !important;
             }
             .sheet-wrapper h3 { font-size: 12pt !important; margin-bottom: 5px !important; color: #000 !important; }
-            .sheet-wrapper canvas { 
-                max-width: 100% !important; 
-                height: auto !important; 
-                border: 1px solid #aaa !important; 
+            .sheet-wrapper canvas {
+                max-width: 100% !important;
+                height: auto !important;
+                border: 1px solid #aaa !important;
                 display: block !important;
             }
             .cutting-list { font-size: 9pt !important; margin-top: 10px !important; }
@@ -396,15 +437,36 @@
     <div class="container">
         <div class="parts-group">
             <h2 data-lang-key="addPieceTitle">पीस जोड़ें</h2>
-            <label for="partName" data-lang-key="pieceNameLabel">पीस का नाम (वैकल्पिक):</label>
-            <input type="text" id="partName" data-lang-placeholder="pieceDefaultName">
-            <label for="partWidth"><span data-lang-key="pieceWidthLabel">पीस की चौड़ाई</span> (<span class="unit-display">cm</span>):</label>
-            <input type="number" id="partWidth" placeholder="0" step="any">
-            <label for="partLength"><span data-lang-key="pieceLengthLabel">पीस की लंबाई (ग्रेन)</span> (<span class="unit-display">cm</span>):</label>
-            <input type="number" id="partLength" placeholder="0" step="any">
-            <label for="partQuantity" data-lang-key="pieceQuantityLabel">कितने पीस:</label>
-            <input type="number" id="partQuantity" min="1" placeholder="1">
-            <button onclick="addPiece()" data-lang-key="addPieceBtn">पीस जोड़ें</button>
+
+            <label for="partName" data-lang-key="pieceNameLabel" style="margin-bottom: 3px;">पीस का नाम (वैकल्पिक):</label>
+            <input type="text" id="partName" data-lang-placeholder="pieceDefaultName" style="margin-bottom: 10px;">
+
+            <input type="number" id="partWidth" step="any"
+                   data-lang-placeholder-key="pieceWidthLabel"
+                   placeholder="पीस की चौड़ाई (cm)" style="margin-bottom: 10px;">
+
+            <input type="number" id="partLength" step="any"
+                   data-lang-placeholder-key="pieceLengthLabel"
+                   placeholder="पीस की लंबाई (ग्रेन) (cm)" style="margin-bottom: 10px;">
+
+            <label for="partQuantity" data-lang-key="pieceQuantityLabel" style="margin-bottom: 3px;">कितने पीस:</label>
+            <input type="number" id="partQuantity" min="1" placeholder="1" style="margin-bottom: 15px;">
+
+            <div class="edge-banding-controls">
+                <label data-lang-key="edgeTapeLabel" style="margin-bottom: 5px;">एज टेप (किनारों पर):</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 5px; margin-bottom: 5px;">
+                    <button id="btnEdgeL1" class="edge-tape-btn" onclick="toggleEdgeTape('L1', this)" data-edge="L1" data-lang-key="edgeTapeL1Btn">L1</button>
+                    <button id="btnEdgeL2" class="edge-tape-btn" onclick="toggleEdgeTape('L2', this)" data-edge="L2" data-lang-key="edgeTapeL2Btn">L2</button>
+                    <button id="btnEdgeW1" class="edge-tape-btn" onclick="toggleEdgeTape('W1', this)" data-edge="W1" data-lang-key="edgeTapeW1Btn">W1</button>
+                    <button id="btnEdgeW2" class="edge-tape-btn" onclick="toggleEdgeTape('W2', this)" data-edge="W2" data-lang-key="edgeTapeW2Btn">W2</button>
+                    <button id="btnEdgeAll" class="edge-tape-btn all" onclick="toggleEdgeTape('All', this)" data-lang-title="toggleAllEdgesTooltip" title="सभी किनारों पर टेप लगाएं/हटाएं">🔄</button>
+                </div>
+                <div id="selectedEdgesDisplay">
+                    <span data-lang-key="selectedEdgesPrefix">चयनित:</span> <span id="currentSelectedEdgesText" data-lang-key="noneLabel">कोई नहीं</span>
+                </div>
+            </div>
+
+            <button onclick="addPiece()" data-lang-key="addPieceBtn" style="margin-top:20px; width:100%;">पीस जोड़ें</button>
         </div>
 
         <div class="input-group" id="addedPiecesSection">
@@ -426,6 +488,7 @@
                         <th><span data-lang-key="tableWidth">चौड़ाई</span> (<span class="unit-display">cm</span>)</th>
                         <th><span data-lang-key="tableLength">लंबाई</span> (<span class="unit-display">cm</span>)</th>
                         <th data-lang-key="tableQuantity">संख्या</th>
+                        <th data-lang-key="tableEdges" class="no-print">एज टेप</th>
                         <th data-lang-key="tableAllowRotationOnGrained" class="no-print">ग्रेन पर घुमाएँ?</th>
                         <th class="no-print" data-lang-key="tableRemove">हटाएं</th>
                     </tr>
@@ -437,9 +500,14 @@
                         <td id="totalPiecesInListCount">0</td>
                         <td class="no-print"></td>
                         <td class="no-print"></td>
+                        <td class="no-print"></td>
                     </tr>
                 </tfoot>
             </table>
+            <div id="totalEdgeBandingReport" style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; display:none;">
+                <h4 data-lang-key="totalEdgeBandingTitle">कुल एज टेप आवश्यक:</h4>
+                <p id="totalEdgeBandingLengthDisplay"></p>
+            </div>
         </div>
 
         <div class="fitting-strategy-group">
@@ -463,7 +531,6 @@
             </div>
             <button onclick="calculateWithSelectedStrategy()" data-lang-key="calculateWithStrategyBtn" style="margin-top:10px;">चयनित रणनीति से गणना करें</button>
         </div>
-
 
         <div class="actions-div" id="mainActionButtons">
             <button onclick="calculateAndDrawLayout()" data-lang-key="calculateLayoutBtn">लेआउट की गणना करें (डिफ़ॉल्ट)</button>
@@ -490,7 +557,6 @@
         </div>
     </div>
 
-    <!-- Modals -->
     <div id="unitSettingsModal" class="modal">
         <div class="unit-modal-content">
             <span class="close-button" onclick="closeUnitSettingsModal()">&times;</span>
@@ -601,15 +667,14 @@
             </div>
             <hr style="margin: 15px 0;">
             <div id="offcutsListContainer">
-                <!-- ऑफकट सूची यहाँ रेंडर होगी -->
             </div>
             <div id="offcutsLibraryTotalSummary"></div>
             <p id="noOffcutsMessageModal" style="display:none;"></p>
         </div>
     </div>
 
-
     <script>
+        // === वर्कर कोड (जैसा पहले था) ===
         const workerCode = `
             let freeRectIdCounter_worker = 0;
             function isRectInside(rectA, rectB) { return rectA.x >= rectB.x && rectA.y >= rectB.y && rectA.x + rectA.width <= rectB.x + rectB.width && rectA.y + rectA.height <= rectB.y + rectB.height; }
@@ -746,7 +811,7 @@
                                 sheetsFromThisStockItem++;
                                 self.postMessage({ type: 'LAYOUT_PROGRESS', progress: { sheetsProcessed: sheetsLayoutData.length } });
                             } else {
-                                break; 
+                                break;
                             }
                         }
                     }
@@ -774,10 +839,12 @@
                 }
             };
         `;
+        // === वर्कर कोड समाप्त ===
 
+        // === सभी ग्लोबल वेरिएबल्स, DOM एलिमेंट कैशिंग, और सभी फंक्शन्स यहाँ से शुरू ===
         let pieces = [];
         let pieceIdCounter = 0;
-        const BASE_CANVAS_SCALE = 3.5; 
+        const BASE_CANVAS_SCALE = 3.0;
 
         let modalSheetLengthEl, modalSheetWidthEl, modalSheetHasGrainEl, modalSheetNameEl, sheetSettingsModalEl,
             partNameEl, partLengthEl, partWidthEl, partQuantityEl, piecesTableBodyEl,
@@ -792,7 +859,8 @@
             offcutsLibraryModalEl, offcutsListContainerEl, noOffcutsMessageEl_Modal,
             wastageOverallStatsEl, usefulOffcutsDisplayListContainerEl, otherSmallWastageContainerEl,
             usefulOffcutsListTotalSummaryEl,
-            manualOffcutWidthEl, manualOffcutLengthEl, manualOffcutSourceNameEl;
+            manualOffcutWidthEl, manualOffcutLengthEl, manualOffcutSourceNameEl,
+            totalEdgeBandingReportEl, totalEdgeBandingLengthDisplayEl;
 
 
         const STORAGE_KEY_PIECES = 'sheetLayoutCalcPieces_v24_finalShare';
@@ -826,6 +894,7 @@
         let currentCalculationOffcuts = [];
         let lastGeneratedUsefulOffcuts = [];
         let lastGeneratedNonUsefulRects = [];
+        let currentEdgeSelections = { L1: false, L2: false, W1: false, W2: false };
 
 
         let lastCalculatedSheetsData = null;
@@ -943,7 +1012,8 @@
                 "noFreeRects": "कोई उपयोगी वेस्टेज नहीं (या बहुत छोटा)।",
                 "totalOtherWastagePiecesDisplay": "कुल अन्य वेस्टेज टुकड़े: {count}",
                 "deleteHistoryEntryConfirm": "क्या आप वाकई इस हिस्ट्री एंट्री को हटाना चाहते हैं?",
-                "loadingPdf": "प्रिंट के लिए तैयारी...",
+                "loadingPdf": "PDF बन रहा है, कृपया प्रतीक्षा करें...",
+                "pdfDefaultFilenamePrefix": "लेआउट",
                 "projectManagementTitle": "प्रोजेक्ट मैनेजमेंट",
                 "saveCurrentProjectTitle": "वर्तमान प्रोजेक्ट सेव करें",
                 "projectNameLabel": "प्रोजेक्ट का नाम:",
@@ -964,10 +1034,17 @@
                 "rotationAllowedSymbol": "🔄 हाँ",
                 "rotationNotAllowedSymbol": "🔄 नहीं",
                 "totalOffcutsInLibrary": "लाइब्रेरी में कुल ऑफकट: {count}",
-                "totalUsefulOffcutsGeneratedDisplay": "कुल उपयोगी ऑफकट बने: {count}"
+                "totalUsefulOffcutsGeneratedDisplay": "कुल उपयोगी ऑफकट बने: {count}",
+                "edgeTapeLabel": "एज टेप (किनारों पर):",
+                "edgeTapeL1Btn": "L1", "edgeTapeL2Btn": "L2", "edgeTapeW1Btn": "W1", "edgeTapeW2Btn": "W2",
+                "toggleAllEdgesTooltip": "सभी किनारों पर टेप लगाएं/हटाएं",
+                "selectedEdgesPrefix": "चयनित:", "noneLabel": "कोई नहीं",
+                "tableEdges": "एज टेप",
+                "totalEdgeBandingTitle": "कुल एज टेप आवश्यक:",
+                "totalEdgeBandingResult": "कुल {length} {unit}"
             },
-            "en": { 
-                "appTitle": "Visual Sheet Layout Calculator", "headerTitle": "Sheet Layout",
+            "en": {
+                "appTitle": "Visual Layout ", "headerTitle": "Sheet Layout",
                 "shareBtn": "Share", "printPdfBtnMenu": "Print as PDF",
                 "projectLocationLabel": "Project Location/Client:",
                 "projectLocationPlaceholder": "e.g., Kitchen - Mr. Sharma, or Site Address",
@@ -1071,7 +1148,8 @@
                 "noFreeRects": "No usable wastage (or very small).",
                 "totalOtherWastagePiecesDisplay": "Total Other Wastage Pieces: {count}",
                 "deleteHistoryEntryConfirm": "Are you sure you want to delete this history entry?",
-                "loadingPdf": "Preparing for print...",
+                "loadingPdf": "Generating PDF, please wait...",
+                "pdfDefaultFilenamePrefix": "layout",
                 "projectManagementTitle": "Project Management",
                 "saveCurrentProjectTitle": "Save Current Project",
                 "projectNameLabel": "Project Name:",
@@ -1092,10 +1170,18 @@
                 "rotationAllowedSymbol": "🔄 Yes",
                 "rotationNotAllowedSymbol": "🔄 No",
                 "totalOffcutsInLibrary": "Total Offcuts in Library: {count}",
-                "totalUsefulOffcutsGeneratedDisplay": "Total Useful Offcuts Generated: {count}"
+                "totalUsefulOffcutsGeneratedDisplay": "Total Useful Offcuts Generated: {count}",
+                "edgeTapeLabel": "Edge Tape (Sides):",
+                "edgeTapeL1Btn": "L1", "edgeTapeL2Btn": "L2", "edgeTapeW1Btn": "W1", "edgeTapeW2Btn": "W2",
+                "toggleAllEdgesTooltip": "Toggle tape on all edges",
+                "selectedEdgesPrefix": "Selected:", "noneLabel": "None",
+                "tableEdges": "Edge Tape",
+                "totalEdgeBandingTitle": "Total Edge Tape Required:",
+                "totalEdgeBandingResult": "Total {length} {unit}"
             }
         };
 
+        // === सभी ग्लोबल वेरिएबल्स और DOM एलिमेंट कैशिंग यहाँ ===
         function cacheDOMElements() {
             modalSheetLengthEl = document.getElementById('modalSheetLength');
             modalSheetWidthEl = document.getElementById('modalSheetWidth');
@@ -1117,16 +1203,13 @@
             currentUnitSelectorEl = document.getElementById('currentUnitSelector');
             unitDisplayElements = Array.from(document.querySelectorAll('.unit-display'));
             wastageSectionEl = document.getElementById('wastageSection');
-
             projectLocationEl = document.getElementById('projectLocation');
             projectNotesEl = document.getElementById('projectNotes');
-
             wastageOverallStatsEl = document.getElementById('wastageOverallStats');
             usefulOffcutsSummaryEl = document.getElementById('usefulOffcutsSummary');
             usefulOffcutsDisplayListContainerEl = document.getElementById('usefulOffcutsDisplayListContainer');
             usefulOffcutsListTotalSummaryEl = document.getElementById('usefulOffcutsListTotalSummary');
             otherSmallWastageContainerEl = document.getElementById('otherSmallWastageContainer');
-
             piecesTableSummaryRowEl = document.getElementById('piecesTableSummaryRow');
             totalPiecesInListCountEl = document.getElementById('totalPiecesInListCount');
             totalWastagePiecesSummaryEl = document.getElementById('totalWastagePiecesSummary');
@@ -1149,9 +1232,32 @@
             manualOffcutWidthEl = document.getElementById('manualOffcutWidth');
             manualOffcutLengthEl = document.getElementById('manualOffcutLength');
             manualOffcutSourceNameEl = document.getElementById('manualOffcutSourceName');
+            totalEdgeBandingReportEl = document.getElementById('totalEdgeBandingReport');
+            totalEdgeBandingLengthDisplayEl = document.getElementById('totalEdgeBandingLengthDisplay');
         }
-        function getLangString(key, replacements = {}) { let str = (langStrings[currentLanguage] && langStrings[currentLanguage][key]) || `[[${key}]]`; for (const placeholder in replacements) { str = str.replace(`{${placeholder}}`, replacements[placeholder]); } return str; }
-        function updateUnitDisplaysDOM(unit) { if(unitDisplayElements && unitDisplayElements.length > 0) unitDisplayElements.forEach(el => { if(el) el.textContent = unit; }); }
+
+        // === सभी हेल्पर और मुख्य फंक्शन्स यहाँ ===
+
+        function getLangString(key, replacements = {}) {
+            let str = (langStrings[currentLanguage] && langStrings[currentLanguage][key]) || `[[${key}]]`;
+            for (const placeholder in replacements) {
+                str = str.replace(`{${placeholder}}`, replacements[placeholder]);
+            }
+            return str;
+        }
+        function updateUnitDisplaysDOM(unit) {
+            if(unitDisplayElements && unitDisplayElements.length > 0) {
+                unitDisplayElements.forEach(el => { if(el) el.textContent = unit; });
+            }
+            const partWidthInput = document.getElementById('partWidth');
+            if (partWidthInput) {
+                partWidthInput.placeholder = getLangString(partWidthInput.getAttribute('data-lang-placeholder-key') || 'pieceWidthLabel') + ` (${unit})`;
+            }
+            const partLengthInput = document.getElementById('partLength');
+            if (partLengthInput) {
+                partLengthInput.placeholder = getLangString(partLengthInput.getAttribute('data-lang-placeholder-key') || 'pieceLengthLabel') + ` (${unit})`;
+            }
+        }
 
         function convertToCm(value, fromUnit) {
             if (value === "" || value === null || isNaN(parseFloat(value))) return "";
@@ -1167,9 +1273,7 @@
             let dp;
 
             switch (toUnit) {
-                case 'mm':
-                    dp = 0;
-                    break;
+                case 'mm': dp = 0; break;
                 case 'cm':
                     if (result % 1 !== 0) {
                         const s = result.toString();
@@ -1185,7 +1289,7 @@
                          else dp = 0;
                     }
                     break;
-                case 'm': dp = 3; break;
+                case 'm': dp = 2; break;
                 case 'in': case 'ft': dp = 3; break;
                 default: dp = 2;
             }
@@ -1193,10 +1297,9 @@
             let numStr = result.toFixed(dp);
             let num = parseFloat(numStr);
 
-            if (toUnit === 'cm') {
-                if (num % 1 === 0) {
-                    return num;
-                } else if (dp > 0) {
+            if (toUnit === 'cm' || toUnit === 'm') {
+                if (num % 1 === 0) return num;
+                else if (dp > 0) {
                     let s = num.toString();
                     if (s.includes('.') && s.endsWith('0')) {
                         s = s.replace(/0+$/, '');
@@ -1207,7 +1310,6 @@
             }
             return num;
         }
-
 
         function convertFromCmForArea(valueInCm2, toUnitLinear) { if (valueInCm2 === "" || valueInCm2 === null || isNaN(parseFloat(valueInCm2))) return 0; const factorLinear = conversionFactorsToCm[toUnitLinear]; const factorArea = factorLinear * factorLinear; const result = parseFloat(valueInCm2) / factorArea; return parseFloat(result.toFixed(2)); }
 
@@ -1227,33 +1329,39 @@
         function setLanguage(lang) {
             currentLanguage = lang;
             if(document.documentElement) document.documentElement.lang = lang;
-            const elements = document.querySelectorAll('[data-lang-key]');
+            const elements = document.querySelectorAll('[data-lang-key], [data-lang-placeholder-key], [data-lang-title]');
             elements.forEach(el => {
                 const key = el.getAttribute('data-lang-key');
                 const placeholderKey = el.getAttribute('data-lang-placeholder');
-                if (langStrings[lang] && langStrings[lang][key]) {
-                    if (el.tagName === 'INPUT' && (el.type === 'text' || el.type === 'number' || el.type === 'textarea') && placeholderKey && langStrings[lang][placeholderKey] ) { 
-                        el.placeholder = getLangString(placeholderKey) + (placeholderKey === "pieceDefaultName" ? (pieceIdCounter + 1) : "");
-                    } else if (el.tagName === 'TEXTAREA' && placeholderKey && langStrings[lang][placeholderKey]) { 
-                        el.placeholder = getLangString(placeholderKey);
-                    } else if (el.tagName === 'INPUT' && el.type !== 'checkbox' && el.placeholder !== undefined && !placeholderKey) {
-                         if (el.id !== 'partName' && el.id !== 'partWidth' && el.id !== 'partLength' && el.id !== 'partQuantity') {
-                            el.placeholder = getLangString(key);
+                const dynamicPlaceholderKey = el.getAttribute('data-lang-placeholder-key');
+                const titleKey = el.getAttribute('data-lang-title');
+
+                if (langStrings[lang]) {
+                    if (placeholderKey && langStrings[lang][placeholderKey]) {
+                         el.placeholder = getLangString(placeholderKey) + (placeholderKey === "pieceDefaultName" ? (pieceIdCounter + 1) : "");
+                    } else if (dynamicPlaceholderKey && langStrings[lang][dynamicPlaceholderKey]) {
+                        el.placeholder = getLangString(dynamicPlaceholderKey) + ` (${currentUnit})`;
+                    } else if (titleKey && langStrings[lang][titleKey]) {
+                        el.title = getLangString(titleKey);
+                    } else if (key && langStrings[lang][key]) {
+                         if (el.tagName === 'INPUT' && el.type !== 'checkbox' && el.placeholder !== undefined && !placeholderKey && !dynamicPlaceholderKey) {
+                             if (el.id !== 'partName' && el.id !== 'partWidth' && el.id !== 'partLength' && el.id !== 'partQuantity') {
+                                el.placeholder = getLangString(key);
+                            }
+                        } else if (el.tagName === 'OPTION') {
+                            el.textContent = getLangString(key);
+                        } else {
+                            el.textContent = getLangString(key);
                         }
-                    } else if (el.tagName === 'OPTION') {
-                        if (langStrings[lang][key]) el.textContent = getLangString(key);
-                    }
-                     else {
-                        el.textContent = getLangString(key);
                     }
                 }
             });
             updateUnitDisplaysDOM(currentUnit);
+            updateSelectedEdgesDisplay();
             renderPiecesTable();
             if (historyModalEl && historyModalEl.style.display === 'flex') showHistoryModal();
             if (projectManagementModalEl && projectManagementModalEl.style.display === 'flex') renderProjectsList();
             if (offcutsLibraryModalEl && offcutsLibraryModalEl.style.display === 'flex') renderOffcutsList();
-
 
             if (lastCalculatedSheetsData && lastCalculatedSheetsData.length > 0) {
                 displayLayoutOnCanvas(lastCalculatedSheetsData);
@@ -1271,8 +1379,10 @@
             }
             if (piecesTableSummaryRowEl) {
                 piecesTableSummaryRowEl.style.display = pieces.length > 0 ? '' : 'none';
-                const labelCell = piecesTableSummaryRowEl.querySelector('td[colspan="3"]'); 
+                const labelCell = piecesTableSummaryRowEl.querySelector('td[colspan="3"]');
                 if (labelCell) {
+                    const tableHeaderCells = piecesTableBodyEl.parentElement.querySelectorAll('thead th');
+                    labelCell.colSpan = tableHeaderCells.length - 3;
                     labelCell.textContent = getLangString("totalPiecesInList");
                 }
             }
@@ -1297,7 +1407,6 @@
             if (modalGrainPatternEl) currentGrainPattern = modalGrainPatternEl.value;
             localStorage.setItem(STORAGE_KEY_GRAIN_PATTERN, currentGrainPattern);
         }
-
 
         function showSheetSettingsModal() {
             const settingsStr = localStorage.getItem(STORAGE_KEY_SETTINGS);
@@ -1368,14 +1477,67 @@
             }
         }
 
+        function ensureEdgeBandingProperty(piece) {
+            if (typeof piece.edgeBanding === 'undefined') {
+                piece.edgeBanding = { L1: false, L2: false, W1: false, W2: false };
+            }
+            return piece;
+        }
+
+        function toggleEdgeTape(edge, buttonElement) {
+            if (edge === 'All') {
+                const allActive = currentEdgeSelections.L1 && currentEdgeSelections.L2 && currentEdgeSelections.W1 && currentEdgeSelections.W2;
+                const newState = !allActive;
+                currentEdgeSelections = { L1: newState, L2: newState, W1: newState, W2: newState };
+                document.getElementById('btnEdgeL1').classList.toggle('active', newState);
+                document.getElementById('btnEdgeL2').classList.toggle('active', newState);
+                document.getElementById('btnEdgeW1').classList.toggle('active', newState);
+                document.getElementById('btnEdgeW2').classList.toggle('active', newState);
+            } else {
+                currentEdgeSelections[edge] = !currentEdgeSelections[edge];
+                buttonElement.classList.toggle('active');
+            }
+            updateSelectedEdgesDisplay();
+        }
+
+        function updateSelectedEdgesDisplay() {
+            const displayEl = document.getElementById('currentSelectedEdgesText');
+            if (!displayEl) return;
+            const selected = [];
+            if (currentEdgeSelections.L1) selected.push(getLangString("edgeTapeL1Btn") || "L1");
+            if (currentEdgeSelections.L2) selected.push(getLangString("edgeTapeL2Btn") || "L2");
+            if (currentEdgeSelections.W1) selected.push(getLangString("edgeTapeW1Btn") || "W1");
+            if (currentEdgeSelections.W2) selected.push(getLangString("edgeTapeW2Btn") || "W2");
+
+            if (selected.length > 0) {
+                displayEl.textContent = selected.join(', ');
+            } else {
+                displayEl.textContent = getLangString("noneLabel") || "कोई नहीं";
+            }
+        }
+
+        function resetEdgeTapeSelections() {
+            currentEdgeSelections = { L1: false, L2: false, W1: false, W2: false };
+            const btnL1 = document.getElementById('btnEdgeL1');
+            const btnL2 = document.getElementById('btnEdgeL2');
+            const btnW1 = document.getElementById('btnEdgeW1');
+            const btnW2 = document.getElementById('btnEdgeW2');
+            if(btnL1) btnL1.classList.remove('active');
+            if(btnL2) btnL2.classList.remove('active');
+            if(btnW1) btnW1.classList.remove('active');
+            if(btnW2) btnW2.classList.remove('active');
+            updateSelectedEdgesDisplay();
+        }
 
         function addPiece() {
             isLoadedFromHistory = false;
             const name = partNameEl.value.trim() || getLangString("pieceDefaultName") + (pieceIdCounter + 1);
             const pieceW_input = parseFloat(partWidthEl.value);
             const pieceL_input = parseFloat(partLengthEl.value);
-            const quantity = parseInt(partQuantityEl.value) || 1;
-            if (isNaN(pieceL_input) || pieceL_input <= 0 || isNaN(pieceW_input) || pieceW_input <= 0 || isNaN(quantity) || quantity <= 0) {
+            const quantityInput = partQuantityEl.value.trim();
+            const quantity = (quantityInput === "" || isNaN(parseInt(quantityInput)) || parseInt(quantityInput) <= 0) ? 1 : parseInt(quantityInput);
+
+            if (isNaN(pieceL_input) || pieceL_input <= 0 || isNaN(pieceW_input) || pieceW_input <= 0 ) {
                 alert(getLangString("alert_invalidPositiveNumbers")); return;
             }
             const pieceL_cm = convertToCm(pieceL_input, currentUnit);
@@ -1403,6 +1565,14 @@
                 }));
                 return;
             }
+
+            const edgeBandingData = {
+                L1: currentEdgeSelections.L1,
+                L2: currentEdgeSelections.L2,
+                W1: currentEdgeSelections.W1,
+                W2: currentEdgeSelections.W2
+            };
+
             pieces.push({
                 id: pieceIdCounter,
                 name,
@@ -1410,7 +1580,8 @@
                 width: pieceW_cm,
                 quantity,
                 area: pieceL_cm * pieceW_cm,
-                allowRotationOnGrainedSheet: false
+                allowRotationOnGrainedSheet: false,
+                edgeBanding: edgeBandingData
             });
             pieceIdCounter++;
             renderPiecesTable();
@@ -1419,25 +1590,53 @@
             saveStateToHistory();
         }
         function clearPieceInputs() {
-            if(partNameEl) partNameEl.value = ''; if(partNameEl) partNameEl.placeholder = getLangString("pieceDefaultName") + (pieceIdCounter + 1); if(partWidthEl) partWidthEl.value = ''; if(partLengthEl) partLengthEl.value = ''; if(partQuantityEl) partQuantityEl.value = ''; if(partWidthEl) partWidthEl.focus();
+            if(partNameEl) partNameEl.value = '';
+            if(partNameEl) partNameEl.placeholder = getLangString("pieceDefaultName") + (pieceIdCounter + 1);
+            if(partWidthEl) partWidthEl.value = '';
+            if(partLengthEl) partLengthEl.value = '';
+            if(partQuantityEl) partQuantityEl.value = '';
+            if(partWidthEl) partWidthEl.focus();
+            resetEdgeTapeSelections();
         }
         function renderPiecesTable() {
-            if (!piecesTableBodyEl) return; piecesTableBodyEl.innerHTML = ''; const table = piecesTableBodyEl.parentElement; if (!table) return;
+            if (!piecesTableBodyEl) return;
+            piecesTableBodyEl.innerHTML = '';
+            const table = piecesTableBodyEl.parentElement;
+            if (!table) return;
+
             const headers = table.querySelectorAll('thead th');
-            if (headers.length >= 6) { 
+             if (headers.length === 7) {
                 headers[0].textContent = getLangString("tableName");
                 headers[1].innerHTML = `${getLangString("tableWidth")} (<span class="unit-display">${currentUnit}</span>)`;
                 headers[2].innerHTML = `${getLangString("tableLength")} (<span class="unit-display">${currentUnit}</span>)`;
                 headers[3].textContent = getLangString("tableQuantity");
-                headers[4].textContent = getLangString("tableAllowRotationOnGrained");
-                headers[5].textContent = getLangString("tableRemove");
+                headers[4].textContent = getLangString("tableEdges");
+                headers[5].textContent = getLangString("tableAllowRotationOnGrained");
+                headers[6].textContent = getLangString("tableRemove");
             }
-            pieces.forEach((p, index) => {
+
+
+            let totalEdgeTapeLengthCm = 0;
+
+            pieces.map(ensureEdgeBandingProperty).forEach((p, index) => {
                 const row = piecesTableBodyEl.insertRow();
                 row.insertCell().textContent = p.name;
                 row.insertCell().textContent = convertFromCm(p.width, currentUnit);
                 row.insertCell().textContent = convertFromCm(p.length, currentUnit);
                 row.insertCell().textContent = p.quantity;
+
+                const edgeCell = row.insertCell();
+                edgeCell.className = 'no-print';
+                let edgesApplied = [];
+                if (p.edgeBanding) {
+                    if (p.edgeBanding.L1) { edgesApplied.push(getLangString("edgeTapeL1Btn") || "L1"); totalEdgeTapeLengthCm += p.length * p.quantity; }
+                    if (p.edgeBanding.L2) { edgesApplied.push(getLangString("edgeTapeL2Btn") || "L2"); totalEdgeTapeLengthCm += p.length * p.quantity; }
+                    if (p.edgeBanding.W1) { edgesApplied.push(getLangString("edgeTapeW1Btn") || "W1"); totalEdgeTapeLengthCm += p.width * p.quantity; }
+                    if (p.edgeBanding.W2) { edgesApplied.push(getLangString("edgeTapeW2Btn") || "W2"); totalEdgeTapeLengthCm += p.width * p.quantity; }
+                }
+                edgeCell.textContent = edgesApplied.length > 0 ? edgesApplied.join(', ') : (getLangString("noneLabel") || "कोई नहीं");
+                edgeCell.style.fontSize = "0.8em";
+
 
                 const rotationCell = row.insertCell();
                 rotationCell.className = 'no-print';
@@ -1465,15 +1664,50 @@
                 deleteBtnCell.style.textAlign = 'center';
             });
             updateTotalPiecesInListDisplay();
+            updateTotalEdgeBandingDisplay(totalEdgeTapeLengthCm);
         }
-        function removePiece(index) { isLoadedFromHistory = false; pieces.splice(index, 1); renderPiecesTable(); autoSaveData(); saveStateToHistory(); }
+
+        function updateTotalEdgeBandingDisplay(totalLengthCm) {
+            if (totalEdgeBandingReportEl && totalEdgeBandingLengthDisplayEl) {
+                if (totalLengthCm > 0) {
+                    let displayLength = convertFromCm(totalLengthCm, currentUnit);
+                    let displayUnit = currentUnit;
+
+                    if (currentUnit === 'cm' && totalLengthCm >= 100) {
+                        displayLength = convertFromCm(totalLengthCm, 'm');
+                        displayUnit = 'm';
+                    } else if (currentUnit === 'mm' && totalLengthCm >= 100) {
+                        displayLength = convertFromCm(totalLengthCm, 'm');
+                        displayUnit = 'm';
+                    } else if (currentUnit === 'in' && totalLengthCm >= (12 * 2.54)) {
+                         displayLength = convertFromCm(totalLengthCm, 'ft');
+                         displayUnit = 'ft';
+                    }
+                    displayLength = convertFromCm(convertToCm(displayLength, displayUnit), displayUnit);
+
+
+                    totalEdgeBandingLengthDisplayEl.textContent = getLangString("totalEdgeBandingResult", {length: displayLength, unit: displayUnit });
+                    totalEdgeBandingReportEl.style.display = 'block';
+                } else {
+                    totalEdgeBandingReportEl.style.display = 'none';
+                }
+            }
+        }
+
+        function removePiece(index) {
+            isLoadedFromHistory = false;
+            pieces.splice(index, 1);
+            renderPiecesTable();
+            autoSaveData();
+            saveStateToHistory();
+        }
         function resetAll() { if (confirm(getLangString("alert_confirmResetCurrent"))) resetAllInternal(true); }
         function resetAllInternal(saveToHist = false) {
             isLoadedFromHistory = false;
             pieces = [];
             pieceIdCounter = 0;
-            if(projectLocationEl) projectLocationEl.value = ''; 
-            if(projectNotesEl) projectNotesEl.value = '';     
+            if(projectLocationEl) projectLocationEl.value = '';
+            if(projectNotesEl) projectNotesEl.value = '';
 
             const defaultSheetL_cm = 244;
             const defaultSheetW_cm = 122;
@@ -1493,6 +1727,8 @@
             if(minOffcutLengthEl) minOffcutLengthEl.value = convertFromCm(offcutSettings.minLength, currentUnit);
             if(useOffcutsCheckboxEl) useOffcutsCheckboxEl.checked = false;
 
+            resetEdgeTapeSelections();
+            if(totalEdgeBandingReportEl) totalEdgeBandingReportEl.style.display = 'none';
 
             renderPiecesTable();
             clearPieceInputs();
@@ -1509,14 +1745,15 @@
             cuttingListCheckboxStates = {};
             localStorage.removeItem(STORAGE_KEY_CUTTING_LIST_CHECKS);
             lastCalculatedSheetsData = null;
-            lastGeneratedUsefulOffcuts = []; 
-            lastGeneratedNonUsefulRects = []; 
+            lastGeneratedUsefulOffcuts = [];
+            lastGeneratedNonUsefulRects = [];
             autoSaveData();
             if (saveToHist && !isLoadedFromHistory) saveStateToHistory();
         }
+
         function autoSaveData() {
             try {
-                localStorage.setItem(STORAGE_KEY_PIECES, JSON.stringify(pieces));
+                localStorage.setItem(STORAGE_KEY_PIECES, JSON.stringify(pieces.map(p => ensureEdgeBandingProperty(p))));
                 const settings = {
                     sheetWidth: convertToCm(modalSheetWidthEl.value, currentUnit) || 122,
                     sheetLength: convertToCm(modalSheetLengthEl.value, currentUnit) || 244,
@@ -1538,7 +1775,7 @@
                 alert(getLangString("alert_noDataToExport")); return;
             }
             const dataToExport = {
-                pieces: pieces,
+                pieces: pieces.map(p => ensureEdgeBandingProperty(p)),
                 settings: {
                     sheetWidth: convertToCm(modalSheetWidthEl.value, currentUnit) || 122,
                     sheetLength: convertToCm(modalSheetLengthEl.value, currentUnit) || 244,
@@ -1549,7 +1786,7 @@
                     fittingStrategy: currentFittingStrategy,
                     offcutSettings: offcutSettings
                 },
-                projectDetails: { 
+                projectDetails: {
                     location: projectLocationEl.value,
                     notes: projectNotesEl.value
                 },
@@ -1579,7 +1816,7 @@
                 try {
                     const importedData = JSON.parse(e.target.result);
                     if (importedData && importedData.pieces && importedData.settings) {
-                        pieces = importedData.pieces || [];
+                        pieces = (importedData.pieces || []).map(ensureEdgeBandingProperty);
                         pieces.forEach(p => {
                             p.allowRotationOnGrainedSheet = p.allowRotationOnGrainedSheet || false;
                         });
@@ -1595,7 +1832,7 @@
                         currentGrainPattern = settings.grainPattern || 'fine';
                         if (modalGrainPatternEl) modalGrainPatternEl.value = currentGrainPattern;
 
-                        if (importedData.projectDetails) { 
+                        if (importedData.projectDetails) {
                             projectLocationEl.value = importedData.projectDetails.location || '';
                             projectNotesEl.value = importedData.projectDetails.notes || '';
                         } else {
@@ -1663,8 +1900,8 @@
                 localStorage.removeItem(STORAGE_KEY_FITTING_STRATEGY);
                 localStorage.removeItem(STORAGE_KEY_SAVED_OFFCUTS);
                 localStorage.removeItem(STORAGE_KEY_OFFCUT_SETTINGS);
-                localStorage.removeItem(STORAGE_KEY_PROJECT_LOCATION); 
-                localStorage.removeItem(STORAGE_KEY_PROJECT_NOTES);   
+                localStorage.removeItem(STORAGE_KEY_PROJECT_LOCATION);
+                localStorage.removeItem(STORAGE_KEY_PROJECT_NOTES);
                 historyStack = [];
                 cuttingListCheckboxStates = {};
                 savedProjects = [];
@@ -1673,20 +1910,21 @@
                 if (modalGrainColorEl) modalGrainColorEl.value = currentGrainColor;
                 currentGrainPattern = 'fine';
                 if (modalGrainPatternEl) modalGrainPatternEl.value = currentGrainPattern;
-                if (projectLocationEl) projectLocationEl.value = ''; 
-                if (projectNotesEl) projectNotesEl.value = '';     
+                if (projectLocationEl) projectLocationEl.value = '';
+                if (projectNotesEl) projectNotesEl.value = '';
                 currentFittingStrategy = 'defaultScore';
                 if (fittingStrategySelectorEl) fittingStrategySelectorEl.value = currentFittingStrategy;
                 offcutSettings = { minWidth: 10, minLength: 45 };
                 if(minOffcutWidthEl) minOffcutWidthEl.value = convertFromCm(offcutSettings.minWidth, currentUnit);
                 if(minOffcutLengthEl) minOffcutLengthEl.value = convertFromCm(offcutSettings.minLength, currentUnit);
+                resetAllInternal(false);
                 alert(getLangString("alert_storageCleared"));
             }
         }
         function saveStateToHistory() {
             if (isLoadedFromHistory) return;
             const currentState = {
-                pieces: JSON.parse(JSON.stringify(pieces)),
+                pieces: JSON.parse(JSON.stringify(pieces.map(p => ensureEdgeBandingProperty(p)))),
                 settings: {
                     sheetWidth: convertToCm(modalSheetWidthEl.value, currentUnit) || 122,
                     sheetLength: convertToCm(modalSheetLengthEl.value, currentUnit) || 244,
@@ -1697,7 +1935,7 @@
                     fittingStrategy: currentFittingStrategy,
                     offcutSettings: offcutSettings
                 },
-                projectDetails: { 
+                projectDetails: {
                     location: projectLocationEl.value,
                     notes: projectNotesEl.value
                 },
@@ -1711,7 +1949,7 @@
                 const lastState = historyStack[0];
                 if (JSON.stringify(lastState.pieces) === JSON.stringify(currentState.pieces) &&
                     JSON.stringify(lastState.settings) === JSON.stringify(currentState.settings) &&
-                    JSON.stringify(lastState.projectDetails) === JSON.stringify(currentState.projectDetails) && 
+                    JSON.stringify(lastState.projectDetails) === JSON.stringify(currentState.projectDetails) &&
                     lastState.unit === currentState.unit &&
                     JSON.stringify(lastState.cuttingChecks) === JSON.stringify(currentState.cuttingChecks) ) {
                     return;
@@ -1722,11 +1960,21 @@
             try { localStorage.setItem(STORAGE_KEY_HISTORY, JSON.stringify(historyStack)); }
             catch (e) { console.error("हिस्ट्री सेव करने में त्रुटि:", e); }
         }
-        function loadHistoryFromStorage() { try { const savedHistory = localStorage.getItem(STORAGE_KEY_HISTORY); historyStack = savedHistory ? JSON.parse(savedHistory) : []; } catch (e) { console.error("हिस्ट्री लोड करने में त्रुटि:", e); historyStack = []; } }
+        function loadHistoryFromStorage() {
+            try {
+                const savedHistory = localStorage.getItem(STORAGE_KEY_HISTORY);
+                historyStack = savedHistory ? JSON.parse(savedHistory) : [];
+                historyStack.forEach(state => {
+                    if (state.pieces) state.pieces = state.pieces.map(ensureEdgeBandingProperty);
+                });
+            } catch (e) {
+                console.error("हिस्ट्री लोड करने में त्रुटि:", e); historyStack = [];
+            }
+        }
         function applyStateFromHistory(historyIndex) {
             if (historyIndex < 0 || historyIndex >= historyStack.length) return;
             const stateToLoad = JSON.parse(JSON.stringify(historyStack[historyIndex]));
-            pieces = stateToLoad.pieces;
+            pieces = (stateToLoad.pieces || []).map(ensureEdgeBandingProperty);
             pieces.forEach(p => {
                 p.allowRotationOnGrainedSheet = p.allowRotationOnGrainedSheet || false;
             });
@@ -1744,7 +1992,7 @@
             currentGrainPattern = settings.grainPattern || 'fine';
             if(modalGrainPatternEl) modalGrainPatternEl.value = currentGrainPattern;
 
-            const projectDetailsToLoad = stateToLoad.projectDetails || { location: '', notes: '' }; 
+            const projectDetailsToLoad = stateToLoad.projectDetails || { location: '', notes: '' };
             projectLocationEl.value = projectDetailsToLoad.location;
             projectNotesEl.value = projectDetailsToLoad.notes;
 
@@ -1787,11 +2035,11 @@
                     contentSpan.className = 'history-item-content';
                     const displayIndex = historyStack.length - index;
 
-                    let summaryText = `${state.pieces.length} ${getLangString("historyPiecesSuffix")}`;
+                    let summaryText = `${(state.pieces || []).length} ${getLangString("historyPiecesSuffix")}`;
                     if (state.settings && state.settings.sheetName) {
                         summaryText = `${getLangString("historySheetNamePrefix")}${state.settings.sheetName} | ${summaryText}`;
                     }
-                    if (state.projectDetails && state.projectDetails.location) { 
+                    if (state.projectDetails && state.projectDetails.location) {
                         summaryText = `${state.projectDetails.location} | ${summaryText}`;
                     }
 
@@ -1824,6 +2072,7 @@
                 savedProjects = projectsStr ? JSON.parse(projectsStr) : [];
                  savedProjects.forEach(project => {
                     if (project.data && project.data.pieces) {
+                        project.data.pieces = project.data.pieces.map(ensureEdgeBandingProperty);
                         project.data.pieces.forEach(p => {
                             p.allowRotationOnGrainedSheet = p.allowRotationOnGrainedSheet || false;
                         });
@@ -1831,7 +2080,7 @@
                     if (project.data && project.data.settings) {
                         project.data.settings.grainPattern = project.data.settings.grainPattern || 'fine';
                     }
-                    if (project.data) { 
+                    if (project.data) {
                         project.data.projectDetails = project.data.projectDetails || { location: '', notes: '' };
                     }
                 });
@@ -1842,7 +2091,13 @@
         }
         function saveProjectsToStorage() {
             try {
-                localStorage.setItem(STORAGE_KEY_PROJECTS, JSON.stringify(savedProjects));
+                const projectsToSave = savedProjects.map(proj => {
+                    if (proj.data && proj.data.pieces) {
+                        proj.data.pieces = proj.data.pieces.map(ensureEdgeBandingProperty);
+                    }
+                    return proj;
+                });
+                localStorage.setItem(STORAGE_KEY_PROJECTS, JSON.stringify(projectsToSave));
             } catch (e) {
                 console.error("प्रोजेक्ट सेव करने में त्रुटि:", e);
             }
@@ -1866,7 +2121,7 @@
                 projectName: projectName,
                 timestamp: new Date().toISOString(),
                 data: {
-                    pieces: JSON.parse(JSON.stringify(pieces)),
+                    pieces: JSON.parse(JSON.stringify(pieces.map(p => ensureEdgeBandingProperty(p)))),
                     settings: {
                         sheetWidth: convertToCm(modalSheetWidthEl.value, currentUnit) || 122,
                         sheetLength: convertToCm(modalSheetLengthEl.value, currentUnit) || 244,
@@ -1877,7 +2132,7 @@
                         fittingStrategy: currentFittingStrategy,
                         offcutSettings: offcutSettings
                     },
-                    projectDetails: { 
+                    projectDetails: {
                         location: projectLocationEl.value,
                         notes: projectNotesEl.value
                     },
@@ -1902,7 +2157,7 @@
             if (projectToLoad) {
                 isLoadedFromHistory = true;
                 const projectState = projectToLoad.data;
-                pieces = projectState.pieces || [];
+                pieces = (projectState.pieces || []).map(ensureEdgeBandingProperty);
                  pieces.forEach(p => {
                     p.allowRotationOnGrainedSheet = p.allowRotationOnGrainedSheet || false;
                 });
@@ -1920,7 +2175,7 @@
                 currentGrainPattern = settings.grainPattern || 'fine';
                 if(modalGrainPatternEl) modalGrainPatternEl.value = currentGrainPattern;
 
-                const projectDetailsToLoad = projectState.projectDetails || { location: '', notes: '' }; 
+                const projectDetailsToLoad = projectState.projectDetails || { location: '', notes: '' };
                 projectLocationEl.value = projectDetailsToLoad.location;
                 projectNotesEl.value = projectDetailsToLoad.notes;
 
@@ -1934,7 +2189,7 @@
                 renderPiecesTable();
                 clearPieceInputs();
                 autoSaveData();
-                saveStateToHistory(); 
+                saveStateToHistory();
                 closeProjectManagementModal();
                 alert(getLangString("alert_projectLoaded", {name: projectName}));
                 setLanguage(currentLanguage);
@@ -2286,7 +2541,8 @@
             };
             let individualPieces = [];
             let pieceInstanceCounters = {};
-            pieces.forEach(p_orig => {
+            pieces.forEach(p_orig_raw => {
+                const p_orig = ensureEdgeBandingProperty(p_orig_raw);
                 if (!pieceInstanceCounters[p_orig.id]) pieceInstanceCounters[p_orig.id] = 0;
                 for (let i = 0; i < p_orig.quantity; i++) {
                     pieceInstanceCounters[p_orig.id]++;
@@ -2367,15 +2623,15 @@
                 const canvas = document.createElement('canvas');
                 const logicalWidth = sheet.width * BASE_CANVAS_SCALE;
                 const logicalHeight = sheet.height * BASE_CANVAS_SCALE;
-                
+
                 canvas.width = Math.round(logicalWidth * dpr);
                 canvas.height = Math.round(logicalHeight * dpr);
-                
+
                 wrapper.appendChild(canvas);
 
                 const ctx = canvas.getContext('2d');
-                ctx.scale(dpr, dpr); 
-                ctx.clearRect(0, 0, logicalWidth, logicalHeight); 
+                ctx.scale(dpr, dpr);
+                ctx.clearRect(0, 0, logicalWidth, logicalHeight);
                 ctx.strokeStyle = '#bdc3c7';
                 ctx.lineWidth = 1;
                 ctx.strokeRect(0.5, 0.5, logicalWidth - 1, logicalHeight - 1);
@@ -2388,13 +2644,9 @@
                     let bezierRandomnessFactor = 1;
 
                     if (currentGrainPattern === 'medium') {
-                        numGrainsFactor = 0.6;
-                        lineWidthFactor = 1.5;
-                        bezierRandomnessFactor = 1.5;
+                        numGrainsFactor = 0.6; lineWidthFactor = 1.5; bezierRandomnessFactor = 1.5;
                     } else if (currentGrainPattern === 'coarse') {
-                        numGrainsFactor = 0.35;
-                        lineWidthFactor = 2.2;
-                        bezierRandomnessFactor = 2.5;
+                        numGrainsFactor = 0.35; lineWidthFactor = 2.2; bezierRandomnessFactor = 2.5;
                     }
 
                     ctx.lineWidth = 0.3 * lineWidthFactor;
@@ -2403,8 +2655,7 @@
                     for (let i = 0; i < numGrains; i++) {
                         let xPos = (i / numGrains) * logicalWidth + (Math.random() - 0.5) * 4 * bezierRandomnessFactor;
                         if (xPos < 0) xPos = 0; if (xPos > logicalWidth) xPos = logicalWidth;
-                        ctx.beginPath();
-                        ctx.moveTo(xPos, 0);
+                        ctx.beginPath(); ctx.moveTo(xPos, 0);
                         let midY1 = logicalHeight * 0.25 + (Math.random() - 0.5) * 5 * bezierRandomnessFactor;
                         let midX1Offset = (Math.random() - 0.5) * 3 * bezierRandomnessFactor;
                         let midY2 = logicalHeight * 0.75 + (Math.random() - 0.5) * 5 * bezierRandomnessFactor;
@@ -2414,7 +2665,8 @@
                     }
                 }
 
-                sheet.placedPieces.forEach(p => {
+                sheet.placedPieces.forEach(p_raw => {
+                    const p = ensureEdgeBandingProperty(p_raw);
                     if (!pieceColors[p.originalId]) pieceColors[p.originalId] = getRandomColor();
                     ctx.fillStyle = pieceColors[p.originalId].replace('hsl', 'hsla').replace(')', ', 0.75)');
                     const pieceX_logical = p.x * BASE_CANVAS_SCALE;
@@ -2422,19 +2674,80 @@
                     const pieceWidth_logical = p.placedWidth * BASE_CANVAS_SCALE;
                     const pieceHeight_logical = p.placedLength * BASE_CANVAS_SCALE;
                     ctx.fillRect(pieceX_logical, pieceY_logical, pieceWidth_logical, pieceHeight_logical);
-                    ctx.strokeStyle = '#2c3e50'; ctx.lineWidth = 0.5;
-                    ctx.strokeRect(pieceX_logical + 0.5, pieceY_logical + 0.5, pieceWidth_logical - 1, pieceHeight_logical - 1);
+
+                    const pieceBorderThickness = 0.3;
+                    ctx.save();
+                    ctx.strokeStyle = '#cccccc';
+                    ctx.lineWidth = pieceBorderThickness;
+                    ctx.strokeRect(
+                        pieceX_logical + pieceBorderThickness / 2,
+                        pieceY_logical + pieceBorderThickness / 2,
+                        pieceWidth_logical - pieceBorderThickness,
+                        pieceHeight_logical - pieceBorderThickness
+                    );
+                    ctx.restore();
+
+                    // केरफ़-जैसी लाइन (पीस के सामान्य बॉर्डर के बाहर)
+                    const kerfLineColor = "rgba(200, 200, 200, 0.6)"; // हल्का ग्रे केरफ़ लाइन
+                    const kerfLineWidth = BASE_CANVAS_SCALE * 0.2;   // केरफ़ लाइन की मोटाई
+
+                    ctx.save();
+                    ctx.strokeStyle = kerfLineColor;
+                    ctx.lineWidth = kerfLineWidth;
+                    ctx.strokeRect(
+                        pieceX_logical - kerfLineWidth / 2,
+                        pieceY_logical - kerfLineWidth / 2,
+                        pieceWidth_logical + kerfLineWidth,
+                        pieceHeight_logical + kerfLineWidth
+                    );
+                    ctx.restore();
+
                     overallTotalAreaUsed_cm2 += p.placedWidth * p.placedLength;
-                });
 
-                // === टेक्स्ट रेंडरिंग लॉजिक ===
-                 sheet.placedPieces.forEach(p => {
-                    ctx.fillStyle = '#101d2c'; 
-                    const pieceX_logical = p.x * BASE_CANVAS_SCALE;
-                    const pieceY_logical = p.y * BASE_CANVAS_SCALE;
-                    const pieceWidth_logical = p.placedWidth * BASE_CANVAS_SCALE;
-                    const pieceHeight_logical = p.placedLength * BASE_CANVAS_SCALE;
+                    // एज टेप विज़ुअलाइज़ेशन (सामान्य बॉर्डर के अंदर की तरफ)
+                    if (p.edgeBanding && (p.edgeBanding.L1 || p.edgeBanding.L2 || p.edgeBanding.W1 || p.edgeBanding.W2)) {
+                        const edgeTapeColor = 'rgba(220, 0, 0, 0.9)';
+                        const edgeTapeThickness = BASE_CANVAS_SCALE * 0.6;
+                        const dashLength = BASE_CANVAS_SCALE * 1.8;
+                        const gapLength = BASE_CANVAS_SCALE * 1.2;
 
+                        ctx.save();
+                        ctx.strokeStyle = edgeTapeColor;
+                        ctx.lineWidth = edgeTapeThickness;
+                        ctx.setLineDash([dashLength, gapLength]);
+                        ctx.lineCap = 'butt';
+                        ctx.beginPath();
+
+                        const pw_canvas = pieceWidth_logical;
+                        const pl_canvas = pieceHeight_logical;
+                        const px = pieceX_logical;
+                        const py = pieceY_logical;
+
+                        const innerOffset = pieceBorderThickness + (edgeTapeThickness / 2);
+
+                        const cTopLeftInner = { x: px + innerOffset, y: py + innerOffset };
+                        const cTopRightInner = { x: px + pw_canvas - innerOffset, y: py + innerOffset };
+                        const cBottomLeftInner = { x: px + innerOffset, y: py + pl_canvas - innerOffset };
+                        const cBottomRightInner = { x: px + pw_canvas - innerOffset, y: py + pl_canvas - innerOffset };
+
+                        if (p.isRotated) {
+                            if (p.edgeBanding.L1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopRightInner.x, cTopLeftInner.y); }
+                            if (p.edgeBanding.L2) { ctx.moveTo(cBottomLeftInner.x, cBottomLeftInner.y); ctx.lineTo(cBottomRightInner.x, cBottomLeftInner.y); }
+                            if (p.edgeBanding.W1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopLeftInner.x, cBottomLeftInner.y); }
+                            if (p.edgeBanding.W2) { ctx.moveTo(cTopRightInner.x, cTopRightInner.y); ctx.lineTo(cTopRightInner.x, cBottomRightInner.y); }
+                        } else {
+                            if (p.edgeBanding.L1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopLeftInner.x, cBottomLeftInner.y); }
+                            if (p.edgeBanding.L2) { ctx.moveTo(cTopRightInner.x, cTopRightInner.y); ctx.lineTo(cTopRightInner.x, cBottomRightInner.y); }
+                            if (p.edgeBanding.W1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopRightInner.x, cTopLeftInner.y); }
+                            if (p.edgeBanding.W2) { ctx.moveTo(cBottomLeftInner.x, cBottomLeftInner.y); ctx.lineTo(cBottomRightInner.x, cBottomLeftInner.y); }
+                        }
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        ctx.restore();
+                    }
+
+                    // === टेक्स्ट रेंडरिंग लॉजिक ===
+                    ctx.fillStyle = '#101d2c';
                     let textX = pieceX_logical + pieceWidth_logical / 2;
                     let textY = pieceY_logical + pieceHeight_logical / 2;
                     const textAlign = 'center';
@@ -2446,9 +2759,9 @@
                     const pieceInstance = `#${p.instanceNum}`;
                     const pieceDimensions = `${displayedWidth}×${displayedLength}${p.isRotated ? '(R)' : ''}`;
 
-                    const minAllowedLogicalFontSize = Math.max(4.0, BASE_CANVAS_SCALE * 1.5); 
-                    const maxAllowedLogicalFontSize = BASE_CANVAS_SCALE * 4.5; 
-                    const estLineHeightFactor = 1.2; 
+                    const minAllowedLogicalFontSize = Math.max(4.0, BASE_CANVAS_SCALE * 1.5);
+                    const maxAllowedLogicalFontSize = BASE_CANVAS_SCALE * 4.5;
+                    const estLineHeightFactor = 1.2;
 
                     let textToShow = [];
                     let fontSizeToUse = minAllowedLogicalFontSize;
@@ -2457,19 +2770,19 @@
                     const estMaxCharsPerLine3 = Math.max(pieceName.length, pieceInstance.length, pieceDimensions.length, 4);
                     let idealFontSizeThreeLines = Math.min(
                         maxAllowedLogicalFontSize,
-                        pieceHeight_logical / (3 * estLineHeightFactor), 
-                        pieceWidth_logical / (estMaxCharsPerLine3 * 0.65)    
+                        pieceHeight_logical / (3 * estLineHeightFactor),
+                        pieceWidth_logical / (estMaxCharsPerLine3 * 0.65)
                     );
                     idealFontSizeThreeLines = Math.floor(idealFontSizeThreeLines);
 
-                    if (idealFontSizeThreeLines >= minAllowedLogicalFontSize + 0.5 && pieceHeight_logical > (minAllowedLogicalFontSize * 3 * estLineHeightFactor * 0.8) && pieceWidth_logical > (estMaxCharsPerLine3 * minAllowedLogicalFontSize * 0.5) ) { 
+                    if (idealFontSizeThreeLines >= minAllowedLogicalFontSize + 0.5 && pieceHeight_logical > (minAllowedLogicalFontSize * 3 * estLineHeightFactor * 0.8) && pieceWidth_logical > (estMaxCharsPerLine3 * minAllowedLogicalFontSize * 0.5) ) {
                         textToShow = [pieceName, pieceInstance, pieceDimensions];
                         fontSizeToUse = idealFontSizeThreeLines;
                     } else {
                         const line2Text = `${pieceInstance} ${pieceDimensions}`;
                         const estMaxCharsPerLine2 = Math.max(pieceName.length, line2Text.length, 5);
                         let idealFontSizeTwoLines = Math.min(
-                            maxAllowedLogicalFontSize * 0.9, 
+                            maxAllowedLogicalFontSize * 0.9,
                             pieceHeight_logical / (2 * estLineHeightFactor),
                             pieceWidth_logical / (estMaxCharsPerLine2 * 0.62)
                         );
@@ -2487,7 +2800,7 @@
                             );
                             idealFontSizeOneLineFull = Math.floor(idealFontSizeOneLineFull);
 
-                            if (idealFontSizeOneLineFull >= minAllowedLogicalFontSize && pieceWidth_logical > singleLineFull.length * minAllowedLogicalFontSize * 0.48) { 
+                            if (idealFontSizeOneLineFull >= minAllowedLogicalFontSize && pieceWidth_logical > singleLineFull.length * minAllowedLogicalFontSize * 0.48) {
                                 textToShow = [singleLineFull];
                                 fontSizeToUse = idealFontSizeOneLineFull;
                             } else {
@@ -2503,15 +2816,14 @@
                                     textToShow = [singleLineShort];
                                     fontSizeToUse = idealFontSizeOneLineShort;
                                 } else {
-                                    // <<--- रोटेशन लॉजिक में बदलाव यहाँ से --- >>
                                     const textForRotationCandidates = [
                                         `${pieceName}/${pieceInstance}/${pieceDimensions}`,
-                                        `${pieceName}/${pieceDimensions}`,               
-                                        `${pieceInstance}/${pieceDimensions}`,            
-                                        pieceDimensions,                                 
-                                        pieceInstance                                    
+                                        `${pieceName}/${pieceDimensions}`,
+                                        `${pieceInstance}/${pieceDimensions}`,
+                                        pieceDimensions,
+                                        pieceInstance
                                     ];
-                                    
+
                                     let bestRotatedText = "";
                                     let bestRotatedFontSize = 0;
 
@@ -2519,16 +2831,16 @@
                                         if (!candidateText || candidateText.trim() === "") continue;
 
                                         let currentIdealFontSizeRotated = Math.min(
-                                            maxAllowedLogicalFontSize * 0.9, 
-                                            pieceWidth_logical / (1.15 * estLineHeightFactor), 
-                                            pieceHeight_logical / (candidateText.length * 0.52) // फैक्टर थोड़ा बढ़ाया (0.50 से)
+                                            maxAllowedLogicalFontSize * 0.9,
+                                            pieceWidth_logical / (1.15 * estLineHeightFactor),
+                                            pieceHeight_logical / (candidateText.length * 0.52)
                                         );
                                         currentIdealFontSizeRotated = Math.floor(currentIdealFontSizeRotated);
 
-                                        if (currentIdealFontSizeRotated >= minAllowedLogicalFontSize && 
-                                            pieceHeight_logical > candidateText.length * minAllowedLogicalFontSize * 0.40 && 
-                                            pieceWidth_logical > minAllowedLogicalFontSize * 1.05) { // मोटाई की शर्त थोड़ी कम की
-                                            
+                                        if (currentIdealFontSizeRotated >= minAllowedLogicalFontSize &&
+                                            pieceHeight_logical > candidateText.length * minAllowedLogicalFontSize * 0.40 &&
+                                            pieceWidth_logical > minAllowedLogicalFontSize * 1.05) {
+
                                             if (currentIdealFontSizeRotated > bestRotatedFontSize) {
                                                 bestRotatedFontSize = currentIdealFontSizeRotated;
                                                 bestRotatedText = candidateText;
@@ -2541,7 +2853,6 @@
                                         fontSizeToUse = bestRotatedFontSize;
                                         textAngle = -90;
                                     } else {
-                                    // <<--- रोटेशन लॉजिक में बदलाव यहाँ तक --- >>
                                         let idealFontSizeInstanceOnly = Math.min(
                                             maxAllowedLogicalFontSize,
                                             pieceHeight_logical / (1.2 * estLineHeightFactor),
@@ -2552,17 +2863,16 @@
                                             textToShow = [pieceInstance];
                                             fontSizeToUse = idealFontSizeInstanceOnly;
                                         } else {
-                                            textToShow = []; 
+                                            textToShow = [];
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                    
-                    fontSizeToUse = Math.max(minAllowedLogicalFontSize, fontSizeToUse); 
-                    fontSizeToUse = Math.min(maxAllowedLogicalFontSize, fontSizeToUse); 
 
+                    fontSizeToUse = Math.max(minAllowedLogicalFontSize, fontSizeToUse);
+                    fontSizeToUse = Math.min(maxAllowedLogicalFontSize, fontSizeToUse);
 
                     if (textToShow.length > 0 && fontSizeToUse >= minAllowedLogicalFontSize) {
                         const fontStyle = `bold ${fontSizeToUse}px Arial`;
@@ -2580,24 +2890,20 @@
                         let startY = 0;
 
                         if (textToShow.length === 1) {
-                            startY = 0; 
+                            startY = 0;
                         } else if (textToShow.length === 2) {
                             startY = -lineHeight / 2;
                         } else if (textToShow.length === 3) {
                             startY = -lineHeight;
                         }
-                        
-                        // रोटेटेड मल्टी-लाइन टेक्स्ट (यदि कभी लागू हो) के लिए समायोजन
-                        if(textAngle !==0 && textToShow.length > 1){ 
+
+                        if(textAngle !==0 && textToShow.length > 1){
                              startY = -( (textToShow.length-1) * lineHeight / 2);
                         }
 
-
                         for (let i = 0; i < textToShow.length; i++) {
                              let currentY = startY + (i * lineHeight);
-                             // यदि टेक्स्ट रोटेट हो रहा है, तो x,y को अलग से संभालना होगा यदि मल्टी-लाइन रोटेटेड टेक्स्ट दिखाना है
-                             // अभी के लिए, रोटेटेड टेक्स्ट हमेशा एक लाइन का माना जा रहा है, इसलिए currentY=0 काम करेगा
-                             if (textAngle !== 0 ) currentY = 0; // रोटेटेड टेक्स्ट के लिए 0,0 पर ही ड्रॉ करें (ट्रांसलेशन के बाद)
+                             if (textAngle !== 0 ) currentY = 0;
                              ctx.fillText(textToShow[i], 0, currentY);
                         }
                         ctx.restore();
@@ -2631,12 +2937,12 @@
                     });
                 }
 
-
                 const cuttingListDiv = document.createElement('div'); cuttingListDiv.className = 'cutting-list';
                 const cuttingListTitleEl = document.createElement('h4'); cuttingListTitleEl.textContent = getLangString('cuttingListTitle');
                 cuttingListDiv.appendChild(cuttingListTitleEl);
                 const ul = document.createElement('ul');
-                sheet.placedPieces.forEach(p => {
+                sheet.placedPieces.forEach(p_raw => {
+                    const p = ensureEdgeBandingProperty(p_raw);
                     const li = document.createElement('li');
                     const checkbox = document.createElement('input'); checkbox.type = 'checkbox';
                     const checkboxId = `cut-s${sheet.id}-p${p.uniqueId}`; checkbox.id = checkboxId;
@@ -2662,8 +2968,8 @@
         }
 
         function processAndDisplayWastage(allFreeRects, calculatedSheets, totalAreaUsedByPiecesCm2) {
-            lastGeneratedUsefulOffcuts = []; 
-            lastGeneratedNonUsefulRects = []; 
+            lastGeneratedUsefulOffcuts = [];
+            lastGeneratedNonUsefulRects = [];
 
             if (!usefulOffcutsSummaryEl || !totalWastagePiecesSummaryEl || !wastageOverallStatsEl || !usefulOffcutsDisplayListContainerEl || !otherSmallWastageContainerEl || !usefulOffcutsListTotalSummaryEl) {
                 console.error("Wastage display elements not found for processAndDisplayWastage!");
@@ -2706,14 +3012,14 @@
                         width: parseFloat(w.toFixed(2)),
                         length: parseFloat(l.toFixed(2)),
                         area: parseFloat((w * l).toFixed(2)),
-                        sourceSheetId: rect.sourceSheetId, 
+                        sourceSheetId: rect.sourceSheetId,
                         sourceSheetName: rect.sourceSheetName || getLangString("unnamedSheetLabel")
                     });
                 } else {
                     if (rect.width > 0.01 && rect.height > 0.01) {
                         lastGeneratedNonUsefulRects.push({
                             ...rect,
-                            sourceSheetId: rect.sourceSheetId, 
+                            sourceSheetId: rect.sourceSheetId,
                             sourceSheetName: rect.sourceSheetName || getLangString("unnamedSheetLabel")
                         });
                     }
@@ -2817,7 +3123,7 @@
             const newBatch = {
                 batchId: batchId,
                 dateTime: new Date().toLocaleString(currentLanguage === 'hi' ? 'hi-IN' : 'en-US'),
-                sourceSheetNameForBatch: currentSheetNameForBatch, 
+                sourceSheetNameForBatch: currentSheetNameForBatch,
                 offcutsInBatch: [],
                 isBatchAvailable: true
             };
@@ -2828,8 +3134,8 @@
                 const alreadyExistsInCurrentBatch = newBatch.offcutsInBatch.some(existing =>
                     Math.abs(existing.width - newOffcutDetail.width) < 0.01 &&
                     Math.abs(existing.length - newOffcutDetail.length) < 0.01 &&
-                    existing.sourceSheetNameFromCalc === newOffcutDetail.sourceSheetName && 
-                    existing.sourceSheetIdFromCalc === newOffcutDetail.sourceSheetId 
+                    existing.sourceSheetNameFromCalc === newOffcutDetail.sourceSheetName &&
+                    existing.sourceSheetIdFromCalc === newOffcutDetail.sourceSheetId
                 );
 
                 let existsInOldBatches = false;
@@ -2854,8 +3160,8 @@
                         area: newOffcutDetail.area,
                         dateAdded: new Date().toISOString(),
                         isIndividuallyAvailable: true,
-                        sourceSheetIdFromCalc: newOffcutDetail.sourceSheetId, 
-                        sourceSheetNameFromCalc: newOffcutDetail.sourceSheetName 
+                        sourceSheetIdFromCalc: newOffcutDetail.sourceSheetId,
+                        sourceSheetNameFromCalc: newOffcutDetail.sourceSheetName
                     });
                     newOffcutsActuallyAddedToStorage++;
                 }
@@ -2897,9 +3203,48 @@
                     if (loadingIndicatorEl) loadingIndicatorEl.style.display = 'none';
                     return;
                 }
-            } else if (lastCalculatedSheetsData) {
-                displayLayoutOnCanvas(lastCalculatedSheetsData); 
             }
+            // else if (lastCalculatedSheetsData) {
+            //    // यदि आवश्यक हो, तो कैनवास अपडेट करें: displayLayoutOnCanvas(lastCalculatedSheetsData);
+            // }
+
+            const originalDocumentTitle = document.title;
+            let baseFilename = "";
+
+            const projectLocationValue = projectLocationEl.value.trim();
+            const sheetNameValue = modalSheetNameEl.value.trim();
+            const layoutPrefix = getLangString("pdfDefaultFilenamePrefix") || "layout";
+
+            if (projectLocationValue) {
+                baseFilename = projectLocationValue;
+            } else if (sheetNameValue) {
+                baseFilename = sheetNameValue;
+            } else {
+                baseFilename = layoutPrefix;
+            }
+
+            const today = new Date();
+            const day = String(today.getDate()).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const year = today.getFullYear();
+            const dateString = `${day}-${month}-${year}`;
+
+            let sanitizedBaseFilename = baseFilename.replace(/[<>:"/\\|?*\s~.]+/g, '_').replace(/_+/g, '_');
+            
+            if (!sanitizedBaseFilename) { // यदि सैनिटाइजेशन के बाद खाली हो जाए
+                sanitizedBaseFilename = layoutPrefix;
+            }
+            
+            let newFilename = `${sanitizedBaseFilename}_${dateString}`;
+            newFilename = newFilename.substring(0, 80); // फ़ाइल नाम की अधिकतम लंबाई
+
+            document.title = newFilename;
+
+            const afterPrintHandler = () => {
+                document.title = originalDocumentTitle;
+                window.removeEventListener('afterprint', afterPrintHandler);
+            };
+            window.addEventListener('afterprint', afterPrintHandler);
 
             setTimeout(() => {
                 window.print();
@@ -3005,7 +3350,6 @@
             const savedLang = localStorage.getItem(STORAGE_KEY_LANGUAGE) || 'hi';
             const savedUnit = localStorage.getItem(STORAGE_KEY_CURRENT_UNIT) || 'cm';
             currentUnit = savedUnit;
-            updateUnitDisplaysDOM(currentUnit);
 
             const settingsStr = localStorage.getItem(STORAGE_KEY_SETTINGS);
             if (settingsStr) {
@@ -3021,14 +3365,14 @@
             }
             if(!modalSheetWidthEl.value) modalSheetWidthEl.value = convertFromCm(122, currentUnit);
             if(!modalSheetLengthEl.value) modalSheetLengthEl.value = convertFromCm(244, currentUnit);
-            if(modalSheetHasGrainEl.checked === undefined) modalSheetHasGrainEl.checked = true;
+            if(typeof modalSheetHasGrainEl.checked !== 'boolean') modalSheetHasGrainEl.checked = true;
 
             loadOffcutSettings();
 
             const piecesStr = localStorage.getItem(STORAGE_KEY_PIECES);
             if (piecesStr) {
                 try {
-                    pieces = JSON.parse(piecesStr);
+                    pieces = JSON.parse(piecesStr).map(ensureEdgeBandingProperty);
                     pieces.forEach(p => {
                         p.allowRotationOnGrainedSheet = p.allowRotationOnGrainedSheet || false;
                     });
@@ -3040,14 +3384,16 @@
                 const maxId = pieces.reduce((max, p) => (typeof p.id === 'number' && p.id > max ? p.id : max), -1);
                 pieceIdCounter = maxId >= 0 ? maxId + 1 : pieces.length;
             }
-            renderPiecesTable();
+
             setLanguage(savedLang);
             clearPieceInputs();
+            updateSelectedEdgesDisplay();
+
             if(resultsSummaryEl) resultsSummaryEl.textContent = getLangString("totalSheetsDefault");
             if(wastageSectionEl) wastageSectionEl.style.display = 'none';
             if(totalWastagePiecesSummaryEl) totalWastagePiecesSummaryEl.style.display = 'none';
             if(usefulOffcutsSummaryEl) usefulOffcutsSummaryEl.style.display = 'none';
-            console.log("App initialized (Screen Fit Canvas, Enhanced Text Fit Logic, Wastage Sheet ID).");
+            console.log("App initialized (PDF Filename with Date v2).");
         }
 
         function promptForOffcutSelection() {
@@ -3083,7 +3429,7 @@
                     name: `Offcut ${oc.id.slice(-4)} (${convertFromCm(oc.width, currentUnit)}x${convertFromCm(oc.length, currentUnit)})`,
                     hasGrain: modalSheetHasGrainEl.checked,
                     isOffcut: true,
-                    originalStockId: oc.id, 
+                    originalStockId: oc.id,
                     quantity: 1
                 }));
                 alert(getLangString("offcutsSelectedForCalcAlert", { count: currentCalculationOffcuts.length}));
@@ -3105,7 +3451,7 @@
 
         function exportToCsv(filename, rows) {
             const csvContent = rows.map(row => row.map(escapeCsvCell).join(",")).join("\n");
-            const bom = "\uFEFF"; 
+            const bom = "\uFEFF";
             const dataUri = 'data:text/csv;charset=utf-8,' + bom + encodeURIComponent(csvContent);
             const linkElement = document.createElement('a');
             linkElement.setAttribute('href', dataUri);
@@ -3117,15 +3463,23 @@
         function exportPiecesToCsv() {
             if (pieces.length === 0) { alert(getLangString("alert_noDataToExport")); return; }
             const rows = [
-                [getLangString("tableName"), `${getLangString("tableWidth")} (${currentUnit})`, `${getLangString("tableLength")} (${currentUnit})`, getLangString("tableQuantity"), getLangString("tableAllowRotationOnGrained")]
+                [getLangString("tableName"), `${getLangString("tableWidth")} (${currentUnit})`, `${getLangString("tableLength")} (${currentUnit})`, getLangString("tableQuantity"), getLangString("tableAllowRotationOnGrained"), getLangString("tableEdges")]
             ];
-            pieces.forEach(p => {
+            pieces.map(ensureEdgeBandingProperty).forEach(p => {
+                 let edgesApplied = [];
+                 if (p.edgeBanding) {
+                    if (p.edgeBanding.L1) edgesApplied.push("L1");
+                    if (p.edgeBanding.L2) edgesApplied.push("L2");
+                    if (p.edgeBanding.W1) edgesApplied.push("W1");
+                    if (p.edgeBanding.W2) edgesApplied.push("W2");
+                }
                 rows.push([
                     p.name,
                     convertFromCm(p.width, currentUnit),
                     convertFromCm(p.length, currentUnit),
                     p.quantity,
-                    p.allowRotationOnGrainedSheet ? getLangString("rotationAllowedSymbol") : getLangString("rotationNotAllowedSymbol")
+                    p.allowRotationOnGrainedSheet ? getLangString("rotationAllowedSymbol") : getLangString("rotationNotAllowedSymbol"),
+                    edgesApplied.join('/') || (getLangString("noneLabel") || "None")
                 ]);
             });
             exportToCsv('pieces_list.csv', rows);
@@ -3149,7 +3503,9 @@
             exportToCsv('layout_details.csv', rows);
         }
 
-        window.onload = initializeApp;
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+        });
     </script>
 </body>
     </html>
