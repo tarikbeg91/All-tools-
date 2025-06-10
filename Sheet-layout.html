@@ -42,7 +42,7 @@
             margin-bottom: 20px;
         }
         h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
-        .input-group, .parts-group, .results-group, .projects-group, .fitting-strategy-group, .offcut-settings-group {
+        .input-group, .parts-group, .results-group, .projects-group, .fitting-strategy-group, .offcut-settings-group, .bulk-add-group {
             margin-bottom: 25px; padding: 20px; border: 1px solid #dce4ec;
             border-radius: 8px; background-color: #fafdff;
         }
@@ -62,6 +62,11 @@
             display: inline-block; text-align: center;
         }
         button:hover, .button-like-label:hover { background-color: #2980b9; }
+        
+        #copyAllPiecesBtn { background-color: #1abc9c; margin-right: 0;} #copyAllPiecesBtn:hover { background-color: #16a085;}
+        #addBulkPiecesBtn { background-color: #2ecc71;} #addBulkPiecesBtn:hover { background-color: #27ae60;}
+        #toggleBulkAddBtn { background-color: #9b59b6; margin-left: 0; margin-top: 10px;} #toggleBulkAddBtn:hover { background-color: #8e44ad;}
+
 
         #showOffcutsLibraryIcon { background-color: #f39c12;} #showOffcutsLibraryIcon:hover { background-color: #e67e22;}
         .button-like-label { background-color: #f39c12; } .button-like-label:hover { background-color: #e67e22; }
@@ -104,7 +109,59 @@
         }
 
         .results-summary { font-size: 1.2em; font-weight: bold; text-align: center; margin-bottom: 15px;}
-        .actions-div button, .actions-div .button-like-label { margin-bottom: 10px;}
+        
+        .fitting-strategy-group .controls-row {
+            display: flex;
+            flex-wrap: wrap; 
+            align-items: center; 
+            gap: 15px; 
+            margin-bottom: 15px; 
+        }
+
+        .fitting-strategy-group .checkbox-area {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0; 
+        }
+        .fitting-strategy-group .checkbox-area input[type="checkbox"] {
+            margin-bottom: 0; 
+        }
+        .fitting-strategy-group .checkbox-area label {
+            margin-bottom: 0; 
+            font-weight: normal;
+            white-space: nowrap; 
+        }
+
+        .fitting-strategy-group .strategy-select-area {
+            flex-grow: 1; 
+            min-width: 200px; 
+        }
+        .fitting-strategy-group .strategy-select-area label {
+             display: block; 
+             margin-bottom: 5px;
+        }
+         .fitting-strategy-group .strategy-select-area select {
+            margin-bottom: 0; 
+            width: 100%; 
+        }
+        
+        .actions-div {
+            display: flex; 
+            justify-content: space-between; 
+            gap: 10px; 
+            margin-top: 10px; 
+        }
+        .actions-div button {
+            flex-grow: 1; 
+            flex-basis: 0; 
+            margin-right: 0; 
+            margin-bottom: 0;
+        }
+        .actions-div button:last-child {
+            margin-right: 0;
+        }
+
+
         .modal {
             display: none; position: fixed; z-index: 1000; left: 0; top: 0;
             width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);
@@ -165,14 +222,17 @@
             display: none;
             position: absolute;
             right: 0;
-            top: 100%;
+            top: 100%; 
             background-color: white;
             border: 1px solid #ccc;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 1002;
+            z-index: 1002; 
             border-radius: 4px;
             min-width: 200px;
             padding: 5px 0;
+        }
+        .dropdown-container { 
+            position: relative;
         }
         .dropdown-menu a, .dropdown-menu label.dropdown-menu-item {
             display: block;
@@ -186,9 +246,7 @@
         .dropdown-menu a:hover, .dropdown-menu label.dropdown-menu-item:hover {
             background-color: #f0f0f0;
         }
-        #jsonMenu { right: 5px; top: 50px; }
-
-
+        
         .cutting-list { margin-top: 10px; font-size: 0.9em; }
         .cutting-list ul { list-style-type: none; padding-left: 0; }
         .cutting-list li { margin-bottom: 5px; display: flex; align-items: center; }
@@ -264,17 +322,75 @@
             background-color: white; padding: 20px 30px; border-radius: 5px;
             font-size: 1.2em; color: #333; box-shadow: 0 0 10px rgba(0,0,0,0.2);
         }
+        .parts-group .header-with-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px; /* Adjusted from h2 margin */
+        }
+        .parts-group .header-with-toggle h2 {
+            margin-bottom: 0; /* Remove default h2 margin */
+        }
 
         @media (max-width: 700px) {
             .app-header .title { font-size: 1.1em; }
             .header-icons { gap: 1px; flex-wrap: nowrap; }
             .header-icons button, .dropdown-container button { font-size: 1.1em; padding: 5px; }
             .header-icons button small, #sharePdfExcelButton small { display: none; }
+            
+            .fitting-strategy-group .controls-row {
+                flex-direction: column; 
+                align-items: stretch; 
+                gap: 10px;
+            }
+            .fitting-strategy-group .checkbox-area {
+                 justify-content: flex-start; 
+                 margin-bottom: 5px; 
+            }
+            .fitting-strategy-group .strategy-select-area {
+                min-width: 100%; 
+            }
+             .fitting-strategy-group .strategy-select-area select {
+                 margin-bottom: 10px; 
+            }
+
+            .actions-div {
+                flex-wrap: wrap; 
+            }
+            .actions-div button {
+                flex-basis: calc(50% - 5px); 
+                margin-bottom: 10px;
+            }
+            .actions-div button:last-child {
+                 margin-bottom: 0; 
+            }
+            .actions-div button:nth-child(odd):last-child {
+                flex-basis: 100%;
+            }
+
         }
         @media (max-width: 480px) {
             .app-header { padding: 8px 10px; }
             .app-header .title { font-size: 1.0em; }
             .header-icons button, .dropdown-container button { font-size: 1.0em; padding: 4px; }
+            
+            .actions-div button {
+                flex-basis: 100%; 
+            }
+            .fitting-strategy-group .checkbox-area {
+                margin-bottom: 10px;
+            }
+             .parts-group .header-with-toggle {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .parts-group .header-with-toggle h2 {
+                margin-bottom: 10px;
+            }
+            #toggleBulkAddBtn {
+                width: 100%;
+                margin-top: 0;
+            }
         }
 
 
@@ -284,13 +400,20 @@
                 color: #000 !important; background-color: #fff !important;
             }
             html, body { height: auto; overflow: visible; }
-            .app-header, .parts-group, #mainActionButtons, .modal, #jsonMenu, .dropdown-menu, .no-print,
+            .app-header, .parts-group .header-with-toggle + div, .parts-group .edge-banding-controls, .parts-group button[onclick="addPiece()"], /* Hide individual add form */
+            #mainActionButtons, .modal, #jsonMenu, .dropdown-menu, .no-print,
             #manageProjectsIcon, #unitSettingsIcon, #langToggle,
             #sheetSettingsIcon, #historyIcon, #jsonIcon, #loadingIndicator, #showOffcutsLibraryIcon,
-            .fitting-strategy-group, .offcut-settings-group
+            .fitting-strategy-group, .offcut-settings-group, 
+            .rotate-override-btn, 
+            .delete-btn,
+            .bulk-add-group, 
+            #copyAllPiecesBtn,
+            #toggleBulkAddBtn 
              {
                 display: none !important;
             }
+            .parts-group .header-with-toggle { display: none !important; } /* Hide toggle button and its container */
             .container {
                 margin-top: 0 !important; box-shadow: none !important; border: none !important;
                 width: 100% !important; max-width: 100% !important; padding: 0 !important;
@@ -343,10 +466,10 @@
             }
             th { background-color: #f0f0f0 !important; }
             .table-summary-row { background-color: #f8f8f8 !important; }
-            #addedPiecesSection .delete-btn, #addedPiecesSection .rotate-override-btn {display: none !important;}
-            #addedPiecesSection th:nth-child(5), #addedPiecesSection td:nth-child(5) { display: none !important;}
-            #addedPiecesSection th:nth-child(6), #addedPiecesSection td:nth-child(6) { display: table-cell !important;}
-            #addedPiecesSection th:nth-child(7), #addedPiecesSection td:nth-child(7) { display: table-cell !important;}
+            
+            #addedPiecesSection th:nth-child(5), #addedPiecesSection td:nth-child(5) { display: table-cell !important;}
+            #addedPiecesSection th:nth-child(6), #addedPiecesSection td:nth-child(6) { display: none !important;}
+            #addedPiecesSection th:nth-child(7), #addedPiecesSection td:nth-child(7) { display: none !important;}
 
 
             .sheets-container { display: block !important; margin-top: 10px !important; gap: 0 !important; }
@@ -412,48 +535,55 @@
             <button id="showOffcutsLibraryIcon" title="ऑफकट लाइब्रेरी / Offcut Library" onclick="showOffcutsLibraryModal()">🧩</button>
             <button id="unitSettingsIcon" title="यूनिट बदलें / Change Unit" onclick="showUnitSettingsModal()">📏</button>
             <button id="langToggle" title="भाषा बदलें / Change Language" onclick="toggleLanguage()">🌐</button>
-            <div class="dropdown-container no-print" style="position: relative;">
-                <button id="sharePdfExcelButton" title="शेयर करें / Share" onclick="toggleSharePdfExcelMenu(event)">
+            <div class="dropdown-container no-print">
+                <button id="sharePdfExcelButton" title="शेयर करें / Share" onclick="toggleDropdownMenu(event, 'sharePdfExcelMenu')">
                     📤 <small data-lang-key="shareBtn">शेयर</small>
                 </button>
                 <div id="sharePdfExcelMenu" class="dropdown-menu">
-                    <a href="#" onclick="prepareAndPrint(); closeSharePdfExcelMenu();" data-lang-key="printPdfBtnMenu">PDF के रूप में प्रिंट करें</a>
+                    <a href="#" onclick="prepareAndPrint(); closeAllDropdowns();" data-lang-key="printPdfBtnMenu">PDF के रूप में प्रिंट करें</a>
                 </div>
             </div>
             <button id="sheetSettingsIcon" title="शीट सेटिंग्स" onclick="showSheetSettingsModal()">⚙️</button>
             <button id="historyIcon" title="हिस्ट्री" onclick="showHistoryModal()">📜</button>
-            <button id="jsonIcon" title="JSON ऑपरेशन्स" onclick="toggleJsonMenu(event)">💾</button>
+            <div class="dropdown-container no-print">
+                <button id="jsonIcon" title="JSON ऑपरेशन्स" onclick="toggleDropdownMenu(event, 'jsonMenu')">💾</button>
+                <div id="jsonMenu" class="dropdown-menu">
+                    <a href="#" onclick="exportDataAsJson(); closeAllDropdowns();" data-lang-key="exportJson">JSON एक्सपोर्ट करें</a>
+                    <label for="importJsonInputHidden" class="dropdown-menu-item" data-lang-key="importJson">JSON इम्पोर्ट करें</label>
+                    <input type="file" id="importJsonInputHidden" accept=".json" style="display: none;" onchange="importDataFromJson(event); closeAllDropdowns();">
+                    <a href="#" onclick="exportPiecesToCsv(); closeAllDropdowns();" data-lang-key="exportPiecesCsv">पीस लिस्ट CSV एक्सपोर्ट</a>
+                    <a href="#" onclick="exportLayoutToCsv(); closeAllDropdowns();" data-lang-key="exportLayoutCsv">लेआउट CSV एक्सपोर्ट</a>
+                    <a href="#" onclick="clearSavedData(); closeAllDropdowns();" data-lang-key="clearSavedData">सेव डेटा क्लियर करें</a>
+                </div>
+            </div>
         </div>
     </header>
-    <div id="jsonMenu" class="dropdown-menu">
-        <a href="#" onclick="exportDataAsJson(); closeJsonMenu();" data-lang-key="exportJson">JSON एक्सपोर्ट करें</a>
-        <label for="importJsonInputHidden" class="dropdown-menu-item" data-lang-key="importJson">JSON इम्पोर्ट करें</label>
-        <input type="file" id="importJsonInputHidden" accept=".json" style="display: none;" onchange="importDataFromJson(event); closeJsonMenu();">
-        <a href="#" onclick="exportPiecesToCsv(); closeJsonMenu();" data-lang-key="exportPiecesCsv">पीस लिस्ट CSV एक्सपोर्ट</a>
-        <a href="#" onclick="exportLayoutToCsv(); closeJsonMenu();" data-lang-key="exportLayoutCsv">लेआउट CSV एक्सपोर्ट</a>
-        <a href="#" onclick="clearSavedData(); closeJsonMenu();" data-lang-key="clearSavedData">सेव डेटा क्लियर करें</a>
-    </div>
 
     <div class="container">
         <div class="parts-group">
-            <h2 data-lang-key="addPieceTitle">पीस जोड़ें</h2>
-
-            <label for="partName" data-lang-key="pieceNameLabel" style="margin-bottom: 3px;">पीस का नाम (वैकल्पिक):</label>
-            <input type="text" id="partName" data-lang-placeholder="pieceDefaultName" style="margin-bottom: 10px;">
-
-            <input type="number" id="partWidth" step="any"
-                   data-lang-placeholder-key="pieceWidthLabel"
-                   placeholder="पीस की चौड़ाई (cm)" style="margin-bottom: 10px;">
-
-            <input type="number" id="partLength" step="any"
-                   data-lang-placeholder-key="pieceLengthLabel"
-                   placeholder="पीस की लंबाई (ग्रेन) (cm)" style="margin-bottom: 10px;">
-
-            <label for="partQuantity" data-lang-key="pieceQuantityLabel" style="margin-bottom: 3px;">कितने पीस:</label>
-            <input type="number" id="partQuantity" min="1" placeholder="1" style="margin-bottom: 15px;">
-
+             <div class="header-with-toggle">
+                <h2 data-lang-key="addPieceTitle" style="text-align: left;">पीस जोड़ें</h2>
+                <button id="toggleBulkAddBtn" onclick="toggleBulkAddSection()" data-lang-key="toggleBulkAddBtn">एक साथ जोड़ें ➕</button>
+            </div>
+            <div>
+                <input type="text" id="partName" data-lang-placeholder-key="pieceNameLabel" style="margin-bottom: 10px; width: 100%;">
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 1 1 100px; min-width: 80px;">
+                    <input type="number" id="partWidth" step="any"
+                           data-lang-placeholder-key="pieceWidthLabel"
+                           style="margin-bottom: 0; width: 100%;">
+                </div>
+                <div style="flex: 1 1 100px; min-width: 80px;">
+                    <input type="number" id="partLength" step="any"
+                           data-lang-placeholder-key="pieceLengthLabel"
+                           style="margin-bottom: 0; width: 100%;">
+                </div>
+                 <div style="flex: 1 1 80px; min-width: 60px;">
+                    <input type="number" id="partQuantity" min="1" data-lang-placeholder-key="pieceQuantityLabel" style="margin-bottom: 0; width: 100%;">
+                </div>
+            </div>
             <div class="edge-banding-controls">
-                <label data-lang-key="edgeTapeLabel" style="margin-bottom: 5px;">एज टेप (किनारों पर):</label>
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; gap: 5px; margin-bottom: 5px;">
                     <button id="btnEdgeL1" class="edge-tape-btn" onclick="toggleEdgeTape('L1', this)" data-edge="L1" data-lang-key="edgeTapeL1Btn">L1</button>
                     <button id="btnEdgeL2" class="edge-tape-btn" onclick="toggleEdgeTape('L2', this)" data-edge="L2" data-lang-key="edgeTapeL2Btn">L2</button>
@@ -465,22 +595,29 @@
                     <span data-lang-key="selectedEdgesPrefix">चयनित:</span> <span id="currentSelectedEdgesText" data-lang-key="noneLabel">कोई नहीं</span>
                 </div>
             </div>
-
             <button onclick="addPiece()" data-lang-key="addPieceBtn" style="margin-top:20px; width:100%;">पीस जोड़ें</button>
         </div>
 
+        <div class="bulk-add-group" id="bulkAddSection" style="display:none;">
+            <h2 data-lang-key="bulkAddTitle">एक साथ कई पीस जोड़ें</h2>
+            <label for="bulkPieceInput" data-lang-key="bulkAddLabel">पीस डेटा (चौड़ाई,लंबाई,मात्रा,नाम,एजटेप - प्रति पंक्ति एक पीस):</label>
+            <textarea id="bulkPieceInput" rows="5" data-lang-placeholder-key="bulkAddPlaceholder"></textarea>
+            <small data-lang-key="bulkAddFormatNote" style="display:block; margin-bottom:10px; font-size:0.85em;">उदाहरण: 60,222.5,1,पीस-2,L1W1 (एजटेप वैकल्पिक: L1,L2,W1,W2 का कोई भी संयोजन)</small>
+            <button id="addBulkPiecesBtn" onclick="addBulkPieces()" data-lang-key="addBulkPiecesBtn" style="width:100%;">एक साथ पीस जोड़ें</button>
+        </div>
+
         <div class="input-group" id="addedPiecesSection">
-            <h2 data-lang-key="addedPiecesTitle">जोड़े गए पीस</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2 data-lang-key="addedPiecesTitle" style="margin-bottom: 0; text-align: left;">जोड़े गए पीस</h2>
+                <button id="copyAllPiecesBtn" onclick="copyAllPiecesToClipboard()" data-lang-key="copyAllPiecesBtn">सभी पीस कॉपी करें</button>
+            </div>
             <div class="project-details-inputs printable-section">
                 <label for="projectLocation" data-lang-key="projectLocationLabel">प्रोजेक्ट लोकेशन/क्लाइंट:</label>
                 <input type="text" id="projectLocation" data-lang-placeholder="projectLocationPlaceholder">
-
                 <label for="projectNotes" data-lang-key="projectNotesLabel">प्रोजेक्ट नोट्स:</label>
                 <textarea id="projectNotes" rows="3" data-lang-placeholder="projectNotesPlaceholder"></textarea>
             </div>
             <hr class="printable-section" style="margin-bottom: 20px;">
-
-
             <table id="piecesTable">
                 <thead>
                     <tr>
@@ -488,7 +625,7 @@
                         <th><span data-lang-key="tableWidth">चौड़ाई</span> (<span class="unit-display">cm</span>)</th>
                         <th><span data-lang-key="tableLength">लंबाई</span> (<span class="unit-display">cm</span>)</th>
                         <th data-lang-key="tableQuantity">संख्या</th>
-                        <th data-lang-key="tableEdges" class="no-print">एज टेप</th>
+                        <th data-lang-key="tableEdges">एज टेप</th>
                         <th data-lang-key="tableAllowRotationOnGrained" class="no-print">ग्रेन पर घुमाएँ?</th>
                         <th class="no-print" data-lang-key="tableRemove">हटाएं</th>
                     </tr>
@@ -498,7 +635,7 @@
                     <tr id="piecesTableSummaryRow" class="table-summary-row" style="display: none;">
                         <td colspan="3" data-lang-key="totalPiecesInList">कुल पीस लिस्ट में:</td>
                         <td id="totalPiecesInListCount">0</td>
-                        <td class="no-print"></td>
+                        <td></td>
                         <td class="no-print"></td>
                         <td class="no-print"></td>
                     </tr>
@@ -511,30 +648,34 @@
         </div>
 
         <div class="fitting-strategy-group">
-            <label for="fittingStrategySelector" data-lang-key="fittingStrategyLabel">फिटिंग रणनीति चुनें:</label>
-            <select id="fittingStrategySelector">
-                <option value="defaultScore" data-lang-key="strategyDefaultScore">डिफ़ॉल्ट स्कोर आधारित (बड़े पीस पहले)</option>
-                <option value="minWastageArea" data-lang-key="strategyMinWastage">न्यूनतम व्यर्थ क्षेत्र</option>
-                <option value="firstFit" data-lang-key="strategyFirstFit">फर्स्ट फिट (सबसे तेज़)</option>
-                <option value="worstFit" data-lang-key="strategyWorstFit">वर्स्ट फिट (अधिक व्यर्थ क्षेत्र)</option>
-                <option value="bottomLeftFreeRect" data-lang-key="strategyBottomLeftFree">खाली आयत (बॉटम-लेफ्ट प्राथमिकता)</option>
-                <option value="sortPiecesByPerimeterDesc" data-lang-key="strategySortPiecePerimeterDesc">पीस: परिधि (बड़े पहले)</option>
-                <option value="sortPiecesByLongestSideDesc" data-lang-key="strategySortPieceLongestSideDesc">पीस: सबसे लंबी भुजा पहले</option>
-                <option value="sortPiecesByShortestSideAsc" data-lang-key="strategySortPieceShortestSideAsc">पीस: सबसे छोटी भुजा पहले</option>
-                <option value="sortPiecesByWidthDesc" data-lang-key="strategySortPieceWidthDesc">पीस: चौड़ाई (बड़े पहले)</option>
-                <option value="sortPiecesByHeightDesc" data-lang-key="strategySortPieceHeightDesc">पीस: ऊंचाई/लंबाई (बड़े पहले)</option>
-                <option value="sortPiecesByAreaAsc" data-lang-key="strategySortPieceAreaAsc">पीस: क्षेत्रफल (छोटे पहले)</option>
-            </select>
-             <div style="margin-top: 10px;">
-                <input type="checkbox" id="useOffcutsCheckbox" style="margin-right: 5px;">
-                <label for="useOffcutsCheckbox" data-lang-key="useSavedOffcutsLabel" style="display:inline-block; font-weight:normal;">सहेजे गए ऑफकट्स का उपयोग करें</label>
+            <div class="controls-row">
+                <div class="checkbox-area">
+                    <input type="checkbox" id="useOffcutsCheckbox">
+                    <label for="useOffcutsCheckbox" data-lang-key="useSavedOffcutsLabel">सहेजे गए ऑफकट्स का उपयोग करें</label>
+                </div>
+                <div class="strategy-select-area">
+                    <label for="fittingStrategySelector" data-lang-key="fittingStrategyLabel">फिटिंग रणनीति चुनें:</label>
+                    <select id="fittingStrategySelector">
+                        <option value="defaultScore" data-lang-key="strategyDefaultScore">डिफ़ॉल्ट स्कोर आधारित (बड़े पीस पहले)</option>
+                        <option value="minWastageArea" data-lang-key="strategyMinWastage">न्यूनतम व्यर्थ क्षेत्र</option>
+                        <option value="firstFit" data-lang-key="strategyFirstFit">फर्स्ट फिट (सबसे तेज़)</option>
+                        <option value="worstFit" data-lang-key="strategyWorstFit">वर्स्ट फिट (अधिक व्यर्थ क्षेत्र)</option>
+                        <option value="bottomLeftFreeRect" data-lang-key="strategyBottomLeftFree">खाली आयत (बॉटम-लेफ्ट प्राथमिकता)</option>
+                        <option value="bfdh" data-lang-key="strategyBFDH">बेस्ट फिट डिक्रीजिंग हाइट (BFDH)</option>
+                        <option value="bfdw" data-lang-key="strategyBFDW">बेस्ट फिट डिक्रीजिंग विड्थ (BFDW)</option>
+                        <option value="sortPiecesByPerimeterDesc" data-lang-key="strategySortPiecePerimeterDesc">पीस: परिधि (बड़े पहले)</option>
+                        <option value="sortPiecesByLongestSideDesc" data-lang-key="strategySortPieceLongestSideDesc">पीस: सबसे लंबी भुजा पहले</option>
+                        <option value="sortPiecesByShortestSideAsc" data-lang-key="strategySortPieceShortestSideAsc">पीस: सबसे छोटी भुजा पहले</option>
+                        <option value="sortPiecesByWidthDesc" data-lang-key="strategySortPieceWidthDesc">पीस: चौड़ाई (बड़े पहले)</option>
+                        <option value="sortPiecesByHeightDesc" data-lang-key="strategySortPieceHeightDesc">पीस: ऊंचाई/लंबाई (बड़े पहले)</option>
+                        <option value="sortPiecesByAreaAsc" data-lang-key="strategySortPieceAreaAsc">पीस: क्षेत्रफल (छोटे पहले)</option>
+                    </select>
+                </div>
             </div>
-            <button onclick="calculateWithSelectedStrategy()" data-lang-key="calculateWithStrategyBtn" style="margin-top:10px;">चयनित रणनीति से गणना करें</button>
-        </div>
-
-        <div class="actions-div" id="mainActionButtons">
-            <button onclick="calculateAndDrawLayout()" data-lang-key="calculateLayoutBtn">लेआउट की गणना करें (डिफ़ॉल्ट)</button>
-            <button id="resetButton" onclick="resetAll()" data-lang-key="resetCurrentBtn">रीसेट (वर्तमान)</button>
+             <div class="actions-div" id="mainActionButtons">
+                <button id="resetButton" onclick="resetAll()" data-lang-key="resetCurrentBtn">रीसेट (वर्तमान)</button>
+                <button onclick="calculateAndDrawLayout()" data-lang-key="calculateLayoutBtnUnified">लेआउट की गणना करें</button>
+            </div>
         </div>
 
         <div class="results-group">
@@ -578,16 +719,24 @@
             <span class="close-button" onclick="closeSheetSettingsModal()">&times;</span>
             <h2 data-lang-key="sheetSettingsTitle">शीट सेटिंग्स</h2>
             <label for="modalSheetName" data-lang-key="sheetNameLabel">शीट का नाम (वैकल्पिक):</label>
-            <input type="text" id="modalSheetName" data-lang-placeholder="sheetNamePlaceholder" style="margin-bottom: 15px;">
+            <input type="text" id="modalSheetName" data-lang-placeholder="sheetNamePlaceholder" style="margin-bottom: 10px;">
             <label for="modalSheetWidth"><span data-lang-key="sheetWidthLabel">शीट की चौड़ाई</span> (<span class="unit-display">cm</span>):</label>
-            <input type="number" id="modalSheetWidth" value="122" step="any">
+            <input type="number" id="modalSheetWidth" value="122" step="any" style="margin-bottom: 10px;">
             <label for="modalSheetLength"><span data-lang-key="sheetLengthGrainLabel">शीट की लंबाई (ग्रेन)</span> (<span class="unit-display">cm</span>):</label>
-            <input type="number" id="modalSheetLength" value="244" step="any">
-            <div>
+            <input type="number" id="modalSheetLength" value="244" step="any" style="margin-bottom: 10px;">
+            <div style="margin-bottom: 10px;">
+                <label for="modalSheetCost" data-lang-key="sheetCostLabel">प्रति शीट लागत:</label>
+                <input type="number" id="modalSheetCost" step="any" data-lang-placeholder="sheetCostPlaceholder">
+            </div>
+            <div style="margin-bottom: 10px;">
+                <label for="modalKerfWidth" data-lang-key="kerfWidthLabel">केरफ़/ब्लेड की मोटाई (<span class="unit-display">cm</span>):</label>
+                <input type="number" id="modalKerfWidth" step="any" value="0.3" data-lang-placeholder="kerfWidthPlaceholder">
+            </div>
+            <div style="margin-bottom: 15px;">
                 <input type="checkbox" id="modalHasGrainDirection" checked>
                 <label for="modalHasGrainDirection" style="display: inline-block; margin-bottom: 0; font-weight:normal;" data-lang-key="respectGrainLabel">ग्रेन की दिशा का ध्यान रखें</label>
             </div>
-            <div style="margin-top:15px;">
+            <div style="margin-top:10px;">
                 <label for="modalGrainColor" data-lang-key="grainColorLabel">ग्रेन का रंग:</label>
                 <select id="modalGrainColor">
                     <option value="rgba(0,0,0,0.08)" data-lang-key="grainGray">हल्का ग्रे</option>
@@ -597,7 +746,7 @@
                     <option value="none" data-lang-key="grainNone">कोई ग्रेन नहीं</option>
                 </select>
             </div>
-            <div style="margin-top:15px;">
+            <div style="margin-top:10px;">
                 <label for="modalGrainPattern" data-lang-key="grainPatternLabel">ग्रेन पैटर्न:</label>
                 <select id="modalGrainPattern">
                     <option value="fine" data-lang-key="grainFine">महीन</option>
@@ -605,14 +754,14 @@
                     <option value="coarse" data-lang-key="grainCoarse">बड़ा/मोटा</option>
                 </select>
             </div>
-            <div class="offcut-settings-group" style="margin-top:15px; padding: 10px 0 0 0; border:none; background:none;">
+            <div class="offcut-settings-group" style="margin-top:10px; padding: 10px 0 0 0; border:none; background:none;">
                 <h4 data-lang-key="offcutSettingsTitle" style="margin-bottom:5px; font-size:1em;">ऑफकट सेटिंग्स</h4>
                 <label for="minOffcutWidth" data-lang-key="minOffcutWidthLabel">न्यूनतम ऑफकट चौड़ाई (<span class="unit-display">cm</span>):</label>
                 <input type="number" id="minOffcutWidth" value="10" step="any">
                 <label for="minOffcutLength" data-lang-key="minOffcutLengthLabel">न्यूनतम ऑफकट लंबाई (<span class="unit-display">cm</span>):</label>
                 <input type="number" id="minOffcutLength" value="45" step="any">
             </div>
-            <button onclick="applySheetSettings()" style="margin-top: 15px; width:100%;" data-lang-key="applyAndSaveBtn">लागू करें और सेव करें</button>
+            <button onclick="applySheetSettings()" style="margin-top: 10px; width:100%;" data-lang-key="applyAndSaveBtn">लागू करें और सेव करें</button>
         </div>
     </div>
 
@@ -679,14 +828,35 @@
             let freeRectIdCounter_worker = 0;
             function isRectInside(rectA, rectB) { return rectA.x >= rectB.x && rectA.y >= rectB.y && rectA.x + rectA.width <= rectB.x + rectB.width && rectA.y + rectA.height <= rectB.y + rectB.height; }
             function optimizeFreeRects(freeRects) { if (!freeRects || freeRects.length < 2) return; let i = 0; while (i < freeRects.length) { if (!freeRects[i]) { i++; continue; } let j = i + 1; while (j < freeRects.length) { if (!freeRects[j]) { j++; continue; } if (isRectInside(freeRects[i], freeRects[j])) { freeRects.splice(i, 1); i--; break; } else if (isRectInside(freeRects[j], freeRects[i])) { freeRects.splice(j, 1); j--; } j++; } i++; } }
+            
             function splitFreeRect(sheet, rectIndexBeingUsed, pk, kerfWidth) {
                 const R = sheet.freeRects.splice(rectIndexBeingUsed, 1)[0];
                 let newFragments = [];
-                if (pk.y - R.y > 0.01) { newFragments.push({ x: R.x, y: R.y, width: R.width, height: pk.y - R.y, id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-T\`}); }
-                if ((R.y + R.height) - (pk.y + pk.placedLength) > 0.01) { newFragments.push({ x: R.x, y: pk.y + pk.placedLength, width: R.width, height: (R.y + R.height) - (pk.y + pk.placedLength), id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-B\`}); }
-                if (pk.x - R.x > 0.01) { newFragments.push({ x: R.x, y: pk.y, width: pk.x - R.x, height: pk.placedLength, id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-L\`}); }
-                if ((R.x + R.width) - (pk.x + pk.placedWidth) > 0.01) { newFragments.push({ x: pk.x + pk.placedWidth, y: pk.y, width: (R.x + R.width) - (pk.x + pk.placedWidth), height: pk.placedLength, id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-R\`}); }
+                const halfKerf = kerfWidth > 0 ? kerfWidth / 2 : 0;
 
+                // Top fragment
+                if (pk.y > R.y) {
+                    const h = pk.y - R.y - (pk.y > R.y ? halfKerf : 0);
+                    if (h > 0.01) newFragments.push({ x: R.x, y: R.y, width: R.width, height: h, id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-T\` });
+                }
+                // Bottom fragment
+                const bottomY = pk.y + pk.placedLength + ((pk.y + pk.placedLength < R.y + R.height) ? halfKerf : 0);
+                if (bottomY < R.y + R.height) {
+                    const h = (R.y + R.height) - bottomY;
+                    if (h > 0.01) newFragments.push({ x: R.x, y: bottomY, width: R.width, height: h, id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-B\` });
+                }
+                // Left fragment
+                if (pk.x > R.x) {
+                    const w = pk.x - R.x - (pk.x > R.x ? halfKerf : 0);
+                    if (w > 0.01) newFragments.push({ x: R.x, y: pk.y, width: w, height: pk.placedLength, id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-L\` });
+                }
+                // Right fragment
+                const rightX = pk.x + pk.placedWidth + ((pk.x + pk.placedWidth < R.x + R.width) ? halfKerf : 0);
+                if (rightX < R.x + R.width) {
+                    const w = (R.x + R.width) - rightX;
+                    if (w > 0.01) newFragments.push({ x: rightX, y: pk.y, width: w, height: pk.placedLength, id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-R\` });
+                }
+                
                 for (let frag of newFragments) {
                     if (frag.width > 0.01 && frag.height > 0.01) {
                         sheet.freeRects.push(frag);
@@ -760,6 +930,27 @@
                     freeRectIdCounter_worker = 0;
                     const { pieces: workerIndividualPieces, stockItems, kerfWidth, strategy } = data;
                     workerIndividualPieces.forEach(p => p.isPlaced = false);
+
+                    // Sort pieces based on strategy for initial piece ordering
+                    if (strategy === 'defaultScore' || strategy === 'minWastageArea' || strategy === 'firstFit' || strategy === 'worstFit' || strategy === 'bottomLeftFreeRect') {
+                        workerIndividualPieces.sort((a, b) => b.area - a.area); // Default: largest area first
+                    } else if (strategy === 'bfdh' || strategy === 'sortPiecesByHeightDesc') {
+                        workerIndividualPieces.sort((a, b) => b.length - a.length || b.area - a.area); // Decreasing height/length
+                    } else if (strategy === 'bfdw' || strategy === 'sortPiecesByWidthDesc') {
+                        workerIndividualPieces.sort((a, b) => b.width - a.width || b.area - a.area); // Decreasing width
+                    } else if (strategy === 'sortPiecesByAreaAsc') {
+                        workerIndividualPieces.sort((a, b) => a.area - b.area);
+                    } else if (strategy === 'sortPiecesByPerimeterDesc') {
+                        // Perimeter sort already in place, but using explicit (L+W)*2 for clarity
+                        workerIndividualPieces.sort((a, b) => ((b.width + b.length) * 2 - (a.width + a.length) * 2) || b.area - a.area);
+                    } else if (strategy === 'sortPiecesByLongestSideDesc') {
+                        workerIndividualPieces.sort((a, b) => (Math.max(b.width, b.length) - Math.max(a.width, a.length)) || b.area - a.area);
+                    } else if (strategy === 'sortPiecesByShortestSideAsc') {
+                        workerIndividualPieces.sort((a, b) => (Math.min(a.width, a.length) - Math.min(b.width, b.length)) || a.area - b.area);
+                    } else {
+                        workerIndividualPieces.sort((a, b) => b.area - a.area); // Fallback to largest area first
+                    }
+
 
                     let sheetsLayoutData = [];
                     let currentSheetIdGlobal = 0;
@@ -846,7 +1037,8 @@
         let pieceIdCounter = 0;
         const BASE_CANVAS_SCALE = 3.0;
 
-        let modalSheetLengthEl, modalSheetWidthEl, modalSheetHasGrainEl, modalSheetNameEl, sheetSettingsModalEl,
+        let modalSheetLengthEl, modalSheetWidthEl, modalSheetHasGrainEl, modalSheetNameEl, modalSheetCostEl, modalKerfWidthEl,
+            sheetSettingsModalEl,
             partNameEl, partLengthEl, partWidthEl, partQuantityEl, piecesTableBodyEl,
             resultsSummaryEl, sheetsContainerEl, historyModalEl, historyListEl, jsonMenuEl, sharePdfExcelMenuEl,
             unitSettingsModalEl, currentUnitSelectorEl, unitDisplayElements = [], wastageSectionEl,
@@ -860,7 +1052,9 @@
             wastageOverallStatsEl, usefulOffcutsDisplayListContainerEl, otherSmallWastageContainerEl,
             usefulOffcutsListTotalSummaryEl,
             manualOffcutWidthEl, manualOffcutLengthEl, manualOffcutSourceNameEl,
-            totalEdgeBandingReportEl, totalEdgeBandingLengthDisplayEl;
+            totalEdgeBandingReportEl, totalEdgeBandingLengthDisplayEl,
+            copyAllPiecesBtnEl, bulkPieceInputEl, addBulkPiecesBtnEl,
+            toggleBulkAddBtnEl, bulkAddSectionEl; 
 
 
         const STORAGE_KEY_PIECES = 'sheetLayoutCalcPieces_v24_finalShare';
@@ -878,6 +1072,7 @@
         const STORAGE_KEY_OFFCUT_SETTINGS = 'sheetLayoutCalculatorOffcutSettings_v4_finalShare';
         const STORAGE_KEY_PROJECT_LOCATION = 'sheetLayoutProjectLocation_v1';
         const STORAGE_KEY_PROJECT_NOTES = 'sheetLayoutProjectNotes_v1';
+        const STORAGE_KEY_BULK_ADD_VISIBLE = 'sheetLayoutCalcBulkAddVisible_v1';
 
 
         const MAX_HISTORY_STATES = 20;
@@ -901,6 +1096,7 @@
         let isLoadedFromHistory = false;
         let layoutWorker = null;
         let pieceColors = {};
+        let openDropdownMenuId = null; 
 
 
         const conversionFactorsToCm = { 'cm': 1, 'mm': 0.1, 'm': 100, 'in': 2.54, 'ft': 30.48 };
@@ -920,13 +1116,14 @@
                 "strategyFirstFit": "फर्स्ट फिट (सबसे तेज़)",
                 "strategyWorstFit": "वर्स्ट फिट (अधिक व्यर्थ क्षेत्र)",
                 "strategyBottomLeftFree": "खाली आयत (बॉटम-लेफ्ट प्राथमिकता)",
+                "strategyBFDH": "बेस्ट फिट डिक्रीजिंग हाइट (BFDH)",
+                "strategyBFDW": "बेस्ट फिट डिक्रीजिंग विड्थ (BFDW)",
                 "strategySortPiecePerimeterDesc": "पीस: परिधि (बड़े पहले)",
                 "strategySortPieceLongestSideDesc": "पीस: सबसे लंबी भुजा पहले",
                 "strategySortPieceShortestSideAsc": "पीस: सबसे छोटी भुजा पहले",
                 "strategySortPieceWidthDesc": "पीस: चौड़ाई (बड़े पहले)",
                 "strategySortPieceHeightDesc": "पीस: ऊंचाई/लंबाई (बड़े पहले)",
                 "strategySortPieceAreaAsc": "पीस: क्षेत्रफल (छोटे पहले)",
-                "calculateWithStrategyBtn": "चयनित रणनीति से गणना करें",
                 "useSavedOffcutsLabel": "सहेजे गए ऑफकट्स का उपयोग करें",
                 "offcutSettingsTitle": "ऑफकट सेटिंग्स",
                 "minOffcutWidthLabel": "न्यूनतम ऑफकट चौड़ाई",
@@ -961,19 +1158,28 @@
                 "exportJson": "JSON एक्सपोर्ट करें", "importJson": "JSON इम्पोर्ट करें",
                 "exportPiecesCsv": "पीस लिस्ट CSV", "exportLayoutCsv": "लेआउट CSV",
                 "clearSavedData": "सेव डेटा क्लियर करें",
-                "addPieceTitle": "पीस जोड़ें", "pieceNameLabel": "पीस का नाम (वैकल्पिक):",
+                "addPieceTitle": "पीस जोड़ें", "pieceNameLabel": "पीस का नाम",
                 "pieceDefaultName": "पीस-",
-                "pieceWidthLabel": "पीस की चौड़ाई", "pieceLengthLabel": "पीस की लंबाई (ग्रेन)",
-                "pieceQuantityLabel": "कितने पीस:", "addPieceBtn": "पीस जोड़ें",
+                "pieceWidthLabel": "चौड़ाई", 
+                "pieceLengthLabel": "लंबाई (ग्रेन)",
+                "pieceQuantityLabel": "कितने पीस",
+                "addPieceBtn": "पीस जोड़ें",
                 "addedPiecesTitle": "जोड़े गए पीस", "tableName": "नाम", "tableWidth": "चौड़ाई",
                 "tableLength": "लंबाई", "tableQuantity": "संख्या", "tableRemove": "हटाएं",
                 "totalPiecesInList": "कुल पीस लिस्ट में:",
-                "calculateLayoutBtn": "लेआउट की गणना करें (डिफ़ॉल्ट)", "resetCurrentBtn": "रीसेट (वर्तमान)",
+                "calculateLayoutBtnUnified": "लेआउट की गणना करें",
+                "resetCurrentBtn": "रीसेट (वर्तमान)",
                 "resultsTitle": "परिणाम", "totalSheetsDefault": "कुल आवश्यक शीट्स: 0",
                 "sheetSettingsTitle": "शीट सेटिंग्स",
                 "sheetNameLabel": "शीट का नाम (वैकल्पिक):",
                 "sheetNamePlaceholder": "उदा: प्लायवुड 8x4",
                 "sheetWidthLabel": "शीट की चौड़ाई",
+                "sheetCostLabel": "प्रति शीट लागत:",
+                "sheetCostPlaceholder": "उदा: 500 या 500.50",
+                "kerfWidthLabel": "केरफ़/ब्लेड की मोटाई:",
+                "kerfWidthPlaceholder": "उदा: 0.3",
+                "totalCostResult": "कुल लागत: {cost}",
+                "totalSheetsAndCostResult": "कुल आवश्यक शीट्स: {count}, {totalCostString}",
                 "sheetLengthGrainLabel": "शीट की लंबाई (ग्रेन)", "respectGrainLabel": "ग्रेन की दिशा का ध्यान रखें",
                 "applyAndSaveBtn": "लागू करें और सेव करें", "historyTitle": "हिस्ट्री",
                 "historyNote": "नोट: यह केवल पिछले कुछ बदलावों को दिखाता है। किसी आइटम पर क्लिक करके उसे लोड करें।",
@@ -1041,7 +1247,22 @@
                 "selectedEdgesPrefix": "चयनित:", "noneLabel": "कोई नहीं",
                 "tableEdges": "एज टेप",
                 "totalEdgeBandingTitle": "कुल एज टेप आवश्यक:",
-                "totalEdgeBandingResult": "कुल {length} {unit}"
+                "totalEdgeBandingResult": "कुल {length} {unit}",
+                "copyAllPiecesBtn": "सभी पीस कॉपी करें",
+                "alert_noPiecesToCopy": "कॉपी करने के लिए कोई पीस नहीं हैं।",
+                "alert_piecesCopiedToClipboard": "पीस क्लिपबोर्ड पर कॉपी किए गए!",
+                "alert_clipboardError": "क्लिपबोर्ड पर कॉपी करने में त्रुटि हुई।",
+                "bulkAddTitle": "एक साथ कई पीस जोड़ें",
+                "bulkAddLabel": "पीस डेटा (चौड़ाई,लंबाई,मात्रा,नाम,एजटेप - प्रति पंक्ति एक पीस):",
+                "bulkAddPlaceholder": "60,222.5,1,पीस-A,L1W1\n60,121,2,पीस-B\n...",
+                "bulkAddFormatNote": "उदाहरण: 60,222.5,1,पीस-2,L1W1 (एजटेप वैकल्पिक, प्रत्येक पीस नई लाइन पर)",
+                "addBulkPiecesBtn": "एक साथ पीस जोड़ें",
+                "alert_bulkInputEmpty": "कृपया एक साथ जोड़ने के लिए पीस डेटा दर्ज करें।",
+                "alert_bulkPiecesAdded": "{count} पीस सफलतापूर्वक जोड़े गए।",
+                "alert_bulkInputLineError": "लाइन {lineNumber} पर त्रुटि: {error}",
+                "alert_bulkInputFinishedWithErrors": "पीस जोड़ने की प्रक्रिया कुछ त्रुटियों के साथ समाप्त हुई। कृपया कंसोल देखें।",
+                "toggleBulkAddBtn": "एक साथ जोड़ें ➕",
+                "toggleBulkAddBtnHide": "फॉर्म छिपाएं ➖"
             },
             "en": {
                 "appTitle": "Visual Sheet Layout Calculator", "headerTitle": "Sheet Layout",
@@ -1058,13 +1279,14 @@
                 "strategyFirstFit": "First Fit (Fastest)",
                 "strategyWorstFit": "Worst Fit (More Wastage)",
                 "strategyBottomLeftFree": "Free Rect (Bottom-Left Priority)",
+                "strategyBFDH": "Best Fit Decreasing Height (BFDH)",
+                "strategyBFDW": "Best Fit Decreasing Width (BFDW)",
                 "strategySortPiecePerimeterDesc": "Piece: Perimeter (Largest First)",
                 "strategySortPieceLongestSideDesc": "Piece: Longest Side First",
                 "strategySortPieceShortestSideAsc": "Piece: Shortest Side First",
                 "strategySortPieceWidthDesc": "Piece: Width (Largest First)",
                 "strategySortPieceHeightDesc": "Piece: Height/Length (Largest First)",
                 "strategySortPieceAreaAsc": "Piece: Area (Smallest First)",
-                "calculateWithStrategyBtn": "Calculate with Selected Strategy",
                 "useSavedOffcutsLabel": "Use saved offcuts",
                 "offcutSettingsTitle": "Offcut Settings",
                 "minOffcutWidthLabel": "Min. Offcut Width",
@@ -1099,17 +1321,27 @@
                 "exportJson": "Export JSON", "importJson": "Import JSON",
                 "exportPiecesCsv": "Pieces List CSV", "exportLayoutCsv": "Layout CSV",
                 "clearSavedData": "Clear Saved Data",
-                "addPieceTitle": "Add Piece", "pieceNameLabel": "Piece Name (Optional):", "pieceDefaultName": "Piece-",
-                "pieceWidthLabel": "Piece Width", "pieceLengthLabel": "Piece Length (Grain)",
-                "pieceQuantityLabel": "Quantity:", "addPieceBtn": "Add Piece", "addedPiecesTitle": "Added Pieces",
+                "addPieceTitle": "Add Piece", "pieceNameLabel": "Piece Name",
+                "pieceDefaultName": "Piece-",
+                "pieceWidthLabel": "Width",
+                "pieceLengthLabel": "Length (Grain)",
+                "pieceQuantityLabel": "Quantity",
+                "addPieceBtn": "Add Piece", "addedPiecesTitle": "Added Pieces",
                 "tableName": "Name", "tableWidth": "Width", "tableLength": "Length", "tableQuantity": "Qty",
                 "tableRemove": "Remove", "totalPiecesInList": "Total Pieces in List:",
-                "calculateLayoutBtn": "Calculate Layout (Default)", "resetCurrentBtn": "Reset (Current)",
+                "calculateLayoutBtnUnified": "Calculate Layout",
+                "resetCurrentBtn": "Reset (Current)",
                 "resultsTitle": "Results", "totalSheetsDefault": "Total Sheets Required: 0",
                 "sheetSettingsTitle": "Sheet Settings",
                 "sheetNameLabel": "Sheet Name (Optional):",
                 "sheetNamePlaceholder": "e.g., Plywood 8x4",
                 "sheetWidthLabel": "Sheet Width",
+                "sheetCostLabel": "Cost Per Sheet:",
+                "sheetCostPlaceholder": "e.g., 20 or 20.50",
+                "kerfWidthLabel": "Kerf/Blade Thickness:",
+                "kerfWidthPlaceholder": "e.g., 0.3",
+                "totalCostResult": "Total Cost: {cost}",
+                "totalSheetsAndCostResult": "Total Sheets Required: {count}, {totalCostString}",
                 "sheetLengthGrainLabel": "Sheet Length (Grain)", "respectGrainLabel": "Respect Grain Direction",
                 "applyAndSaveBtn": "Apply & Save", "historyTitle": "History",
                 "historyNote": "Note: This only shows recent changes. Click an item to load it.",
@@ -1177,7 +1409,22 @@
                 "selectedEdgesPrefix": "Selected:", "noneLabel": "None",
                 "tableEdges": "Edge Tape",
                 "totalEdgeBandingTitle": "Total Edge Tape Required:",
-                "totalEdgeBandingResult": "Total {length} {unit}"
+                "totalEdgeBandingResult": "Total {length} {unit}",
+                "copyAllPiecesBtn": "Copy All Pieces",
+                "alert_noPiecesToCopy": "No pieces to copy.",
+                "alert_piecesCopiedToClipboard": "Pieces copied to clipboard!",
+                "alert_clipboardError": "Error copying to clipboard.",
+                "bulkAddTitle": "Bulk Add Pieces",
+                "bulkAddLabel": "Piece Data (Width,Length,Quantity,Name,EdgeTape - one per line):",
+                "bulkAddPlaceholder": "60,222.5,1,Piece-A,L1W1\n60,121,2,Piece-B\n...",
+                "bulkAddFormatNote": "Example: 60,222.5,1,Piece-2,L1W1 (EdgeTape optional, each piece on a new line)",
+                "addBulkPiecesBtn": "Add Bulk Pieces",
+                "alert_bulkInputEmpty": "Please enter piece data for bulk adding.",
+                "alert_bulkPiecesAdded": "{count} pieces added successfully.",
+                "alert_bulkInputLineError": "Error on line {lineNumber}: {error}",
+                "alert_bulkInputFinishedWithErrors": "Bulk add finished with some errors. Please check console for details.",
+                "toggleBulkAddBtn": "Bulk Add ➕",
+                "toggleBulkAddBtnHide": "Hide Form ➖"
             }
         };
 
@@ -1187,6 +1434,8 @@
             modalSheetWidthEl = document.getElementById('modalSheetWidth');
             modalSheetHasGrainEl = document.getElementById('modalHasGrainDirection');
             modalSheetNameEl = document.getElementById('modalSheetName');
+            modalSheetCostEl = document.getElementById('modalSheetCost');
+            modalKerfWidthEl = document.getElementById('modalKerfWidth');
             sheetSettingsModalEl = document.getElementById('sheetSettingsModal');
             partNameEl = document.getElementById('partName');
             partLengthEl = document.getElementById('partLength');
@@ -1234,6 +1483,12 @@
             manualOffcutSourceNameEl = document.getElementById('manualOffcutSourceName');
             totalEdgeBandingReportEl = document.getElementById('totalEdgeBandingReport');
             totalEdgeBandingLengthDisplayEl = document.getElementById('totalEdgeBandingLengthDisplay');
+
+            copyAllPiecesBtnEl = document.getElementById('copyAllPiecesBtn');
+            bulkPieceInputEl = document.getElementById('bulkPieceInput');
+            addBulkPiecesBtnEl = document.getElementById('addBulkPiecesBtn');
+            toggleBulkAddBtnEl = document.getElementById('toggleBulkAddBtn');
+            bulkAddSectionEl = document.getElementById('bulkAddSection');
         }
 
         // === सभी हेल्पर और मुख्य फंक्शन्स यहाँ ===
@@ -1245,19 +1500,40 @@
             }
             return str;
         }
+
         function updateUnitDisplaysDOM(unit) {
             if(unitDisplayElements && unitDisplayElements.length > 0) {
                 unitDisplayElements.forEach(el => { if(el) el.textContent = unit; });
             }
+
+            const partNameInput = document.getElementById('partName');
+            if (partNameInput && partNameInput.hasAttribute('data-lang-placeholder-key')) {
+                 let placeholderText = getLangString(partNameInput.getAttribute('data-lang-placeholder-key'));
+                 if (currentLanguage === 'hi') {
+                    placeholderText = placeholderText.replace(" (वैकल्पिक):", "");
+                 } else if (currentLanguage === 'en') {
+                    placeholderText = placeholderText.replace(" (Optional):", "");
+                 }
+                 partNameInput.placeholder = placeholderText;
+            }
+
             const partWidthInput = document.getElementById('partWidth');
-            if (partWidthInput) {
-                partWidthInput.placeholder = getLangString(partWidthInput.getAttribute('data-lang-placeholder-key') || 'pieceWidthLabel') + ` (${unit})`;
+            if (partWidthInput && partWidthInput.hasAttribute('data-lang-placeholder-key')) {
+                partWidthInput.placeholder = getLangString(partWidthInput.getAttribute('data-lang-placeholder-key')) + ` (${unit})`;
             }
             const partLengthInput = document.getElementById('partLength');
-            if (partLengthInput) {
-                partLengthInput.placeholder = getLangString(partLengthInput.getAttribute('data-lang-placeholder-key') || 'pieceLengthLabel') + ` (${unit})`;
+            if (partLengthInput && partLengthInput.hasAttribute('data-lang-placeholder-key')) {
+                partLengthInput.placeholder = getLangString(partLengthInput.getAttribute('data-lang-placeholder-key')) + ` (${unit})`;
             }
+            const partQuantityInput = document.getElementById('partQuantity');
+            if (partQuantityInput && partQuantityInput.hasAttribute('data-lang-placeholder-key')) {
+                partQuantityInput.placeholder = getLangString(partQuantityInput.getAttribute('data-lang-placeholder-key'));
+            }
+
+            const kerfLabel = document.querySelector('label[for="modalKerfWidth"] span.unit-display');
+            if (kerfLabel) kerfLabel.textContent = unit;
         }
+
 
         function convertToCm(value, fromUnit) {
             if (value === "" || value === null || isNaN(parseFloat(value))) return "";
@@ -1332,15 +1608,17 @@
             const elements = document.querySelectorAll('[data-lang-key], [data-lang-placeholder-key], [data-lang-title]');
             elements.forEach(el => {
                 const key = el.getAttribute('data-lang-key');
-                const placeholderKey = el.getAttribute('data-lang-placeholder');
-                const dynamicPlaceholderKey = el.getAttribute('data-lang-placeholder-key');
+                const placeholderKey = el.getAttribute('data-lang-placeholder'); 
+                const dynamicPlaceholderKey = el.getAttribute('data-lang-placeholder-key'); 
                 const titleKey = el.getAttribute('data-lang-title');
 
                 if (langStrings[lang]) {
-                    if (placeholderKey && langStrings[lang][placeholderKey]) {
-                         el.placeholder = getLangString(placeholderKey) + (placeholderKey === "pieceDefaultName" ? (pieceIdCounter + 1) : "");
-                    } else if (dynamicPlaceholderKey && langStrings[lang][dynamicPlaceholderKey]) {
-                        el.placeholder = getLangString(dynamicPlaceholderKey) + ` (${currentUnit})`;
+                     if (placeholderKey && langStrings[lang][placeholderKey]) { 
+                        el.placeholder = getLangString(placeholderKey);
+                    } else if (dynamicPlaceholderKey && langStrings[lang][dynamicPlaceholderKey]) { 
+                        if (el.id === 'bulkPieceInput' && dynamicPlaceholderKey === 'bulkAddPlaceholder') {
+                             el.placeholder = getLangString(dynamicPlaceholderKey);
+                        }
                     } else if (titleKey && langStrings[lang][titleKey]) {
                         el.title = getLangString(titleKey);
                     } else if (key && langStrings[lang][key]) {
@@ -1351,7 +1629,20 @@
                         } else if (el.tagName === 'OPTION') {
                             el.textContent = getLangString(key);
                         } else {
-                            el.textContent = getLangString(key);
+                            if (el.tagName === 'LABEL') {
+                                const labelFor = el.getAttribute('for');
+                                const labelKey = el.getAttribute('data-lang-key');
+                                if ( (labelFor === 'partName' || labelFor === 'partWidth' || labelFor === 'partLength' || labelFor === 'partQuantity') ||
+                                     (labelKey === 'edgeTapeLabel')
+                                   ) {
+                                    el.style.display = 'none';
+                                } else {
+                                    el.style.display = '';
+                                    el.textContent = getLangString(key);
+                                }
+                            } else {
+                                el.textContent = getLangString(key);
+                            }
                         }
                     }
                 }
@@ -1362,6 +1653,12 @@
             if (historyModalEl && historyModalEl.style.display === 'flex') showHistoryModal();
             if (projectManagementModalEl && projectManagementModalEl.style.display === 'flex') renderProjectsList();
             if (offcutsLibraryModalEl && offcutsLibraryModalEl.style.display === 'flex') renderOffcutsList();
+
+            if (bulkAddSectionEl && toggleBulkAddBtnEl) {
+                 toggleBulkAddBtnEl.textContent = bulkAddSectionEl.style.display === 'none' ? 
+                    getLangString("toggleBulkAddBtn") : getLangString("toggleBulkAddBtnHide");
+            }
+
 
             if (lastCalculatedSheetsData && lastCalculatedSheetsData.length > 0) {
                 displayLayoutOnCanvas(lastCalculatedSheetsData);
@@ -1381,8 +1678,7 @@
                 piecesTableSummaryRowEl.style.display = pieces.length > 0 ? '' : 'none';
                 const labelCell = piecesTableSummaryRowEl.querySelector('td[colspan="3"]');
                 if (labelCell) {
-                    const tableHeaderCells = piecesTableBodyEl.parentElement.querySelectorAll('thead th');
-                    labelCell.colSpan = tableHeaderCells.length - 3;
+                    labelCell.colSpan = 3; 
                     labelCell.textContent = getLangString("totalPiecesInList");
                 }
             }
@@ -1391,7 +1687,24 @@
         function showUnitSettingsModal() { if(currentUnitSelectorEl) currentUnitSelectorEl.value = currentUnit; if(unitSettingsModalEl) unitSettingsModalEl.style.display = 'flex'; }
         function closeUnitSettingsModal() { if(unitSettingsModalEl) unitSettingsModalEl.style.display = 'none'; }
         function applyUnitChange() {
-            isLoadedFromHistory = false; const newUnit = currentUnitSelectorEl.value; if (newUnit === currentUnit) { closeUnitSettingsModal(); return; } const oldSheetL_cm = convertToCm(modalSheetLengthEl.value, currentUnit); const oldSheetW_cm = convertToCm(modalSheetWidthEl.value, currentUnit); const oldPartL_val = partLengthEl.value; const oldPartW_val = partWidthEl.value; const oldPartL_cm = convertToCm(oldPartL_val, currentUnit); const oldPartW_cm = convertToCm(oldPartW_val, currentUnit); const oldPieces = JSON.parse(JSON.stringify(pieces)); currentUnit = newUnit; localStorage.setItem(STORAGE_KEY_CURRENT_UNIT, currentUnit); updateUnitDisplaysDOM(currentUnit); setLanguage(currentLanguage); modalSheetLengthEl.value = convertFromCm(oldSheetL_cm, currentUnit) || ""; modalSheetWidthEl.value = convertFromCm(oldSheetW_cm, currentUnit) || ""; if (oldPartL_val) partLengthEl.value = convertFromCm(oldPartL_cm, currentUnit) || ""; if (oldPartW_val) partWidthEl.value = convertFromCm(oldPartW_cm, currentUnit) || ""; pieces = oldPieces;
+            isLoadedFromHistory = false; const newUnit = currentUnitSelectorEl.value; if (newUnit === currentUnit) { closeUnitSettingsModal(); return; }
+            const oldSheetL_cm = convertToCm(modalSheetLengthEl.value, currentUnit);
+            const oldSheetW_cm = convertToCm(modalSheetWidthEl.value, currentUnit);
+            const oldSheetCost_val = modalSheetCostEl.value;
+            const oldKerf_cm = convertToCm(modalKerfWidthEl.value, currentUnit);
+            const oldPartL_val = partLengthEl.value; const oldPartW_val = partWidthEl.value;
+            const oldPartL_cm = convertToCm(oldPartL_val, currentUnit); const oldPartW_cm = convertToCm(oldPartW_val, currentUnit);
+            const oldPieces = JSON.parse(JSON.stringify(pieces));
+            currentUnit = newUnit;
+            localStorage.setItem(STORAGE_KEY_CURRENT_UNIT, currentUnit);
+            updateUnitDisplaysDOM(currentUnit); setLanguage(currentLanguage);
+            modalSheetLengthEl.value = convertFromCm(oldSheetL_cm, currentUnit) || "";
+            modalSheetWidthEl.value = convertFromCm(oldSheetW_cm, currentUnit) || "";
+            if (oldSheetCost_val) modalSheetCostEl.value = oldSheetCost_val;
+            modalKerfWidthEl.value = convertFromCm(oldKerf_cm, currentUnit) || "";
+            if (oldPartL_val) partLengthEl.value = convertFromCm(oldPartL_cm, currentUnit) || "";
+            if (oldPartW_val) partWidthEl.value = convertFromCm(oldPartW_cm, currentUnit) || "";
+            pieces = oldPieces;
             if(minOffcutWidthEl) minOffcutWidthEl.value = convertFromCm(offcutSettings.minWidth, currentUnit);
             if(minOffcutLengthEl) minOffcutLengthEl.value = convertFromCm(offcutSettings.minLength, currentUnit);
             renderPiecesTable(); autoSaveData(); saveStateToHistory(); closeUnitSettingsModal(); alert(getLangString("alert_unitChanged", {unit: currentUnit.toUpperCase()}));
@@ -1416,12 +1729,24 @@
                 modalSheetLengthEl.value = convertFromCm(settings.sheetLength, currentUnit) || "";
                 modalSheetHasGrainEl.checked = typeof settings.hasGrain === 'boolean' ? settings.hasGrain : true;
                 modalSheetNameEl.value = settings.sheetName || "";
+                if (settings.sheetCost !== undefined && !isNaN(parseFloat(settings.sheetCost))) {
+                    modalSheetCostEl.value = settings.sheetCost;
+                } else {
+                    modalSheetCostEl.value = '';
+                }
+                if (settings.kerfWidth !== undefined) {
+                    modalKerfWidthEl.value = convertFromCm(settings.kerfWidth, currentUnit);
+                } else {
+                    modalKerfWidthEl.value = convertFromCm(0.3, currentUnit);
+                }
                 if (modalGrainColorEl) modalGrainColorEl.value = settings.grainColor || currentGrainColor;
             } else {
                 modalSheetWidthEl.value = convertFromCm(122, currentUnit);
                 modalSheetLengthEl.value = convertFromCm(244, currentUnit);
                 modalSheetHasGrainEl.checked = true;
                 modalSheetNameEl.value = "";
+                modalSheetCostEl.value = "";
+                modalKerfWidthEl.value = convertFromCm(0.3, currentUnit);
                 if (modalGrainColorEl) modalGrainColorEl.value = currentGrainColor;
             }
             loadGrainPattern();
@@ -1453,29 +1778,31 @@
             }
         }
 
-        function toggleJsonMenu(event) {
+        function toggleDropdownMenu(event, menuId) {
             event.stopPropagation();
-            if(jsonMenuEl) jsonMenuEl.style.display = jsonMenuEl.style.display === 'block' ? 'none' : 'block';
-            if (sharePdfExcelMenuEl && sharePdfExcelMenuEl.style.display === 'block') {
-                sharePdfExcelMenuEl.style.display = 'none';
-            }
-        }
-        function closeJsonMenu() { if(jsonMenuEl) jsonMenuEl.style.display = 'none'; }
+            const menuToToggle = document.getElementById(menuId);
+            if (!menuToToggle) return;
 
-        function toggleSharePdfExcelMenu(event) {
-            event.stopPropagation();
-            if (sharePdfExcelMenuEl) {
-                sharePdfExcelMenuEl.style.display = sharePdfExcelMenuEl.style.display === 'block' ? 'none' : 'block';
+            if (openDropdownMenuId && openDropdownMenuId !== menuId) {
+                const otherMenu = document.getElementById(openDropdownMenuId);
+                if (otherMenu) otherMenu.style.display = 'none';
             }
-            if (jsonMenuEl && jsonMenuEl.style.display === 'block') {
-                jsonMenuEl.style.display = 'none';
+
+            if (menuToToggle.style.display === 'block') {
+                menuToToggle.style.display = 'none';
+                openDropdownMenuId = null;
+            } else {
+                menuToToggle.style.display = 'block';
+                openDropdownMenuId = menuId;
             }
         }
-        function closeSharePdfExcelMenu() {
-            if (sharePdfExcelMenuEl) {
-                sharePdfExcelMenuEl.style.display = 'none';
-            }
+
+        function closeAllDropdowns() {
+            if (jsonMenuEl) jsonMenuEl.style.display = 'none';
+            if (sharePdfExcelMenuEl) sharePdfExcelMenuEl.style.display = 'none';
+            openDropdownMenuId = null;
         }
+
 
         function ensureEdgeBandingProperty(piece) {
             if (typeof piece.edgeBanding === 'undefined') {
@@ -1531,11 +1858,16 @@
 
         function addPiece() {
             isLoadedFromHistory = false;
-            const name = partNameEl.value.trim() || getLangString("pieceDefaultName") + (pieceIdCounter + 1);
+            let name = partNameEl.value.trim();
+             if (!name) {
+                 name = getLangString("pieceDefaultName") + (pieceIdCounter + 1);
+            }
+
             const pieceW_input = parseFloat(partWidthEl.value);
             const pieceL_input = parseFloat(partLengthEl.value);
             const quantityInput = partQuantityEl.value.trim();
             const quantity = (quantityInput === "" || isNaN(parseInt(quantityInput)) || parseInt(quantityInput) <= 0) ? 1 : parseInt(quantityInput);
+
 
             if (isNaN(pieceL_input) || pieceL_input <= 0 || isNaN(pieceW_input) || pieceW_input <= 0 ) {
                 alert(getLangString("alert_invalidPositiveNumbers")); return;
@@ -1590,14 +1922,35 @@
             saveStateToHistory();
         }
         function clearPieceInputs() {
-            if(partNameEl) partNameEl.value = '';
-            if(partNameEl) partNameEl.placeholder = getLangString("pieceDefaultName") + (pieceIdCounter + 1);
-            if(partWidthEl) partWidthEl.value = '';
-            if(partLengthEl) partLengthEl.value = '';
-            if(partQuantityEl) partQuantityEl.value = '';
-            if(partWidthEl) partWidthEl.focus();
+            if(partNameEl) {
+                partNameEl.value = '';
+                const placeholderKey = partNameEl.getAttribute('data-lang-placeholder-key');
+                if (placeholderKey) {
+                    let basePlaceholder = getLangString(placeholderKey);
+                    if (currentLanguage === 'hi') basePlaceholder = basePlaceholder.replace(" (वैकल्पिक):", "");
+                    else if (currentLanguage === 'en') basePlaceholder = basePlaceholder.replace(" (Optional):", "");
+                    partNameEl.placeholder = basePlaceholder;
+                }
+            }
+            if(partWidthEl) {
+                partWidthEl.value = '';
+                const placeholderKey = partWidthEl.getAttribute('data-lang-placeholder-key');
+                if (placeholderKey) partWidthEl.placeholder = getLangString(placeholderKey) + ` (${currentUnit})`;
+            }
+            if(partLengthEl) {
+                partLengthEl.value = '';
+                 const placeholderKey = partLengthEl.getAttribute('data-lang-placeholder-key');
+                if (placeholderKey) partLengthEl.placeholder = getLangString(placeholderKey) + ` (${currentUnit})`;
+            }
+            if(partQuantityEl) {
+                partQuantityEl.value = '';
+                const placeholderKey = partQuantityEl.getAttribute('data-lang-placeholder-key');
+                if(placeholderKey) partQuantityEl.placeholder = getLangString(placeholderKey);
+            }
+            if(partNameEl) partNameEl.focus(); 
             resetEdgeTapeSelections();
         }
+
         function renderPiecesTable() {
             if (!piecesTableBodyEl) return;
             piecesTableBodyEl.innerHTML = '';
@@ -1626,7 +1979,6 @@
                 row.insertCell().textContent = p.quantity;
 
                 const edgeCell = row.insertCell();
-                edgeCell.className = 'no-print';
                 let edgesApplied = [];
                 if (p.edgeBanding) {
                     if (p.edgeBanding.L1) { edgesApplied.push(getLangString("edgeTapeL1Btn") || "L1"); totalEdgeTapeLengthCm += p.length * p.quantity; }
@@ -1676,10 +2028,10 @@
                     if (currentUnit === 'cm' && totalLengthCm >= 100) {
                         displayLength = convertFromCm(totalLengthCm, 'm');
                         displayUnit = 'm';
-                    } else if (currentUnit === 'mm' && totalLengthCm >= 100) {
+                    } else if (currentUnit === 'mm' && totalLengthCm >= 1000) { 
                         displayLength = convertFromCm(totalLengthCm, 'm');
                         displayUnit = 'm';
-                    } else if (currentUnit === 'in' && totalLengthCm >= (12 * 2.54)) {
+                    } else if (currentUnit === 'in' && totalLengthCm >= (12 * 2.54)) { 
                          displayLength = convertFromCm(totalLengthCm, 'ft');
                          displayUnit = 'ft';
                     }
@@ -1708,6 +2060,11 @@
             pieceIdCounter = 0;
             if(projectLocationEl) projectLocationEl.value = '';
             if(projectNotesEl) projectNotesEl.value = '';
+            if(bulkPieceInputEl) bulkPieceInputEl.value = '';
+            if(bulkAddSectionEl) bulkAddSectionEl.style.display = 'none';
+            if(toggleBulkAddBtnEl) toggleBulkAddBtnEl.textContent = getLangString("toggleBulkAddBtn");
+            localStorage.removeItem(STORAGE_KEY_BULK_ADD_VISIBLE);
+
 
             const defaultSheetL_cm = 244;
             const defaultSheetW_cm = 122;
@@ -1715,6 +2072,8 @@
             if(modalSheetLengthEl) modalSheetLengthEl.value = convertFromCm(defaultSheetL_cm, currentUnit);
             if(modalSheetHasGrainEl) modalSheetHasGrainEl.checked = true;
             if(modalSheetNameEl) modalSheetNameEl.value = "";
+            if(modalSheetCostEl) modalSheetCostEl.value = '';
+            if(modalKerfWidthEl) modalKerfWidthEl.value = convertFromCm(0.3, currentUnit);
             if(modalGrainColorEl) modalGrainColorEl.value = 'rgba(0,0,0,0.08)';
             currentGrainColor = 'rgba(0,0,0,0.08)';
             if(modalGrainPatternEl) modalGrainPatternEl.value = 'fine';
@@ -1759,7 +2118,10 @@
                     sheetLength: convertToCm(modalSheetLengthEl.value, currentUnit) || 244,
                     hasGrain: modalSheetHasGrainEl.checked,
                     sheetName: modalSheetNameEl.value.trim(),
+                    sheetCost: parseFloat(modalSheetCostEl.value) || 0,
+                    kerfWidth: convertToCm(parseFloat(modalKerfWidthEl.value) || 0, currentUnit),
                     grainColor: currentGrainColor,
+                    grainPattern: currentGrainPattern,
                     fittingStrategy: currentFittingStrategy,
                     offcutSettings: offcutSettings
                 };
@@ -1781,6 +2143,8 @@
                     sheetLength: convertToCm(modalSheetLengthEl.value, currentUnit) || 244,
                     hasGrain: modalSheetHasGrainEl.checked,
                     sheetName: modalSheetNameEl.value.trim(),
+                    sheetCost: parseFloat(modalSheetCostEl.value) || 0,
+                    kerfWidth: convertToCm(parseFloat(modalKerfWidthEl.value) || 0, currentUnit),
                     grainColor: currentGrainColor,
                     grainPattern: currentGrainPattern,
                     fittingStrategy: currentFittingStrategy,
@@ -1793,7 +2157,8 @@
                 pieceIdCounter: pieceIdCounter,
                 savedUnit: currentUnit,
                 cuttingChecks: cuttingListCheckboxStates,
-                savedOffcuts: savedOffcuts
+                savedOffcuts: savedOffcuts,
+                bulkAddVisible: bulkAddSectionEl.style.display !== 'none'
             };
             const dataStr = JSON.stringify(dataToExport, null, 2);
             const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
@@ -1827,6 +2192,16 @@
                         modalSheetLengthEl.value = convertFromCm(settings.sheetLength, currentUnit);
                         modalSheetHasGrainEl.checked = typeof settings.hasGrain === 'boolean' ? settings.hasGrain : true;
                         modalSheetNameEl.value = settings.sheetName || "";
+                        if (settings.sheetCost !== undefined && !isNaN(parseFloat(settings.sheetCost))) {
+                            modalSheetCostEl.value = settings.sheetCost;
+                        } else {
+                            modalSheetCostEl.value = '';
+                        }
+                        if (settings.kerfWidth !== undefined) {
+                            modalKerfWidthEl.value = convertFromCm(settings.kerfWidth, currentUnit);
+                        } else {
+                            modalKerfWidthEl.value = convertFromCm(0.3, currentUnit);
+                        }
                         currentGrainColor = settings.grainColor || 'rgba(0,0,0,0.08)';
                         if (modalGrainColorEl) modalGrainColorEl.value = currentGrainColor;
                         currentGrainPattern = settings.grainPattern || 'fine';
@@ -1860,17 +2235,22 @@
                                 p.width = convertToCm(p.width, importedData.savedUnit);
                             }
                         });
+                        
+                        if (typeof importedData.bulkAddVisible === 'boolean') {
+                            bulkAddSectionEl.style.display = importedData.bulkAddVisible ? 'block' : 'none';
+                            toggleBulkAddBtnEl.textContent = importedData.bulkAddVisible ? getLangString("toggleBulkAddBtnHide") : getLangString("toggleBulkAddBtn");
+                            localStorage.setItem(STORAGE_KEY_BULK_ADD_VISIBLE, importedData.bulkAddVisible.toString());
+                        }
+
+
                         renderPiecesTable();
                         clearPieceInputs();
                         autoSaveData();
                         saveStateToHistory();
                         resultsSummaryEl.textContent = getLangString("totalSheetsDefault");
                         sheetsContainerEl.innerHTML = `<p style="text-align:center; color: #555;">${getLangString("alert_layoutForPrint")}</p>`;
-                        if (lastCalculatedSheetsData) {
-                            displayLayoutOnCanvas(lastCalculatedSheetsData);
-                        }
-                        wastageSectionEl.style.display = 'none';
                         lastCalculatedSheetsData = null;
+                        wastageSectionEl.style.display = 'none';
                         alert(getLangString("alert_jsonImportSuccess"));
                     } else {
                         alert(getLangString("alert_jsonFormatError"));
@@ -1902,6 +2282,7 @@
                 localStorage.removeItem(STORAGE_KEY_OFFCUT_SETTINGS);
                 localStorage.removeItem(STORAGE_KEY_PROJECT_LOCATION);
                 localStorage.removeItem(STORAGE_KEY_PROJECT_NOTES);
+                localStorage.removeItem(STORAGE_KEY_BULK_ADD_VISIBLE);
                 historyStack = [];
                 cuttingListCheckboxStates = {};
                 savedProjects = [];
@@ -1917,6 +2298,8 @@
                 offcutSettings = { minWidth: 10, minLength: 45 };
                 if(minOffcutWidthEl) minOffcutWidthEl.value = convertFromCm(offcutSettings.minWidth, currentUnit);
                 if(minOffcutLengthEl) minOffcutLengthEl.value = convertFromCm(offcutSettings.minLength, currentUnit);
+                if(modalSheetCostEl) modalSheetCostEl.value = '';
+                if(modalKerfWidthEl) modalKerfWidthEl.value = convertFromCm(0.3, currentUnit);
                 resetAllInternal(false);
                 alert(getLangString("alert_storageCleared"));
             }
@@ -1930,6 +2313,8 @@
                     sheetLength: convertToCm(modalSheetLengthEl.value, currentUnit) || 244,
                     hasGrain: modalSheetHasGrainEl.checked,
                     sheetName: modalSheetNameEl.value.trim(),
+                    sheetCost: parseFloat(modalSheetCostEl.value) || 0,
+                    kerfWidth: convertToCm(parseFloat(modalKerfWidthEl.value) || 0, currentUnit),
                     grainColor: currentGrainColor,
                     grainPattern: currentGrainPattern,
                     fittingStrategy: currentFittingStrategy,
@@ -1942,7 +2327,8 @@
                 pieceIdCounter: pieceIdCounter,
                 timestamp: new Date().toLocaleTimeString(currentLanguage === 'hi' ? 'hi-IN' : 'en-US', { hour: 'numeric', minute: '2-digit'}) + ", " + new Date().toLocaleDateString(currentLanguage === 'hi' ? 'hi-IN' : 'en-US', {day: 'numeric', month: 'short'}),
                 unit: currentUnit,
-                cuttingChecks: JSON.parse(JSON.stringify(cuttingListCheckboxStates))
+                cuttingChecks: JSON.parse(JSON.stringify(cuttingListCheckboxStates)),
+                bulkAddVisible: bulkAddSectionEl.style.display !== 'none'
             };
 
             if (historyStack.length > 0) {
@@ -1951,6 +2337,7 @@
                     JSON.stringify(lastState.settings) === JSON.stringify(currentState.settings) &&
                     JSON.stringify(lastState.projectDetails) === JSON.stringify(currentState.projectDetails) &&
                     lastState.unit === currentState.unit &&
+                    lastState.bulkAddVisible === currentState.bulkAddVisible &&
                     JSON.stringify(lastState.cuttingChecks) === JSON.stringify(currentState.cuttingChecks) ) {
                     return;
                 }
@@ -1966,6 +2353,15 @@
                 historyStack = savedHistory ? JSON.parse(savedHistory) : [];
                 historyStack.forEach(state => {
                     if (state.pieces) state.pieces = state.pieces.map(ensureEdgeBandingProperty);
+                     if (state.settings && typeof state.settings.sheetCost === 'undefined') {
+                        state.settings.sheetCost = 0;
+                    }
+                    if (state.settings && typeof state.settings.kerfWidth === 'undefined') {
+                        state.settings.kerfWidth = 0.3;
+                    }
+                     if (typeof state.bulkAddVisible === 'undefined') {
+                        state.bulkAddVisible = false; // Default to hidden if not present in old history
+                    }
                 });
             } catch (e) {
                 console.error("हिस्ट्री लोड करने में त्रुटि:", e); historyStack = [];
@@ -1987,6 +2383,16 @@
             if(modalSheetLengthEl) modalSheetLengthEl.value = convertFromCm(settings.sheetLength, currentUnit);
             if(modalSheetHasGrainEl) modalSheetHasGrainEl.checked = settings.hasGrain;
             if(modalSheetNameEl) modalSheetNameEl.value = settings.sheetName || "";
+            if (settings.sheetCost !== undefined && !isNaN(parseFloat(settings.sheetCost))) {
+                modalSheetCostEl.value = settings.sheetCost;
+            } else {
+                modalSheetCostEl.value = '';
+            }
+            if (settings.kerfWidth !== undefined) {
+                modalKerfWidthEl.value = convertFromCm(settings.kerfWidth, currentUnit);
+            } else {
+                modalKerfWidthEl.value = convertFromCm(0.3, currentUnit);
+            }
             currentGrainColor = settings.grainColor || 'rgba(0,0,0,0.08)';
             if(modalGrainColorEl) modalGrainColorEl.value = currentGrainColor;
             currentGrainPattern = settings.grainPattern || 'fine';
@@ -2003,6 +2409,10 @@
             if(minOffcutLengthEl) minOffcutLengthEl.value = convertFromCm(offcutSettings.minLength, currentUnit);
 
             pieceIdCounter = stateToLoad.pieceIdCounter;
+
+            bulkAddSectionEl.style.display = stateToLoad.bulkAddVisible ? 'block' : 'none';
+            toggleBulkAddBtnEl.textContent = stateToLoad.bulkAddVisible ? getLangString("toggleBulkAddBtnHide") : getLangString("toggleBulkAddBtn");
+            localStorage.setItem(STORAGE_KEY_BULK_ADD_VISIBLE, stateToLoad.bulkAddVisible.toString());
 
             renderPiecesTable();
             clearPieceInputs();
@@ -2079,9 +2489,16 @@
                     }
                     if (project.data && project.data.settings) {
                         project.data.settings.grainPattern = project.data.settings.grainPattern || 'fine';
+                        if (typeof project.data.settings.sheetCost === 'undefined') {
+                           project.data.settings.sheetCost = 0;
+                        }
+                        if (typeof project.data.settings.kerfWidth === 'undefined') {
+                           project.data.settings.kerfWidth = 0.3;
+                        }
                     }
                     if (project.data) {
                         project.data.projectDetails = project.data.projectDetails || { location: '', notes: '' };
+                        project.data.bulkAddVisible = typeof project.data.bulkAddVisible === 'boolean' ? project.data.bulkAddVisible : false;
                     }
                 });
             } catch (e) {
@@ -2094,6 +2511,9 @@
                 const projectsToSave = savedProjects.map(proj => {
                     if (proj.data && proj.data.pieces) {
                         proj.data.pieces = proj.data.pieces.map(ensureEdgeBandingProperty);
+                    }
+                    if (proj.data) { // Ensure bulkAddVisible is part of the saved project data
+                        proj.data.bulkAddVisible = bulkAddSectionEl.style.display !== 'none';
                     }
                     return proj;
                 });
@@ -2127,6 +2547,8 @@
                         sheetLength: convertToCm(modalSheetLengthEl.value, currentUnit) || 244,
                         hasGrain: modalSheetHasGrainEl.checked,
                         sheetName: modalSheetNameEl.value.trim(),
+                        sheetCost: parseFloat(modalSheetCostEl.value) || 0,
+                        kerfWidth: convertToCm(parseFloat(modalKerfWidthEl.value) || 0, currentUnit),
                         grainColor: currentGrainColor,
                         grainPattern: currentGrainPattern,
                         fittingStrategy: currentFittingStrategy,
@@ -2138,7 +2560,8 @@
                     },
                     pieceIdCounter: pieceIdCounter,
                     savedUnit: currentUnit,
-                    cuttingChecks: JSON.parse(JSON.stringify(cuttingListCheckboxStates))
+                    cuttingChecks: JSON.parse(JSON.stringify(cuttingListCheckboxStates)),
+                    bulkAddVisible: bulkAddSectionEl.style.display !== 'none'
                 }
             };
             const existingProjectIndex = savedProjects.findIndex(p => p.projectName === projectName);
@@ -2170,6 +2593,16 @@
                 if(modalSheetLengthEl) modalSheetLengthEl.value = convertFromCm(settings.sheetLength, currentUnit);
                 if(modalSheetHasGrainEl) modalSheetHasGrainEl.checked = settings.hasGrain;
                 if(modalSheetNameEl) modalSheetNameEl.value = settings.sheetName || "";
+                if (settings.sheetCost !== undefined && !isNaN(parseFloat(settings.sheetCost))) {
+                    modalSheetCostEl.value = settings.sheetCost;
+                } else {
+                    modalSheetCostEl.value = '';
+                }
+                if (settings.kerfWidth !== undefined) {
+                    modalKerfWidthEl.value = convertFromCm(settings.kerfWidth, currentUnit);
+                } else {
+                    modalKerfWidthEl.value = convertFromCm(0.3, currentUnit);
+                }
                 currentGrainColor = settings.grainColor || 'rgba(0,0,0,0.08)';
                 if(modalGrainColorEl) modalGrainColorEl.value = currentGrainColor;
                 currentGrainPattern = settings.grainPattern || 'fine';
@@ -2186,6 +2619,12 @@
                 if(minOffcutLengthEl) minOffcutLengthEl.value = convertFromCm(offcutSettings.minLength, currentUnit);
 
                 pieceIdCounter = projectState.pieceIdCounter;
+
+                bulkAddSectionEl.style.display = projectState.bulkAddVisible ? 'block' : 'none';
+                toggleBulkAddBtnEl.textContent = projectState.bulkAddVisible ? getLangString("toggleBulkAddBtnHide") : getLangString("toggleBulkAddBtn");
+                localStorage.setItem(STORAGE_KEY_BULK_ADD_VISIBLE, projectState.bulkAddVisible.toString());
+
+
                 renderPiecesTable();
                 clearPieceInputs();
                 autoSaveData();
@@ -2454,13 +2893,7 @@
         }
 
 
-        function calculateWithSelectedStrategy() {
-            currentFittingStrategy = fittingStrategySelectorEl.value;
-            localStorage.setItem(STORAGE_KEY_FITTING_STRATEGY, currentFittingStrategy);
-            calculateAndDrawLayout(currentFittingStrategy);
-        }
-
-        function calculateAndDrawLayout(strategy = currentFittingStrategy) {
+        function calculateAndDrawLayout() {
             isLoadedFromHistory = false;
             if (!pieces || pieces.length === 0) {
                 alert(getLangString("alert_calculateLayoutFirst"));
@@ -2471,11 +2904,15 @@
                 return;
             }
 
+            const selectedStrategy = fittingStrategySelectorEl.value;
+            currentFittingStrategy = selectedStrategy;
+            localStorage.setItem(STORAGE_KEY_FITTING_STRATEGY, currentFittingStrategy);
+
             const sheetL_cm_modal = convertToCm(modalSheetLengthEl.value, currentUnit);
             const sheetW_cm_modal = convertToCm(modalSheetWidthEl.value, currentUnit);
             const sheetHasGrain_modal = modalSheetHasGrainEl.checked;
             const sheetName_modal = modalSheetNameEl.value.trim();
-
+            const kerfToUse_cm = convertToCm(parseFloat(modalKerfWidthEl.value) || 0, currentUnit);
 
             if (isNaN(sheetL_cm_modal) || sheetL_cm_modal <= 0 || isNaN(sheetW_cm_modal) || sheetW_cm_modal <= 0) {
                 alert(getLangString("alert_invalidSheetSize"));
@@ -2555,15 +2992,7 @@
                 }
             });
 
-            switch (strategy) {
-                case 'sortPiecesByWidthDesc': individualPieces.sort((a, b) => b.width - a.width || b.area - a.area); break;
-                case 'sortPiecesByHeightDesc': individualPieces.sort((a, b) => b.length - a.length || b.area - a.area); break;
-                case 'sortPiecesByAreaAsc': individualPieces.sort((a, b) => a.area - b.area); break;
-                case 'sortPiecesByPerimeterDesc': individualPieces.sort((a, b) => ((b.width + b.length) - (a.width + a.length)) || b.area - a.area); break;
-                case 'sortPiecesByLongestSideDesc': individualPieces.sort((a, b) => (Math.max(b.width, b.length) - Math.max(a.width, a.length)) || b.area - a.area); break;
-                case 'sortPiecesByShortestSideAsc': individualPieces.sort((a, b) => (Math.min(a.width, a.length) - Math.min(b.width, b.length)) || a.area - b.area); break;
-                default: individualPieces.sort((a, b) => b.area - a.area); break;
-            }
+            // The sorting logic now resides directly in the worker
 
             let stockItemsToWorker = [];
             stockItemsToWorker.push({
@@ -2579,13 +3008,11 @@
                 stockItemsToWorker.sort((a,b) => (a.width * a.length) - (b.width * b.length));
             }
 
-            const kerfToUse = 0;
-
             const workerData = {
                 pieces: JSON.parse(JSON.stringify(individualPieces)),
                 stockItems: stockItemsToWorker,
-                kerfWidth: kerfToUse,
-                strategy: strategy
+                kerfWidth: kerfToUse_cm,
+                strategy: selectedStrategy
             };
             layoutWorker.postMessage({ type: 'CALCULATE_LAYOUT', data: workerData });
         }
@@ -2606,7 +3033,26 @@
                 if(usefulOffcutsSummaryEl) usefulOffcutsSummaryEl.style.display = 'none';
                 return;
             }
-            if(resultsSummaryEl) resultsSummaryEl.textContent = getLangString("totalSheetsResult", {count: sheets.length});
+
+            const sheetCostString = localStorage.getItem(STORAGE_KEY_SETTINGS);
+            let sheetCost = 0;
+            if (sheetCostString) {
+                try {
+                    const currentSettings = JSON.parse(sheetCostString);
+                    sheetCost = parseFloat(currentSettings.sheetCost) || 0;
+                } catch(e) { sheetCost = 0; }
+            }
+
+            const totalSheetsCount = sheets.length;
+            let resultsText = getLangString("totalSheetsResult", {count: totalSheetsCount});
+
+            if (sheetCost > 0) {
+                const totalCost = totalSheetsCount * sheetCost;
+                const totalCostString = getLangString("totalCostResult", {cost: totalCost.toFixed(2)});
+                resultsText = getLangString("totalSheetsAndCostResult", {count: totalSheetsCount, totalCostString: totalCostString});
+            }
+            if(resultsSummaryEl) resultsSummaryEl.textContent = resultsText;
+
 
             let overallTotalAreaUsed_cm2 = 0;
             let allGeneratedFreeRects = [];
@@ -2675,10 +3121,9 @@
                     const pieceHeight_logical = p.placedLength * BASE_CANVAS_SCALE;
                     ctx.fillRect(pieceX_logical, pieceY_logical, pieceWidth_logical, pieceHeight_logical);
 
-                    // Piece border
-                    const pieceBorderThickness = 0.6; // Changed piece border thickness
+                    const pieceBorderThickness = 0.6;
                     ctx.save();
-                    ctx.strokeStyle = '#FFFFFF'; // Changed piece border color to white
+                    ctx.strokeStyle = '#FFFFFF';
                     ctx.lineWidth = pieceBorderThickness;
                     ctx.strokeRect(
                         pieceX_logical + pieceBorderThickness / 2,
@@ -2689,7 +3134,9 @@
                     ctx.restore();
 
                     const kerfLineColor = "rgba(200, 200, 200, 0.6)";
-                    const kerfLineWidth = BASE_CANVAS_SCALE * 0.2;
+                    const kerfWidth_cm = convertToCm(parseFloat(modalKerfWidthEl.value) || 0, currentUnit);
+                    const kerfLineWidth = kerfWidth_cm > 0 ? BASE_CANVAS_SCALE * (kerfWidth_cm / 4) : BASE_CANVAS_SCALE * 0.2;
+
                     ctx.save();
                     ctx.strokeStyle = kerfLineColor;
                     ctx.lineWidth = kerfLineWidth;
@@ -2703,7 +3150,6 @@
 
                     overallTotalAreaUsed_cm2 += p.placedWidth * p.placedLength;
 
-                    // Edge Tape Visualization
                     if (p.edgeBanding && (p.edgeBanding.L1 || p.edgeBanding.L2 || p.edgeBanding.W1 || p.edgeBanding.W2)) {
                         const edgeTapeColor = 'rgba(220, 0, 0, 0.9)';
                         const edgeTapeThickness = BASE_CANVAS_SCALE * 0.6;
@@ -2722,7 +3168,7 @@
                         const px = pieceX_logical;
                         const py = pieceY_logical;
 
-                        const desiredInnerMarginPixels = BASE_CANVAS_SCALE * 1; // Adjusted inner margin
+                        const desiredInnerMarginPixels = BASE_CANVAS_SCALE * 1;
                         const calculatedInnerOffset = desiredInnerMarginPixels + (edgeTapeThickness / 2);
 
                         const maxPossibleOffsetW = (pw_canvas / 2) - (edgeTapeThickness / 2);
@@ -2747,7 +3193,7 @@
                             effectiveOffsetY = pl_canvas / 2 - 0.1;
                             if (effectiveOffsetY < 0) effectiveOffsetY = 0;
                         }
-                        
+
                         const cTopLeftInner     = { x: px + effectiveOffsetX,         y: py + effectiveOffsetY };
                         const cTopRightInner    = { x: px + pw_canvas - effectiveOffsetX, y: py + effectiveOffsetY };
                         const cBottomLeftInner  = { x: px + effectiveOffsetX,         y: py + pl_canvas - effectiveOffsetY };
@@ -3194,7 +3640,8 @@
                 }
 
                 if (!alreadyExistsInCurrentBatch && !existsInOldBatches) {
-                    newBatch.offcutsInBatch.push({
+                    newBatch.
+offcutsInBatch.push({
                         id: `OFFCUT-${newOffcutDetail.sourceSheetId || 'NOSRC'}-${Math.random().toString(36).substr(2, 5)}`,
                         width: newOffcutDetail.width,
                         length: newOffcutDetail.length,
@@ -3293,190 +3740,6 @@
         }
 
 
-        function initializeApp() {
-            cacheDOMElements();
-            partWidthEl.step = "any"; partLengthEl.step = "any";
-            modalSheetWidthEl.step = "any"; modalSheetLengthEl.step = "any";
-            minOffcutWidthEl.step = "any"; minOffcutLengthEl.step = "any";
-
-            loadSavedOffcuts();
-            loadOffcutSettings();
-
-            const savedGrainColor = localStorage.getItem(STORAGE_KEY_GRAIN_COLOR);
-            if (savedGrainColor) {
-                currentGrainColor = savedGrainColor;
-                if (modalGrainColorEl) modalGrainColorEl.value = savedGrainColor;
-            } else {
-                if (modalGrainColorEl) modalGrainColorEl.value = currentGrainColor;
-            }
-             if(modalGrainColorEl) {
-                modalGrainColorEl.addEventListener('change', function() {
-                    currentGrainColor = this.value;
-                    localStorage.setItem(STORAGE_KEY_GRAIN_COLOR, currentGrainColor);
-                    if (lastCalculatedSheetsData) {
-                        displayLayoutOnCanvas(lastCalculatedSheetsData);
-                    }
-                });
-            }
-            loadGrainPattern();
-            if (modalGrainPatternEl) {
-                modalGrainPatternEl.addEventListener('change', function() {
-                    saveGrainPattern();
-                    if (lastCalculatedSheetsData) {
-                        displayLayoutOnCanvas(lastCalculatedSheetsData);
-                    }
-                });
-            }
-
-
-            const savedFittingStrategy = localStorage.getItem(STORAGE_KEY_FITTING_STRATEGY);
-            if (savedFittingStrategy) {
-                currentFittingStrategy = savedFittingStrategy;
-                if (fittingStrategySelectorEl) fittingStrategySelectorEl.value = savedFittingStrategy;
-            } else {
-                 if (fittingStrategySelectorEl) fittingStrategySelectorEl.value = currentFittingStrategy;
-            }
-            if(fittingStrategySelectorEl){
-                fittingStrategySelectorEl.addEventListener('change', function() {
-                    currentFittingStrategy = this.value;
-                    localStorage.setItem(STORAGE_KEY_FITTING_STRATEGY, currentFittingStrategy);
-                });
-            }
-            if(useOffcutsCheckboxEl){
-                useOffcutsCheckboxEl.addEventListener('change', function() {
-                    if (this.checked) {
-                        promptForOffcutSelection();
-                    } else {
-                        currentCalculationOffcuts = [];
-                    }
-                });
-            }
-
-            projectLocationEl.value = localStorage.getItem(STORAGE_KEY_PROJECT_LOCATION) || '';
-            projectNotesEl.value = localStorage.getItem(STORAGE_KEY_PROJECT_NOTES) || '';
-
-            if (projectLocationEl) projectLocationEl.addEventListener('input', () => { isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
-            if (projectNotesEl) projectNotesEl.addEventListener('input', () => { isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
-
-
-            if(modalSheetLengthEl) modalSheetLengthEl.addEventListener('change', () => {isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
-            if(modalSheetWidthEl) modalSheetWidthEl.addEventListener('change', () => {isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
-            if(modalSheetHasGrainEl) modalSheetHasGrainEl.addEventListener('change', () => {isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
-            if(modalSheetNameEl) modalSheetNameEl.addEventListener('input', () => {isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
-
-            if (document.body) {
-                document.body.addEventListener('click', function(event) {
-                    const jsonIconEl = document.getElementById('jsonIcon');
-                    if (jsonMenuEl && jsonMenuEl.style.display === 'block' &&
-                        (!jsonIconEl || !jsonIconEl.contains(event.target)) &&
-                        !jsonMenuEl.contains(event.target) ) {
-                        closeJsonMenu();
-                    }
-
-                    const sharePdfExcelButtonEl = document.getElementById('sharePdfExcelButton');
-                    if (sharePdfExcelMenuEl && sharePdfExcelMenuEl.style.display === 'block' &&
-                        (!sharePdfExcelButtonEl || !sharePdfExcelButtonEl.contains(event.target)) &&
-                        !sharePdfExcelMenuEl.contains(event.target)) {
-                        closeSharePdfExcelMenu();
-                    }
-                });
-            }
-
-            loadProjectsFromStorage();
-            loadHistoryFromStorage();
-            loadCuttingListCheckboxStates();
-            const savedLang = localStorage.getItem(STORAGE_KEY_LANGUAGE) || 'hi';
-            const savedUnit = localStorage.getItem(STORAGE_KEY_CURRENT_UNIT) || 'cm';
-            currentUnit = savedUnit;
-
-            const settingsStr = localStorage.getItem(STORAGE_KEY_SETTINGS);
-            if (settingsStr) {
-                try {
-                    const settings = JSON.parse(settingsStr);
-                    if(modalSheetWidthEl) modalSheetWidthEl.value = convertFromCm(settings.sheetWidth, currentUnit) || "";
-                    if(modalSheetLengthEl) modalSheetLengthEl.value = convertFromCm(settings.sheetLength, currentUnit) || "";
-                    if(modalSheetHasGrainEl) modalSheetHasGrainEl.checked = typeof settings.hasGrain === 'boolean' ? settings.hasGrain : true;
-                    if(modalSheetNameEl) modalSheetNameEl.value = settings.sheetName || "";
-                } catch (e) {
-                    console.error("Error parsing settings from localStorage:", e);
-                }
-            }
-            if(!modalSheetWidthEl.value) modalSheetWidthEl.value = convertFromCm(122, currentUnit);
-            if(!modalSheetLengthEl.value) modalSheetLengthEl.value = convertFromCm(244, currentUnit);
-            if(typeof modalSheetHasGrainEl.checked !== 'boolean') modalSheetHasGrainEl.checked = true;
-
-            loadOffcutSettings();
-
-            const piecesStr = localStorage.getItem(STORAGE_KEY_PIECES);
-            if (piecesStr) {
-                try {
-                    pieces = JSON.parse(piecesStr).map(ensureEdgeBandingProperty);
-                    pieces.forEach(p => {
-                        p.allowRotationOnGrainedSheet = p.allowRotationOnGrainedSheet || false;
-                    });
-                } catch (e) { console.error("Error parsing pieces from localStorage:", e); pieces = []; }
-            }
-            const idCounterStr = localStorage.getItem(STORAGE_KEY_ID_COUNTER);
-            pieceIdCounter = idCounterStr ? parseInt(idCounterStr) : 0;
-             if (pieces && pieces.length > 0 && pieceIdCounter === 0) {
-                const maxId = pieces.reduce((max, p) => (typeof p.id === 'number' && p.id > max ? p.id : max), -1);
-                pieceIdCounter = maxId >= 0 ? maxId + 1 : pieces.length;
-            }
-
-            setLanguage(savedLang);
-            clearPieceInputs();
-            updateSelectedEdgesDisplay();
-
-            if(resultsSummaryEl) resultsSummaryEl.textContent = getLangString("totalSheetsDefault");
-            if(wastageSectionEl) wastageSectionEl.style.display = 'none';
-            if(totalWastagePiecesSummaryEl) totalWastagePiecesSummaryEl.style.display = 'none';
-            if(usefulOffcutsSummaryEl) usefulOffcutsSummaryEl.style.display = 'none';
-            console.log("App initialized (Cutting List Tape Info v1).");
-        }
-
-        function promptForOffcutSelection() {
-            const sheetNameFilter = modalSheetNameEl.value.trim();
-            let offcutsToConsider = savedOffcuts
-                .flatMap(batch => batch.offcutsInBatch.filter(oc => oc.isIndividuallyAvailable !== false))
-                .filter(oc => {
-                    if (sheetNameFilter) {
-                        const batch = savedOffcuts.find(b => b.offcutsInBatch.some(o => o.id === oc.id));
-                        return batch && batch.sourceSheetNameForBatch && batch.sourceSheetNameForBatch.toLowerCase().includes(sheetNameFilter.toLowerCase());
-                    }
-                    return true;
-                });
-
-            if (offcutsToConsider.length === 0) {
-                alert(getLangString("noMatchingOffcuts"));
-                if(useOffcutsCheckboxEl) useOffcutsCheckboxEl.checked = false;
-                currentCalculationOffcuts = [];
-                return;
-            }
-
-            let confirmMsg = "";
-            if (sheetNameFilter) {
-                confirmMsg = getLangString("confirmUseOffcutsMsg", {count: offcutsToConsider.length, name: `"${sheetNameFilter}"`});
-            } else {
-                 confirmMsg = getLangString("confirmUseOffcutsMsg", {count: offcutsToConsider.length, name: (getLangString("allSourcesLabel") || "सभी स्रोतों")});
-            }
-
-            if (confirm(confirmMsg)) {
-                currentCalculationOffcuts = offcutsToConsider.map(oc => ({
-                    width: oc.width,
-                    length: oc.length,
-                    name: `Offcut ${oc.id.slice(-4)} (${convertFromCm(oc.width, currentUnit)}x${convertFromCm(oc.length, currentUnit)})`,
-                    hasGrain: modalSheetHasGrainEl.checked,
-                    isOffcut: true,
-                    originalStockId: oc.id,
-                    quantity: 1
-                }));
-                alert(getLangString("offcutsSelectedForCalcAlert", { count: currentCalculationOffcuts.length}));
-            } else {
-                if(useOffcutsCheckboxEl) useOffcutsCheckboxEl.checked = false;
-                currentCalculationOffcuts = [];
-            }
-        }
-
         function escapeCsvCell(cellData) {
             if (cellData === null || cellData === undefined) { return ''; }
             cellData = String(cellData);
@@ -3539,6 +3802,358 @@
                 });
             });
             exportToCsv('layout_details.csv', rows);
+        }
+
+        function copyAllPiecesToClipboard() {
+            if (pieces.length === 0) {
+                alert(getLangString("alert_noPiecesToCopy"));
+                return;
+            }
+            const pieceStrings = pieces.map(p => {
+                const widthInCurrentUnit = convertFromCm(p.width, currentUnit);
+                const lengthInCurrentUnit = convertFromCm(p.length, currentUnit);
+                let edgeString = "";
+                if (p.edgeBanding) {
+                    if (p.edgeBanding.L1) edgeString += "L1";
+                    if (p.edgeBanding.L2) edgeString += "L2";
+                    if (p.edgeBanding.W1) edgeString += "W1";
+                    if (p.edgeBanding.W2) edgeString += "W2";
+                }
+                return `${widthInCurrentUnit},${lengthInCurrentUnit},${p.quantity},${p.name},${edgeString || ""}`;
+            });
+            const textToCopy = pieceStrings.join("\n");
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textToCopy)
+                    .then(() => {
+                        alert(getLangString("alert_piecesCopiedToClipboard"));
+                    })
+                    .catch(err => {
+                        console.error('क्लिपबोर्ड पर कॉपी करने में त्रुटि:', err);
+                        alert(getLangString("alert_clipboardError"));
+                    });
+            } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = textToCopy;
+                textArea.style.position = "fixed"; 
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    alert(getLangString("alert_piecesCopiedToClipboard"));
+                } catch (err) {
+                    console.error('Fallback कॉपी करने में त्रुटि:', err);
+                    alert(getLangString("alert_clipboardError"));
+                }
+                document.body.removeChild(textArea);
+            }
+        }
+
+        function addBulkPieces() {
+            isLoadedFromHistory = false;
+            const bulkText = bulkPieceInputEl.value.trim();
+            if (!bulkText) {
+                alert(getLangString("alert_bulkInputEmpty"));
+                return;
+            }
+
+            const lines = bulkText.split('\n');
+            let piecesAddedCount = 0;
+            let errorMessages = [];
+
+            lines.forEach((line, index) => {
+                const lineNumber = index + 1;
+                const parts = line.trim().split(',');
+
+                if (parts.length < 3) { 
+                     if (line.trim() !== "") { 
+                        errorMessages.push(getLangString("alert_bulkInputLineError", {lineNumber: lineNumber, error: "अधूरा डेटा (चौड़ाई, लंबाई, मात्रा आवश्यक)"}));
+                     }
+                    return; 
+                }
+
+                const pieceW_input_str = parts[0] ? parts[0].trim() : "";
+                const pieceL_input_str = parts[1] ? parts[1].trim() : "";
+                const quantity_input_str = parts[2] ? parts[2].trim() : "1";
+                let name_input = (parts[3] || "").trim();
+                const edge_tape_input_str = (parts[4] || "").trim().toUpperCase();
+
+                const pieceW_input = parseFloat(pieceW_input_str);
+                const pieceL_input = parseFloat(pieceL_input_str);
+                const quantity = parseInt(quantity_input_str);
+
+                if (isNaN(pieceW_input) || pieceW_input <= 0) {
+                    errorMessages.push(getLangString("alert_bulkInputLineError", {lineNumber: lineNumber, error: "अमान्य चौड़ाई: " + pieceW_input_str}));
+                    return;
+                }
+                if (isNaN(pieceL_input) || pieceL_input <= 0) {
+                    errorMessages.push(getLangString("alert_bulkInputLineError", {lineNumber: lineNumber, error: "अमान्य लंबाई: " + pieceL_input_str}));
+                    return;
+                }
+                if (isNaN(quantity) || quantity <= 0) {
+                    errorMessages.push(getLangString("alert_bulkInputLineError", {lineNumber: lineNumber, error: "अमान्य मात्रा: " + quantity_input_str}));
+                    return;
+                }
+                
+                if (!name_input) {
+                    name_input = getLangString("pieceDefaultName") + (pieceIdCounter + 1);
+                }
+
+                const pieceL_cm = convertToCm(pieceL_input, currentUnit);
+                const pieceW_cm = convertToCm(pieceW_input, currentUnit);
+                
+                let edgeBandingData = { L1: false, L2: false, W1: false, W2: false };
+                if (edge_tape_input_str) {
+                    if (edge_tape_input_str.includes("L1")) edgeBandingData.L1 = true;
+                    if (edge_tape_input_str.includes("L2")) edgeBandingData.L2 = true;
+                    if (edge_tape_input_str.includes("W1")) edgeBandingData.W1 = true;
+                    if (edge_tape_input_str.includes("W2")) edgeBandingData.W2 = true;
+                }
+
+
+                pieces.push({
+                    id: pieceIdCounter,
+                    name: name_input,
+                    length: pieceL_cm,
+                    width: pieceW_cm,
+                    quantity: quantity,
+                    area: pieceL_cm * pieceW_cm,
+                    allowRotationOnGrainedSheet: false, 
+                    edgeBanding: edgeBandingData 
+                });
+                pieceIdCounter++;
+                piecesAddedCount++;
+            });
+
+            if (piecesAddedCount > 0) {
+                renderPiecesTable();
+                autoSaveData();
+                saveStateToHistory();
+                bulkPieceInputEl.value = ''; 
+                alert(getLangString("alert_bulkPiecesAdded", {count: piecesAddedCount}));
+            }
+
+            if (errorMessages.length > 0) {
+                console.error("Bulk Add Errors:\n" + errorMessages.join("\n"));
+                alert(getLangString("alert_bulkInputFinishedWithErrors") + "\n" + errorMessages.slice(0,3).join("\n") + (errorMessages.length > 3 ? "\n(...और अधिक त्रुटियाँ)" : ""));
+            }
+        }
+
+        function toggleBulkAddSection() {
+            const isHidden = bulkAddSectionEl.style.display === 'none' || bulkAddSectionEl.style.display === '';
+            bulkAddSectionEl.style.display = isHidden ? 'block' : 'none';
+            toggleBulkAddBtnEl.textContent = isHidden ? getLangString("toggleBulkAddBtnHide") : getLangString("toggleBulkAddBtn");
+            localStorage.setItem(STORAGE_KEY_BULK_ADD_VISIBLE, isHidden.toString());
+             if (isHidden) {
+                bulkPieceInputEl.focus();
+            }
+        }
+
+
+        function initializeApp() {
+            cacheDOMElements();
+            partWidthEl.step = "any"; partLengthEl.step = "any";
+            modalSheetWidthEl.step = "any"; modalSheetLengthEl.step = "any";
+            modalSheetCostEl.step = "any";
+            modalKerfWidthEl.step = "any";
+            minOffcutWidthEl.step = "any"; minOffcutLengthEl.step = "any";
+
+            loadSavedOffcuts();
+            loadOffcutSettings();
+
+            const savedGrainColor = localStorage.getItem(STORAGE_KEY_GRAIN_COLOR);
+            if (savedGrainColor) {
+                currentGrainColor = savedGrainColor;
+                if (modalGrainColorEl) modalGrainColorEl.value = savedGrainColor;
+            } else {
+                if (modalGrainColorEl) modalGrainColorEl.value = currentGrainColor;
+            }
+             if(modalGrainColorEl) {
+                modalGrainColorEl.addEventListener('change', function() {
+                    currentGrainColor = this.value;
+                    localStorage.setItem(STORAGE_KEY_GRAIN_COLOR, currentGrainColor);
+                    if (lastCalculatedSheetsData) {
+                        displayLayoutOnCanvas(lastCalculatedSheetsData);
+                    }
+                });
+            }
+            loadGrainPattern();
+            if (modalGrainPatternEl) {
+                modalGrainPatternEl.addEventListener('change', function() {
+                    saveGrainPattern();
+                    if (lastCalculatedSheetsData) {
+                        displayLayoutOnCanvas(lastCalculatedSheetsData);
+                    }
+                });
+            }
+
+
+            const savedFittingStrategy = localStorage.getItem(STORAGE_KEY_FITTING_STRATEGY);
+            if (savedFittingStrategy) {
+                currentFittingStrategy = savedFittingStrategy;
+                if (fittingStrategySelectorEl) fittingStrategySelectorEl.value = savedFittingStrategy;
+            } else {
+                 if (fittingStrategySelectorEl) fittingStrategySelectorEl.value = currentFittingStrategy;
+            }
+            if(fittingStrategySelectorEl){
+                fittingStrategySelectorEl.addEventListener('change', function() {
+                    currentFittingStrategy = this.value;
+                    localStorage.setItem(STORAGE_KEY_FITTING_STRATEGY, currentFittingStrategy);
+                });
+            }
+            if(useOffcutsCheckboxEl){
+                useOffcutsCheckboxEl.addEventListener('change', function() {
+                    if (this.checked) {
+                        promptForOffcutSelection();
+                    } else {
+                        currentCalculationOffcuts = [];
+                    }
+                });
+            }
+
+            projectLocationEl.value = localStorage.getItem(STORAGE_KEY_PROJECT_LOCATION) || '';
+            projectNotesEl.value = localStorage.getItem(STORAGE_KEY_PROJECT_NOTES) || '';
+
+            const bulkAddVisibleSaved = localStorage.getItem(STORAGE_KEY_BULK_ADD_VISIBLE);
+            if (bulkAddVisibleSaved === 'true') {
+                bulkAddSectionEl.style.display = 'block';
+                toggleBulkAddBtnEl.textContent = getLangString("toggleBulkAddBtnHide");
+            } else {
+                bulkAddSectionEl.style.display = 'none';
+                toggleBulkAddBtnEl.textContent = getLangString("toggleBulkAddBtn");
+            }
+
+
+            if (projectLocationEl) projectLocationEl.addEventListener('input', () => { isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
+            if (projectNotesEl) projectNotesEl.addEventListener('input', () => { isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
+
+
+            if(modalSheetLengthEl) modalSheetLengthEl.addEventListener('change', () => {isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
+            if(modalSheetWidthEl) modalSheetWidthEl.addEventListener('change', () => {isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
+            if(modalSheetCostEl) modalSheetCostEl.addEventListener('input', () => {isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
+            if(modalKerfWidthEl) modalKerfWidthEl.addEventListener('input', () => {isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
+            if(modalSheetHasGrainEl) modalSheetHasGrainEl.addEventListener('change', () => {isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
+            if(modalSheetNameEl) modalSheetNameEl.addEventListener('input', () => {isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
+
+            if (document.body) {
+                document.body.addEventListener('click', function(event) {
+                    if (openDropdownMenuId) {
+                        const menu = document.getElementById(openDropdownMenuId);
+                        const buttonForMenu = document.querySelector(`button[onclick*="${openDropdownMenuId}"]`);
+                        
+                        if (menu && (!menu.contains(event.target)) && (!buttonForMenu || !buttonForMenu.contains(event.target))) {
+                           closeAllDropdowns();
+                        }
+                    }
+                });
+            }
+
+
+            loadProjectsFromStorage();
+            loadHistoryFromStorage();
+            loadCuttingListCheckboxStates();
+            const savedLang = localStorage.getItem(STORAGE_KEY_LANGUAGE) || 'hi';
+            const savedUnit = localStorage.getItem(STORAGE_KEY_CURRENT_UNIT) || 'cm';
+            currentUnit = savedUnit;
+
+            const settingsStr = localStorage.getItem(STORAGE_KEY_SETTINGS);
+            if (settingsStr) {
+                try {
+                    const settings = JSON.parse(settingsStr);
+                    if(modalSheetWidthEl) modalSheetWidthEl.value = convertFromCm(settings.sheetWidth, currentUnit) || "";
+                    if(modalSheetLengthEl) modalSheetLengthEl.value = convertFromCm(settings.sheetLength, currentUnit) || "";
+                    if(modalSheetHasGrainEl) modalSheetHasGrainEl.checked = typeof settings.hasGrain === 'boolean' ? settings.hasGrain : true;
+                    if(modalSheetNameEl) modalSheetNameEl.value = settings.sheetName || "";
+                    if (settings.sheetCost !== undefined && !isNaN(parseFloat(settings.sheetCost))) {
+                        modalSheetCostEl.value = settings.sheetCost;
+                    } else {
+                        modalSheetCostEl.value = '';
+                    }
+                    if (settings.kerfWidth !== undefined) {
+                        modalKerfWidthEl.value = convertFromCm(settings.kerfWidth, currentUnit);
+                    } else {
+                        modalKerfWidthEl.value = convertFromCm(0.3, currentUnit);
+                    }
+                } catch (e) {
+                    console.error("Error parsing settings from localStorage:", e);
+                }
+            }
+            if(!modalSheetWidthEl.value) modalSheetWidthEl.value = convertFromCm(122, currentUnit);
+            if(!modalSheetLengthEl.value) modalSheetLengthEl.value = convertFromCm(244, currentUnit);
+            if(!modalKerfWidthEl.value) modalKerfWidthEl.value = convertFromCm(0.3, currentUnit);
+            if(typeof modalSheetHasGrainEl.checked !== 'boolean') modalSheetHasGrainEl.checked = true;
+
+            loadOffcutSettings();
+
+            const piecesStr = localStorage.getItem(STORAGE_KEY_PIECES);
+            if (piecesStr) {
+                try {
+                    pieces = JSON.parse(piecesStr).map(ensureEdgeBandingProperty);
+                    pieces.forEach(p => {
+                        p.allowRotationOnGrainedSheet = p.allowRotationOnGrainedSheet || false;
+                    });
+                } catch (e) { console.error("Error parsing pieces from localStorage:", e); pieces = []; }
+            }
+            const idCounterStr = localStorage.getItem(STORAGE_KEY_ID_COUNTER);
+            pieceIdCounter = idCounterStr ? parseInt(idCounterStr) : 0;
+             if (pieces && pieces.length > 0 && pieceIdCounter === 0) {
+                const maxId = pieces.reduce((max, p) => (typeof p.id === 'number' && p.id > max ? p.id : max), -1);
+                pieceIdCounter = maxId >= 0 ? maxId + 1 : pieces.length;
+            }
+
+            setLanguage(savedLang); 
+            clearPieceInputs();
+            updateSelectedEdgesDisplay();
+
+            if(resultsSummaryEl) resultsSummaryEl.textContent = getLangString("totalSheetsDefault");
+            if(wastageSectionEl) wastageSectionEl.style.display = 'none';
+            if(totalWastagePiecesSummaryEl) totalWastagePiecesSummaryEl.style.display = 'none';
+            if(usefulOffcutsSummaryEl) usefulOffcutsSummaryEl.style.display = 'none';
+            console.log("App initialized (Bulk Add Toggle & Edge Tape in Copy/Bulk).");
+        }
+
+        function promptForOffcutSelection() {
+            const sheetNameFilter = modalSheetNameEl.value.trim();
+            let offcutsToConsider = savedOffcuts
+                .flatMap(batch => batch.offcutsInBatch.filter(oc => oc.isIndividuallyAvailable !== false))
+                .filter(oc => {
+                    if (sheetNameFilter) {
+                        const batch = savedOffcuts.find(b => b.offcutsInBatch.some(o => o.id === oc.id));
+                        return batch && batch.sourceSheetNameForBatch && batch.sourceSheetNameForBatch.toLowerCase().includes(sheetNameFilter.toLowerCase());
+                    }
+                    return true;
+                });
+
+            if (offcutsToConsider.length === 0) {
+                alert(getLangString("noMatchingOffcuts"));
+                if(useOffcutsCheckboxEl) useOffcutsCheckboxEl.checked = false;
+                currentCalculationOffcuts = [];
+                return;
+            }
+
+            let confirmMsg = "";
+            if (sheetNameFilter) {
+                confirmMsg = getLangString("confirmUseOffcutsMsg", {count: offcutsToConsider.length, name: `"${sheetNameFilter}"`});
+            } else {
+                 confirmMsg = getLangString("confirmUseOffcutsMsg", {count: offcutsToConsider.length, name: (getLangString("allSourcesLabel") || "सभी स्रोतों")});
+            }
+
+            if (confirm(confirmMsg)) {
+                currentCalculationOffcuts = offcutsToConsider.map(oc => ({
+                    width: oc.width,
+                    length: oc.length,
+                    name: `Offcut ${oc.id.slice(-4)} (${convertFromCm(oc.width, currentUnit)}x${convertFromCm(oc.length, currentUnit)})`,
+                    hasGrain: modalSheetHasGrainEl.checked,
+                    isOffcut: true,
+                    originalStockId: oc.id,
+                    quantity: 1
+                }));
+                alert(getLangString("offcutsSelectedForCalcAlert", { count: currentCalculationOffcuts.length}));
+            } else {
+                if(useOffcutsCheckboxEl) useOffcutsCheckboxEl.checked = false;
+                currentCalculationOffcuts = [];
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
