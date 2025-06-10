@@ -663,6 +663,7 @@
                         <option value="bottomLeftFreeRect" data-lang-key="strategyBottomLeftFree">खाली आयत (बॉटम-लेफ्ट प्राथमिकता)</option>
                         <option value="bfdh" data-lang-key="strategyBFDH">बेस्ट फिट डिक्रीजिंग हाइट (BFDH)</option>
                         <option value="bfdw" data-lang-key="strategyBFDW">बेस्ट फिट डिक्रीजिंग विड्थ (BFDW)</option>
+                        <option value="guillotineBestShortSideFit" data-lang-key="strategyGuillotineBSSF">गिलोटिन - बेस्ट शॉर्ट साइड फिट (BSSF)</option>
                         <option value="sortPiecesByPerimeterDesc" data-lang-key="strategySortPiecePerimeterDesc">पीस: परिधि (बड़े पहले)</option>
                         <option value="sortPiecesByLongestSideDesc" data-lang-key="strategySortPieceLongestSideDesc">पीस: सबसे लंबी भुजा पहले</option>
                         <option value="sortPiecesByShortestSideAsc" data-lang-key="strategySortPieceShortestSideAsc">पीस: सबसे छोटी भुजा पहले</option>
@@ -827,38 +828,179 @@
         const workerCode = `
             let freeRectIdCounter_worker = 0;
             function isRectInside(rectA, rectB) { return rectA.x >= rectB.x && rectA.y >= rectB.y && rectA.x + rectA.width <= rectB.x + rectB.width && rectA.y + rectA.height <= rectB.y + rectB.height; }
-            function optimizeFreeRects(freeRects) { if (!freeRects || freeRects.length < 2) return; let i = 0; while (i < freeRects.length) { if (!freeRects[i]) { i++; continue; } let j = i + 1; while (j < freeRects.length) { if (!freeRects[j]) { j++; continue; } if (isRectInside(freeRects[i], freeRects[j])) { freeRects.splice(i, 1); i--; break; } else if (isRectInside(freeRects[j], freeRects[i])) { freeRects.splice(j, 1); j--; } j++; } i++; } }
+            
+            function optimizeAdjacentFreeRects(freeRects) {
+                let merged;
+                do {
+                    merged = false;
+                    for (let i = 0; i < freeRects.length; i++) {
+                        for (let j = i + 1; j < freeRects.length; j++) {
+                            const r1 = freeRects[i];
+                            const r2 = freeRects[j];
+                            if (!r1 || !r2) continue;
+
+                            if (Math.abs(r1.y - r2.y) < 0.01 && Math.abs(r1.height - r2.height) < 0.01) {
+                                if (Math.abs(r1.x + r1.width - r2.x) < 0.01) {
+                                    r1.width += r2.width; freeRects.splice(j, 1); merged = true; break;
+                                } else if (Math.abs(r2.x + r2.width - r1.x) < 0.01) {
+                                    r2.width += r1.width; freeRects.splice(i, 1); merged = true; break;
+                                }
+                            }
+                            else if (Math.abs(r1.x - r2.x) < 0.01 && Math.abs(r1.width - r2.width) < 0.01) {
+                                if (Math.abs(r1.y + r1.height - r2.y) < 0.01) {
+                                    r1.height += r2.height; freeRects.splice(j, 1); merged = true; break;
+                                } else if (Math.abs(r2.y + r2.height - r1.y) < 0.01) {
+                                    r2.height += r1.height; freeRects.splice(i, 1); merged = true; break;
+                                }
+                            }
+                        }
+                        if (merged) break;
+                    }
+                } while (merged);
+            }
+
+            function optimizeFreeRects(freeRects) { 
+                if (!freeRects || freeRects.length < 2) return; 
+                let i = 0; 
+                while (i < freeRects.length) { 
+                    if (!freeRects[i]) { i++; continue; } 
+                    let j = i + 1; 
+                    while (j < freeRects.length) { 
+                        if (!freeRects[j]) { j++; continue; } 
+                        if (isRectInside(freeRects[i], freeRects[j])) { 
+                            freeRects.splice(i, 1); i--; break; 
+                        } else if (isRectInside(freeRects[j], freeRects[i])) { 
+                            freeRects.splice(j, 1); j--; 
+                        } 
+                        j++; 
+                    } 
+                    i++; 
+                } 
+                optimizeAdjacentFreeRects(freeRects); // आसन्न रेक्ट्स को मर्ज करने के लिए कॉल
+            }
             
             function splitFreeRect(sheet, rectIndexBeingUsed, pk, kerfWidth) {
                 const R = sheet.freeRects.splice(rectIndexBeingUsed, 1)[0];
                 let newFragments = [];
                 const halfKerf = kerfWidth > 0 ? kerfWidth / 2 : 0;
 
-                // Top fragment
                 if (pk.y > R.y) {
                     const h = pk.y - R.y - (pk.y > R.y ? halfKerf : 0);
                     if (h > 0.01) newFragments.push({ x: R.x, y: R.y, width: R.width, height: h, id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-T\` });
                 }
-                // Bottom fragment
                 const bottomY = pk.y + pk.placedLength + ((pk.y + pk.placedLength < R.y + R.height) ? halfKerf : 0);
                 if (bottomY < R.y + R.height) {
                     const h = (R.y + R.height) - bottomY;
                     if (h > 0.01) newFragments.push({ x: R.x, y: bottomY, width: R.width, height: h, id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-B\` });
                 }
-                // Left fragment
                 if (pk.x > R.x) {
                     const w = pk.x - R.x - (pk.x > R.x ? halfKerf : 0);
                     if (w > 0.01) newFragments.push({ x: R.x, y: pk.y, width: w, height: pk.placedLength, id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-L\` });
                 }
-                // Right fragment
                 const rightX = pk.x + pk.placedWidth + ((pk.x + pk.placedWidth < R.x + R.width) ? halfKerf : 0);
                 if (rightX < R.x + R.width) {
                     const w = (R.x + R.width) - rightX;
                     if (w > 0.01) newFragments.push({ x: rightX, y: pk.y, width: w, height: pk.placedLength, id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-R\` });
                 }
                 
+                for (let frag of newFragments) { if (frag.width > 0.01 && frag.height > 0.01) sheet.freeRects.push(frag); }
+                optimizeFreeRects(sheet.freeRects);
+            }
+
+            function splitFreeRectGuillotine(sheet, rectIndexBeingUsed, pk, kerfWidth) {
+                const R = sheet.freeRects.splice(rectIndexBeingUsed, 1)[0];
+                let newFragments = [];
+                
+                const cutAlongWidth = (R.width < R.height + 0.01); // थोड़ा टॉलरेंस जोड़ें
+
+                if (cutAlongWidth) { // लंबवत पहला कट (R के छोटे किनारे के समानांतर)
+                    // Fragment 1: pk के दाईं ओर का क्षेत्र
+                    if (R.x + R.width > pk.x + pk.placedWidth + kerfWidth + 0.01) {
+                        newFragments.push({
+                            x: pk.x + pk.placedWidth + kerfWidth,
+                            y: R.y,
+                            width: (R.x + R.width) - (pk.x + pk.placedWidth + kerfWidth),
+                            height: R.height, // पूरी ऊंचाई
+                            id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-G-RFull\`
+                        });
+                    }
+                    // Fragment 2: pk के बाईं ओर का क्षेत्र
+                     if (pk.x > R.x + kerfWidth + 0.01) {
+                        newFragments.push({
+                            x: R.x,
+                            y: R.y,
+                            width: pk.x - R.x - kerfWidth,
+                            height: R.height, // पूरी ऊंचाई
+                            id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-G-LFull\`
+                        });
+                    }
+                    // अब pk वाली "स्ट्रिप" को क्षैतिज रूप से विभाजित करें
+                    // Fragment 3: pk के ऊपर
+                    if (pk.y > R.y + kerfWidth + 0.01) {
+                         newFragments.push({
+                            x: pk.x, // pk के x पर शुरू
+                            y: R.y,
+                            width: pk.placedWidth, // pk की चौड़ाई
+                            height: pk.y - R.y - kerfWidth,
+                            id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-G-AbovePk\`
+                        });
+                    }
+                    // Fragment 4: pk के नीचे
+                    if (R.y + R.height > pk.y + pk.placedLength + kerfWidth + 0.01) {
+                        newFragments.push({
+                            x: pk.x, // pk के x पर शुरू
+                            y: pk.y + pk.placedLength + kerfWidth,
+                            width: pk.placedWidth, // pk की चौड़ाई
+                            height: (R.y + R.height) - (pk.y + pk.placedLength + kerfWidth),
+                            id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-G-BelowPk\`
+                        });
+                    }
+                } else { // क्षैतिज पहला कट (R के छोटे किनारे के समानांतर)
+                    // Fragment 1: pk के नीचे का क्षेत्र
+                    if (R.y + R.height > pk.y + pk.placedLength + kerfWidth + 0.01) {
+                        newFragments.push({
+                            x: R.x,
+                            y: pk.y + pk.placedLength + kerfWidth,
+                            width: R.width, // पूरी चौड़ाई
+                            height: (R.y + R.height) - (pk.y + pk.placedLength + kerfWidth),
+                            id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-G-BFull\`
+                        });
+                    }
+                     // Fragment 2: pk के ऊपर का क्षेत्र
+                    if (pk.y > R.y + kerfWidth + 0.01) {
+                        newFragments.push({
+                            x: R.x,
+                            y: R.y,
+                            width: R.width, // पूरी चौड़ाई
+                            height: pk.y - R.y - kerfWidth,
+                            id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-G-AFull\`
+                        });
+                    }
+                    // अब pk वाली "स्ट्रिप" को लंबवत रूप से विभाजित करें
+                    // Fragment 3: pk के बाईं ओर
+                     if (pk.x > R.x + kerfWidth + 0.01) {
+                        newFragments.push({
+                            x: R.x,
+                            y: pk.y, // pk के y पर शुरू
+                            width: pk.x - R.x - kerfWidth,
+                            height: pk.placedLength, // pk की ऊंचाई
+                            id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-G-LeftPk\`
+                        });
+                    }
+                    // Fragment 4: pk के दाईं ओर
+                    if (R.x + R.width > pk.x + pk.placedWidth + kerfWidth + 0.01) {
+                         newFragments.push({
+                            x: pk.x + pk.placedWidth + kerfWidth,
+                            y: pk.y, // pk के y पर शुरू
+                            width: (R.x + R.width) - (pk.x + pk.placedWidth + kerfWidth),
+                            height: pk.placedLength, // pk की ऊंचाई
+                            id: \`FR-S\${sheet.id}-\${++freeRectIdCounter_worker}-G-RightPk\`
+                        });
+                    }
+                }
+
                 for (let frag of newFragments) {
-                    if (frag.width > 0.01 && frag.height > 0.01) {
+                    if (frag.width > 0.001 && frag.height > 0.001) { // बहुत छोटे फ्रेगमेंट्स को अनदेखा करें
                         sheet.freeRects.push(frag);
                     }
                 }
@@ -866,13 +1008,20 @@
             }
 
             function tryPlacePieceOnSheet(piece, sheet, kerfWidth, strategy) {
-                if (strategy === 'bottomLeftFreeRect') { sheet.freeRects.sort((a, b) => a.y - b.y || a.x - b.x); }
-                else if (strategy === 'firstFit') { sheet.freeRects.sort((a, b) => a.y - b.y || a.x - b.x);  }
-                else if (strategy === 'worstFit') { sheet.freeRects.sort((a,b) => (b.width * b.height) - (a.width * a.height) || b.y - a.y || b.x - a.x); }
-                else { sheet.freeRects.sort((a, b) => (a.width * a.height) - (b.width * b.height) || a.y - b.y || a.x - b.x); }
+                if (strategy === 'guillotineBestShortSideFit') {
+                    sheet.freeRects.sort((a, b) => Math.min(a.width, a.height) - Math.min(b.width, b.height) || (a.width * a.height) - (b.width * b.height) || a.y - b.y || a.x - b.x);
+                } else if (strategy === 'bottomLeftFreeRect') { 
+                    sheet.freeRects.sort((a, b) => a.y - b.y || a.x - b.x); 
+                } else if (strategy === 'firstFit') { 
+                    sheet.freeRects.sort((a, b) => a.y - b.y || a.x - b.x);  
+                } else if (strategy === 'worstFit') { 
+                    sheet.freeRects.sort((a,b) => (b.width * b.height) - (a.width * a.height) || b.y - a.y || b.x - a.x); 
+                } else { // defaultScore and others
+                    sheet.freeRects.sort((a, b) => (a.width * a.height) - (b.width * b.height) || a.y - b.y || a.x - b.x); 
+                }
 
                 let bestFit = null;
-                let scoreMetric = (strategy === 'worstFit') ? -Infinity : Infinity;
+                let scoreMetric = (strategy === 'worstFit') ? -Infinity : Infinity; // WorstFit के लिए अधिकतम स्कोर, अन्य के लिए न्यूनतम
 
                 for (let i = 0; i < sheet.freeRects.length; i++) {
                     const rect = sheet.freeRects[i];
@@ -880,37 +1029,69 @@
                     const pieceW_orig = piece.width;
                     let currentOrientationFits = [];
 
-                    if (pieceL_orig <= rect.height && pieceW_orig <= rect.width) {
+                    // केरफ़ के साथ समायोजित आवश्यक स्थान (गिलोटिन के लिए यह अधिक जटिल हो सकता है कि कौन सा किनारा पहले कटता है)
+                    // सरल दृष्टिकोण: दोनों आयामों में केरफ़ जोड़ें, स्प्लिटर इसे सही करेगा।
+                    const reqL = pieceL_orig; // pieceL_orig + (strategy.includes('guillotine') ? kerfWidth : 0);
+                    const reqW = pieceW_orig; // pieceW_orig + (strategy.includes('guillotine') ? kerfWidth : 0);
+
+
+                    if (reqL <= rect.height && reqW <= rect.width) { // Original orientation
                         let score;
-                        if (strategy === 'minWastageArea' || strategy === 'worstFit') { score = (rect.width * rect.height) - (pieceW_orig * pieceL_orig); }
-                        else if (strategy === 'firstFit') { bestFit = { rectIndex: i, x: rect.x, y: rect.y, placedLength: pieceL_orig, placedWidth: pieceW_orig, isRotated: false, score: 0 }; break; }
-                        else { score = Math.min(rect.width - pieceW_orig, rect.height - pieceL_orig) + ((rect.width - pieceW_orig) * (rect.height - pieceL_orig) * 0.001); }
+                        if (strategy === 'minWastageArea' || strategy === 'worstFit' || strategy === 'guillotineBestShortSideFit') {
+                            score = (rect.width * rect.height) - (reqW * reqL); 
+                        } else if (strategy === 'firstFit') { 
+                            bestFit = { rectIndex: i, x: rect.x, y: rect.y, placedLength: pieceL_orig, placedWidth: pieceW_orig, isRotated: false, score: 0 }; break; 
+                        } else { // defaultScore
+                            score = Math.min(rect.width - reqW, rect.height - reqL) + ((rect.width - reqW) * (rect.height - reqL) * 0.001); 
+                        }
                         currentOrientationFits.push({ rectIndex: i, x: rect.x, y: rect.y, placedLength: pieceL_orig, placedWidth: pieceW_orig, isRotated: false, score: score });
                     }
 
                     const canRotateThisPieceOnGrained = piece.allowRotationOnGrainedSheet === true;
                     if ( (!sheet.hasGrain) || (sheet.hasGrain && canRotateThisPieceOnGrained) ) {
-                        if (pieceW_orig <= rect.height && pieceL_orig <= rect.width) {
+                        if (reqW <= rect.height && reqL <= rect.width) { // Rotated (pieceW is length, pieceL is width)
                             let scoreRotated;
-                            if (strategy === 'minWastageArea' || strategy === 'worstFit') { scoreRotated = (rect.width * rect.height) - (pieceL_orig * pieceW_orig); }
-                            else if (strategy === 'firstFit') { bestFit = { rectIndex: i, x: rect.x, y: rect.y, placedLength: pieceW_orig, placedWidth: pieceL_orig, isRotated: true, score: 0 }; break; }
-                            else { scoreRotated = Math.min(rect.width - pieceL_orig, rect.height - pieceW_orig) + ((rect.width - pieceL_orig) * (rect.height - pieceW_orig) * 0.001); }
+                            if (strategy === 'minWastageArea' || strategy === 'worstFit' || strategy === 'guillotineBestShortSideFit') { 
+                                scoreRotated = (rect.width * rect.height) - (reqL * reqW); 
+                            } else if (strategy === 'firstFit') { 
+                                bestFit = { rectIndex: i, x: rect.x, y: rect.y, placedLength: pieceW_orig, placedWidth: pieceL_orig, isRotated: true, score: 0 }; break; 
+                            } else { // defaultScore
+                                scoreRotated = Math.min(rect.width - reqL, rect.height - reqW) + ((rect.width - reqL) * (rect.height - reqW) * 0.001); 
+                            }
                              currentOrientationFits.push({ rectIndex: i, x: rect.x, y: rect.y, placedLength: pieceW_orig, placedWidth: pieceL_orig, isRotated: true, score: scoreRotated });
                         }
                     }
-
-                    if (strategy === 'firstFit' && bestFit) break;
+                    
+                    if (strategy === 'firstFit' && bestFit) break; // First Fit के लिए, पहला वैध फिट लें
 
                     for(const fitAttempt of currentOrientationFits){
-                        if (strategy === 'worstFit') {
-                            if (bestFit === null || fitAttempt.score > scoreMetric) { scoreMetric = fitAttempt.score; bestFit = fitAttempt; }
-                            else if (fitAttempt.score === scoreMetric) { if (fitAttempt.y < bestFit.y || (fitAttempt.y === bestFit.y && fitAttempt.x < bestFit.x)) { bestFit = fitAttempt; } }
-                        } else {
-                            if (bestFit === null || fitAttempt.score < scoreMetric) { scoreMetric = fitAttempt.score; bestFit = fitAttempt; }
-                            else if (fitAttempt.score === scoreMetric) { if (fitAttempt.y < bestFit.y || (fitAttempt.y === bestFit.y && fitAttempt.x < bestFit.x)) { bestFit = fitAttempt; } }
+                        if (strategy === 'worstFit') { // Maximise score (remaining area)
+                            if (bestFit === null || fitAttempt.score > scoreMetric) { 
+                                scoreMetric = fitAttempt.score; bestFit = fitAttempt; 
+                            } else if (fitAttempt.score === scoreMetric) { // Tie-breaking for worstFit (prefer top-left)
+                                if (fitAttempt.y < bestFit.y || (fitAttempt.y === bestFit.y && fitAttempt.x < bestFit.x)) { 
+                                    bestFit = fitAttempt; 
+                                } 
+                            }
+                        } else { // Minimise score (defaultScore, minWastage, guillotineBestShortSideFit)
+                            if (bestFit === null || fitAttempt.score < scoreMetric) { 
+                                scoreMetric = fitAttempt.score; bestFit = fitAttempt; 
+                            } else if (fitAttempt.score === scoreMetric) { // Tie-breaking
+                                if (strategy === 'guillotineBestShortSideFit') {
+                                    const rectA_obj = sheet.freeRects[fitAttempt.rectIndex];
+                                    const rectB_obj = sheet.freeRects[bestFit.rectIndex];
+                                    if (Math.min(rectA_obj.width, rectA_obj.height) < Math.min(rectB_obj.width, rectB_obj.height)) {
+                                         bestFit = fitAttempt; // Prefer rect with smaller short side
+                                    } else if (fitAttempt.y < bestFit.y || (fitAttempt.y === bestFit.y && fitAttempt.x < bestFit.x)) { // Then top-left
+                                         bestFit = fitAttempt;
+                                    }
+                                } else if (fitAttempt.y < bestFit.y || (fitAttempt.y === bestFit.y && fitAttempt.x < bestFit.x)) { // Default tie-breaker: top-left
+                                    bestFit = fitAttempt; 
+                                } 
+                            }
                         }
                     }
-                     if (strategy === 'firstFit' && bestFit) break;
+                     if (strategy === 'firstFit' && bestFit) break; // Double check for firstFit
                 }
 
                 if (bestFit) {
@@ -918,7 +1099,12 @@
                     piece.placedLength = bestFit.placedLength; piece.placedWidth = bestFit.placedWidth;
                     piece.isRotated = bestFit.isRotated; piece.sheetId = sheet.id;
                     piece.isPlaced = true; sheet.placedPieces.push({...piece});
-                    splitFreeRect(sheet, bestFit.rectIndex, piece, kerfWidth);
+
+                    if (strategy === 'guillotineBestShortSideFit') {
+                        splitFreeRectGuillotine(sheet, bestFit.rectIndex, piece, kerfWidth);
+                    } else {
+                        splitFreeRect(sheet, bestFit.rectIndex, piece, kerfWidth);
+                    }
                     return true;
                 }
                 return false;
@@ -931,26 +1117,25 @@
                     const { pieces: workerIndividualPieces, stockItems, kerfWidth, strategy } = data;
                     workerIndividualPieces.forEach(p => p.isPlaced = false);
 
-                    // Sort pieces based on strategy for initial piece ordering
-                    if (strategy === 'defaultScore' || strategy === 'minWastageArea' || strategy === 'firstFit' || strategy === 'worstFit' || strategy === 'bottomLeftFreeRect') {
-                        workerIndividualPieces.sort((a, b) => b.area - a.area); // Default: largest area first
+                    if (strategy === 'guillotineBestShortSideFit') {
+                        workerIndividualPieces.sort((a, b) => b.area - a.area || Math.max(b.width, b.length) - Math.max(a.width, a.length) ); // क्षेत्रफल, फिर सबसे लंबी भुजा
+                    } else if (strategy === 'defaultScore' || strategy === 'minWastageArea' || strategy === 'firstFit' || strategy === 'worstFit' || strategy === 'bottomLeftFreeRect') {
+                        workerIndividualPieces.sort((a, b) => b.area - a.area);
                     } else if (strategy === 'bfdh' || strategy === 'sortPiecesByHeightDesc') {
-                        workerIndividualPieces.sort((a, b) => b.length - a.length || b.area - a.area); // Decreasing height/length
+                        workerIndividualPieces.sort((a, b) => b.length - a.length || b.area - a.area);
                     } else if (strategy === 'bfdw' || strategy === 'sortPiecesByWidthDesc') {
-                        workerIndividualPieces.sort((a, b) => b.width - a.width || b.area - a.area); // Decreasing width
+                        workerIndividualPieces.sort((a, b) => b.width - a.width || b.area - a.area);
                     } else if (strategy === 'sortPiecesByAreaAsc') {
                         workerIndividualPieces.sort((a, b) => a.area - b.area);
                     } else if (strategy === 'sortPiecesByPerimeterDesc') {
-                        // Perimeter sort already in place, but using explicit (L+W)*2 for clarity
                         workerIndividualPieces.sort((a, b) => ((b.width + b.length) * 2 - (a.width + a.length) * 2) || b.area - a.area);
                     } else if (strategy === 'sortPiecesByLongestSideDesc') {
                         workerIndividualPieces.sort((a, b) => (Math.max(b.width, b.length) - Math.max(a.width, a.length)) || b.area - a.area);
                     } else if (strategy === 'sortPiecesByShortestSideAsc') {
                         workerIndividualPieces.sort((a, b) => (Math.min(a.width, a.length) - Math.min(b.width, b.length)) || a.area - b.area);
                     } else {
-                        workerIndividualPieces.sort((a, b) => b.area - a.area); // Fallback to largest area first
+                        workerIndividualPieces.sort((a, b) => b.area - a.area);
                     }
-
 
                     let sheetsLayoutData = [];
                     let currentSheetIdGlobal = 0;
@@ -979,11 +1164,14 @@
 
                             let piecesPlacedOnThisSheetInstance = true;
                             let innerSafetyBreak = 0;
-                            const MAX_ITERATIONS_PER_SHEET_INSTANCE = workerIndividualPieces.length * 2 + 5;
+                            const MAX_ITERATIONS_PER_SHEET_INSTANCE = workerIndividualPieces.length * 2 + 20;
 
                             while(piecesPlacedOnThisSheetInstance){
                                 innerSafetyBreak++;
-                                if (innerSafetyBreak > MAX_ITERATIONS_PER_SHEET_INSTANCE) break;
+                                if (innerSafetyBreak > MAX_ITERATIONS_PER_SHEET_INSTANCE) {
+                                    console.warn(\`Max iterations (\${MAX_ITERATIONS_PER_SHEET_INSTANCE}) reached for sheet \${newSheet.id}, strategy: \${strategy}\`);
+                                    break;
+                                }
                                 piecesPlacedOnThisSheetInstance = false;
                                 for (let piece of workerIndividualPieces) {
                                     if (piece.isPlaced) continue;
@@ -992,7 +1180,9 @@
                                         if (newSheet.isOffcutSheet && !usedStockItemOriginalIds.includes(newSheet.originalStockId)) {
                                             usedStockItemOriginalIds.push(newSheet.originalStockId);
                                         }
-                                        break;
+                                        // For some strategies like FFDH or BFDH, you might re-sort pieces *not yet placed*
+                                        // or continue with the current order. Here we just break to retry placing all unplaced.
+                                        break; 
                                     }
                                 }
                             }
@@ -1002,18 +1192,19 @@
                                 sheetsFromThisStockItem++;
                                 self.postMessage({ type: 'LAYOUT_PROGRESS', progress: { sheetsProcessed: sheetsLayoutData.length } });
                             } else {
-                                break;
+                                // console.log(\`No pieces placed on new sheet instance \${newSheet.id} from stock \${stockDefinition.name}, breaking from this stock item.\`);
+                                break; 
                             }
                         }
                     }
 
                     const finalSheetsLayoutData = sheetsLayoutData.filter(s => s.placedPieces.length > 0);
-
+                    
                     if (workerIndividualPieces.some(p => !p.isPlaced) && finalSheetsLayoutData.length === 0) {
                         const unplacedExample = workerIndividualPieces.find(p => !p.isPlaced);
                         let errorMsg = "कोई भी पीस किसी भी उपलब्ध स्टॉक पर फिट नहीं हो सका।";
                         if (unplacedExample) {
-                             errorMsg = \`पीस "\${unplacedExample.name}" (\${unplacedExample.width}x\${unplacedExample.length}) फिट नहीं हो सका। स्टॉक आकार जांचें।\`;
+                             errorMsg = \`पीस "\${unplacedExample.name}" (\${unplacedExample.width}x\${unplacedExample.length}) फिट नहीं हो सका। स्टॉक आकार या केरफ़ जांचें। रणनीति: \${strategy}\`;
                         }
                         self.postMessage({ type: 'LAYOUT_ERROR', error: errorMsg, result: [], usedOffcutIds: usedStockItemOriginalIds });
                         return;
@@ -1021,7 +1212,7 @@
                          const unplacedExample = workerIndividualPieces.find(p => !p.isPlaced);
                          let errorMsg = "सभी पीस फिट नहीं हो सके।";
                          if (unplacedExample) {
-                              errorMsg = \`पीस "\${unplacedExample.name}" (\${unplacedExample.width}x\${unplacedExample.length}) के लिए कोई उपयुक्त स्थान नहीं मिला।\`;
+                              errorMsg = \`पीस "\${unplacedExample.name}" (\${unplacedExample.width}x\${unplacedExample.length}) के लिए कोई उपयुक्त स्थान नहीं मिला। रणनीति: \${strategy}. \${workerIndividualPieces.filter(p=>!p.isPlaced).length} पीस बाकी हैं।\`;
                          }
                         self.postMessage({ type: 'LAYOUT_ERROR', error: errorMsg, result: finalSheetsLayoutData, usedOffcutIds: usedStockItemOriginalIds });
                          return;
@@ -1057,22 +1248,22 @@
             toggleBulkAddBtnEl, bulkAddSectionEl; 
 
 
-        const STORAGE_KEY_PIECES = 'sheetLayoutCalcPieces_v24_finalShare';
-        const STORAGE_KEY_SETTINGS = 'sheetLayoutCalcSettings_v24_finalShare';
-        const STORAGE_KEY_ID_COUNTER = 'sheetLayoutCalcIdCounter_v24_finalShare';
-        const STORAGE_KEY_HISTORY = 'sheetLayoutCalcHistory_v24_finalShare';
-        const STORAGE_KEY_LANGUAGE = 'sheetLayoutCalcLang_v12_finalShare';
-        const STORAGE_KEY_CURRENT_UNIT = 'sheetLayoutCalcUnit_v12_finalShare';
-        const STORAGE_KEY_CUTTING_LIST_CHECKS = 'sheetLayoutCalcCutChecks_v12_finalShare';
-        const STORAGE_KEY_PROJECTS = 'sheetLayoutCalcProjects_v11_finalShare';
-        const STORAGE_KEY_GRAIN_COLOR = 'sheetLayoutCalculatorGrainColor_v6_finalShare';
-        const STORAGE_KEY_GRAIN_PATTERN = 'sheetLayoutCalculatorGrainPattern_v2_finalShare';
-        const STORAGE_KEY_FITTING_STRATEGY = 'sheetLayoutCalculatorFittingStrategy_v5_finalShare';
-        const STORAGE_KEY_SAVED_OFFCUTS = 'sheetLayoutCalculatorSavedOffcuts_v6_finalShare';
-        const STORAGE_KEY_OFFCUT_SETTINGS = 'sheetLayoutCalculatorOffcutSettings_v4_finalShare';
-        const STORAGE_KEY_PROJECT_LOCATION = 'sheetLayoutProjectLocation_v1';
-        const STORAGE_KEY_PROJECT_NOTES = 'sheetLayoutProjectNotes_v1';
-        const STORAGE_KEY_BULK_ADD_VISIBLE = 'sheetLayoutCalcBulkAddVisible_v1';
+        const STORAGE_KEY_PIECES = 'sheetLayoutCalcPieces_v24_finalShare_g'; // Changed key slightly
+        const STORAGE_KEY_SETTINGS = 'sheetLayoutCalcSettings_v24_finalShare_g';
+        const STORAGE_KEY_ID_COUNTER = 'sheetLayoutCalcIdCounter_v24_finalShare_g';
+        const STORAGE_KEY_HISTORY = 'sheetLayoutCalcHistory_v24_finalShare_g';
+        const STORAGE_KEY_LANGUAGE = 'sheetLayoutCalcLang_v12_finalShare'; // Kept same
+        const STORAGE_KEY_CURRENT_UNIT = 'sheetLayoutCalcUnit_v12_finalShare'; // Kept same
+        const STORAGE_KEY_CUTTING_LIST_CHECKS = 'sheetLayoutCalcCutChecks_v12_finalShare_g';
+        const STORAGE_KEY_PROJECTS = 'sheetLayoutCalcProjects_v11_finalShare_g';
+        const STORAGE_KEY_GRAIN_COLOR = 'sheetLayoutCalculatorGrainColor_v6_finalShare'; // Kept same
+        const STORAGE_KEY_GRAIN_PATTERN = 'sheetLayoutCalculatorGrainPattern_v2_finalShare'; // Kept same
+        const STORAGE_KEY_FITTING_STRATEGY = 'sheetLayoutCalculatorFittingStrategy_v5_finalShare_g';
+        const STORAGE_KEY_SAVED_OFFCUTS = 'sheetLayoutCalculatorSavedOffcuts_v6_finalShare_g';
+        const STORAGE_KEY_OFFCUT_SETTINGS = 'sheetLayoutCalculatorOffcutSettings_v4_finalShare_g';
+        const STORAGE_KEY_PROJECT_LOCATION = 'sheetLayoutProjectLocation_v1_g';
+        const STORAGE_KEY_PROJECT_NOTES = 'sheetLayoutProjectNotes_v1_g';
+        const STORAGE_KEY_BULK_ADD_VISIBLE = 'sheetLayoutCalcBulkAddVisible_v1_g';
 
 
         const MAX_HISTORY_STATES = 20;
@@ -1118,6 +1309,7 @@
                 "strategyBottomLeftFree": "खाली आयत (बॉटम-लेफ्ट प्राथमिकता)",
                 "strategyBFDH": "बेस्ट फिट डिक्रीजिंग हाइट (BFDH)",
                 "strategyBFDW": "बेस्ट फिट डिक्रीजिंग विड्थ (BFDW)",
+                "strategyGuillotineBSSF": "गिलोटिन - बेस्ट शॉर्ट साइड फिट (BSSF)",
                 "strategySortPiecePerimeterDesc": "पीस: परिधि (बड़े पहले)",
                 "strategySortPieceLongestSideDesc": "पीस: सबसे लंबी भुजा पहले",
                 "strategySortPieceShortestSideAsc": "पीस: सबसे छोटी भुजा पहले",
@@ -1281,6 +1473,7 @@
                 "strategyBottomLeftFree": "Free Rect (Bottom-Left Priority)",
                 "strategyBFDH": "Best Fit Decreasing Height (BFDH)",
                 "strategyBFDW": "Best Fit Decreasing Width (BFDW)",
+                "strategyGuillotineBSSF": "Guillotine - Best Short Side Fit (BSSF)",
                 "strategySortPiecePerimeterDesc": "Piece: Perimeter (Largest First)",
                 "strategySortPieceLongestSideDesc": "Piece: Longest Side First",
                 "strategySortPieceShortestSideAsc": "Piece: Shortest Side First",
@@ -1477,7 +1670,7 @@
             minOffcutLengthEl = document.getElementById('minOffcutLength');
             offcutsLibraryModalEl = document.getElementById('offcutsLibraryModal');
             offcutsListContainerEl = document.getElementById('offcutsListContainer');
-            noOffcutsMessageEl_Modal = offcutsLibraryModalEl.querySelector('#noOffcutsMessageModal');
+            noOffcutsMessageEl_Modal = offcutsLibraryModalEl.querySelector('#noOffcutsMessageModal'); // This might need adjustment if id is not present
             manualOffcutWidthEl = document.getElementById('manualOffcutWidth');
             manualOffcutLengthEl = document.getElementById('manualOffcutLength');
             manualOffcutSourceNameEl = document.getElementById('manualOffcutSourceName');
@@ -2035,7 +2228,7 @@
                          displayLength = convertFromCm(totalLengthCm, 'ft');
                          displayUnit = 'ft';
                     }
-                    displayLength = convertFromCm(convertToCm(displayLength, displayUnit), displayUnit);
+                    displayLength = parseFloat(displayLength.toFixed(2));
 
 
                     totalEdgeBandingLengthDisplayEl.textContent = getLangString("totalEdgeBandingResult", {length: displayLength, unit: displayUnit });
@@ -2230,7 +2423,7 @@
                             pieceIdCounter = maxId >= 0 ? maxId + 1 : pieces.length;
                         }
                         pieces.forEach(p => {
-                            if(importedData.savedUnit && importedData.savedUnit !== 'cm'){
+                            if(importedData.savedUnit && importedData.savedUnit !== 'cm'){ // Convert only if saved unit was not cm
                                 p.length = convertToCm(p.length, importedData.savedUnit);
                                 p.width = convertToCm(p.width, importedData.savedUnit);
                             }
@@ -2271,8 +2464,8 @@
                 localStorage.removeItem(STORAGE_KEY_SETTINGS);
                 localStorage.removeItem(STORAGE_KEY_ID_COUNTER);
                 localStorage.removeItem(STORAGE_KEY_HISTORY);
-                localStorage.removeItem(STORAGE_KEY_LANGUAGE);
-                localStorage.removeItem(STORAGE_KEY_CURRENT_UNIT);
+                // localStorage.removeItem(STORAGE_KEY_LANGUAGE); // Keep language
+                // localStorage.removeItem(STORAGE_KEY_CURRENT_UNIT); // Keep unit? Or reset? For now, keep.
                 localStorage.removeItem(STORAGE_KEY_CUTTING_LIST_CHECKS);
                 localStorage.removeItem(STORAGE_KEY_PROJECTS);
                 localStorage.removeItem(STORAGE_KEY_GRAIN_COLOR);
@@ -2360,7 +2553,7 @@
                         state.settings.kerfWidth = 0.3;
                     }
                      if (typeof state.bulkAddVisible === 'undefined') {
-                        state.bulkAddVisible = false; // Default to hidden if not present in old history
+                        state.bulkAddVisible = false; 
                     }
                 });
             } catch (e) {
@@ -2420,7 +2613,7 @@
             isLoadedFromHistory = true;
             closeHistoryModal();
             alert(getLangString("alert_historyLoaded"));
-            setLanguage(currentLanguage);
+            setLanguage(currentLanguage); // Refresh language after loading state
             isLoadedFromHistory = false;
         }
         function deleteHistoryEntry(indexToDelete) {
@@ -2447,7 +2640,7 @@
 
                     let summaryText = `${(state.pieces || []).length} ${getLangString("historyPiecesSuffix")}`;
                     if (state.settings && state.settings.sheetName) {
-                        summaryText = `${getLangString("historySheetNamePrefix")}${state.settings.sheetName} | ${summaryText}`;
+                        summaryText = `${getLangString("sheetNameLabel").replace(':','')} ${state.settings.sheetName} | ${summaryText}`;
                     }
                     if (state.projectDetails && state.projectDetails.location) {
                         summaryText = `${state.projectDetails.location} | ${summaryText}`;
@@ -2512,9 +2705,7 @@
                     if (proj.data && proj.data.pieces) {
                         proj.data.pieces = proj.data.pieces.map(ensureEdgeBandingProperty);
                     }
-                    if (proj.data) { // Ensure bulkAddVisible is part of the saved project data
-                        proj.data.bulkAddVisible = bulkAddSectionEl.style.display !== 'none';
-                    }
+                    // bulkAddVisible is part of projectData.data, so it's saved automatically
                     return proj;
                 });
                 localStorage.setItem(STORAGE_KEY_PROJECTS, JSON.stringify(projectsToSave));
@@ -2628,10 +2819,10 @@
                 renderPiecesTable();
                 clearPieceInputs();
                 autoSaveData();
-                saveStateToHistory();
+                saveStateToHistory(); // Save the loaded state to history
                 closeProjectManagementModal();
                 alert(getLangString("alert_projectLoaded", {name: projectName}));
-                setLanguage(currentLanguage);
+                setLanguage(currentLanguage); // Refresh language after loading project
                 isLoadedFromHistory = false;
             }
         }
@@ -2696,7 +2887,7 @@
 
             let w_final = width_cm;
             let l_final = length_cm;
-            if (!modalSheetHasGrainEl.checked && w_final > l_final) {
+            if (!modalSheetHasGrainEl.checked && w_final > l_final) { // If no grain, orient shorter side as width
                 [w_final, l_final] = [l_final, w_final];
             }
 
@@ -2707,17 +2898,17 @@
                 area: parseFloat((w_final * l_final).toFixed(2)),
                 dateAdded: new Date().toISOString(),
                 isIndividuallyAvailable: true,
-                sourceSheetIdFromCalc: 'MANUAL',
+                sourceSheetIdFromCalc: 'MANUAL', // Differentiates from calculation-generated
                 sourceSheetNameFromCalc: sourceName || (getLangString("manualEntryLabel") || "मैन्युअल एंट्री")
             };
 
-            const batchId = `BATCH-MANUAL-${Date.now()}`;
+            const batchId = `BATCH-MANUAL-${Date.now()}`; // Unique batch for this manual add
             const newBatch = {
                 batchId: batchId,
                 dateTime: new Date().toLocaleString(currentLanguage === 'hi' ? 'hi-IN' : 'en-US'),
-                sourceSheetNameForBatch: newOffcut.sourceSheetNameFromCalc,
+                sourceSheetNameForBatch: newOffcut.sourceSheetNameFromCalc, // Use the provided source name
                 offcutsInBatch: [newOffcut],
-                isBatchAvailable: true
+                isBatchAvailable: true 
             };
 
             savedOffcuts.push(newBatch);
@@ -2727,7 +2918,7 @@
             manualOffcutWidthEl.value = '';
             manualOffcutLengthEl.value = '';
             manualOffcutSourceNameEl.value = '';
-            renderOffcutsList();
+            renderOffcutsList(); // Refresh the list in the modal
         }
 
         function showOffcutsLibraryModal() {
@@ -2740,12 +2931,18 @@
         function renderOffcutsList() {
             if (!offcutsListContainerEl || !noOffcutsMessageEl_Modal) return;
             let listContentEl = offcutsListContainerEl.querySelector('#offcut-list-content-dynamic');
-            if (!listContentEl) {
+            if (!listContentEl) { // Create if it doesn't exist
                 listContentEl = document.createElement('div');
                 listContentEl.id = 'offcut-list-content-dynamic';
-                offcutsListContainerEl.insertBefore(listContentEl, offcutsListContainerEl.firstChild);
+                 // Insert before the summary, or at the end if summary doesn't exist
+                const summaryEl = offcutsListContainerEl.querySelector('#offcutsLibraryTotalSummary');
+                if (summaryEl) {
+                    offcutsListContainerEl.insertBefore(listContentEl, summaryEl);
+                } else {
+                    offcutsListContainerEl.appendChild(listContentEl);
+                }
             }
-            listContentEl.innerHTML = '';
+            listContentEl.innerHTML = ''; // Clear previous content
 
 
             const availableBatches = savedOffcuts.filter(batch => batch.isBatchAvailable && batch.offcutsInBatch.some(oc => oc.isIndividuallyAvailable !== false));
@@ -2787,7 +2984,7 @@
 
                     let hasVisibleOffcutsInBatch = false;
                     batch.offcutsInBatch.forEach(offcut => {
-                         if (offcut.isIndividuallyAvailable === false) return;
+                         if (offcut.isIndividuallyAvailable === false) return; // Skip used ones
                          hasVisibleOffcutsInBatch = true;
 
                         let row = tbody.insertRow();
@@ -2809,12 +3006,14 @@
                     if(hasVisibleOffcutsInBatch){
                         batchDiv.appendChild(table);
                         listContentEl.appendChild(batchDiv);
+                    } else if (!batchDiv.querySelector('table')) { // If table was not added because no visible offcuts
+                        batchDiv.remove(); // Remove empty batch div
                     }
                 });
-                 if(listContentEl.children.length === 0 && availableBatches.length > 0){
+                 if(listContentEl.children.length === 0 && availableBatches.length > 0){ // If all batches had only used offcuts
                      noOffcutsMessageEl_Modal.style.display = 'block';
                      noOffcutsMessageEl_Modal.textContent = getLangString("noAvailableOffcutsInBatches") || "इन बैचों में कोई उपलब्ध ऑफकट नहीं है।";
-                 } else if (availableBatches.length === 0) {
+                 } else if (availableBatches.length === 0) { // No batches at all
                      noOffcutsMessageEl_Modal.style.display = 'block';
                      noOffcutsMessageEl_Modal.textContent = getLangString("noOffcutsSaved");
                  }
@@ -2826,7 +3025,7 @@
             });
 
             let summaryDiv = offcutsLibraryModalEl.querySelector('#offcutsLibraryTotalSummary');
-            if (summaryDiv) {
+            if (summaryDiv) { // Ensure summaryDiv exists
                 if (totalOffcutsInLibrary > 0) {
                      summaryDiv.textContent = getLangString("totalOffcutsInLibrary", {count: totalOffcutsInLibrary });
                      summaryDiv.style.display = 'block';
@@ -2841,20 +3040,38 @@
                 const batchIndex = savedOffcuts.findIndex(b => b.batchId === batchId);
                 if (batchIndex > -1) {
                     savedOffcuts[batchIndex].offcutsInBatch = savedOffcuts[batchIndex].offcutsInBatch.filter(oc => oc.id !== offcutId);
+                    // If the batch becomes empty after deleting the offcut, remove the batch itself
                     if (savedOffcuts[batchIndex].offcutsInBatch.length === 0) {
                         savedOffcuts.splice(batchIndex, 1);
                     } else {
+                        // Update batch availability if no individual offcuts are left available
                         savedOffcuts[batchIndex].isBatchAvailable = savedOffcuts[batchIndex].offcutsInBatch.some(oc => oc.isIndividuallyAvailable !== false);
                     }
                 }
                 localStorage.setItem(STORAGE_KEY_SAVED_OFFCUTS, JSON.stringify(savedOffcuts));
-                renderOffcutsList();
+                renderOffcutsList(); // Refresh the list
             }
         }
         function loadSavedOffcuts() {
             const offcutsStr = localStorage.getItem(STORAGE_KEY_SAVED_OFFCUTS);
             if (offcutsStr) {
-                try { savedOffcuts = JSON.parse(offcutsStr); } catch (e) { console.error("Error parsing saved offcuts:", e); savedOffcuts = [];}
+                try { 
+                    savedOffcuts = JSON.parse(offcutsStr); 
+                    // Ensure all offcuts have the isIndividuallyAvailable property
+                    savedOffcuts.forEach(batch => {
+                        if (batch.offcutsInBatch) {
+                            batch.offcutsInBatch.forEach(oc => {
+                                if (typeof oc.isIndividuallyAvailable === 'undefined') {
+                                    oc.isIndividuallyAvailable = true; // Default to available if not set
+                                }
+                            });
+                        }
+                        // Ensure batch has isBatchAvailable property
+                         if (typeof batch.isBatchAvailable === 'undefined') {
+                            batch.isBatchAvailable = batch.offcutsInBatch ? batch.offcutsInBatch.some(oc => oc.isIndividuallyAvailable !== false) : false;
+                        }
+                    });
+                } catch (e) { console.error("Error parsing saved offcuts:", e); savedOffcuts = [];}
             }
         }
          function loadOffcutSettings() {
@@ -2871,23 +3088,24 @@
 
         function markOffcutsAsUsed(usedIds) {
             let changed = false;
-            usedIds.forEach(id => {
+            usedIds.forEach(idToMarkUsed => { // Renamed 'id' to 'idToMarkUsed' to avoid conflict
                  for (const batch of savedOffcuts) {
-                    const offcut = batch.offcutsInBatch.find(oc => oc.id === id && oc.isIndividuallyAvailable !== false);
+                    const offcut = batch.offcutsInBatch.find(oc => oc.id === idToMarkUsed && oc.isIndividuallyAvailable !== false);
                     if (offcut) {
                         offcut.isIndividuallyAvailable = false;
                         changed = true;
+                        // If all offcuts in this batch are now used, mark the batch as unavailable
                         if (!batch.offcutsInBatch.some(o => o.isIndividuallyAvailable !== false)) {
                             batch.isBatchAvailable = false;
                         }
-                        break;
+                        break; // Found and marked, move to next usedId
                     }
                 }
             });
             if (changed) {
                 localStorage.setItem(STORAGE_KEY_SAVED_OFFCUTS, JSON.stringify(savedOffcuts));
                 if (offcutsLibraryModalEl && offcutsLibraryModalEl.style.display === 'flex') {
-                    renderOffcutsList();
+                    renderOffcutsList(); // Refresh if modal is open
                 }
             }
         }
@@ -2929,7 +3147,7 @@
                 const blob = new Blob([workerCode], { type: 'application/javascript' });
                 const workerUrl = URL.createObjectURL(blob);
                 layoutWorker = new Worker(workerUrl);
-                URL.revokeObjectURL(workerUrl);
+                URL.revokeObjectURL(workerUrl); // Revoke immediately after worker creation
             } catch (e) {
                 console.error("Error creating worker from blob:", e);
                 if (loadingIndicatorEl) loadingIndicatorEl.style.display = 'none';
@@ -2946,21 +3164,21 @@
                     if (usedOffcutIds && usedOffcutIds.length > 0) {
                         markOffcutsAsUsed(usedOffcutIds);
                     }
-                    saveStateToHistory();
-                    if (layoutWorker) layoutWorker.terminate();
+                    saveStateToHistory(); // Save successful layout state
+                    if (layoutWorker) layoutWorker.terminate(); // Terminate after completion
                     layoutWorker = null;
                 } else if (type === 'LAYOUT_ERROR') {
                     if (loadingIndicatorEl) loadingIndicatorEl.style.display = 'none';
                     console.error("Layout Worker Error:", error);
                     alert(getLangString("alert_layoutHang") + "\n" + error);
-                     if (result && Array.isArray(result)) {
+                     if (result && Array.isArray(result)) { // Display partial results if any
                         lastCalculatedSheetsData = result;
                         displayLayoutOnCanvas(lastCalculatedSheetsData);
                     }
-                     if (usedOffcutIds && usedOffcutIds.length > 0) {
+                     if (usedOffcutIds && usedOffcutIds.length > 0) { // Mark any used offcuts even on error
                         markOffcutsAsUsed(usedOffcutIds);
                     }
-                    if (layoutWorker) layoutWorker.terminate();
+                    if (layoutWorker) layoutWorker.terminate(); // Terminate after error
                     layoutWorker = null;
 
                 } else if (type === 'LAYOUT_PROGRESS') {
@@ -2969,7 +3187,7 @@
                     }
                 }
             };
-            layoutWorker.onerror = function(errorEvent) {
+            layoutWorker.onerror = function(errorEvent) { // General worker error
                 if (loadingIndicatorEl) loadingIndicatorEl.style.display = 'none';
                 console.error("Worker error:", errorEvent.message, errorEvent);
                 alert(getLangString("alert_layoutHang") + "\nWorker error: " + errorEvent.message);
@@ -2986,15 +3204,16 @@
                     individualPieces.push({
                         ...p_orig,
                         originalId: p_orig.id,
-                        uniqueId: `${p_orig.id}-${pieceInstanceCounters[p_orig.id]}`,
+                        uniqueId: `${p_orig.id}-${pieceInstanceCounters[p_orig.id]}`, // Unique ID for each instance
                         instanceNum: pieceInstanceCounters[p_orig.id],
+                        // No need to adjust for kerf here, worker's split function handles it based on piece's placed dim
                     });
                 }
             });
 
-            // The sorting logic now resides directly in the worker
 
             let stockItemsToWorker = [];
+            // Add primary sheet type first
             stockItemsToWorker.push({
                 width: sheetW_cm_modal, length: sheetL_cm_modal,
                 name: sheetName_modal || `${getLangString("sheetTitlePrefix")} ${convertFromCm(sheetW_cm_modal, currentUnit)}x${convertFromCm(sheetL_cm_modal, currentUnit)}`,
@@ -3003,13 +3222,14 @@
 
             if (useOffcutsCheckboxEl && useOffcutsCheckboxEl.checked) {
                 if (currentCalculationOffcuts && currentCalculationOffcuts.length > 0) {
-                     stockItemsToWorker.push(...currentCalculationOffcuts);
+                     stockItemsToWorker.push(...currentCalculationOffcuts); // Add selected offcuts
                 }
+                // Sort stock items: smallest area first for offcuts, then primary sheet
                 stockItemsToWorker.sort((a,b) => (a.width * a.length) - (b.width * b.length));
             }
 
             const workerData = {
-                pieces: JSON.parse(JSON.stringify(individualPieces)),
+                pieces: JSON.parse(JSON.stringify(individualPieces)), // Deep copy
                 stockItems: stockItemsToWorker,
                 kerfWidth: kerfToUse_cm,
                 strategy: selectedStrategy
@@ -3123,7 +3343,7 @@
 
                     const pieceBorderThickness = 0.6;
                     ctx.save();
-                    ctx.strokeStyle = '#FFFFFF';
+                    ctx.strokeStyle = '#FFFFFF'; // White border inside piece for better visibility
                     ctx.lineWidth = pieceBorderThickness;
                     ctx.strokeRect(
                         pieceX_logical + pieceBorderThickness / 2,
@@ -3133,26 +3353,34 @@
                     );
                     ctx.restore();
 
-                    const kerfLineColor = "rgba(200, 200, 200, 0.6)";
+                    // Kerf visualization (around the piece, as if the cut has been made)
+                    const kerfLineColor = "rgba(200, 200, 200, 0.6)"; // Light gray for kerf
                     const kerfWidth_cm = convertToCm(parseFloat(modalKerfWidthEl.value) || 0, currentUnit);
-                    const kerfLineWidth = kerfWidth_cm > 0 ? BASE_CANVAS_SCALE * (kerfWidth_cm / 4) : BASE_CANVAS_SCALE * 0.2;
+                    // Kerf line width should be proportional to actual kerf, but not too thick on canvas
+                    const kerfLineWidthOnCanvas = kerfWidth_cm > 0 ? Math.min(BASE_CANVAS_SCALE * kerfWidth_cm * 0.5, BASE_CANVAS_SCALE * 0.5) : 0;
+                    
+                    if (kerfLineWidthOnCanvas > 0) {
+                        ctx.save();
+                        ctx.strokeStyle = kerfLineColor;
+                        ctx.lineWidth = kerfLineWidthOnCanvas;
+                        // Draw kerf lines around the piece.
+                        // For simplicity, drawing a slightly larger rectangle representing the outer edge of the kerf.
+                        // This is a visual aid, actual kerf is handled by splitFreeRect.
+                        ctx.strokeRect(
+                            pieceX_logical - kerfLineWidthOnCanvas / 2,
+                            pieceY_logical - kerfLineWidthOnCanvas / 2,
+                            pieceWidth_logical + kerfLineWidthOnCanvas,
+                            pieceHeight_logical + kerfLineWidthOnCanvas
+                        );
+                        ctx.restore();
+                    }
 
-                    ctx.save();
-                    ctx.strokeStyle = kerfLineColor;
-                    ctx.lineWidth = kerfLineWidth;
-                    ctx.strokeRect(
-                        pieceX_logical - kerfLineWidth / 2,
-                        pieceY_logical - kerfLineWidth / 2,
-                        pieceWidth_logical + kerfLineWidth,
-                        pieceHeight_logical + kerfLineWidth
-                    );
-                    ctx.restore();
 
                     overallTotalAreaUsed_cm2 += p.placedWidth * p.placedLength;
 
                     if (p.edgeBanding && (p.edgeBanding.L1 || p.edgeBanding.L2 || p.edgeBanding.W1 || p.edgeBanding.W2)) {
-                        const edgeTapeColor = 'rgba(220, 0, 0, 0.9)';
-                        const edgeTapeThickness = BASE_CANVAS_SCALE * 0.6;
+                        const edgeTapeColor = 'rgba(220, 0, 0, 0.9)'; // Bright red for edge tape
+                        const edgeTapeThickness = BASE_CANVAS_SCALE * 0.6; // Slightly thicker for visibility
                         const dashLength = BASE_CANVAS_SCALE * 1.8;
                         const gapLength = BASE_CANVAS_SCALE * 1.2;
 
@@ -3160,7 +3388,7 @@
                         ctx.strokeStyle = edgeTapeColor;
                         ctx.lineWidth = edgeTapeThickness;
                         ctx.setLineDash([dashLength, gapLength]);
-                        ctx.lineCap = 'butt';
+                        ctx.lineCap = 'butt'; // Use 'butt' for crisp dashes
                         ctx.beginPath();
 
                         const pw_canvas = pieceWidth_logical;
@@ -3168,20 +3396,22 @@
                         const px = pieceX_logical;
                         const py = pieceY_logical;
 
-                        const desiredInnerMarginPixels = BASE_CANVAS_SCALE * 1;
+                        // Calculate inner offset for drawing edge tape lines slightly inside the piece
+                        const desiredInnerMarginPixels = BASE_CANVAS_SCALE * 1; // e.g., 1cm margin scaled
                         const calculatedInnerOffset = desiredInnerMarginPixels + (edgeTapeThickness / 2);
 
+                        // Ensure offset doesn't exceed half the piece dimension (for very small pieces)
                         const maxPossibleOffsetW = (pw_canvas / 2) - (edgeTapeThickness / 2);
                         const maxPossibleOffsetL = (pl_canvas / 2) - (edgeTapeThickness / 2);
 
                         let effectiveOffsetX = calculatedInnerOffset;
                         if (maxPossibleOffsetW > 0) {
                             effectiveOffsetX = Math.min(calculatedInnerOffset, maxPossibleOffsetW);
-                        } else if (pw_canvas > edgeTapeThickness) {
-                            effectiveOffsetX = edgeTapeThickness / 2 + 0.1;
-                        } else {
+                        } else if (pw_canvas > edgeTapeThickness) { // If piece is just wider than tape
+                            effectiveOffsetX = edgeTapeThickness / 2 + 0.1; // Draw just inside
+                        } else { // Piece is narrower than tape - draw in center
                             effectiveOffsetX = pw_canvas / 2 - 0.1;
-                             if (effectiveOffsetX < 0) effectiveOffsetX = 0;
+                             if (effectiveOffsetX < 0) effectiveOffsetX = 0; // Prevent negative offset
                         }
 
                         let effectiveOffsetY = calculatedInnerOffset;
@@ -3194,30 +3424,33 @@
                             if (effectiveOffsetY < 0) effectiveOffsetY = 0;
                         }
 
+
+                        // Define inner corner points for drawing lines
                         const cTopLeftInner     = { x: px + effectiveOffsetX,         y: py + effectiveOffsetY };
                         const cTopRightInner    = { x: px + pw_canvas - effectiveOffsetX, y: py + effectiveOffsetY };
                         const cBottomLeftInner  = { x: px + effectiveOffsetX,         y: py + pl_canvas - effectiveOffsetY };
                         const cBottomRightInner = { x: px + pw_canvas - effectiveOffsetX, y: py + pl_canvas - effectiveOffsetY };
-
+                        
+                        // Check if the inner rectangle is valid (width and height > 0)
                         if (cTopLeftInner.x < cTopRightInner.x && cTopLeftInner.y < cBottomLeftInner.y) {
-                            if (p.isRotated) {
-                                if (p.edgeBanding.L1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopRightInner.x, cTopLeftInner.y); }
-                                if (p.edgeBanding.L2) { ctx.moveTo(cBottomLeftInner.x, cBottomLeftInner.y); ctx.lineTo(cBottomRightInner.x, cBottomLeftInner.y); }
-                                if (p.edgeBanding.W1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopLeftInner.x, cBottomLeftInner.y); }
-                                if (p.edgeBanding.W2) { ctx.moveTo(cTopRightInner.x, cTopRightInner.y); ctx.lineTo(cTopRightInner.x, cBottomRightInner.y); }
-                            } else {
-                                if (p.edgeBanding.L1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopLeftInner.x, cBottomLeftInner.y); }
-                                if (p.edgeBanding.L2) { ctx.moveTo(cTopRightInner.x, cTopRightInner.y); ctx.lineTo(cTopRightInner.x, cBottomRightInner.y); }
-                                if (p.edgeBanding.W1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopRightInner.x, cTopLeftInner.y); }
-                                if (p.edgeBanding.W2) { ctx.moveTo(cBottomLeftInner.x, cBottomLeftInner.y); ctx.lineTo(cBottomRightInner.x, cBottomLeftInner.y); }
+                            if (p.isRotated) { // Piece is rotated on canvas
+                                if (p.edgeBanding.L1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopRightInner.x, cTopLeftInner.y); } // Original L1 is now Top
+                                if (p.edgeBanding.L2) { ctx.moveTo(cBottomLeftInner.x, cBottomLeftInner.y); ctx.lineTo(cBottomRightInner.x, cBottomLeftInner.y); } // Original L2 is Bottom
+                                if (p.edgeBanding.W1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopLeftInner.x, cBottomLeftInner.y); } // Original W1 is Left
+                                if (p.edgeBanding.W2) { ctx.moveTo(cTopRightInner.x, cTopRightInner.y); ctx.lineTo(cTopRightInner.x, cBottomRightInner.y); } // Original W2 is Right
+                            } else { // Piece is not rotated
+                                if (p.edgeBanding.L1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopLeftInner.x, cBottomLeftInner.y); } // L1 is Left
+                                if (p.edgeBanding.L2) { ctx.moveTo(cTopRightInner.x, cTopRightInner.y); ctx.lineTo(cTopRightInner.x, cBottomRightInner.y); } // L2 is Right
+                                if (p.edgeBanding.W1) { ctx.moveTo(cTopLeftInner.x, cTopLeftInner.y); ctx.lineTo(cTopRightInner.x, cTopLeftInner.y); } // W1 is Top
+                                if (p.edgeBanding.W2) { ctx.moveTo(cBottomLeftInner.x, cBottomLeftInner.y); ctx.lineTo(cBottomRightInner.x, cBottomLeftInner.y); } // W2 is Bottom
                             }
                             ctx.stroke();
                         }
-                        ctx.setLineDash([]);
+                        ctx.setLineDash([]); // Reset line dash
                         ctx.restore();
                     }
 
-                    ctx.fillStyle = '#101d2c';
+                    ctx.fillStyle = '#101d2c'; // Dark color for text
                     let textX = pieceX_logical + pieceWidth_logical / 2;
                     let textY = pieceY_logical + pieceHeight_logical / 2;
                     const textAlign = 'center';
@@ -3230,25 +3463,26 @@
                     const pieceDimensions = `${displayedWidth}×${displayedLength}${p.isRotated ? '(R)' : ''}`;
 
                     const minAllowedLogicalFontSize = Math.max(4.0, BASE_CANVAS_SCALE * 1.5);
-                    const maxAllowedLogicalFontSize = BASE_CANVAS_SCALE * 4.5;
-                    const estLineHeightFactor = 1.2;
+                    const maxAllowedLogicalFontSize = BASE_CANVAS_SCALE * 4.5; // Max font size to prevent overly large text
+                    const estLineHeightFactor = 1.2; // Estimated line height relative to font size
 
                     let textToShow = [];
                     let fontSizeToUse = minAllowedLogicalFontSize;
-                    let textAngle = 0;
+                    let textAngle = 0; // Angle for text rotation
 
+                    // Attempt 3 lines
                     const estMaxCharsPerLine3 = Math.max(pieceName.length, pieceInstance.length, pieceDimensions.length, 4);
                     let idealFontSizeThreeLines = Math.min(
                         maxAllowedLogicalFontSize,
-                        pieceHeight_logical / (3 * estLineHeightFactor),
-                        pieceWidth_logical / (estMaxCharsPerLine3 * 0.65)
+                        pieceHeight_logical / (3 * estLineHeightFactor), // Fit height-wise
+                        pieceWidth_logical / (estMaxCharsPerLine3 * 0.65)  // Fit width-wise (approx char width)
                     );
                     idealFontSizeThreeLines = Math.floor(idealFontSizeThreeLines);
 
                     if (idealFontSizeThreeLines >= minAllowedLogicalFontSize + 0.5 && pieceHeight_logical > (minAllowedLogicalFontSize * 3 * estLineHeightFactor * 0.8) && pieceWidth_logical > (estMaxCharsPerLine3 * minAllowedLogicalFontSize * 0.5) ) {
                         textToShow = [pieceName, pieceInstance, pieceDimensions];
                         fontSizeToUse = idealFontSizeThreeLines;
-                    } else {
+                    } else { // Attempt 2 lines
                         const line2Text = `${pieceInstance} ${pieceDimensions}`;
                         const estMaxCharsPerLine2 = Math.max(pieceName.length, line2Text.length, 5);
                         let idealFontSizeTwoLines = Math.min(
@@ -3261,11 +3495,11 @@
                         if (idealFontSizeTwoLines >= minAllowedLogicalFontSize && pieceHeight_logical > (minAllowedLogicalFontSize * 2 * estLineHeightFactor * 0.8) && pieceWidth_logical > (estMaxCharsPerLine2 * minAllowedLogicalFontSize * 0.5)) {
                             textToShow = [pieceName, line2Text];
                             fontSizeToUse = idealFontSizeTwoLines;
-                        } else {
+                        } else { // Attempt 1 line (full)
                             const singleLineFull = `${pieceName}/${pieceInstance}/${pieceDimensions}`;
                             let idealFontSizeOneLineFull = Math.min(
                                 maxAllowedLogicalFontSize * 0.8,
-                                pieceHeight_logical / (1.2 * estLineHeightFactor),
+                                pieceHeight_logical / (1.2 * estLineHeightFactor), // Single line needs less vertical space factor
                                 pieceWidth_logical / (singleLineFull.length * 0.58)
                             );
                             idealFontSizeOneLineFull = Math.floor(idealFontSizeOneLineFull);
@@ -3273,7 +3507,7 @@
                             if (idealFontSizeOneLineFull >= minAllowedLogicalFontSize && pieceWidth_logical > singleLineFull.length * minAllowedLogicalFontSize * 0.48) {
                                 textToShow = [singleLineFull];
                                 fontSizeToUse = idealFontSizeOneLineFull;
-                            } else {
+                            } else { // Attempt 1 line (short)
                                 const singleLineShort = `${pieceInstance}/${pieceDimensions}`;
                                 let idealFontSizeOneLineShort = Math.min(
                                     maxAllowedLogicalFontSize * 0.85,
@@ -3285,13 +3519,13 @@
                                 if (idealFontSizeOneLineShort >= minAllowedLogicalFontSize && pieceWidth_logical > singleLineShort.length * minAllowedLogicalFontSize * 0.48) {
                                     textToShow = [singleLineShort];
                                     fontSizeToUse = idealFontSizeOneLineShort;
-                                } else {
+                                } else { // Attempt rotated text if horizontal doesn't fit well
                                     const textForRotationCandidates = [
-                                        `${pieceName}/${pieceInstance}/${pieceDimensions}`,
+                                        `${pieceName}/${pieceInstance}/${pieceDimensions}`, // Fullest
                                         `${pieceName}/${pieceDimensions}`,
-                                        `${pieceInstance}/${pieceDimensions}`,
+                                        `${pieceInstance}/${pieceDimensions}`, // Common case
                                         pieceDimensions,
-                                        pieceInstance
+                                        pieceInstance // Smallest
                                     ];
 
                                     let bestRotatedText = "";
@@ -3300,16 +3534,17 @@
                                     for (const candidateText of textForRotationCandidates) {
                                         if (!candidateText || candidateText.trim() === "") continue;
 
+                                        // For rotated text, width becomes height and vice-versa for fitting
                                         let currentIdealFontSizeRotated = Math.min(
                                             maxAllowedLogicalFontSize * 0.9,
-                                            pieceWidth_logical / (1.15 * estLineHeightFactor),
-                                            pieceHeight_logical / (candidateText.length * 0.52)
+                                            pieceWidth_logical / (1.15 * estLineHeightFactor), // Fit within original width (now height for text)
+                                            pieceHeight_logical / (candidateText.length * 0.52)  // Fit within original height (now width for text)
                                         );
                                         currentIdealFontSizeRotated = Math.floor(currentIdealFontSizeRotated);
 
                                         if (currentIdealFontSizeRotated >= minAllowedLogicalFontSize &&
-                                            pieceHeight_logical > candidateText.length * minAllowedLogicalFontSize * 0.40 &&
-                                            pieceWidth_logical > minAllowedLogicalFontSize * 1.05) {
+                                            pieceHeight_logical > candidateText.length * minAllowedLogicalFontSize * 0.40 && // Check if enough original height
+                                            pieceWidth_logical > minAllowedLogicalFontSize * 1.05) { // Check if enough original width for a single line
 
                                             if (currentIdealFontSizeRotated > bestRotatedFontSize) {
                                                 bestRotatedFontSize = currentIdealFontSizeRotated;
@@ -3321,8 +3556,8 @@
                                     if (bestRotatedText) {
                                         textToShow = [bestRotatedText];
                                         fontSizeToUse = bestRotatedFontSize;
-                                        textAngle = -90;
-                                    } else {
+                                        textAngle = -90; // Rotate text
+                                    } else { // Fallback to just instance number if nothing else fits well
                                         let idealFontSizeInstanceOnly = Math.min(
                                             maxAllowedLogicalFontSize,
                                             pieceHeight_logical / (1.2 * estLineHeightFactor),
@@ -3333,14 +3568,15 @@
                                             textToShow = [pieceInstance];
                                             fontSizeToUse = idealFontSizeInstanceOnly;
                                         } else {
-                                            textToShow = [];
+                                            textToShow = []; // No text if too small
                                         }
                                     }
                                 }
                             }
                         }
                     }
-
+                    
+                    // Final check on font size
                     fontSizeToUse = Math.max(minAllowedLogicalFontSize, fontSizeToUse);
                     fontSizeToUse = Math.min(maxAllowedLogicalFontSize, fontSizeToUse);
 
@@ -3350,53 +3586,65 @@
                         ctx.textAlign = textAlign;
                         ctx.textBaseline = textBaseline;
                         ctx.font = fontStyle;
-                        ctx.translate(textX, textY);
+                        ctx.translate(textX, textY); // Move origin to center of piece for rotation/text centering
                         if (textAngle !== 0) {
                             ctx.rotate(textAngle * Math.PI / 180);
                         }
 
                         const lineHeight = fontSizeToUse * estLineHeightFactor;
-                        let startY = 0;
+                        let startY = 0; // Initial Y offset for multi-line text
 
                         if (textToShow.length === 1) {
-                            startY = 0;
+                            startY = 0; // Centered
                         } else if (textToShow.length === 2) {
-                            startY = -lineHeight / 2;
+                            startY = -lineHeight / 2; // Center the block of two lines
                         } else if (textToShow.length === 3) {
-                            startY = -lineHeight;
+                            startY = -lineHeight; // Center the block of three lines
+                        }
+                        
+                        // If text is rotated and multi-line, it will be drawn along the new Y-axis (original X-axis)
+                        // For simplicity with rotated multi-line, we'll just draw the first line for now if rotated.
+                        if(textAngle !==0 && textToShow.length > 1){
+                             // startY = -( (textToShow.length-1) * lineHeight / 2); // This might be complex with rotation
+                             // For simplicity, if rotated and multiple lines intended, just show the first.
+                             // Or, better, the text selection logic should prefer single lines for rotation.
+                             // The current logic tries to find a single line that fits when rotating.
                         }
 
-                        if(textAngle !==0 && textToShow.length > 1){
-                             startY = -( (textToShow.length-1) * lineHeight / 2);
-                        }
 
                         for (let i = 0; i < textToShow.length; i++) {
                              let currentY = startY + (i * lineHeight);
-                             if (textAngle !== 0 ) currentY = 0;
-                             ctx.fillText(textToShow[i], 0, currentY);
+                             if (textAngle !== 0 ) { // If rotated, text is drawn along the new Y-axis.
+                                 // For single rotated line, currentY should be 0 (already centered by translate)
+                                 currentY = 0; 
+                             }
+                             ctx.fillText(textToShow[i], 0, currentY); // Draw text at (0,0) relative to translated/rotated origin
                         }
                         ctx.restore();
                     }
                 });
 
 
-                ctx.strokeStyle = 'rgba(52, 152, 219, 0.5)'; ctx.lineWidth = 0.3;
+                // Draw Free Rects (wastage)
+                ctx.strokeStyle = 'rgba(52, 152, 219, 0.5)'; // Blue for free rects
+                ctx.lineWidth = 0.3; // Thin lines
                  if (sheet.freeRects) {
                     sheet.freeRects.forEach(rect => {
-                        allGeneratedFreeRects.push({ ...rect, sourceSheetId: sheet.id, sourceSheetName: sheet.name });
-                        if (rect.width > 0.01 && rect.height > 0.01) {
+                        allGeneratedFreeRects.push({ ...rect, sourceSheetId: sheet.id, sourceSheetName: sheet.name }); // Collect for wastage report
+                        if (rect.width > 0.01 && rect.height > 0.01) { // Only draw if reasonably sized
                             const rectX_logical = rect.x * BASE_CANVAS_SCALE;
                             const rectY_logical = rect.y * BASE_CANVAS_SCALE;
                             const rectWidth_logical = rect.width * BASE_CANVAS_SCALE;
                             const rectHeight_logical = rect.height * BASE_CANVAS_SCALE;
                             ctx.strokeRect(rectX_logical + 0.5, rectY_logical + 0.5, rectWidth_logical - 1, rectHeight_logical - 1);
 
-                            const MIN_TEXT_FREE_WIDTH_LOGICAL = 20 * BASE_CANVAS_SCALE * 0.35;
-                            const MIN_TEXT_FREE_HEIGHT_LOGICAL = 10 * BASE_CANVAS_SCALE * 0.35;
+                            // Add dimensions text to free rects if large enough
+                            const MIN_TEXT_FREE_WIDTH_LOGICAL = 20 * BASE_CANVAS_SCALE * 0.35; // e.g. 20cm scaled
+                            const MIN_TEXT_FREE_HEIGHT_LOGICAL = 10 * BASE_CANVAS_SCALE * 0.35; // e.g. 10cm scaled
                             if (rectWidth_logical >= MIN_TEXT_FREE_WIDTH_LOGICAL && rectHeight_logical >= MIN_TEXT_FREE_HEIGHT_LOGICAL) {
-                                ctx.fillStyle = 'rgba(41, 128, 185, 0.7)';
-                                const baseFontSizePt_free = Math.min(5.5, rectHeight_logical * 0.3, rectWidth_logical * 0.15);
-                                let dynamicFontSize_free = Math.max(BASE_CANVAS_SCALE * 1.5, baseFontSizePt_free);
+                                ctx.fillStyle = 'rgba(41, 128, 185, 0.7)'; // Semi-transparent blue text
+                                const baseFontSizePt_free = Math.min(5.5, rectHeight_logical * 0.3, rectWidth_logical * 0.15); // Dynamic font size
+                                let dynamicFontSize_free = Math.max(BASE_CANVAS_SCALE * 1.5, baseFontSizePt_free); // Ensure min size
                                 ctx.font = `${Math.round(dynamicFontSize_free)}px Arial`;
                                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                                 const text = `${convertFromCm(rect.width, currentUnit)}×${convertFromCm(rect.height, currentUnit)}`;
@@ -3406,6 +3654,7 @@
                     });
                 }
 
+                // Cutting List for this sheet
                 const cuttingListDiv = document.createElement('div'); cuttingListDiv.className = 'cutting-list';
                 const cuttingListTitleEl = document.createElement('h4'); cuttingListTitleEl.textContent = getLangString('cuttingListTitle');
                 cuttingListDiv.appendChild(cuttingListTitleEl);
@@ -3484,15 +3733,17 @@
 
             allFreeRects.forEach(rect => {
                 if (typeof rect.width !== 'number' || typeof rect.height !== 'number' || isNaN(rect.width) || isNaN(rect.height)) {
-                    return;
+                    return; // Skip invalid rects
                 }
                 totalFreeAreaFromRectsCm2 += rect.width * rect.height;
+                // Determine if useful based on offcut settings
                 const isUseful = (rect.width >= offcutSettings.minWidth && rect.height >= offcutSettings.minLength) ||
                                  (rect.height >= offcutSettings.minWidth && rect.width >= offcutSettings.minLength);
 
                 if (isUseful) {
                     let w = rect.width;
                     let l = rect.height;
+                    // If sheet has no grain and width > length, swap to keep length as longer side for offcut
                     if (!modalSheetHasGrainEl.checked && w > l) { [w, l] = [l, w]; }
 
                     lastGeneratedUsefulOffcuts.push({
@@ -3503,7 +3754,7 @@
                         sourceSheetName: rect.sourceSheetName || getLangString("unnamedSheetLabel")
                     });
                 } else {
-                    if (rect.width > 0.01 && rect.height > 0.01) {
+                    if (rect.width > 0.01 && rect.height > 0.01) { // Collect non-useful but non-tiny rects
                         lastGeneratedNonUsefulRects.push({
                             ...rect,
                             sourceSheetId: rect.sourceSheetId,
@@ -3528,7 +3779,7 @@
 
             if (lastGeneratedUsefulOffcuts.length > 0) {
                 usefulOffcutsSummaryEl.style.display = 'flex';
-                usefulOffcutsSummaryEl.style.alignItems = 'center';
+                usefulOffcutsSummaryEl.style.alignItems = 'center'; // Align items vertically
 
                 const summaryTextEl = document.createElement('span');
                 summaryTextEl.textContent = getLangString("totalUsefulOffcutsGenerated", { count: lastGeneratedUsefulOffcuts.length }) + " ";
@@ -3536,7 +3787,7 @@
                 const saveButton = document.createElement('button');
                 saveButton.textContent = getLangString("saveUsefulOffcutsBtn");
                 saveButton.onclick = () => saveGeneratedOffcuts(lastGeneratedUsefulOffcuts);
-                saveButton.style.marginLeft = "10px";
+                saveButton.style.marginLeft = "10px"; // Add some space
                 saveButton.style.fontSize = "0.9em";
                 saveButton.style.padding = "5px 10px";
 
@@ -3557,7 +3808,7 @@
                 contentAddedToWastageSection = true;
             } else {
                 usefulOffcutsSummaryEl.textContent = getLangString("noUsefulOffcutsGenerated");
-                usefulOffcutsSummaryEl.style.display = 'block';
+                usefulOffcutsSummaryEl.style.display = 'block'; // Show message even if no offcuts
                 usefulOffcutsListTotalSummaryEl.style.display = 'none';
             }
 
@@ -3566,10 +3817,10 @@
                 const p = document.createElement('p');
                 p.textContent = getLangString("otherSmallWastageLabel");
                 p.style.fontWeight = 'bold';
-                p.style.marginTop = '15px';
+                p.style.marginTop = '15px'; // Add some space before this list
                 otherSmallWastageContainerEl.appendChild(p);
                 const ulSmall = document.createElement('ul');
-                 lastGeneratedNonUsefulRects.sort((a,b)=>b.area-a.area)
+                 lastGeneratedNonUsefulRects.sort((a,b)=>b.area-a.area) // Sort by area descending
                  .forEach(rect => {
                     const li = document.createElement('li');
                     const sheetIdText = rect.sourceSheetId ? `, ${getLangString("sheetTitlePrefix")} #${rect.sourceSheetId}` : '';
@@ -3581,7 +3832,7 @@
             }
 
             const totalNonUsefulRectsCount = lastGeneratedNonUsefulRects.length;
-            if(totalWastagePiecesSummaryEl) {
+            if(totalWastagePiecesSummaryEl) { // Check if element exists
                 if (totalNonUsefulRectsCount > 0) {
                     totalWastagePiecesSummaryEl.textContent = getLangString("totalOtherWastagePiecesDisplay", {count: totalNonUsefulRectsCount });
                     totalWastagePiecesSummaryEl.style.display = 'block';
@@ -3604,68 +3855,63 @@
                 return;
             }
 
-            const batchId = `BATCH-${Date.now()}`;
-            const currentSheetNameForBatch = modalSheetNameEl.value.trim() || (getLangString("unnamedSheetLabel") || "अनाम शीट");
+            // Create a single batch for all offcuts from this calculation run
+            const batchId = `BATCH-${Date.now()}`; // Unique ID for this batch
+            const currentSheetNameForBatch = modalSheetNameEl.value.trim() || (getLangString("unnamedSheetLabel") || "अनाम शीट"); // Source name for the batch
 
             const newBatch = {
                 batchId: batchId,
                 dateTime: new Date().toLocaleString(currentLanguage === 'hi' ? 'hi-IN' : 'en-US'),
-                sourceSheetNameForBatch: currentSheetNameForBatch,
+                sourceSheetNameForBatch: currentSheetNameForBatch, // All offcuts in this batch share this source
                 offcutsInBatch: [],
-                isBatchAvailable: true
+                isBatchAvailable: true // Initially true, as it contains new offcuts
             };
 
             let newOffcutsActuallyAddedToStorage = 0;
 
             offcutsToSaveDetails.forEach(newOffcutDetail => {
-                const alreadyExistsInCurrentBatch = newBatch.offcutsInBatch.some(existing =>
-                    Math.abs(existing.width - newOffcutDetail.width) < 0.01 &&
-                    Math.abs(existing.length - newOffcutDetail.length) < 0.01 &&
-                    existing.sourceSheetNameFromCalc === newOffcutDetail.sourceSheetName &&
-                    existing.sourceSheetIdFromCalc === newOffcutDetail.sourceSheetId
-                );
-
+                // Check if this exact offcut (size, source sheet ID) already exists as available in *any* batch
                 let existsInOldBatches = false;
                 for(const batch of savedOffcuts){
                     if(batch.offcutsInBatch.some(existing =>
                         Math.abs(existing.width - newOffcutDetail.width) < 0.01 &&
                         Math.abs(existing.length - newOffcutDetail.length) < 0.01 &&
-                        existing.isIndividuallyAvailable &&
-                        existing.sourceSheetNameFromCalc === newOffcutDetail.sourceSheetName &&
-                        existing.sourceSheetIdFromCalc === newOffcutDetail.sourceSheetId
+                        existing.isIndividuallyAvailable && // Must be currently available
+                        existing.sourceSheetIdFromCalc === newOffcutDetail.sourceSheetId && // Match original source sheet
+                        existing.sourceSheetNameFromCalc === newOffcutDetail.sourceSheetName
                      )){
                         existsInOldBatches = true;
                         break;
                     }
                 }
 
-                if (!alreadyExistsInCurrentBatch && !existsInOldBatches) {
-                    newBatch.
-offcutsInBatch.push({
+                if (!existsInOldBatches) { // Only add if not already present and available
+                    newBatch.offcutsInBatch.push({
                         id: `OFFCUT-${newOffcutDetail.sourceSheetId || 'NOSRC'}-${Math.random().toString(36).substr(2, 5)}`,
                         width: newOffcutDetail.width,
                         length: newOffcutDetail.length,
                         area: newOffcutDetail.area,
                         dateAdded: new Date().toISOString(),
-                        isIndividuallyAvailable: true,
-                        sourceSheetIdFromCalc: newOffcutDetail.sourceSheetId,
-                        sourceSheetNameFromCalc: newOffcutDetail.sourceSheetName
+                        isIndividuallyAvailable: true, // New offcuts are available
+                        sourceSheetIdFromCalc: newOffcutDetail.sourceSheetId, // From which sheet calc it came
+                        sourceSheetNameFromCalc: newOffcutDetail.sourceSheetName // Name of that source sheet
                     });
                     newOffcutsActuallyAddedToStorage++;
                 }
             });
 
             if (newOffcutsActuallyAddedToStorage > 0) {
-                savedOffcuts.push(newBatch);
+                savedOffcuts.push(newBatch); // Add the new batch to the main list
                 localStorage.setItem(STORAGE_KEY_SAVED_OFFCUTS, JSON.stringify(savedOffcuts));
                 alert(getLangString("usefulOffcutsSavedAlert", { count: newOffcutsActuallyAddedToStorage }));
                 if (offcutsLibraryModalEl && offcutsLibraryModalEl.style.display === 'flex') {
-                    renderOffcutsList();
+                    renderOffcutsList(); // Refresh library if open
                 }
             } else {
                 alert(getLangString("noNewOffcutsToSaveAlert"));
             }
 
+            // Disable the save button after attempting to save
             if (usefulOffcutsSummaryEl && usefulOffcutsSummaryEl.querySelector('button')) {
                  usefulOffcutsSummaryEl.querySelector('button').disabled = true;
                  usefulOffcutsSummaryEl.querySelector('button').textContent = getLangString("offcutsSavedBtn");
@@ -3710,33 +3956,37 @@ offcutsInBatch.push({
 
             const today = new Date();
             const day = String(today.getDate()).padStart(2, '0');
-            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
             const year = today.getFullYear();
             const dateString = `${day}-${month}-${year}`;
 
+            // Sanitize filename
             let sanitizedBaseFilename = baseFilename.replace(/[<>:"/\\|?*.]+/g, '_').replace(/\s+/g, '_').replace(/_+/g, '_');
 
-            if (!sanitizedBaseFilename) {
+            if (!sanitizedBaseFilename) { // Fallback if somehow still empty
                 sanitizedBaseFilename = layoutPrefix;
             }
-
+            
             let newDocumentTitle = `${sanitizedBaseFilename}_${dateString}`;
-            newDocumentTitle = newDocumentTitle.substring(0, 80);
+            newDocumentTitle = newDocumentTitle.substring(0, 80); // Limit length
 
             document.title = newDocumentTitle;
 
             const afterPrintHandler = () => {
-                document.title = originalDocumentTitle;
+                document.title = originalDocumentTitle; // Restore original title
                 window.removeEventListener('afterprint', afterPrintHandler);
                 if (loadingIndicatorEl) {
-                    loadingIndicatorEl.style.display = 'none';
+                    loadingIndicatorEl.style.display = 'none'; // Hide loading indicator
                 }
             };
             window.addEventListener('afterprint', afterPrintHandler);
 
+            // Give browser a moment to update title and prepare for print
             setTimeout(() => {
                 window.print();
-            }, 250);
+                // Note: Loading indicator might still be visible briefly after print dialog closes
+                // if user cancels, or might hide too soon. afterPrint is more reliable.
+            }, 250); // 250ms delay
         }
 
 
@@ -3744,15 +3994,15 @@ offcutsInBatch.push({
             if (cellData === null || cellData === undefined) { return ''; }
             cellData = String(cellData);
             if (cellData.includes(',') || cellData.includes('"') || cellData.includes('\n')) {
-                cellData = cellData.replace(/"/g, '""');
-                return `"${cellData}"`;
+                cellData = cellData.replace(/"/g, '""'); // Escape double quotes
+                return `"${cellData}"`; // Enclose in double quotes
             }
             return cellData;
         }
 
         function exportToCsv(filename, rows) {
             const csvContent = rows.map(row => row.map(escapeCsvCell).join(",")).join("\n");
-            const bom = "\uFEFF";
+            const bom = "\uFEFF"; // Byte Order Mark for UTF-8
             const dataUri = 'data:text/csv;charset=utf-8,' + bom + encodeURIComponent(csvContent);
             const linkElement = document.createElement('a');
             linkElement.setAttribute('href', dataUri);
@@ -3764,6 +4014,7 @@ offcutsInBatch.push({
         function exportPiecesToCsv() {
             if (pieces.length === 0) { alert(getLangString("alert_noDataToExport")); return; }
             const rows = [
+                // Headers using langStrings
                 [getLangString("tableName"), `${getLangString("tableWidth")} (${currentUnit})`, `${getLangString("tableLength")} (${currentUnit})`, getLangString("tableQuantity"), getLangString("tableAllowRotationOnGrained"), getLangString("tableEdges")]
             ];
             pieces.map(ensureEdgeBandingProperty).forEach(p => {
@@ -3789,6 +4040,7 @@ offcutsInBatch.push({
         function exportLayoutToCsv() {
             if (!lastCalculatedSheetsData || lastCalculatedSheetsData.length === 0) { alert(getLangString("alert_calculateLayoutFirst")); return; }
             const rows = [
+                // Headers
                 ["Sheet ID", "Sheet Name", "Piece Original ID", "Piece Name", "Instance #", `Placed Width (${currentUnit})`, `Placed Length (${currentUnit})`, "Is Rotated", `X Pos (${currentUnit})`, `Y Pos (${currentUnit})`]
             ];
             lastCalculatedSheetsData.forEach(sheet => {
@@ -3809,7 +4061,8 @@ offcutsInBatch.push({
                 alert(getLangString("alert_noPiecesToCopy"));
                 return;
             }
-            const pieceStrings = pieces.map(p => {
+            const pieceStrings = pieces.map(p_raw => {
+                const p = ensureEdgeBandingProperty(p_raw); // Ensure property exists
                 const widthInCurrentUnit = convertFromCm(p.width, currentUnit);
                 const lengthInCurrentUnit = convertFromCm(p.length, currentUnit);
                 let edgeString = "";
@@ -3832,10 +4085,10 @@ offcutsInBatch.push({
                         console.error('क्लिपबोर्ड पर कॉपी करने में त्रुटि:', err);
                         alert(getLangString("alert_clipboardError"));
                     });
-            } else {
+            } else { // Fallback for older browsers
                 const textArea = document.createElement("textarea");
                 textArea.value = textToCopy;
-                textArea.style.position = "fixed"; 
+                textArea.style.position = "fixed"; // Keep it out of view
                 document.body.appendChild(textArea);
                 textArea.focus();
                 textArea.select();
@@ -3866,18 +4119,18 @@ offcutsInBatch.push({
                 const lineNumber = index + 1;
                 const parts = line.trim().split(',');
 
-                if (parts.length < 3) { 
-                     if (line.trim() !== "") { 
+                if (parts.length < 3) { // Width, Length, Quantity are mandatory
+                     if (line.trim() !== "") { // Ignore empty lines silently
                         errorMessages.push(getLangString("alert_bulkInputLineError", {lineNumber: lineNumber, error: "अधूरा डेटा (चौड़ाई, लंबाई, मात्रा आवश्यक)"}));
                      }
-                    return; 
+                    return; // Skip this line
                 }
 
                 const pieceW_input_str = parts[0] ? parts[0].trim() : "";
                 const pieceL_input_str = parts[1] ? parts[1].trim() : "";
-                const quantity_input_str = parts[2] ? parts[2].trim() : "1";
-                let name_input = (parts[3] || "").trim();
-                const edge_tape_input_str = (parts[4] || "").trim().toUpperCase();
+                const quantity_input_str = parts[2] ? parts[2].trim() : "1"; // Default quantity to 1 if not provided but other fields are
+                let name_input = (parts[3] || "").trim(); // Optional name
+                const edge_tape_input_str = (parts[4] || "").trim().toUpperCase(); // Optional edge tape
 
                 const pieceW_input = parseFloat(pieceW_input_str);
                 const pieceL_input = parseFloat(pieceL_input_str);
@@ -3896,7 +4149,7 @@ offcutsInBatch.push({
                     return;
                 }
                 
-                if (!name_input) {
+                if (!name_input) { // Generate default name if not provided
                     name_input = getLangString("pieceDefaultName") + (pieceIdCounter + 1);
                 }
 
@@ -3919,7 +4172,7 @@ offcutsInBatch.push({
                     width: pieceW_cm,
                     quantity: quantity,
                     area: pieceL_cm * pieceW_cm,
-                    allowRotationOnGrainedSheet: false, 
+                    allowRotationOnGrainedSheet: false, // Default
                     edgeBanding: edgeBandingData 
                 });
                 pieceIdCounter++;
@@ -3930,12 +4183,13 @@ offcutsInBatch.push({
                 renderPiecesTable();
                 autoSaveData();
                 saveStateToHistory();
-                bulkPieceInputEl.value = ''; 
+                bulkPieceInputEl.value = ''; // Clear input after successful add
                 alert(getLangString("alert_bulkPiecesAdded", {count: piecesAddedCount}));
             }
 
             if (errorMessages.length > 0) {
                 console.error("Bulk Add Errors:\n" + errorMessages.join("\n"));
+                // Show only a few errors in the alert to avoid a huge dialog
                 alert(getLangString("alert_bulkInputFinishedWithErrors") + "\n" + errorMessages.slice(0,3).join("\n") + (errorMessages.length > 3 ? "\n(...और अधिक त्रुटियाँ)" : ""));
             }
         }
@@ -3945,7 +4199,7 @@ offcutsInBatch.push({
             bulkAddSectionEl.style.display = isHidden ? 'block' : 'none';
             toggleBulkAddBtnEl.textContent = isHidden ? getLangString("toggleBulkAddBtnHide") : getLangString("toggleBulkAddBtn");
             localStorage.setItem(STORAGE_KEY_BULK_ADD_VISIBLE, isHidden.toString());
-             if (isHidden) {
+             if (isHidden) { // If shown
                 bulkPieceInputEl.focus();
             }
         }
@@ -3967,13 +4221,13 @@ offcutsInBatch.push({
                 currentGrainColor = savedGrainColor;
                 if (modalGrainColorEl) modalGrainColorEl.value = savedGrainColor;
             } else {
-                if (modalGrainColorEl) modalGrainColorEl.value = currentGrainColor;
+                if (modalGrainColorEl) modalGrainColorEl.value = currentGrainColor; // Set default if not saved
             }
              if(modalGrainColorEl) {
                 modalGrainColorEl.addEventListener('change', function() {
                     currentGrainColor = this.value;
                     localStorage.setItem(STORAGE_KEY_GRAIN_COLOR, currentGrainColor);
-                    if (lastCalculatedSheetsData) {
+                    if (lastCalculatedSheetsData) { // Re-render if layout exists
                         displayLayoutOnCanvas(lastCalculatedSheetsData);
                     }
                 });
@@ -3982,7 +4236,7 @@ offcutsInBatch.push({
             if (modalGrainPatternEl) {
                 modalGrainPatternEl.addEventListener('change', function() {
                     saveGrainPattern();
-                    if (lastCalculatedSheetsData) {
+                    if (lastCalculatedSheetsData) { // Re-render if layout exists
                         displayLayoutOnCanvas(lastCalculatedSheetsData);
                     }
                 });
@@ -3994,7 +4248,7 @@ offcutsInBatch.push({
                 currentFittingStrategy = savedFittingStrategy;
                 if (fittingStrategySelectorEl) fittingStrategySelectorEl.value = savedFittingStrategy;
             } else {
-                 if (fittingStrategySelectorEl) fittingStrategySelectorEl.value = currentFittingStrategy;
+                 if (fittingStrategySelectorEl) fittingStrategySelectorEl.value = currentFittingStrategy; // Set default
             }
             if(fittingStrategySelectorEl){
                 fittingStrategySelectorEl.addEventListener('change', function() {
@@ -4007,7 +4261,7 @@ offcutsInBatch.push({
                     if (this.checked) {
                         promptForOffcutSelection();
                     } else {
-                        currentCalculationOffcuts = [];
+                        currentCalculationOffcuts = []; // Clear if unchecked
                     }
                 });
             }
@@ -4036,11 +4290,12 @@ offcutsInBatch.push({
             if(modalSheetHasGrainEl) modalSheetHasGrainEl.addEventListener('change', () => {isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
             if(modalSheetNameEl) modalSheetNameEl.addEventListener('input', () => {isLoadedFromHistory = false; autoSaveData(); saveStateToHistory(); });
 
-            if (document.body) {
+            if (document.body) { // Ensure body exists before adding listener
                 document.body.addEventListener('click', function(event) {
                     if (openDropdownMenuId) {
                         const menu = document.getElementById(openDropdownMenuId);
-                        const buttonForMenu = document.querySelector(`button[onclick*="${openDropdownMenuId}"]`);
+                        // Find the button that opened this menu. This is a bit fragile if onclick changes.
+                        const buttonForMenu = document.querySelector(`button[onclick*="${openDropdownMenuId}"]`); 
                         
                         if (menu && (!menu.contains(event.target)) && (!buttonForMenu || !buttonForMenu.contains(event.target))) {
                            closeAllDropdowns();
@@ -4077,14 +4332,27 @@ offcutsInBatch.push({
                     }
                 } catch (e) {
                     console.error("Error parsing settings from localStorage:", e);
+                    // Set defaults if parsing fails
+                    if(modalSheetWidthEl) modalSheetWidthEl.value = convertFromCm(122, currentUnit);
+                    if(modalSheetLengthEl) modalSheetLengthEl.value = convertFromCm(244, currentUnit);
+                    if(modalSheetHasGrainEl) modalSheetHasGrainEl.checked = true;
+                    if(modalKerfWidthEl) modalKerfWidthEl.value = convertFromCm(0.3, currentUnit);
+
                 }
+            } else { // No settings saved, set defaults
+                if(modalSheetWidthEl) modalSheetWidthEl.value = convertFromCm(122, currentUnit);
+                if(modalSheetLengthEl) modalSheetLengthEl.value = convertFromCm(244, currentUnit);
+                if(modalSheetHasGrainEl) modalSheetHasGrainEl.checked = true;
+                if(modalKerfWidthEl) modalKerfWidthEl.value = convertFromCm(0.3, currentUnit);
             }
+            
+            // Ensure values are set if they were empty after loading
             if(!modalSheetWidthEl.value) modalSheetWidthEl.value = convertFromCm(122, currentUnit);
             if(!modalSheetLengthEl.value) modalSheetLengthEl.value = convertFromCm(244, currentUnit);
             if(!modalKerfWidthEl.value) modalKerfWidthEl.value = convertFromCm(0.3, currentUnit);
-            if(typeof modalSheetHasGrainEl.checked !== 'boolean') modalSheetHasGrainEl.checked = true;
+            if(typeof modalSheetHasGrainEl.checked !== 'boolean') modalSheetHasGrainEl.checked = true; // Ensure boolean
 
-            loadOffcutSettings();
+            loadOffcutSettings(); // Load or set default offcut settings
 
             const piecesStr = localStorage.getItem(STORAGE_KEY_PIECES);
             if (piecesStr) {
@@ -4097,44 +4365,45 @@ offcutsInBatch.push({
             }
             const idCounterStr = localStorage.getItem(STORAGE_KEY_ID_COUNTER);
             pieceIdCounter = idCounterStr ? parseInt(idCounterStr) : 0;
-             if (pieces && pieces.length > 0 && pieceIdCounter === 0) {
+            // Recalculate pieceIdCounter if it seems inconsistent (e.g., after manual JSON import)
+             if (pieces && pieces.length > 0 && pieceIdCounter <= pieces.length) { // Basic check
                 const maxId = pieces.reduce((max, p) => (typeof p.id === 'number' && p.id > max ? p.id : max), -1);
-                pieceIdCounter = maxId >= 0 ? maxId + 1 : pieces.length;
+                pieceIdCounter = maxId >= 0 ? maxId + 1 : pieces.length; // Ensure next ID is unique
             }
 
-            setLanguage(savedLang); 
-            clearPieceInputs();
-            updateSelectedEdgesDisplay();
+            setLanguage(savedLang); // This will also call renderPiecesTable, clearPieceInputs, etc.
+            clearPieceInputs(); // Explicitly clear after language set
+            updateSelectedEdgesDisplay(); // Ensure edge display is correct
 
             if(resultsSummaryEl) resultsSummaryEl.textContent = getLangString("totalSheetsDefault");
             if(wastageSectionEl) wastageSectionEl.style.display = 'none';
             if(totalWastagePiecesSummaryEl) totalWastagePiecesSummaryEl.style.display = 'none';
             if(usefulOffcutsSummaryEl) usefulOffcutsSummaryEl.style.display = 'none';
-            console.log("App initialized (Bulk Add Toggle & Edge Tape in Copy/Bulk).");
+            console.log("App initialized with Guillotine Strategy option.");
         }
 
         function promptForOffcutSelection() {
-            const sheetNameFilter = modalSheetNameEl.value.trim();
+            const sheetNameFilter = modalSheetNameEl.value.trim().toLowerCase(); // For case-insensitive compare
             let offcutsToConsider = savedOffcuts
-                .flatMap(batch => batch.offcutsInBatch.filter(oc => oc.isIndividuallyAvailable !== false))
+                .flatMap(batch => batch.offcutsInBatch.filter(oc => oc.isIndividuallyAvailable !== false)) // Get all available individual offcuts
                 .filter(oc => {
-                    if (sheetNameFilter) {
+                    if (sheetNameFilter) { // If a sheet name filter is active
                         const batch = savedOffcuts.find(b => b.offcutsInBatch.some(o => o.id === oc.id));
-                        return batch && batch.sourceSheetNameForBatch && batch.sourceSheetNameForBatch.toLowerCase().includes(sheetNameFilter.toLowerCase());
+                        return batch && batch.sourceSheetNameForBatch && batch.sourceSheetNameForBatch.toLowerCase().includes(sheetNameFilter);
                     }
-                    return true;
+                    return true; // No filter, consider all
                 });
 
             if (offcutsToConsider.length === 0) {
                 alert(getLangString("noMatchingOffcuts"));
-                if(useOffcutsCheckboxEl) useOffcutsCheckboxEl.checked = false;
+                if(useOffcutsCheckboxEl) useOffcutsCheckboxEl.checked = false; // Uncheck if no offcuts found
                 currentCalculationOffcuts = [];
                 return;
             }
 
             let confirmMsg = "";
             if (sheetNameFilter) {
-                confirmMsg = getLangString("confirmUseOffcutsMsg", {count: offcutsToConsider.length, name: `"${sheetNameFilter}"`});
+                confirmMsg = getLangString("confirmUseOffcutsMsg", {count: offcutsToConsider.length, name: `"${modalSheetNameEl.value.trim()}"`});
             } else {
                  confirmMsg = getLangString("confirmUseOffcutsMsg", {count: offcutsToConsider.length, name: (getLangString("allSourcesLabel") || "सभी स्रोतों")});
             }
@@ -4144,14 +4413,14 @@ offcutsInBatch.push({
                     width: oc.width,
                     length: oc.length,
                     name: `Offcut ${oc.id.slice(-4)} (${convertFromCm(oc.width, currentUnit)}x${convertFromCm(oc.length, currentUnit)})`,
-                    hasGrain: modalSheetHasGrainEl.checked,
+                    hasGrain: modalSheetHasGrainEl.checked, // Assume offcuts follow current sheet's grain setting
                     isOffcut: true,
-                    originalStockId: oc.id,
-                    quantity: 1
+                    originalStockId: oc.id, // Important for marking as used
+                    quantity: 1 // Each offcut is unique
                 }));
                 alert(getLangString("offcutsSelectedForCalcAlert", { count: currentCalculationOffcuts.length}));
             } else {
-                if(useOffcutsCheckboxEl) useOffcutsCheckboxEl.checked = false;
+                if(useOffcutsCheckboxEl) useOffcutsCheckboxEl.checked = false; // User cancelled
                 currentCalculationOffcuts = [];
             }
         }
