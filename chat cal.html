@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>छत सामग्री कैलकुलेटर</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            background-color: #f8f9fa;
+            color: #212529;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .input-group {
+            margin-bottom: 18px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        .input-group input[type="number"],
+        .input-group input[type="text"],
+        .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        .input-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .input-group label span:not(.unit-label){
+            vertical-align: middle;
+        }
+        .calculate-btn, .action-btn { /* Shared style for buttons */
+            display: block;
+            width: 100%;
+            padding: 12px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+            box-sizing: border-box;
+        }
+        .calculate-btn { background-color: #28a745; }
+        .calculate-btn:hover { background-color: #218838; }
+
+        .results-container {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+        }
+        .results-container h2, .results-container h4 {
+            margin-top: 0;
+            color: #0056b3;
+        }
+         .results-container h4 {
+            margin-top: 15px;
+            margin-bottom:5px;
+            border-top: 1px dashed #ccc;
+            padding-top:10px;
+        }
+        .results-container p {
+            margin: 8px 0;
+            font-size: 1rem;
+        }
+        .results-container span, .results-container strong span {
+            font-weight: 600;
+        }
+        .unit-selector button {
+            padding: 8px 12px;
+            margin-right: 5px;
+            border: 1px solid #007bff;
+            background-color: white;
+            color: #007bff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .unit-selector button.active {
+            background-color: #007bff;
+            color: white;
+        }
+        fieldset {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            padding: 15px;
+        }
+        legend {
+            font-weight: 600;
+            color: #0056b3;
+            padding: 0 5px;
+        }
+        .app-header {
+            width: 100%;
+            max-width: 600px;
+            padding: 10px 0px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+        }
+        .header-title-for-calc {
+            color: #007bff;
+            font-size: 1.6rem;
+            margin: 0;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .settings-icon-btn {
+            font-size: 1.8rem;
+            color: #007bff;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: color 0.2s, transform 0.2s, background-color 0.2s;
+        }
+        .settings-icon-btn:hover {
+            color: #0056b3;
+            transform: scale(1.1);
+            background-color: rgba(0, 123, 255, 0.08);
+        }
+        .settings-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: -360px;
+            width: 340px;
+            height: 100%;
+            background-color: #fff;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+            z-index: 1005;
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
+            border-left: 1px solid #dee2e6;
+            transition: right 0.3s ease-in-out;
+        }
+        .settings-panel.active {
+            right: 0;
+            display: block;
+        }
+        .settings-panel h3 {
+            color: #007bff;
+            margin-top: 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .close-settings-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #6c757d;
+        }
+        .close-settings-btn:hover {
+            color: #343a40;
+        }
+        .total-cost, #summary-total-material-cost {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .info-text {
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
+        #ceiling-list-table th, #ceiling-list-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+            font-size: 0.9em;
+        }
+        #ceiling-list-table button {
+            padding: 5px 8px;
+            font-size: 0.9em;
+            border-radius: 3px;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        #ceiling-list-table .view-btn { background-color: #17a2b8; color:white; }
+        #ceiling-list-table .view-btn:hover { background-color: #138496;}
+        #ceiling-list-table .remove-btn { background-color: #ffc107; color:#212529;}
+        #ceiling-list-table .remove-btn:hover { background-color: #e0a800;}
+
+        .error-message {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1010;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 3% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 8px;
+            position: relative;
+        }
+        .modal-close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
+        .modal-close-btn:hover,
+        .modal-close-btn:focus {
+            color: black;
+            text-decoration: none;
+        }
+        #ceiling-3d-visualization-container {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #555;
+            margin-top: 20px;
+            position: relative;
+            background-color: #f0f0f0;
+        }
+        .visualization-toggle {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .visualization-toggle button {
+            padding: 8px 15px;
+            margin: 0 5px;
+            cursor: pointer;
+            border: 1px solid #007bff;
+            background-color: white;
+            color: #007bff;
+            border-radius: 4px;
+        }
+        .visualization-toggle button.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+
+    <header class="app-header">
+        <h1 class="header-title-for-calc">छत सामग्री कैलकुलेटर 📐</h1>
+        <div id="settings-btn" class="settings-icon-btn">⚙️</div>
+    </header>
+
+    <div class="settings-panel" id="settings-panel-content">
+        <button class="close-settings-btn" id="close-settings-panel-btn">×</button>
+        <h3>सेटिंग्स (सभी छतों के लिए लागू)</h3>
+        <fieldset>
+            <legend>यूनिट</legend>
+            <div class="unit-selector input-group">
+                <button type="button" class="unit-btn active" data-unit="cm">सेमी</button>
+                <button type="button" class="unit-btn" data-unit="m">मीटर</button>
+                <button type="button" class="unit-btn" data-unit="ft">फीट</button>
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>जिप्सम शीट</legend>
+            <div class="input-group">
+                <label for="sheet-width-input">शीट की चौड़ाई (<span class="unit-label">सेमी</span>):</label>
+                <input type="number" id="sheet-width-input" value="120" step="any">
+            </div>
+            <div class="input-group">
+                <label for="sheet-height-input">शीट की लंबाई (<span class="unit-label">सेमी</span>):</label>
+                <input type="number" id="sheet-height-input" value="240" step="any">
+            </div>
+            <div class="input-group">
+                <label for="wastage">बर्बादी (%):</label>
+                <input type="number" id="wastage" value="10" step="any" min="0">
+            </div>
+             <div class="input-group">
+                <label for="rotate-ceiling-sheet">
+                    <input type="checkbox" id="rotate-ceiling-sheet">
+                    <span>जिप्सम शीट को 90° घुमाकर लगाएं</span>
+                </label>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>फ्रेमिंग (छत)</legend>
+            <p class="info-text">चैनल स्पेसिंग को अपनी शीट के आयामों के अनुसार समायोजित करें ताकि शीट के किनारे चैनलों पर ठीक से आ सकें।</p>
+            <h4>परिधि चैनल</h4>
+            <div class="input-group">
+                <label for="perimeter-channel-length-standard">मानक परिधि चैनल लंबाई (<span class="unit-label">सेमी</span>):</label>
+                <input type="number" id="perimeter-channel-length-standard" value="300" step="any">
+            </div>
+            <h4>मेन चैनल</h4>
+            <p class="info-text">फ़रिंग के लंबवत, शीट की लंबी भुजा के समानांतर।</p>
+            <div class="input-group">
+                <label for="main-channel-spacing">मेन चैनल स्पेसिंग (<span class="unit-label">सेमी</span>):</label>
+                <input type="number" id="main-channel-spacing" value="80" step="any">
+            </div>
+            <div class="input-group">
+                <label for="main-channel-length-standard">मानक मेन चैनल लंबाई (<span class="unit-label">सेमी</span>):</label>
+                <input type="number" id="main-channel-length-standard" value="300" step="any">
+            </div>
+            <h4>फ़रिंग चैनल</h4>
+             <p class="info-text">मेन के लंबवत, शीट की छोटी भुजा के समानांतर।</p>
+            <div class="input-group">
+                <label for="furring-spacing">फ़रिंग चैनल स्पेसिंग (<span class="unit-label">सेमी</span>):</label>
+                <input type="number" id="furring-spacing" value="40" step="any">
+            </div>
+            <div class="input-group">
+                <label for="furring-length-standard">मानक फ़रिंग चैनल लंबाई (<span class="unit-label">सेमी</span>):</label>
+                <input type="number" id="furring-length-standard" value="300" step="any">
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>अतिरिक्त सामग्री दर</legend>
+            <div class="input-group">
+                <label for="screws-rate">पेंच (संख्या प्रति वर्ग मी.):</label>
+                <input type="number" id="screws-rate" value="22" step="any" min="0">
+            </div>
+            <div class="input-group">
+                <label for="tape-rate">जॉइंट टेप (मीटर प्रति वर्ग मी.):</label>
+                <input type="number" id="tape-rate" value="1.8" step="any" min="0">
+            </div>
+            <div class="input-group">
+                <label for="compound-rate">जॉइंट कंपाउंड (किग्रा प्रति वर्ग मी.):</label>
+                <input type="number" id="compound-rate" value="0.7" step="any" min="0">
+            </div>
+        </fieldset>
+        <fieldset>
+            <legend>लागत अनुमान (प्रति यूनिट मूल्य)</legend>
+            <div class="input-group"><label for="price-sheet">जिप्सम शीट (प्रति पीस):</label><input type="number" id="price-sheet" value="450" step="any" min="0"></div>
+            <div class="input-group"><label for="price-perimeter-channel">परिधि चैनल (प्रति पीस):</label><input type="number" id="price-perimeter-channel" value="120" step="any" min="0"></div>
+            <div class="input-group"><label for="price-main-channel">मेन चैनल (प्रति पीस):</label><input type="number" id="price-main-channel" value="150" step="any" min="0"></div>
+            <div class="input-group"><label for="price-furring-channel">फ़रिंग चैनल (प्रति पीस):</label><input type="number" id="price-furring-channel" value="100" step="any" min="0"></div>
+            <div class="input-group"><label for="price-screws">पेंच (प्रति 100 नग):</label><input type="number" id="price-screws" value="40" step="any" min="0"></div>
+            <div class="input-group"><label for="price-tape">जॉइंट टेप (प्रति मीटर):</label><input type="number" id="price-tape" value="5" step="any" min="0"></div>
+            <div class="input-group"><label for="price-compound">जॉइंट कंपाउंड (प्रति किग्रा):</label><input type="number" id="price-compound" value="30" step="any" min="0"></div>
+            <div class="input-group"><label for="price-connecting-clip">कनेक्टिंग क्लिप (प्रति पीस):</label><input type="number" id="price-connecting-clip" value="2" step="any" min="0"></div>
+        </fieldset>
+        <button type="button" id="reset-settings-btn" class="action-btn" style="background-color: #dc3545;">सेटिंग्स रीसेट करें</button>
+    </div>
+
+    <div class="container">
+        <form id="ceiling-entry-form">
+            <fieldset>
+                <legend>नई छत के आयाम</legend>
+                <div class="input-group">
+                    <label for="ceiling-length">लंबाई (<span class="unit-label">सेमी</span>):</label>
+                    <input type="number" id="ceiling-length" value="600" step="any">
+                    <p class="error-message" id="error-ceiling-length"></p>
+                </div>
+                <div class="input-group">
+                    <label for="ceiling-width">चौड़ाई (<span class="unit-label">सेमी</span>):</label>
+                    <input type="number" id="ceiling-width" value="500" step="any">
+                     <p class="error-message" id="error-ceiling-width"></p>
+                </div>
+                <div class="input-group">
+                    <label for="ceiling-name">छत का नाम (वैकल्पिक):</label>
+                    <input type="text" id="ceiling-name" placeholder="जैसे कमरा 1, हॉल">
+                </div>
+            </fieldset>
+            <button type="button" id="add-ceiling-btn" class="calculate-btn" style="background-color: #007bff;">इस छत को सूची में जोड़ें</button>
+        </form>
+    </div>
+
+    <div id="ceiling-list-container" class="container results-container" style="display:none;">
+        <h2>जोड़ी गई छतों की सूची</h2>
+        <table id="ceiling-list-table" style="width:100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th>नाम</th>
+                    <th>आयाम (लं. x चौ.)</th>
+                    <th style="text-align:right;">शीटें</th>
+                    <th style="text-align:right;">लागत</th>
+                    <th style="text-align:center;">क्रिया</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <p id="no-ceilings-message" style="text-align:center; margin-top:15px;">अभी कोई छत नहीं जोड़ी गई है।</p>
+    </div>
+
+    <div id="summary-results-container" class="container results-container" style="display:none;">
+        <h2>कुल सामग्री और लागत का सारांश</h2>
+        <p>कुल छत का क्षेत्रफल: <span id="summary-total-area">0.00</span> वर्ग मी.</p>
+        <p><strong>कुल आवश्यक जिप्सम शीट: <span id="summary-total-sheets">0</span></strong></p>
+        <h4>कुल फ्रेमिंग:</h4>
+        <p>आवश्यक परिधि चैनल (पीस में): <span id="summary-perimeter-pieces">0</span></p>
+        <p>आवश्यक मेन चैनल (पीस में): <span id="summary-main-channel-pieces">0</span></p>
+        <p>आवश्यक फ़रिंग चैनल (पीस में): <span id="summary-furring-pieces">0</span></p>
+        <p>कुल आवश्यक कनेक्टिंग क्लिप: <span id="summary-connecting-clips">0</span> नग</p>
+        <h4>कुल अतिरिक्त सामग्री:</h4>
+        <p>कुल आवश्यक पेंच: <span id="summary-total-screws">0</span> नग</p>
+        <p>कुल आवश्यक जॉइंट टेप: <span id="summary-total-tape">0.0</span> मीटर</p>
+        <p>कुल आवश्यक जॉइंट कंपाउंड: <span id="summary-total-compound">0.0</span> किग्रा</p>
+        <h4>कुल अनुमानित लागत:</h4>
+        <p><strong>कुल सामग्री लागत: <span id="summary-total-material-cost">₹0.00</span></strong></p>
+        <button type="button" id="clear-all-ceilings-btn" class="action-btn" style="background-color: #dc3545; margin-top:15px; display:none;">सभी छतें साफ़ करें</button>
+    </div>
+
+    <div id="individual-ceiling-details-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-modal-btn" class="modal-close-btn">×</span>
+            <div id="individual-ceiling-results-container" class="results-container" style="margin-top:0; border:none; padding:0;">
+                <h2>व्यक्तिगत छत का विवरण (<span id="individual-ceiling-name-display"></span>)</h2>
+                <p>छत का कुल क्षेत्रफल: <span id="individual-result-ceiling-area"></span></p>
+                <p>आवश्यक सैद्धांतिक जिप्सम शीट: <span id="individual-result-theoretical-sheets"></span></p>
+                <p><strong>बर्बादी सहित कुल आवश्यक शीट (अनुमानित): <span id="individual-result-total-sheets"></span></strong></p>
+                <h4>फ्रेमिंग:</h4>
+                <p>कुल परिधि चैनल लंबाई: <span id="individual-result-total-perimeter-length"></span></p>
+                <p>आवश्यक परिधि चैनल (पीस में): <span id="individual-result-perimeter-pieces"></span></p>
+                <p>मेन चैनल की दिशा: <span id="individual-result-main-channel-direction-display"></span></p>
+                <p>कुल मेन चैनल लंबाई: <span id="individual-result-total-main-channel-length"></span></p>
+                <p>आवश्यक मेन चैनल (पीस में): <span id="individual-result-main-channel-pieces"></span></p>
+                <p>फ़रिंग चैनल की दिशा: <span id="individual-result-furring-channel-direction-display"></span></p>
+                <p>कुल फ़रिंग चैनल लंबाई: <span id="individual-result-total-furring-length"></span></p>
+                <p>आवश्यक फ़रिंग चैनल (पीस में): <span id="individual-result-furring-pieces"></span></p>
+                <p>आवश्यक कनेक्टिंग क्लिप (अनुमानित): <span id="individual-result-connecting-clips"></span> नग</p>
+                <h4>अतिरिक्त सामग्री (अनुमानित):</h4>
+                <p>कुल आवश्यक पेंच: <span id="individual-result-total-screws"></span> नग</p>
+                <p>कुल आवश्यक जॉइंट टेप: <span id="individual-result-total-tape"></span> मीटर</p>
+                <p>कुल आवश्यक जॉइंट कंपाउंड: <span id="individual-result-total-compound"></span> किग्रा</p>
+                <h4>कुल अनुमानित लागत:</h4>
+                <p>जिप्सम शीट: ₹<span id="individual-cost-sheets">0.00</span></p>
+                <p>परिधि चैनल: ₹<span id="individual-cost-perimeter-channels">0.00</span></p>
+                <p>मेन चैनल: ₹<span id="individual-cost-main-channels">0.00</span></p>
+                <p>फ़रिंग चैनल: ₹<span id="individual-cost-furring-channels">0.00</span></p>
+                <p>कनेक्टिंग क्लिप: ₹<span id="individual-cost-connecting-clips">0.00</span></p>
+                <p>पेंच: ₹<span id="individual-cost-screws">0.00</span></p>
+                <p>जॉइंट टेप: ₹<span id="individual-cost-tape">0.00</span></p>
+                <p>जॉइंट कंपाउंड: ₹<span id="individual-cost-compound">0.00</span></p>
+                <p style="margin-top:10px;"><strong>सामग्री लागत: <span id="individual-total-material-cost" class="total-cost">₹0.00</span></strong></p>
+            </div>
+            <div class="visualization-toggle">
+                <button id="toggle-2d-btn" class="active">2D लेआउट</button>
+                <button id="toggle-3d-btn">3D लेआउट</button>
+            </div>
+            <div id="ceiling-2d-visualization-container" style="margin-top: 10px;">
+                <h3>2D लेआउट विज़ुअलाइज़ेशन (<span id="visualization-2d-ceiling-name-display"></span>)</h3>
+                <canvas id="ceiling-2d-canvas" style="border:1px solid #ccc; display:block; margin:10px auto; max-width:100%;"></canvas>
+                <p id="ceiling-2d-canvas-info" style="text-align:center; font-size:0.9em; color:#6c757d;"></p>
+            </div>
+            <div id="ceiling-3d-visualization-container" style="display:none;">
+                 <h3>3D लेआउट विज़ुअलाइज़ेशन (<span id="visualization-3d-ceiling-name-display"></span>)</h3>
+                 <p id="ceiling-3d-canvas-info" style="text-align:center; font-size:0.9em; color:#6c757d;">3D दृश्य को घुमाने के लिए माउस का उपयोग करें, ज़ूम करने के लिए स्क्रॉल करें।</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsPanel = document.getElementById('settings-panel-content');
+        const closeSettingsPanelBtn = document.getElementById('close-settings-panel-btn');
+        const resetSettingsBtn = document.getElementById('reset-settings-btn');
+        const unitButtons = settingsPanel.querySelectorAll('.unit-selector .unit-btn');
+        const mainFormUnitLabels = document.querySelectorAll('#ceiling-entry-form .unit-label');
+        const settingsPanelUnitLabels = settingsPanel.querySelectorAll('.settings-panel .unit-label');
+        const ceilingEntryForm = document.getElementById('ceiling-entry-form');
+        const ceilingLengthInput = document.getElementById('ceiling-length');
+        const ceilingWidthInput = document.getElementById('ceiling-width');
+        const ceilingNameInput = document.getElementById('ceiling-name');
+        const addCeilingBtn = document.getElementById('add-ceiling-btn');
+        const ceilingListContainer = document.getElementById('ceiling-list-container');
+        const ceilingListTableBody = document.getElementById('ceiling-list-table').getElementsByTagName('tbody')[0];
+        const noCeilingsMessage = document.getElementById('no-ceilings-message');
+        const summaryResultsContainer = document.getElementById('summary-results-container');
+        const clearAllCeilingsBtn = document.getElementById('clear-all-ceilings-btn');
+        const individualCeilingDetailsModal = document.getElementById('individual-ceiling-details-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const individualCeilingNameDisplay = document.getElementById('individual-ceiling-name-display');
+        const visualization2dCeilingNameDisplay = document.getElementById('visualization-2d-ceiling-name-display');
+        const visualization3dCeilingNameDisplay = document.getElementById('visualization-3d-ceiling-name-display');
+        const ceiling2DVisualizationContainer = document.getElementById('ceiling-2d-visualization-container');
+        const ceiling2DCanvas = document.getElementById('ceiling-2d-canvas');
+        const ceiling2DCanvasInfo = document.getElementById('ceiling-2d-canvas-info');
+        const ceiling3DVisualizationContainer = document.getElementById('ceiling-3d-visualization-container');
+        const ceiling3DCanvasInfo = document.getElementById('ceiling-3d-canvas-info');
+        const toggle2DBtn = document.getElementById('toggle-2d-btn');
+        const toggle3DBtn = document.getElementById('toggle-3d-btn');
+
+        // Settings Panel Inputs
+        const sheetWidthSettingInput = settingsPanel.querySelector('#sheet-width-input');
+        const sheetHeightSettingInput = settingsPanel.querySelector('#sheet-height-input');
+        const wastageSettingInput = settingsPanel.querySelector('#wastage');
+        const rotateCeilingSheetSettingInput = settingsPanel.querySelector('#rotate-ceiling-sheet');
+        const perimeterChannelLengthStandardSettingInput = settingsPanel.querySelector('#perimeter-channel-length-standard');
+        const mainChannelSpacingSettingInput = settingsPanel.querySelector('#main-channel-spacing');
+        const mainChannelLengthStandardSettingInput = settingsPanel.querySelector('#main-channel-length-standard');
+        const furringSpacingSettingInput = settingsPanel.querySelector('#furring-spacing');
+        const furringLengthStandardSettingInput = settingsPanel.querySelector('#furring-length-standard');
+        const screwsRateSettingInput = settingsPanel.querySelector('#screws-rate');
+        const tapeRateSettingInput = settingsPanel.querySelector('#tape-rate');
+        const compoundRateSettingInput = settingsPanel.querySelector('#compound-rate');
+        const priceSheetSettingInput = settingsPanel.querySelector('#price-sheet');
+        const pricePerimeterChannelSettingInput = settingsPanel.querySelector('#price-perimeter-channel');
+        const priceMainChannelSettingInput = settingsPanel.querySelector('#price-main-channel');
+        const priceFurringChannelSettingInput = settingsPanel.querySelector('#price-furring-channel');
+        const priceScrewsSettingInput = settingsPanel.querySelector('#price-screws');
+        const priceTapeSettingInput = settingsPanel.querySelector('#price-tape');
+        const priceCompoundSettingInput = settingsPanel.querySelector('#price-compound');
+        const priceConnectingClipSettingInput = settingsPanel.querySelector('#price-connecting-clip');
+
+        // --- State ---
+        let currentUnit = 'cm';
+        const CONVERSIONS = { cm: 1, m: 100, ft: 30.48 };
+        let addedCeilings = [];
+        let currentViewingCeilingData = null;
+
+        const DEFAULT_SETTINGS = {
+            sheetWidth: 120, sheetHeight: 240, wastage: 10, rotateCeilingSheet: false,
+            perimeterChannelLengthStandard: 300, mainChannelSpacing: 80, mainChannelLengthStandard: 300,
+            furringSpacing: 40, furringLengthStandard: 300, screwsRate: 22, tapeRate: 1.8, compoundRate: 0.7,
+            priceSheet: 450, pricePerimeterChannel: 120, priceMainChannel: 150, priceFurringChannel: 100,
+            priceScrews: 40, priceTape: 5, priceCompound: 30, priceConnectingClip: 2,
+        };
+
+        // --- 3D Scene Variables ---
+        let scene3D, camera3D, renderer3D, controls3D, layoutGroup3D;
+        const GYPSUM_THICKNESS_CM = 1.2;
+        const MAIN_CHANNEL_WIDTH_CM = 3.8; 
+        const MAIN_CHANNEL_HEIGHT_CM = 3.5; 
+        const FURRING_CHANNEL_WIDTH_CM = 5.0; 
+        const FURRING_CHANNEL_HEIGHT_CM = 2.7; 
+        const CLIP_SIZE_CM = 3;
+
+
+        // --- Event Listeners ---
+        settingsBtn.addEventListener('click', () => settingsPanel.classList.add('active'));
+        closeSettingsPanelBtn.addEventListener('click', () => settingsPanel.classList.remove('active'));
+        resetSettingsBtn.addEventListener('click', resetAllSettings);
+        closeModalBtn.addEventListener('click', () => {
+            individualCeilingDetailsModal.style.display = 'none';
+            currentViewingCeilingData = null;
+        });
+        window.addEventListener('click', (event) => {
+            if (event.target == individualCeilingDetailsModal) {
+                individualCeilingDetailsModal.style.display = 'none';
+                currentViewingCeilingData = null;
+            }
+             if (settingsPanel.classList.contains('active') &&
+                !settingsPanel.contains(event.target) &&
+                event.target !== settingsBtn &&
+                !settingsBtn.contains(event.target)
+            ) {
+                settingsPanel.classList.remove('active');
+            }
+        });
+        unitButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                unitButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                currentUnit = button.dataset.unit;
+                updateAllUnitLabels();
+            });
+        });
+        addCeilingBtn.addEventListener('click', handleAddCeiling);
+        clearAllCeilingsBtn.addEventListener('click', handleClearAllCeilings);
+        toggle2DBtn.addEventListener('click', () => showVisualization('2D'));
+        toggle3DBtn.addEventListener('click', () => showVisualization('3D'));
+
+
+        // --- Functions ---
+        function updateAllUnitLabels() {
+            mainFormUnitLabels.forEach(label => label.textContent = currentUnit);
+            settingsPanelUnitLabels.forEach(label => label.textContent = currentUnit);
+        }
+
+        function applySettingsToPanel(settings) {
+            sheetWidthSettingInput.value = settings.sheetWidth;
+            sheetHeightSettingInput.value = settings.sheetHeight;
+            wastageSettingInput.value = settings.wastage;
+            rotateCeilingSheetSettingInput.checked = settings.rotateCeilingSheet;
+            perimeterChannelLengthStandardSettingInput.value = settings.perimeterChannelLengthStandard;
+            mainChannelSpacingSettingInput.value = settings.mainChannelSpacing;
+            mainChannelLengthStandardSettingInput.value = settings.mainChannelLengthStandard;
+            furringSpacingSettingInput.value = settings.furringSpacing;
+            furringLengthStandardSettingInput.value = settings.furringLengthStandard;
+            screwsRateSettingInput.value = settings.screwsRate;
+            tapeRateSettingInput.value = settings.tapeRate;
+            compoundRateSettingInput.value = settings.compoundRate;
+            priceSheetSettingInput.value = settings.priceSheet;
+            pricePerimeterChannelSettingInput.value = settings.pricePerimeterChannel;
+            priceMainChannelSettingInput.value = settings.priceMainChannel;
+            priceFurringChannelSettingInput.value = settings.priceFurringChannel;
+            priceScrewsSettingInput.value = settings.priceScrews;
+            priceTapeSettingInput.value = settings.priceTape;
+            priceCompoundSettingInput.value = settings.priceCompound;
+            priceConnectingClipSettingInput.value = settings.priceConnectingClip;
+        }
+
+        function resetAllSettings() {
+            if (confirm("क्या आप वाकई सभी सेटिंग्स को डिफ़ॉल्ट पर रीसेट करना चाहते हैं?")) {
+                applySettingsToPanel(DEFAULT_SETTINGS);
+                currentUnit = 'cm';
+                unitButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.unit === 'cm') btn.classList.add('active');
+                });
+                updateAllUnitLabels();
+                alert("सेटिंग्स डिफ़ॉल्ट पर रीसेट कर दी गई हैं।");
+            }
+        }
+
+        function clearErrorMessages() {
+            document.getElementById('error-ceiling-length').textContent = '';
+            document.getElementById('error-ceiling-width').textContent = '';
+        }
+
+        function validateInput(value, fieldName, errorElementId, allowZero = false) {
+            const numValue = parseFloat(value);
+            if (isNaN(numValue) || (!allowZero && numValue <= 0)) {
+                document.getElementById(errorElementId).textContent = `${fieldName} एक मान्य धनात्मक संख्या होनी चाहिए।`;
+                return false;
+            }
+            document.getElementById(errorElementId).textContent = '';
+            return true;
+        }
+
+        function handleAddCeiling() {
+            clearErrorMessages();
+            let isValid = true;
+            isValid = validateInput(ceilingLengthInput.value, "लंबाई", "error-ceiling-length") && isValid;
+            isValid = validateInput(ceilingWidthInput.value, "चौड़ाई", "error-ceiling-width") && isValid;
+            if (!isValid) return;
+
+            const conversionFactorToCm = CONVERSIONS[currentUnit];
+            const ceilingLengthIn = parseFloat(ceilingLengthInput.value);
+            const ceilingWidthIn = parseFloat(ceilingWidthInput.value);
+            const ceilingName = ceilingNameInput.value.trim() || `छत ${addedCeilings.length + 1}`;
+
+            const sheetDim1In = parseFloat(sheetWidthSettingInput.value);
+            const sheetDim2In = parseFloat(sheetHeightSettingInput.value);
+            const wastage = parseFloat(wastageSettingInput.value);
+            const rotateCeilingSheet = rotateCeilingSheetSettingInput.checked;
+            const perimeterChannelLengthStandardIn = parseFloat(perimeterChannelLengthStandardSettingInput.value);
+            const mainChannelSpacingIn = parseFloat(mainChannelSpacingSettingInput.value);
+            const mainChannelLengthStandardIn = parseFloat(mainChannelLengthStandardSettingInput.value);
+            const furringSpacingIn = parseFloat(furringSpacingSettingInput.value);
+            const furringLengthStandardIn = parseFloat(furringLengthStandardSettingInput.value);
+            const screwsRate = parseFloat(screwsRateSettingInput.value);
+            const tapeRate = parseFloat(tapeRateSettingInput.value);
+            const compoundRate = parseFloat(compoundRateSettingInput.value);
+            const priceSheet = parseFloat(priceSheetSettingInput.value);
+            const pricePerimeterChannel = parseFloat(pricePerimeterChannelSettingInput.value);
+            const priceMainChannel = parseFloat(priceMainChannelSettingInput.value);
+            const priceFurringChannel = parseFloat(priceFurringChannelSettingInput.value);
+            const priceScrewsPer100 = parseFloat(priceScrewsSettingInput.value);
+            const priceTape = parseFloat(priceTapeSettingInput.value);
+            const priceCompound = parseFloat(priceCompoundSettingInput.value);
+            const priceConnectingClip = parseFloat(priceConnectingClipSettingInput.value);
+
+            const ceilingLengthCm = ceilingLengthIn * conversionFactorToCm;
+            const ceilingWidthCm = ceilingWidthIn * conversionFactorToCm;
+            let sheet_effective_width_for_layout_cm, sheet_effective_height_for_layout_cm;
+            let sheetLongDimCm = Math.max(sheetDim1In, sheetDim2In) * conversionFactorToCm;
+            let sheetShortDimCm = Math.min(sheetDim1In, sheetDim2In) * conversionFactorToCm;
+            if (!rotateCeilingSheet) {
+                sheet_effective_width_for_layout_cm = sheetLongDimCm; sheet_effective_height_for_layout_cm = sheetShortDimCm;
+            } else {
+                sheet_effective_width_for_layout_cm = sheetShortDimCm; sheet_effective_height_for_layout_cm = sheetLongDimCm;
+            }
+            const singleSheetAreaCm2 = (sheetDim1In * conversionFactorToCm) * (sheetDim2In * conversionFactorToCm);
+            const ceilingAreaCm2 = ceilingLengthCm * ceilingWidthCm;
+            const ceilingAreaM2 = ceilingAreaCm2 / (CONVERSIONS['m'] * CONVERSIONS['m']);
+            const theoreticalSheets = singleSheetAreaCm2 > 0 ? ceilingAreaCm2 / singleSheetAreaCm2 : 0;
+            const totalSheetsWithWastage = Math.ceil(theoreticalSheets * (1 + wastage / 100));
+            const totalPerimeterLengthCm = 2 * (ceilingLengthCm + ceilingWidthCm);
+            const perimeterPieces = (perimeterChannelLengthStandardIn * conversionFactorToCm > 0) ? Math.ceil(totalPerimeterLengthCm / (perimeterChannelLengthStandardIn * conversionFactorToCm)) : 0;
+            let furringRunsAlongCm, furringSpansAcrossCm, mainRunsAlongCm, mainSpansAcrossCm;
+            let furringDirectionDisplayText, mainChannelDirectionDisplayText;
+            let numFurringChannels, numMainChannels;
+            const mainChannelSpacingCm = mainChannelSpacingIn * conversionFactorToCm;
+            const furringSpacingCm = furringSpacingIn * conversionFactorToCm;
+
+            if (!rotateCeilingSheet) {
+                furringRunsAlongCm = ceilingWidthCm; furringSpansAcrossCm = ceilingLengthCm;
+                furringDirectionDisplayText = "चौड़ाई के समानांतर (कमरे की लंबाई में वितरित)";
+                mainRunsAlongCm = ceilingLengthCm; mainSpansAcrossCm = ceilingWidthCm;
+                mainChannelDirectionDisplayText = "लंबाई के समानांतर (कमरे की चौड़ाई में वितरित)";
+            } else {
+                furringRunsAlongCm = ceilingLengthCm; furringSpansAcrossCm = ceilingWidthCm;
+                furringDirectionDisplayText = "लंबाई के समानांतर (कमरे की चौड़ाई में वितरित)";
+                mainRunsAlongCm = ceilingWidthCm; mainSpansAcrossCm = ceilingLengthCm;
+                mainChannelDirectionDisplayText = "चौड़ाई के समानांतर (कमरे की लंबाई में वितरित)";
+            }
+
+            numFurringChannels = 0;
+            if (furringSpansAcrossCm > 0 && furringSpacingCm > 0) numFurringChannels = Math.ceil(furringSpansAcrossCm / furringSpacingCm) + 1;
+            else if (furringSpansAcrossCm > 0.01) numFurringChannels = 2;
+            const totalFurringLengthCm = numFurringChannels * furringRunsAlongCm;
+            const furringPieces = (furringLengthStandardIn * conversionFactorToCm > 0) ? Math.ceil(totalFurringLengthCm / (furringLengthStandardIn * conversionFactorToCm)) : 0;
+
+            numMainChannels = 0;
+            if (mainSpansAcrossCm > 0 && mainChannelSpacingCm > 0) numMainChannels = Math.ceil(mainSpansAcrossCm / mainChannelSpacingCm) + 1;
+            else if (mainSpansAcrossCm > 0.01) numMainChannels = 2;
+            const totalMainChannelLengthCm = numMainChannels * mainRunsAlongCm;
+            const mainChannelPieces = (mainChannelLengthStandardIn * conversionFactorToCm > 0) ? Math.ceil(totalMainChannelLengthCm / (mainChannelLengthStandardIn * conversionFactorToCm)) : 0;
+
+            let numIntersections = 0; const CLIPS_PER_INTERSECTION = 2;
+            if (numMainChannels > 0 && numFurringChannels > 0) numIntersections = numMainChannels * numFurringChannels;
+            const totalConnectingClips = numIntersections * CLIPS_PER_INTERSECTION;
+
+            const totalScrews = Math.ceil(ceilingAreaM2 * screwsRate);
+            const totalTapeMeters = (ceilingAreaM2 * tapeRate);
+            const totalCompoundKg = (ceilingAreaM2 * compoundRate);
+            const costSheetsVal = totalSheetsWithWastage * priceSheet;
+            const costPerimeterChannelsVal = perimeterPieces * pricePerimeterChannel;
+            const costMainChannelsVal = mainChannelPieces * priceMainChannel;
+            const costFurringChannelsVal = furringPieces * priceFurringChannel;
+            const costConnectingClipsVal = totalConnectingClips * priceConnectingClip;
+            const costScrewsVal = (totalScrews / 100) * priceScrewsPer100;
+            const costTapeVal = totalTapeMeters * priceTape;
+            const costCompoundVal = totalCompoundKg * priceCompound;
+            const totalMaterialCostVal = costSheetsVal + costPerimeterChannelsVal + costMainChannelsVal +
+                                      costFurringChannelsVal + costConnectingClipsVal + costScrewsVal + costTapeVal + costCompoundVal;
+
+            const currentCeilingData = {
+                id: Date.now(), name: ceilingName,
+                lengthInput: ceilingLengthIn, widthInput: ceilingWidthIn, unit: currentUnit,
+                lengthCm: ceilingLengthCm, widthCm: ceilingWidthCm,
+                ceilingAreaM2: ceilingAreaM2, theoreticalSheets: theoreticalSheets, totalSheets: totalSheetsWithWastage,
+                totalPerimeterLength: totalPerimeterLengthCm / conversionFactorToCm, perimeterPieces: perimeterPieces,
+                mainChannelDirectionText: mainChannelDirectionDisplayText,
+                totalMainChannelLength: totalMainChannelLengthCm / conversionFactorToCm, mainChannelPieces: mainChannelPieces,
+                furringChannelDirectionText: furringDirectionDisplayText,
+                totalFurringLength: totalFurringLengthCm / conversionFactorToCm, furringPieces: furringPieces,
+                totalConnectingClips: totalConnectingClips, totalScrews: totalScrews, totalTapeMeters: totalTapeMeters, totalCompoundKg: totalCompoundKg,
+                totalCost: totalMaterialCostVal,
+                costSheets: costSheetsVal, costPerimeterChannels: costPerimeterChannelsVal, costMainChannels: costMainChannelsVal,
+                costFurringChannels: costFurringChannelsVal, costConnectingClips: costConnectingClipsVal, costScrews: costScrewsVal,
+                costTape: costTapeVal, costCompound: costCompoundVal,
+                sheet_effective_width_for_layout_cm: sheet_effective_width_for_layout_cm, sheet_effective_height_for_layout_cm: sheet_effective_height_for_layout_cm,
+                mainChannelSpacingCm: mainChannelSpacingCm, furringSpacingCm: furringSpacingCm,
+                numMainChannelsForViz: numMainChannels, numFurringChannelsForViz: numFurringChannels
+            };
+            addedCeilings.push(currentCeilingData);
+            updateCeilingListTable();
+            updateSummaryResults();
+            ceilingEntryForm.reset();
+            ceilingLengthInput.focus();
+            currentViewingCeilingData = currentCeilingData;
+            displayIndividualCeilingDetails();
+        }
+
+        function updateCeilingListTable() {
+            ceilingListTableBody.innerHTML = '';
+            if (addedCeilings.length === 0) {
+                noCeilingsMessage.style.display = 'block';
+                ceilingListContainer.style.display = 'none';
+                clearAllCeilingsBtn.style.display = 'none';
+                return;
+            }
+            noCeilingsMessage.style.display = 'none';
+            ceilingListContainer.style.display = 'block';
+            clearAllCeilingsBtn.style.display = 'block';
+            addedCeilings.forEach(ceiling => {
+                const row = ceilingListTableBody.insertRow();
+                row.insertCell().textContent = ceiling.name;
+                row.insertCell().textContent = `${ceiling.lengthInput} x ${ceiling.widthInput} ${ceiling.unit}`;
+                const sheetsCell = row.insertCell(); sheetsCell.textContent = ceiling.totalSheets; sheetsCell.style.textAlign = 'right';
+                const costCell = row.insertCell(); costCell.textContent = `₹${ceiling.totalCost.toFixed(2)}`; costCell.style.textAlign = 'right';
+                const actionsCell = row.insertCell(); actionsCell.style.textAlign = 'center';
+                const viewBtn = document.createElement('button'); viewBtn.textContent = 'देखें'; viewBtn.className = 'view-btn'; viewBtn.style.marginRight = '5px';
+                viewBtn.onclick = () => { currentViewingCeilingData = ceiling; displayIndividualCeilingDetails(); };
+                actionsCell.appendChild(viewBtn);
+                const removeBtn = document.createElement('button'); removeBtn.textContent = 'हटाएं'; removeBtn.className = 'remove-btn';
+                removeBtn.onclick = () => removeCeilingFromList(ceiling.id);
+                actionsCell.appendChild(removeBtn);
+            });
+        }
+
+        function removeCeilingFromList(ceilingId) {
+            addedCeilings = addedCeilings.filter(c => c.id !== ceilingId);
+            updateCeilingListTable();
+            updateSummaryResults();
+            if (addedCeilings.length === 0) {
+                individualCeilingDetailsModal.style.display = 'none';
+                currentViewingCeilingData = null;
+            } else if (currentViewingCeilingData && currentViewingCeilingData.id === ceilingId) {
+                individualCeilingDetailsModal.style.display = 'none';
+                currentViewingCeilingData = null;
+            }
+        }
+
+        function updateSummaryResults() {
+            if (addedCeilings.length === 0) {
+                summaryResultsContainer.style.display = 'none'; return;
+            }
+            summaryResultsContainer.style.display = 'block';
+            let sArea = 0, sSheets = 0, sPerim = 0, sMain = 0, sFur = 0, sClips = 0, sScrews = 0, sTape = 0, sComp = 0, sCost = 0;
+            addedCeilings.forEach(c => {
+                sArea += c.ceilingAreaM2; sSheets += c.totalSheets; sPerim += c.perimeterPieces; sMain += c.mainChannelPieces;
+                sFur += c.furringPieces; sClips += c.totalConnectingClips; sScrews += c.totalScrews; sTape += c.totalTapeMeters;
+                sComp += c.totalCompoundKg; sCost += c.totalCost;
+            });
+            document.getElementById('summary-total-area').textContent = sArea.toFixed(2);
+            document.getElementById('summary-total-sheets').textContent = sSheets;
+            document.getElementById('summary-perimeter-pieces').textContent = sPerim;
+            document.getElementById('summary-main-channel-pieces').textContent = sMain;
+            document.getElementById('summary-furring-pieces').textContent = sFur;
+            document.getElementById('summary-connecting-clips').textContent = sClips;
+            document.getElementById('summary-total-screws').textContent = sScrews;
+            document.getElementById('summary-total-tape').textContent = sTape.toFixed(1);
+            document.getElementById('summary-total-compound').textContent = sComp.toFixed(1);
+            document.getElementById('summary-total-material-cost').textContent = `₹${sCost.toFixed(2)}`;
+        }
+
+        function handleClearAllCeilings() {
+            if (confirm("क्या आप वाकई सभी जोड़ी गई छतों को हटाना चाहते हैं?")) {
+                addedCeilings = []; updateCeilingListTable(); updateSummaryResults();
+                individualCeilingDetailsModal.style.display = 'none'; currentViewingCeilingData = null;
+            }
+        }
+
+        function displayIndividualCeilingDetails() {
+            if (!currentViewingCeilingData) {
+                individualCeilingDetailsModal.style.display = 'none'; return;
+            }
+            const cd = currentViewingCeilingData;
+            individualCeilingNameDisplay.textContent = cd.name;
+            visualization2dCeilingNameDisplay.textContent = cd.name;
+            visualization3dCeilingNameDisplay.textContent = cd.name;
+
+            document.getElementById('individual-result-ceiling-area').textContent = `${cd.ceilingAreaM2.toFixed(2)} वर्ग मी (${(cd.lengthCm * cd.widthCm).toFixed(0)} वर्ग सेमी)`;
+            document.getElementById('individual-result-theoretical-sheets').textContent = cd.theoreticalSheets.toFixed(2);
+            document.getElementById('individual-result-total-sheets').textContent = cd.totalSheets;
+            document.getElementById('individual-result-total-perimeter-length').textContent = `${cd.totalPerimeterLength.toFixed(1)} ${cd.unit} (${(cd.totalPerimeterLength * CONVERSIONS[cd.unit]).toFixed(0)} सेमी)`;
+            document.getElementById('individual-result-perimeter-pieces').textContent = cd.perimeterPieces;
+            document.getElementById('individual-result-main-channel-direction-display').textContent = cd.mainChannelDirectionText;
+            document.getElementById('individual-result-total-main-channel-length').textContent = `${cd.totalMainChannelLength.toFixed(1)} ${cd.unit} (${(cd.totalMainChannelLength * CONVERSIONS[cd.unit]).toFixed(0)} सेमी)`;
+            document.getElementById('individual-result-main-channel-pieces').textContent = cd.mainChannelPieces;
+            document.getElementById('individual-result-furring-channel-direction-display').textContent = cd.furringChannelDirectionText;
+            document.getElementById('individual-result-total-furring-length').textContent = `${cd.totalFurringLength.toFixed(1)} ${cd.unit} (${(cd.totalFurringLength * CONVERSIONS[cd.unit]).toFixed(0)} सेमी)`;
+            document.getElementById('individual-result-furring-pieces').textContent = cd.furringPieces;
+            document.getElementById('individual-result-connecting-clips').textContent = cd.totalConnectingClips;
+            document.getElementById('individual-result-total-screws').textContent = cd.totalScrews;
+            document.getElementById('individual-result-total-tape').textContent = cd.totalTapeMeters.toFixed(1);
+            document.getElementById('individual-result-total-compound').textContent = cd.totalCompoundKg.toFixed(1);
+            document.getElementById('individual-cost-sheets').textContent = cd.costSheets.toFixed(2);
+            document.getElementById('individual-cost-perimeter-channels').textContent = cd.costPerimeterChannels.toFixed(2);
+            document.getElementById('individual-cost-main-channels').textContent = cd.costMainChannels.toFixed(2);
+            document.getElementById('individual-cost-furring-channels').textContent = cd.costFurringChannels.toFixed(2);
+            document.getElementById('individual-cost-connecting-clips').textContent = cd.costConnectingClips.toFixed(2);
+            document.getElementById('individual-cost-screws').textContent = cd.costScrews.toFixed(2);
+            document.getElementById('individual-cost-tape').textContent = cd.costTape.toFixed(2);
+            document.getElementById('individual-cost-compound').textContent = cd.costCompound.toFixed(2);
+            document.getElementById('individual-total-material-cost').textContent = `₹${cd.totalCost.toFixed(2)}`;
+            individualCeilingDetailsModal.style.display = 'block';
+            showVisualization('2D');
+        }
+
+        function showVisualization(type) {
+            if (!currentViewingCeilingData) return;
+            if (type === '2D') {
+                ceiling2DVisualizationContainer.style.display = 'block';
+                ceiling3DVisualizationContainer.style.display = 'none';
+                toggle2DBtn.classList.add('active');
+                toggle3DBtn.classList.remove('active');
+                draw2DCeilingLayout(currentViewingCeilingData);
+            } else if (type === '3D') {
+                ceiling2DVisualizationContainer.style.display = 'none';
+                ceiling3DVisualizationContainer.style.display = 'block';
+                toggle2DBtn.classList.remove('active');
+                toggle3DBtn.classList.add('active');
+                if (typeof THREE !== 'undefined') {
+                     render3DLayout(currentViewingCeilingData);
+                } else {
+                    ceiling3DCanvasInfo.textContent = "3D लाइब्रेरी (Three.js) लोड नहीं हुई है।";
+                    if(document.getElementById('ceiling-3d-visualization-container')) { // Ensure container exists
+                        document.getElementById('ceiling-3d-visualization-container').innerHTML = `<p style="padding:20px; text-align:center;">${ceiling3DCanvasInfo.textContent}</p>`;
+                    }
+                }
+            }
+        }
+
+        function draw2DCeilingLayout(ceilingData) {
+            if (!ceiling2DCanvas || !ceilingData) {
+                ceiling2DVisualizationContainer.style.display = 'none'; return;
+            }
+            ceiling2DVisualizationContainer.style.display = 'block';
+            const ctx = ceiling2DCanvas.getContext('2d');
+            const { lengthCm, widthCm, sheet_effective_width_for_layout_cm, sheet_effective_height_for_layout_cm,
+                    mainChannelDirectionText, furringChannelDirectionText, mainChannelSpacingCm, furringSpacingCm,
+                    numMainChannelsForViz: numMainChannels, numFurringChannelsForViz: numFurringChannels, unit } = ceilingData;
+
+            const MAX_CANVAS_WIDTH_PX = Math.min(550, (individualCeilingDetailsModal.querySelector('.modal-content')?.clientWidth || 550) - 60);
+            const MAX_CANVAS_HEIGHT_PX = 300;
+            const PADDING_PX = 20;
+            let scaleFactor = MAX_CANVAS_WIDTH_PX / lengthCm;
+            if (widthCm * scaleFactor > MAX_CANVAS_HEIGHT_PX) scaleFactor = MAX_CANVAS_HEIGHT_PX / widthCm;
+            if (lengthCm * scaleFactor > MAX_CANVAS_WIDTH_PX) scaleFactor = MAX_CANVAS_WIDTH_PX / lengthCm;
+            if (scaleFactor <=0 || !isFinite(scaleFactor) ) scaleFactor = 0.001; // Prevent division by zero or invalid scale
+            if (lengthCm === 0 || widthCm === 0) scaleFactor = 0.1; // Handle zero dimensions gracefully for scaling
+
+            const displayLengthPx = lengthCm * scaleFactor; const displayWidthPx = widthCm * scaleFactor;
+            ceiling2DCanvas.width = displayLengthPx + 2 * PADDING_PX; ceiling2DCanvas.height = displayWidthPx + 2 * PADDING_PX;
+            ctx.clearRect(0, 0, ceiling2DCanvas.width, ceiling2DCanvas.height);
+            ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.strokeRect(PADDING_PX, PADDING_PX, displayLengthPx, displayWidthPx);
+            ctx.fillStyle = '#555'; ctx.font = "bold 10px 'Noto Sans Devanagari', sans-serif"; ctx.textAlign = 'center';
+            ctx.fillText(`लंबाई: ${(lengthCm / CONVERSIONS[unit]).toFixed(1)} ${unit}`, PADDING_PX + displayLengthPx / 2, PADDING_PX - 8);
+            ctx.save(); ctx.translate(PADDING_PX - 8, PADDING_PX + displayWidthPx / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center';
+            ctx.fillText(`चौड़ाई: ${(widthCm / CONVERSIONS[unit]).toFixed(1)} ${unit}`, 0, 0); ctx.restore();
+
+            function draw2DChannelLines(count, spacingCm, spanToCoverCm, runLengthPx, isHorizontal, color, lineWidth) {
+                ctx.strokeStyle = color; ctx.lineWidth = lineWidth;
+                if (count > 0 && spacingCm >= 0) {
+                    for (let i = 0; i < count; i++) {
+                        let currentPosCm;
+                        if (count === 1) { // Single channel centered
+                            currentPosCm = spanToCoverCm / 2;
+                        } else if (spacingCm > 0) {
+                            currentPosCm = i * spacingCm;
+                            if (i === count - 1) currentPosCm = spanToCoverCm; // Force last to edge
+                        } else { // spacingCm is 0, implies edges only or single if count = 1 (handled above)
+                            currentPosCm = (i === 0) ? 0 : spanToCoverCm;
+                        }
+                        if (currentPosCm > spanToCoverCm + 0.01 && !(i === count -1 && Math.abs(currentPosCm - spanToCoverCm) < 0.01) ) continue;
+
+                        if (isHorizontal) {
+                            let yPos = PADDING_PX + currentPosCm * scaleFactor;
+                            ctx.beginPath(); ctx.moveTo(PADDING_PX, yPos); ctx.lineTo(PADDING_PX + runLengthPx, yPos); ctx.stroke();
+                        } else {
+                            let xPos = PADDING_PX + currentPosCm * scaleFactor;
+                            ctx.beginPath(); ctx.moveTo(xPos, PADDING_PX); ctx.lineTo(xPos, PADDING_PX + runLengthPx); ctx.stroke();
+                        }
+                         if (count === 1) break; // If only one channel, draw once.
+                    }
+                }
+            }
+            const mainDir = mainChannelDirectionText || "";
+            const furringDir = furringChannelDirectionText || "";
+
+            const mainChannelIsHorizontal = mainDir.includes("चौड़ाई के समानांतर");
+            draw2DChannelLines(numMainChannels, mainChannelSpacingCm, mainChannelIsHorizontal ? widthCm : lengthCm, mainChannelIsHorizontal ? displayLengthPx : displayWidthPx, mainChannelIsHorizontal, '#777', 1.5);
+
+            const furringChannelIsHorizontal = furringDir.includes("चौड़ाई के समानांतर");
+            draw2DChannelLines(numFurringChannels, furringSpacingCm, furringChannelIsHorizontal ? widthCm : lengthCm, furringChannelIsHorizontal ? displayLengthPx : displayWidthPx, furringChannelIsHorizontal, '#aaa', 1);
+
+            ctx.strokeStyle = 'rgba(0, 123, 255, 0.5)'; ctx.fillStyle = 'rgba(204, 229, 255, 0.3)'; ctx.lineWidth = 0.5;
+            let currentLenProgCm = 0;
+            while (currentLenProgCm < lengthCm - 0.01) {
+                let currentWidProgCm = 0;
+                let sheetDrawW = Math.min(sheet_effective_width_for_layout_cm, lengthCm - currentLenProgCm) * scaleFactor;
+                while (currentWidProgCm < widthCm - 0.01) {
+                    let sheetDrawH = Math.min(sheet_effective_height_for_layout_cm, widthCm - currentWidProgCm) * scaleFactor;
+                    if (sheetDrawW > 0.1 && sheetDrawH > 0.1) {
+                        ctx.fillRect(PADDING_PX + currentLenProgCm * scaleFactor, PADDING_PX + currentWidProgCm * scaleFactor, sheetDrawW, sheetDrawH);
+                        ctx.strokeRect(PADDING_PX + currentLenProgCm * scaleFactor, PADDING_PX + currentWidProgCm * scaleFactor, sheetDrawW, sheetDrawH);
+                    } currentWidProgCm += sheet_effective_height_for_layout_cm;
+                } currentLenProgCm += sheet_effective_width_for_layout_cm;
+            }
+            ceiling2DCanvasInfo.textContent = `मुख्य चैनल: ${mainDir}. फ़रिंग चैनल: ${furringDir}.`;
+        }
+
+        // --- 3D Visualization Functions ---
+        function init3DScene() {
+            const container = document.getElementById('ceiling-3d-visualization-container');
+            if (!container || renderer3D) return;
+
+            scene3D = new THREE.Scene();
+            scene3D.background = new THREE.Color(0xf0f0f0);
+
+            const aspect = container.clientWidth / container.clientHeight || 1;
+            camera3D = new THREE.PerspectiveCamera(50, aspect, 10, 10000);
+            camera3D.position.set(0, 400, 700);
+
+            renderer3D = new THREE.WebGLRenderer({ antialias: true });
+            renderer3D.setSize(container.clientWidth, container.clientHeight);
+            renderer3D.setPixelRatio(window.devicePixelRatio);
+            container.innerHTML = '';
+            container.appendChild(renderer3D.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); scene3D.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+            directionalLight.position.set(100, 200, 150); scene3D.add(directionalLight);
+
+
+            if (typeof THREE.OrbitControls !== 'undefined') {
+                controls3D = new THREE.OrbitControls(camera3D, renderer3D.domElement);
+                controls3D.enableDamping = true; controls3D.dampingFactor = 0.05;
+                controls3D.minDistance = 100; controls3D.maxDistance = 3000;
+                controls3D.target.set(0,0,0);
+                controls3D.addEventListener('change', () => {if(scene3D && camera3D && renderer3D) renderer3D.render(scene3D, camera3D)});
+            }
+            window.addEventListener('resize', onWindowResize3D, false);
+            animate3D();
+        }
+
+        function onWindowResize3D() {
+            const container = document.getElementById('ceiling-3d-visualization-container');
+            if (!container || !camera3D || !renderer3D) return;
+            const aspect = container.clientWidth / container.clientHeight || 1;
+            camera3D.aspect = aspect;
+            camera3D.updateProjectionMatrix();
+            renderer3D.setSize(container.clientWidth, container.clientHeight);
+            if(scene3D && camera3D) renderer3D.render(scene3D, camera3D);
+        }
+
+        function animate3D() {
+            requestAnimationFrame(animate3D);
+            if (controls3D) controls3D.update();
+        }
+
+        function render3DLayout(ceilingData) {
+            if (typeof THREE === 'undefined') {
+                ceiling3DCanvasInfo.textContent = "3D लाइब्रेरी (Three.js) लोड नहीं हुई है।";
+                const container3D = document.getElementById('ceiling-3d-visualization-container');
+                if(container3D) container3D.innerHTML = `<p style="padding:20px; text-align:center;">${ceiling3DCanvasInfo.textContent}</p>`;
+                return;
+            }
+            ceiling3DCanvasInfo.textContent = "3D दृश्य को घुमाने के लिए माउस का उपयोग करें, ज़ूम करने के लिए स्क्रॉल करें।";
+
+            if (!scene3D || !renderer3D) init3DScene();
+            if (!scene3D) return;
+
+            if (layoutGroup3D) { // Clear previous objects from group and scene
+                while(layoutGroup3D.children.length > 0){
+                    layoutGroup3D.remove(layoutGroup3D.children[0]);
+                }
+                scene3D.remove(layoutGroup3D);
+            }
+            layoutGroup3D = new THREE.Group();
+
+            const { lengthCm, widthCm, sheet_effective_width_for_layout_cm, sheet_effective_height_for_layout_cm,
+                    mainChannelDirectionText, furringChannelDirectionText, mainChannelSpacingCm, furringSpacingCm,
+                    numMainChannelsForViz: numMainRuns, numFurringChannelsForViz: numFurringRuns } = ceilingData;
+
+            const sheetMaterial = new THREE.MeshLambertMaterial({ color: 0xe0e0e0, side: THREE.DoubleSide, transparent: true, opacity: 0.9 });
+            const mainChannelMaterial = new THREE.MeshLambertMaterial({ color: 0x777777 });
+            const furringChannelMaterial = new THREE.MeshLambertMaterial({ color: 0xaaaaaa });
+            const clipMaterial = new THREE.MeshStandardMaterial({ color: 0xdd4444, roughness: 0.5, metalness: 0.1 });
+
+            const CEILING_Y_SHEET_BOTTOM = 0;
+            const CEILING_Y_SHEET_CENTER = CEILING_Y_SHEET_BOTTOM + GYPSUM_THICKNESS_CM / 2;
+            const CEILING_Y_FURRING_CENTER = CEILING_Y_SHEET_CENTER + GYPSUM_THICKNESS_CM / 2 + FURRING_CHANNEL_HEIGHT_CM / 2;
+            const CEILING_Y_MAIN_CENTER = CEILING_Y_FURRING_CENTER + FURRING_CHANNEL_HEIGHT_CM / 2 + MAIN_CHANNEL_HEIGHT_CM / 2;
+
+            // Sheets
+            let currentLen = 0;
+            while (currentLen < lengthCm - 0.01) {
+                let currentWid = 0;
+                let sheetW = Math.min(sheet_effective_width_for_layout_cm, lengthCm - currentLen);
+                while (currentWid < widthCm - 0.01) {
+                    let sheetH = Math.min(sheet_effective_height_for_layout_cm, widthCm - currentWid);
+                    if (sheetW > 0.1 && sheetH > 0.1) {
+                        const geom = new THREE.BoxGeometry(sheetW, GYPSUM_THICKNESS_CM, sheetH);
+                        const mesh = new THREE.Mesh(geom, sheetMaterial);
+                        mesh.position.set(currentLen + sheetW / 2, CEILING_Y_SHEET_CENTER, currentWid + sheetH / 2);
+                        layoutGroup3D.add(mesh);
+                    } currentWid += sheet_effective_height_for_layout_cm;
+                } currentLen += sheet_effective_width_for_layout_cm;
+            }
+
+            const mainDir = mainChannelDirectionText || "";
+            const mainIsHorizAlongX = mainDir.includes("चौड़ाई के समानांतर");
+
+            if (numMainRuns > 0 && mainChannelSpacingCm >= 0) {
+                for (let i = 0; i < numMainRuns; i++) {
+                    let posVal;
+                    if (numMainRuns === 1) {
+                        posVal = (mainIsHorizAlongX ? widthCm : lengthCm) / 2;
+                    } else {
+                        posVal = i * mainChannelSpacingCm;
+                        if (i === numMainRuns - 1) posVal = (mainIsHorizAlongX ? widthCm : lengthCm);
+                    }
+
+                    const channelGeom = new THREE.BoxGeometry(
+                        mainIsHorizAlongX ? lengthCm : MAIN_CHANNEL_WIDTH_CM,
+                        MAIN_CHANNEL_HEIGHT_CM,
+                        mainIsHorizAlongX ? MAIN_CHANNEL_WIDTH_CM : widthCm
+                    );
+                    const channelMesh = new THREE.Mesh(channelGeom, mainChannelMaterial);
+                    channelMesh.position.set(
+                        mainIsHorizAlongX ? lengthCm / 2 : posVal,
+                        CEILING_Y_MAIN_CENTER,
+                        mainIsHorizAlongX ? posVal : widthCm / 2
+                    );
+                    layoutGroup3D.add(channelMesh);
+                    if (numMainRuns === 1 && mainChannelSpacingCm === 0) break; // Only one if spacing 0 and 1 run
+                }
+            }
+
+            const furringDir = furringChannelDirectionText || "";
+            const furringIsHorizAlongX = furringDir.includes("चौड़ाई के समानांतर");
+
+             if (numFurringRuns > 0 && furringSpacingCm >= 0) {
+                for (let i = 0; i < numFurringRuns; i++) {
+                     let posVal;
+                    if (numFurringRuns === 1) {
+                        posVal = (furringIsHorizAlongX ? widthCm : lengthCm) / 2;
+                    } else {
+                        posVal = i * furringSpacingCm;
+                        if (i === numFurringRuns - 1) posVal = (furringIsHorizAlongX ? widthCm : lengthCm);
+                    }
+
+                    const furringChannelGeom = new THREE.BoxGeometry(
+                        furringIsHorizAlongX ? lengthCm : FURRING_CHANNEL_WIDTH_CM,
+                        FURRING_CHANNEL_HEIGHT_CM,
+                        furringIsHorizAlongX ? FURRING_CHANNEL_WIDTH_CM : widthCm
+                    );
+                    const channelMesh = new THREE.Mesh(furringChannelGeom, furringChannelMaterial);
+                    channelMesh.position.set(
+                        furringIsHorizAlongX ? lengthCm / 2 : posVal,
+                        CEILING_Y_FURRING_CENTER,
+                        furringIsHorizAlongX ? posVal : widthCm / 2
+                    );
+                    layoutGroup3D.add(channelMesh);
+                     if (numFurringRuns === 1 && furringSpacingCm === 0) break;
+                }
+            }
+            
+            if (numMainRuns > 0 && numFurringRuns > 0 && mainChannelSpacingCm >=0 && furringSpacingCm >=0) {
+                const mainPositions = [];
+                for(let i=0; i<numMainRuns; i++) {
+                    let p = (numMainRuns === 1) ? (mainIsHorizAlongX ? widthCm : lengthCm)/2 : i*mainChannelSpacingCm;
+                    if(numMainRuns > 1 && i === numMainRuns -1) p = (mainIsHorizAlongX ? widthCm : lengthCm);
+                    mainPositions.push(p);
+                    if (numMainRuns === 1 && mainChannelSpacingCm === 0) break;
+                }
+                const furringPositions = [];
+                 for(let i=0; i<numFurringRuns; i++) {
+                    let p = (numFurringRuns === 1) ? (furringIsHorizAlongX ? widthCm : lengthCm)/2 : i*furringSpacingCm;
+                    if(numFurringRuns > 1 && i === numFurringRuns -1) p = (furringIsHorizAlongX ? widthCm : lengthCm);
+                    furringPositions.push(p);
+                    if (numFurringRuns === 1 && furringSpacingCm === 0) break;
+                }
+
+                const clipYPos = CEILING_Y_FURRING_CENTER - FURRING_CHANNEL_HEIGHT_CM/2 + CLIP_SIZE_CM/2; 
+
+                mainPositions.forEach(mainP_val => {
+                    furringPositions.forEach(furringP_val => {
+                        let clipX, clipZ;
+                        if (mainIsHorizAlongX && !furringIsHorizAlongX) { 
+                            clipX = furringP_val; 
+                            clipZ = mainP_val;    
+                        } else if (!mainIsHorizAlongX && furringIsHorizAlongX) { 
+                            clipX = mainP_val;    
+                            clipZ = furringP_val; 
+                        } else { return; }
+
+                        const clipGeom = new THREE.BoxGeometry(CLIP_SIZE_CM, CLIP_SIZE_CM, CLIP_SIZE_CM);
+                        const clipMesh = new THREE.Mesh(clipGeom, clipMaterial);
+                        clipMesh.position.set(clipX, clipYPos, clipZ);
+                        layoutGroup3D.add(clipMesh);
+                    });
+                });
+            }
+
+            const box = new THREE.Box3().setFromObject(layoutGroup3D);
+            const center = box.getCenter(new THREE.Vector3());
+            const size = box.getSize(new THREE.Vector3());
+            layoutGroup3D.position.sub(center); 
+            scene3D.add(layoutGroup3D);
+
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const fov = camera3D.fov * (Math.PI / 180);
+            let cameraDist = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+            cameraDist = Math.max(cameraDist * 1.7, 200 + maxDim * 0.7); 
+            
+            camera3D.position.set(0, maxDim * 0.6 , cameraDist); 
+            camera3D.lookAt(0,0,0); 
+            if(controls3D) {
+                controls3D.target.set(0,0,0);
+                controls3D.update();
+            }
+            if(scene3D && camera3D) renderer3D.render(scene3D, camera3D);
+            onWindowResize3D(); // Ensure renderer matches container size after potential resize
+        }
+
+        // --- Initial Setup ---
+        applySettingsToPanel(DEFAULT_SETTINGS);
+        updateAllUnitLabels();
+        updateCeilingListTable();
+        updateSummaryResults();
+    </script>
+</body>
+</html>
