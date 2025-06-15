@@ -1,0 +1,2546 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>मल्टी-वॉल जिप्सम और फ्रेमिंग कैलकुलेटर</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-color-dark: #0056b3;
+            --primary-color-light: #e2f0fb;
+            --secondary-color: #f8f9fa;
+            --border-color: #dee2e6;
+            --text-color: #212529;
+            --text-color-muted: #6c757d;
+            --error-color: #dc3545;
+            --success-color: #28a745;
+            --success-color-dark: #218838;
+            --remove-btn-bg: #fff0f1;
+            --remove-btn-color: var(--error-color);
+            --remove-btn-hover-bg: var(--error-color);
+            --remove-btn-hover-color: white;
+            --opening-bg: #fff9e6;
+            --canvas-wall-color: #e9ecef;
+            --canvas-sheet-color: rgba(204, 229, 255, 0.7);
+            --canvas-sheet-border: var(--primary-color);
+            --canvas-text-color: #333;
+            --canvas-stud-color: #888888;
+            --canvas-track-color: #555555;
+            --canvas-opening-color: rgba(255, 165, 0, 0.5);
+            --canvas-opening-border-color: #d98c00;
+            --canvas-framing-line-width: 1.5px;
+            --header-bg: #ffffff;
+            --icon-color: var(--primary-color);
+            --cutting-layout-sheet-bg: #fdfdfd;
+            --cutting-layout-piece-bg: rgba(173, 216, 230, 0.8);
+            --cutting-layout-piece-border: var(--primary-color-dark);
+            --cutting-layout-wastage-bg: rgba(240, 128, 128, 0.3);
+            --canvas-jack-stud-color: #777777;
+            --canvas-header-sill-color: #666666;
+            --canvas-cripple-stud-color: #999999;
+            --input-bg: #fff;
+            --input-border: #ced4da;
+            --input-focus-border: var(--primary-color);
+            --card-bg: #fff;
+            --card-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            --card-border: #e7eaf3;
+        }
+
+        body {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .app-header {
+            background-color: var(--header-bg);
+            width: 100%;
+            padding: 12px 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+            display: flex;
+            justify-content: flex-end; 
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-sizing: border-box;
+            border-bottom: 1px solid var(--border-color);
+            min-height: 50px; 
+        }
+
+        .header-title-group {
+           display: none; 
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .project-icon-btn, .settings-icon {
+            font-size: 1.4rem;
+            color: var(--icon-color);
+            cursor: pointer;
+            padding: 7px;
+            transition: color 0.2s, transform 0.2s, background-color 0.2s;
+            border-radius: 50%;
+        }
+        .project-icon-btn:hover, .settings-icon:hover {
+            color: var(--primary-color-dark);
+            transform: scale(1.1);
+            background-color: rgba(0, 123, 255, 0.08);
+        }
+
+
+        .settings-panel {
+            display: none;
+            position: fixed;
+            top: 60px; 
+            right: 20px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+            padding: 25px;
+            z-index: 1001;
+            width: 340px;
+            max-height: calc(100vh - 80px); 
+            overflow-y: auto;
+        }
+        .settings-panel.active {
+            display: block;
+        }
+        .settings-panel h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        .settings-panel fieldset {
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: #fcfdff;
+        }
+        .settings-panel legend {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            padding: 0 10px;
+        }
+        .input-group small {
+            display: block;
+            font-size: 0.8em;
+            color: var(--text-color-muted);
+            margin-top: 3px;
+        }
+
+
+        .container {
+            width: 100%;
+            max-width: 750px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-top: 25px;
+            margin-bottom: 30px;
+            box-sizing: border-box;
+        }
+
+        fieldset {
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: #fff;
+        }
+
+        legend {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            padding: 0 10px;
+            margin-bottom: 10px;
+        }
+
+        .wall-input-group {
+            background-color: #f9faff;
+            border: 1px solid var(--card-border);
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            position: relative;
+        }
+
+        .wall-input-group h4 {
+            margin-top: 0;
+            margin-bottom: 18px;
+            color: var(--primary-color-dark);
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .input-group { margin-bottom: 18px; }
+        .input-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.95rem; }
+        .input-group input[type="number"],
+        .input-group input[type="text"],
+        .input-group select {
+            padding: 10px 12px;
+            border: 1px solid var(--input-border);
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            width: 100%;
+            background-color: var(--input-bg);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-group input[type="number"]:focus,
+        .input-group input[type="text"]:focus,
+        .input-group select:focus {
+            border-color: var(--input-focus-border);
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+        .input-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+            vertical-align: middle;
+            height: 1.1em; width: 1.1em;
+        }
+        .input-group label input[type="checkbox"] + span {
+             vertical-align: middle; font-weight: 400;
+        }
+
+        .unit-selector { margin-bottom: 25px; display: flex; flex-direction: column; gap: 10px;}
+        .unit-selector > label { font-weight: 600; margin-bottom: 8px; }
+        .unit-selector div { display: flex; flex-wrap: wrap; gap: 10px; }
+        .unit-btn {
+            padding: 9px 16px;
+            border: 1px solid var(--primary-color);
+            background-color: white;
+            color: var(--primary-color);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .unit-btn.active, .unit-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+        }
+         .unit-btn:not(.active):hover {
+            background-color: var(--primary-color-light);
+        }
+
+
+        .add-wall-btn, .add-opening-btn, .add-multiple-walls button {
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .add-wall-btn {
+            display: block;
+            width: 100%;
+            background-color: var(--primary-color-light);
+            color: var(--primary-color-dark);
+            border: 1px dashed var(--primary-color);
+            margin-top: 10px;
+        }
+        .add-wall-btn:hover {
+            background-color: #d1e7ff;
+            border-color: var(--primary-color-dark);
+        }
+
+        .add-opening-btn {
+            font-size: 0.9rem;
+            background-color: #e6f7ff;
+            border: 1px dashed #b6d4ed;
+            color: #0067a3;
+            display: block;
+            width: auto;
+            margin-top: 10px;
+        }
+        .add-opening-btn:hover {
+            background-color: #d0eefa;
+            border-color: #9cbddf;
+        }
+
+        .add-multiple-walls {
+            display: flex; gap: 10px; align-items: center;
+            margin-top: 20px; padding:15px;
+            border-top: 1px solid #e9ecef;
+            background-color: #fcfdff;
+            border-radius: 0 0 5px 5px;
+        }
+        .add-multiple-walls input[type="number"]{
+            width: 70px; padding: 10px; font-size: 0.9rem;
+        }
+        .add-multiple-walls label {
+            font-size:0.9rem; margin-left:0; margin-right:5px; flex-grow: 1;
+        }
+         .add-multiple-walls button {
+            padding: 10px 15px; font-size:0.9rem;
+         }
+
+
+        .remove-wall-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: var(--remove-btn-bg);
+            color: var(--remove-btn-color);
+            border: 1px solid var(--remove-btn-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            line-height: 28px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease, box-shadow 0.2s ease;
+        }
+         .remove-opening-btn {
+            background-color: var(--remove-btn-bg);
+            color: var(--remove-btn-color);
+            border: 1px solid var(--remove-btn-color);
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .remove-wall-btn:hover, .remove-opening-btn:hover {
+            background-color: var(--remove-btn-hover-bg);
+            color: var(--remove-btn-hover-color);
+            transform: scale(1.05);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .opening-input-group {
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #ffe4b3;
+            border-left: 4px solid var(--canvas-opening-border-color);
+            border-radius: 5px;
+            background-color: var(--opening-bg);
+        }
+        .opening-input-group h5 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            color: #856404;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding-bottom: 8px;
+            border-bottom: 1px dotted #ffd8a8;
+        }
+
+
+        .calculate-btn {
+            display: block; width: 100%; padding: 14px;
+            background-color: var(--success-color); color: white;
+            border: none; border-radius: 6px;
+            font-size: 1.25rem; font-weight: 700; cursor: pointer;
+            margin-top: 25px;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 5px rgba(40, 167, 69, 0.25);
+        }
+        .calculate-btn:hover {
+            background-color: var(--success-color-dark);
+            box-shadow: 0 3px 7px rgba(33, 136, 56, 0.35);
+        }
+
+        .results-container, .individual-wall-results-container {
+             margin-top: 30px; padding: 25px;
+             background-color: #fff;
+             border-left: 5px solid var(--primary-color);
+             border-radius: 6px;
+             box-shadow: var(--card-shadow);
+        }
+        .results-container h2, .individual-wall-results-container h3 { margin-top: 0; font-weight: 600; }
+        .results-container p, .individual-wall-results-container p { margin: 10px 0; font-size: 1rem; }
+        .results-container span, .individual-wall-results-container span { font-weight: 600; color: var(--primary-color-dark); }
+
+        .results-container .framing-results, .individual-wall-results-container .framing-results,
+        .results-container .additional-materials-results, .individual-wall-results-container .additional-materials-results,
+        .results-container .cost-estimation-results, .individual-wall-results-container .cost-estimation-results,
+        .individual-wall-results-container .sheet-pieces-results,
+        #cutting-layout-container {
+             margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-color);
+        }
+        .individual-wall-results-container {
+            border-left-color: var(--success-color);
+            background-color: #fafff5;
+        }
+        .individual-wall-results-container .framing-details-list {
+            list-style-type: '✓ ';
+            padding-left: 15px;
+            font-size: 0.9rem;
+        }
+        .individual-wall-results-container .framing-details-list li {
+            margin-bottom: 4px;
+            padding-left: 5px;
+        }
+
+
+        .error-messages { color: var(--error-color); background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; margin-top: 20px; }
+
+        #visualization-and-details-container h2, #cutting-layout-container h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        .wall-visualization-wrapper {
+            margin-bottom: 20px;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+        }
+        .wall-visualization-wrapper:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .wall-canvas {
+            display: block;
+            margin: 0 auto 15px;
+            border: 1px solid var(--border-color);
+            background-color: white;
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        .cutting-sheet-wrapper {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: #fff;
+            box-shadow: var(--card-shadow);
+        }
+        .cutting-sheet-canvas {
+            display: block;
+            margin: 0 auto 10px;
+            border: 1px solid #ccc;
+            background-color: var(--cutting-layout-sheet-bg);
+            max-width: 100%;
+            border-radius: 4px;
+        }
+        .cutting-sheet-info {
+            font-size: 0.9rem;
+            text-align: center;
+            color: var(--text-color-muted);
+        }
+        .full-sheet-entry {
+            padding: 10px 15px;
+            margin-bottom: 12px;
+            background-color: var(--primary-color-light);
+            border: 1px solid #b0c4de;
+            border-left: 5px solid var(--primary-color);
+            border-radius: 5px;
+            font-size: 0.95rem;
+            color: var(--primary-color-dark);
+        }
+        .cutting-layout-piece-details {
+            list-style-type: disc;
+            padding-left: 25px;
+            margin-top: 12px;
+            font-size: 0.85rem;
+            background-color: #fafcff;
+            border-top: 1px dashed #dde5f0;
+            padding: 10px 15px;
+            border-radius: 4px;
+        }
+        .cutting-layout-piece-details li {
+            margin-bottom: 6px;
+        }
+        .cutting-layout-piece-details li strong {
+            color: var(--primary-color-dark);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            border: 3px solid rgba(0,0,0,.1);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+            vertical-align: middle;
+            margin-left: 8px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .accordion-item .accordion-header {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 12px 18px;
+            width: 100%;
+            text-align: left;
+            border: none;
+            border-bottom: 1px solid var(--border-color);
+            outline: none;
+            transition: background-color 0.2s ease;
+            font-size: 1rem;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .accordion-item .accordion-header:hover {
+            background-color: #e9ecef;
+        }
+        .accordion-item .accordion-header h3 {
+            margin: 0;
+            font-size: 1.15rem;
+            color: var(--primary-color-dark);
+            font-weight: 600;
+        }
+        .accordion-item .accordion-header .accordion-icon {
+            font-size: 0.9em;
+            transition: transform 0.2s ease-in-out;
+            margin-left: 10px;
+            color: var(--primary-color);
+        }
+        .accordion-item .accordion-header[aria-expanded="true"] .accordion-icon {
+            transform: rotate(90deg);
+        }
+        .accordion-item .accordion-content {
+            padding: 20px;
+            border: none;
+            background-color: white;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1002;
+        }
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 400px;
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .modal-content .input-group {
+            margin-bottom: 20px;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+
+        /* --- PRINT STYLES START --- */
+        @media print {
+            body {
+                font-size: 10pt;
+                background-color: #fff !important;
+                color: #000 !important;
+                margin: 0;
+                padding: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .app-header, .settings-panel, #calculator-form, .calculate-btn,
+            #error-messages, .add-wall-btn, .add-multiple-walls,
+            .remove-wall-btn, .remove-opening-btn, .add-opening-btn,
+            .project-icon-btn, .settings-icon, 
+            .unit-selector, fieldset legend + div,
+            #loading-indicator, .accordion-icon, .modal-overlay 
+             {
+                display: none !important;
+            }
+             .print-only-title { /* Class for the print-only title */
+                display: block !important;
+                text-align: center;
+                font-size: 1.8em !important;
+                color: black !important;
+                margin-bottom: 20px !important;
+                margin-top: 10px !important;
+            }
+            
+            .settings-panel fieldset {
+                border: 1px solid #ccc !important;
+                margin-bottom: 10px !important;
+            }
+            .settings-panel legend {
+                 font-size: 1.1em;
+            }
+            .settings-panel .input-group {
+                display: none !important;
+            }
+            .settings-panel .input-group label input[type="checkbox"]:checked,
+            .settings-panel .input-group label input[type="checkbox"]:checked + span {
+                display: inline-block !important;
+                visibility: visible !important;
+            }
+            .settings-panel .input-group label input[type="checkbox"]:not(:checked) {
+                display: none !important;
+            }
+            .settings-panel .input-group label:has(input[type="checkbox"]:checked) {
+                 display: block !important;
+            }
+
+
+            .container {
+                box-shadow: none !important;
+                border: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 10px !important;
+                margin: 0 !important;
+            }
+
+            #total-results-container,
+            .individual-wall-results-container,
+            .wall-visualization-wrapper,
+            .cutting-sheet-wrapper {
+                border: 1px solid #ccc !important;
+                box-shadow: none !important;
+                margin-bottom: 15px !important;
+                padding: 10px !important;
+                page-break-inside: avoid;
+                background-color: #fff !important;
+                border-left: none !important;
+            }
+             .results-container span, .individual-wall-results-container span {
+                color: #000 !important;
+                font-weight: bold;
+            }
+            #result-cutting-layout-sheets {
+                color: #000 !important;
+            }
+
+
+            h2, h3, h4, legend { 
+                color: #000 !important;
+                margin-top: 10px;
+                margin-bottom: 8px;
+            }
+
+            #visualization-and-details-container h2,
+            #cutting-layout-container h2 {
+                page-break-before: always;
+            }
+            .wall-visualization-wrapper:not(:first-child),
+            .cutting-sheet-wrapper:not(.full-sheet-entry-wrapper):not(:first-of-type) {
+                 page-break-before: always;
+            }
+             .full-sheet-entry, .cutting-layout-piece-details {
+                font-size: 9pt !important;
+                background-color: #fff !important;
+                border-color: #ccc !important;
+            }
+            .cutting-layout-piece-details strong {
+                 color: #000 !important;
+            }
+            .accordion-content {
+                display: block !important;
+                 padding: 10px !important;
+                 border-top: 1px solid #ccc !important;
+            }
+            .accordion-header {
+                background-color: #f0f0f0 !important;
+                border-bottom: 1px solid #ccc !important;
+            }
+            .accordion-header h3 {
+                font-size: 1.1em !important;
+            }
+
+
+            .wall-canvas, .cutting-sheet-canvas {
+                border: 1px solid #aaa !important;
+                max-width: 98% !important;
+                height: auto !important;
+                background-color: #fff !important;
+            }
+             :root {
+                --canvas-sheet-border-print: #555;
+            }
+
+            table, th, td {
+                border: 1px solid #ccc;
+                border-collapse: collapse;
+                padding: 5px;
+            }
+            th {
+                background-color: #f0f0f0;
+            }
+
+            a {
+                text-decoration: none;
+                color: #000;
+            }
+        }
+        /* --- PRINT STYLES END --- */
+
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-title-group">
+             <!-- Title is removed for screen, but a print-only title is added via JS -->
+        </div>
+        <div class="header-actions">
+            <div class="project-icon-btn" id="save-project-icon-btn">&#128190;</div>
+            <div class="project-icon-btn" id="load-project-icon-btn">&#128194;</div>
+            <div class="project-icon-btn" id="reset-project-icon-btn">&#128465;</div>
+            <div class="project-icon-btn" id="export-csv-icon-btn"> &#x1F4E4; </div>
+            <div class="project-icon-btn" id="print-results-btn">&#128424;</div>
+            <div class="settings-icon" id="settings-toggle-btn">⚙️</div>
+        </div>
+    </header>
+
+    <div class="settings-panel" id="settings-panel">
+        <h3>सेटिंग्स</h3>
+        <div class="unit-selector">
+            <label>यूनिट चुनें:</label>
+            <div>
+                <button type="button" class="unit-btn active" data-unit="cm">सेमी</button>
+                <button type="button" class="unit-btn" data-unit="m">मीटर</button>
+                <button type="button" class="unit-btn" data-unit="ft">फीट</button>
+            </div>
+        </div>
+
+        <fieldset>
+            <legend>जिप्सम शीट</legend>
+            <div class="input-group">
+                <label for="sheet-width">चौड़ाई:</label>
+                <input type="number" id="sheet-width" value="120" step="any" required>
+            </div>
+            <div class="input-group">
+                <label for="sheet-height">लंबाई (या ऊँचाई):</label>
+                <input type="number" id="sheet-height" value="240" step="any" required>
+            </div>
+            <div class="input-group">
+                <label for="wastage">बर्बादी (%):</label>
+                <input type="number" id="wastage" value="10" step="any" min="0" required>
+            </div>
+            <div class="input-group">
+                <label for="allow-piece-rotation">
+                    <input type="checkbox" id="allow-piece-rotation" checked>
+                    <span>कटिंग के लिए शीट के टुकड़ों को 90° घुमाने की अनुमति दें</span>
+                </label>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>फ्रेमिंग (स्टड और ट्रैक)</legend>
+            <div class="input-group">
+                <label for="stud-spacing">स्टड स्पेसिंग:</label>
+                <input type="number" id="stud-spacing" value="60" step="any" required>
+            </div>
+            <div class="input-group">
+                <label for="stud-length">मानक स्टड लंबाई:</label>
+                <input type="number" id="stud-length" value="300" step="any" required>
+            </div>
+            <div class="input-group">
+                <label for="track-length">मानक ट्रैक लंबाई:</label>
+                <input type="number" id="track-length" value="300" step="any" required>
+            </div>
+             <div class="input-group">
+                <label for="track-on-sides">
+                    <input type="checkbox" id="track-on-sides">
+                    <span>सभी दीवारों के किनारों पर भी ट्रैक लगाएं</span>
+                </label>
+            </div>
+            <div class="input-group">
+                <label for="advanced-opening-framing">
+                    <input type="checkbox" id="advanced-opening-framing" checked>
+                    <span>ओपनिंग के लिए अतिरिक्त फ्रेमिंग (हेडर, जैक स्टड आदि)</span>
+                </label>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>सामग्री लागत</legend>
+            <div class="input-group">
+                <label for="cost-sheet">जिप्सम शीट (प्रति नग):</label>
+                <input type="number" id="cost-sheet" value="500" step="any" min="0">
+            </div>
+            <div class="input-group">
+                <label for="cost-stud">स्टड (प्रति नग):</label>
+                <input type="number" id="cost-stud" value="150" step="any" min="0">
+            </div>
+            <div class="input-group">
+                <label for="cost-track">ट्रैक (प्रति नग):</label>
+                <input type="number" id="cost-track" value="120" step="any" min="0">
+            </div>
+            <div class="input-group">
+                <label for="cost-screws">स्क्रू (प्रति 100 नग): <small>उदा. 50</small></label>
+                <input type="number" id="cost-screws" value="50" step="any" min="0">
+            </div>
+            <div class="input-group">
+                <label for="cost-tape">जॉइंट टेप (प्रति मीटर): <small>उदा. 2</small></label>
+                <input type="number" id="cost-tape" value="2" step="any" min="0">
+            </div>
+            <div class="input-group">
+                <label for="cost-compound">जॉइंट कंपाउंड (प्रति किग्रा):</label>
+                <input type="number" id="cost-compound" value="25" step="any" min="0">
+            </div>
+            <div class="input-group">
+                <label for="cost-corner-bead">कॉर्नर बीड (प्रति मीटर):</label>
+                <input type="number" id="cost-corner-bead" value="30" step="any" min="0">
+            </div>
+        </fieldset>
+    </div>
+
+    <div class="container">
+        <form id="calculator-form">
+            <fieldset>
+                <legend>दीवारें</legend>
+                <div id="walls-container">
+                </div>
+                <button type="button" id="add-wall-btn" class="add-wall-btn" style="margin-bottom: 10px;">+ एक और भिन्न दीवार जोड़ें</button>
+                <div class="add-multiple-walls">
+                    <input type="number" id="num-same-walls" value="1" min="1">
+                    <label for="num-same-walls">समान दीवारें जोड़ें (अंतिम दीवार के आधार पर)</label>
+                    <button type="button" id="add-same-walls-btn" class="unit-btn">जोड़ें</button>
+                </div>
+            </fieldset>
+
+            <button type="submit" class="calculate-btn">कुल गणना करें</button>
+            <div id="loading-indicator" style="display:none; text-align:center; margin-top:15px; color:var(--primary-color); font-weight:500;">
+                गणना हो रही है, कृपया प्रतीक्षा करें... <span class="spinner"></span>
+            </div>
+        </form>
+
+        <div id="error-messages" class="error-messages" style="display:none;"></div>
+
+        <div id="total-results-container" class="results-container" style="display:none;">
+            <h2>कुल परिणाम (सभी दीवारें मिलाकर) 📋</h2>
+            <p>कुल दीवारें: <span id="result-wall-count"></span></p>
+            <p>सभी दीवारों का कुल क्षेत्रफल (जिप्सम लगाने हेतु): <span id="result-wall-area"></span></p>
+            <p>एक शीट का क्षेत्रफल: <span id="result-sheet-area"></span></p>
+            <p>आवश्यक सैद्धांतिक शीट (बिना बर्बादी): <span id="result-theoretical-sheets"></span></p>
+            <p><strong>बर्बादी सहित कुल आवश्यक शीट (अनुमानित): <span id="result-total-sheets"></span></strong></p>
+            <p>कटिंग लेआउट के अनुसार आवश्यक शीट: <span id="result-cutting-layout-sheets" style="color:var(--success-color); font-weight:bold;"></span></p>
+
+
+            <div class="framing-results">
+                <h3>कुल फ्रेमिंग सामग्री:</h3>
+                <p>कुल स्टड लंबाई: <span id="result-total-stud-length"></span></p>
+                <p>आवश्यक स्टड (पीस में): <span id="result-stud-pieces"></span></p>
+                <p>कुल ट्रैक लंबाई: <span id="result-total-track-length"></span></p>
+                <p>आवश्यक ट्रैक (पीस में): <span id="result-track-pieces"></span></p>
+                <div class="overall-framing-details-summary" style="margin-top: 10px; padding-top: 10px; border-top: 1px dotted var(--border-color);">
+                    <h4>कुल अतिरिक्त फ्रेमिंग सदस्य (सभी दीवारें):</h4>
+                    <p>कुल मुख्य/किंग स्टड: <span id="result-total-basic-studs"></span> नग</p>
+                    <p>कुल जैक स्टड: <span id="result-total-jack-studs"></span> नग</p>
+                    <p>कुल हेडर: <span id="result-total-headers"></span> नग</p>
+                    <p>कुल सिल: <span id="result-total-sills"></span> नग</p>
+                    <p>कुल क्रिप्पल स्टड: <span id="result-total-cripple-studs"></span> नग</p>
+                </div>
+            </div>
+            <div class="additional-materials-results" style="display:none;">
+                <h3>अन्य आवश्यक सामग्री (अनुमानित):</h3>
+                <p>जिप्सम स्क्रू (लगभग): <span id="result-screws"></span> नग</p>
+                <p>जॉइंट टेप (पेपर या मेश): <span id="result-tape"></span> मीटर</p>
+                <p>जॉइंट कंपाउंड (प्री-मिक्स): <span id="result-compound"></span> किग्रा</p>
+                <p>कॉर्नर बीड (बाहरी कोने): <span id="result-corner-bead"></span> मीटर</p>
+            </div>
+            <div class="cost-estimation-results" style="display:none;">
+                <h3>अनुमानित सामग्री लागत (कटिंग लेआउट के आधार पर):</h3>
+                <p>जिप्सम शीट: <span id="cost-result-sheets"></span></p>
+                <p>स्टड: <span id="cost-result-studs"></span></p>
+                <p>ट्रैक: <span id="cost-result-tracks"></span></p>
+                <p>स्क्रू: <span id="cost-result-screws"></span></p>
+                <p>जॉइंट टेप: <span id="cost-result-tape"></span></p>
+                <p>जॉइंट कंपाउंड: <span id="cost-result-compound"></span></p>
+                <p>कॉर्नर बीड: <span id="cost-result-corner-bead"></span></p>
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 10px 0;">
+                <p><strong>कुल अनुमानित सामग्री लागत: <span id="cost-result-total"></span></strong></p>
+            </div>
+        </div>
+
+        <div id="visualization-and-details-container" style="display:none;">
+        </div>
+        <div id="cutting-layout-container" style="display:none;">
+            <h2>सुझाई गई कटिंग लेआउट 📐</h2>
+            <div id="full-sheets-summary" style="margin-bottom:15px;"></div>
+            <div id="cut-sheets-visualizations"></div>
+        </div>
+        <canvas id="gypsum-canvas" style="display:none;"></canvas> 
+    </div>
+
+    <div id="save-project-modal" class="modal-overlay" style="display:none;">
+       <div class="modal-content">
+           <h3>प्रोजेक्ट सहेजें</h3>
+           <div class="input-group">
+               <label for="modal-project-name">प्रोजेक्ट का नाम (वैकल्पिक):</label>
+               <input type="text" id="modal-project-name" placeholder="उदा. मेरा घर प्रोजेक्ट">
+           </div>
+           <div class="modal-actions">
+               <button type="button" id="modal-save-btn" class="unit-btn active">सहेजें</button>
+               <button type="button" id="modal-cancel-btn" class="unit-btn">रद्द करें</button>
+           </div>
+       </div>
+   </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('calculator-form');
+        const settingsPanel = document.getElementById('settings-panel');
+        const unitButtons = settingsPanel.querySelectorAll('.unit-btn');
+        const settingsToggleBtn = document.getElementById('settings-toggle-btn');
+
+        const totalResultsDiv = document.getElementById('total-results-container');
+        const errorDiv = document.getElementById('error-messages');
+
+        const wallsContainer = document.getElementById('walls-container');
+        const addWallBtn = document.getElementById('add-wall-btn');
+        const numSameWallsInput = document.getElementById('num-same-walls');
+        const addSameWallsBtn = document.getElementById('add-same-walls-btn');
+
+        const visualizationAndDetailsContainer = document.getElementById('visualization-and-details-container');
+
+        const saveProjectIconBtn = document.getElementById('save-project-icon-btn');
+        const loadProjectBtn = document.getElementById('load-project-icon-btn');
+        const resetProjectBtn = document.getElementById('reset-project-icon-btn');
+        const exportCsvBtn = document.getElementById('export-csv-icon-btn');
+        const printResultsBtn = document.getElementById('print-results-btn');
+        const loadingIndicator = document.getElementById('loading-indicator');
+
+        const saveProjectModal = document.getElementById('save-project-modal');
+        const modalProjectNameInput = document.getElementById('modal-project-name');
+        const modalSaveBtn = document.getElementById('modal-save-btn');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+        
+        const LOCAL_STORAGE_KEY = 'gypsumCalculatorProjectData_v2.8_studFix'; // Version bump for stud fix
+
+        let activeProjectName = "अनाम प्रोजेक्ट"; 
+        let currentUnit = 'cm';
+        let wallCounter = 0;
+        let openingCounterGlobal = 0;
+        let lastEnteredHeight = null;
+        const CONVERSIONS = { cm: 1, m: 100, ft: 30.48 };
+
+        const SCREWS_PER_SQ_METER = 18;
+        const TAPE_PER_SHEET_METERS = 7.5;
+        const COMPOUND_PER_SQ_METER_KG = 1.75;
+
+        const workerCode = `
+        self.onmessage = function(event) {
+            const { allPieces, sheetW, sheetH, allowRotation, kerfCm, potpackFunctionString, generateLayoutsFunctionString } = event.data;
+            const potpack_fn_worker = new Function('return ' + potpackFunctionString)();
+            const generateOptimizedCuttingLayouts_worker = new Function('potpack_arg', 'return ' + generateLayoutsFunctionString)(potpack_fn_worker);
+            try {
+                const cuttingLayouts = generateOptimizedCuttingLayouts_worker(allPieces, sheetW, sheetH, allowRotation, kerfCm);
+                self.postMessage({ type: 'layoutsComplete', data: cuttingLayouts });
+            } catch (e) {
+                self.postMessage({ type: 'error', message: e.message, stack: e.stack });
+            }
+        };`;
+
+        settingsToggleBtn.addEventListener('click', () => {
+            settingsPanel.classList.toggle('active');
+        });
+        document.addEventListener('click', (event) => {
+            if (settingsPanel.classList.contains('active') &&
+                !settingsPanel.contains(event.target) &&
+                !settingsToggleBtn.contains(event.target) &&
+                !event.target.closest('.header-actions')) {
+                settingsPanel.classList.remove('active');
+            }
+        });
+
+        unitButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                unitButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                currentUnit = button.dataset.unit;
+                updateLabelsForUnit();
+            });
+        });
+
+        addWallBtn.addEventListener('click', () => addWallInput());
+        addSameWallsBtn.addEventListener('click', addMultipleSameWalls);
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            calculateAndDisplay();
+        });
+
+        saveProjectIconBtn.addEventListener('click', () => {
+            modalProjectNameInput.value = (activeProjectName && activeProjectName !== "अनाम प्रोजेक्ट") ? activeProjectName : "";
+            saveProjectModal.style.display = 'flex';
+            modalProjectNameInput.focus();
+        });
+
+        modalCancelBtn.addEventListener('click', () => {
+            saveProjectModal.style.display = 'none';
+        });
+
+        modalSaveBtn.addEventListener('click', () => {
+            let projectNameFromModal = modalProjectNameInput.value.trim();
+            if (!projectNameFromModal) {
+                projectNameFromModal = "अनाम प्रोजेक्ट"; 
+            }
+            activeProjectName = projectNameFromModal; 
+            saveProjectData(activeProjectName); 
+            saveProjectModal.style.display = 'none';
+        });
+
+        saveProjectModal.addEventListener('click', (event) => { 
+            if (event.target === saveProjectModal) {
+                saveProjectModal.style.display = 'none';
+            }
+        });
+
+
+        loadProjectBtn.addEventListener('click', () => loadProject(true));
+        resetProjectBtn.addEventListener('click', resetProject);
+        exportCsvBtn.addEventListener('click', exportMaterialListToCsv);
+
+        if (printResultsBtn) {
+            printResultsBtn.addEventListener('click', () => {
+                if (totalResultsDiv.style.display === 'none' || errorDiv.style.display === 'block') {
+                    alert("परिणाम प्रिंट करने से पहले कृपया सामग्री की गणना करें और सुनिश्चित करें कि कोई त्रुटियाँ नहीं हैं।");
+                    return;
+                }
+                
+                const headerTitleForPrint = document.createElement('h1');
+                headerTitleForPrint.textContent = "जिप्सम कैलकुलेटर रिपोर्ट"; 
+                headerTitleForPrint.classList.add('print-only-title'); 
+                document.body.insertBefore(headerTitleForPrint, document.body.firstChild);
+
+
+                visualizationAndDetailsContainer.querySelectorAll('.accordion-item').forEach(item => {
+                    const content = item.querySelector('.accordion-content');
+                    const header = item.querySelector('.accordion-header');
+                    const icon = header.querySelector('.accordion-icon');
+                    if (content && content.style.display === 'none') {
+                        content.style.display = 'block';
+                        header.setAttribute('aria-expanded', 'true');
+                        if(icon) icon.textContent = '▼';
+                        const canvasEl = content.querySelector('.wall-canvas');
+                        if (canvasEl && !canvasEl.dataset.drawn) {
+                           const wallId = canvasEl.id.replace('wall-canvas-', '');
+                           const wallData = window.gypsumCalculatorLastCalculatedWallData.find(wd => wd.idCanvas.endsWith(wallId));
+                           if(wallData){
+                                const baseSheetWidthCm = parseFloat(document.getElementById('sheet-width').value) * CONVERSIONS[currentUnit];
+                                const baseSheetHeightCm = parseFloat(document.getElementById('sheet-height').value) * CONVERSIONS[currentUnit];
+                                const studSpacingCm = parseFloat(document.getElementById('stud-spacing').value) * CONVERSIONS[currentUnit];
+                                const trackOnSides = document.getElementById('track-on-sides').checked;
+                                const kerfSizeCm = 0;
+                                const advancedFramingEnabled = document.getElementById('advanced-opening-framing').checked;
+
+                                const sheetWForVisual = wallData.rotateSheetVisual ? baseSheetHeightCm : baseSheetWidthCm;
+                                const sheetHForVisual = wallData.rotateSheetVisual ? baseSheetWidthCm : baseSheetHeightCm;
+                                drawSingleWallLayout(canvasEl, wallData, sheetWForVisual, sheetHForVisual, studSpacingCm, trackOnSides, false, kerfSizeCm, advancedFramingEnabled);
+                                canvasEl.dataset.drawn = 'true';
+                           }
+                        }
+                    }
+                    if (header) {
+                        const h3 = header.querySelector('h3');
+                        let wallNameForPrint = "दीवार";
+                        const canvasIdFromHeader = header.closest('.accordion-item').querySelector('.wall-canvas')?.id;
+                        if(canvasIdFromHeader){
+                            const wallId = canvasIdFromHeader.replace('wall-canvas-', '');
+                            const wallData = window.gypsumCalculatorLastCalculatedWallData.find(wd => wd.idCanvas.endsWith(wallId));
+                            if(wallData) wallNameForPrint = wallData.name;
+                        }
+                        if (h3) {
+                             h3.innerHTML = `${wallNameForPrint} (विवरण)`;
+                        }
+                    }
+                });
+                window.print();
+                headerTitleForPrint.remove(); 
+            });
+        }
+
+
+        window.addEventListener('load', () => {
+            if (localStorage.getItem(LOCAL_STORAGE_KEY)) {
+                loadProject(false); 
+            } else {
+                 if (wallsContainer.children.length === 0) {
+                    addWallInput();
+                 }
+                 activeProjectName = "अनाम प्रोजेक्ट"; 
+            }
+            updateLabelsForUnit();
+        });
+
+
+        function updateLabelsForUnit() {
+            const unitText = `(${currentUnit})`;
+            settingsPanel.querySelector('label[for="sheet-width"]').textContent = `चौड़ाई ${unitText}:`;
+            settingsPanel.querySelector('label[for="sheet-height"]').textContent = `लंबाई (या ऊँचाई) ${unitText}:`;
+            settingsPanel.querySelector('label[for="stud-spacing"]').textContent = `स्टड स्पेसिंग ${unitText}:`;
+            settingsPanel.querySelector('label[for="stud-length"]').textContent = `मानक स्टड लंबाई ${unitText}:`;
+            settingsPanel.querySelector('label[for="track-length"]').textContent = `मानक ट्रैक लंबाई ${unitText}:`;
+
+            wallsContainer.querySelectorAll('.wall-input-group').forEach(group => {
+                const wallId = group.dataset.wallId;
+                group.querySelector(`label[for="wall-width-${wallId}"]`).textContent = `चौड़ाई (या लंबाई) ${unitText}:`;
+                group.querySelector(`label[for="wall-height-${wallId}"]`).textContent = `ऊँचाई ${unitText}:`;
+
+                group.querySelectorAll('.opening-input-group').forEach(opGroup => {
+                    const opId = opGroup.dataset.openingId;
+                    opGroup.querySelector(`label[for="opening-width-${opId}"]`).innerHTML = `चौड़ाई ${unitText}:`;
+                    opGroup.querySelector(`label[for="opening-height-${opId}"]`).innerHTML = `ऊँचाई ${unitText}:`;
+                    opGroup.querySelector(`label[for="opening-x-offset-${opId}"]`).innerHTML = `X-ऑफसेट (बाएं किनारे से) ${unitText}:`;
+                    const yOffsetLabel = opGroup.querySelector(`label[for="opening-y-offset-${opId}"]`);
+                    const typeSelect = opGroup.querySelector(`#opening-type-${opId}`);
+                    if (yOffsetLabel && typeSelect && typeSelect.value === 'window') {
+                         yOffsetLabel.parentElement.style.display = 'block';
+                         yOffsetLabel.innerHTML = `Y-ऑफसेट (फर्श से) ${unitText}:`;
+                    } else if (yOffsetLabel) {
+                        yOffsetLabel.parentElement.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        function addWallInput(data = null) {
+            wallCounter++;
+            const wallDiv = document.createElement('div');
+            wallDiv.className = 'wall-input-group';
+            wallDiv.setAttribute('data-wall-id', wallCounter);
+            const unitText = `(${currentUnit})`;
+            const displayWallNumber = (data && data.originalId) ? data.originalId : `दीवार ${wallCounter}`;
+
+            let html = `<h4>${displayWallNumber}</h4>
+                <div class="input-group">
+                    <label for="wall-width-${wallCounter}">चौड़ाई (या लंबाई) ${unitText}:</label>
+                    <input type="number" id="wall-width-${wallCounter}" class="wall-width" step="any" required>
+                </div>
+                <div class="input-group">
+                    <label for="wall-height-${wallCounter}">ऊँचाई ${unitText}:</label>
+                    <input type="number" id="wall-height-${wallCounter}" class="wall-height" step="any" required>
+                </div>
+                <div class="input-group">
+                    <label><input type="checkbox" id="wall-double-${wallCounter}" class="wall-double-sided-checkbox"><span>इस दीवार के दोनों तरफ जिप्सम शीट लगेगी</span></label>
+                </div>
+                <div class="input-group">
+                    <label><input type="checkbox" id="wall-rotate-sheet-${wallCounter}" class="wall-rotate-sheet-checkbox"><span>इस दीवार के लिए जिप्सम शीट को 90° घुमाएँ</span></label>
+                </div>
+                <div class="openings-container" data-wall-id-openings="${wallCounter}"></div>
+                <button type="button" class="add-opening-btn" data-wall-id-for-opening="${wallCounter}">+ ओपनिंग जोड़ें (दरवाजा/खिड़की)</button>`;
+            wallDiv.innerHTML = html;
+
+            if (wallsContainer.children.length > 0 || (!data && wallCounter > 1) || (data && wallsContainer.children.length >=0) ) {
+                const removeWallButton = document.createElement('button');
+                removeWallButton.type = 'button'; removeWallButton.className = 'remove-wall-btn';
+                removeWallButton.innerHTML = '&times;';
+                removeWallButton.addEventListener('click', () => {
+                    wallDiv.remove();
+                    if (wallsContainer.children.length === 0) lastEnteredHeight = null;
+                });
+                wallDiv.insertBefore(removeWallButton, wallDiv.firstChild);
+            }
+            wallsContainer.appendChild(wallDiv);
+            const wallHeightInput = wallDiv.querySelector(`#wall-height-${wallCounter}`);
+
+            if (data) {
+                wallDiv.querySelector(`#wall-width-${wallCounter}`).value = data.width;
+                wallHeightInput.value = data.height;
+                lastEnteredHeight = parseFloat(data.height) || null;
+                wallDiv.querySelector(`#wall-double-${wallCounter}`).checked = data.isDoubleSided;
+                wallDiv.querySelector(`#wall-rotate-sheet-${wallCounter}`).checked = data.rotateSheetVisual;
+                if (data.openings) data.openings.forEach(opData => addOpeningInput(wallCounter, opData));
+            } else if (lastEnteredHeight !== null && wallCounter > 1) {
+                 wallHeightInput.value = lastEnteredHeight;
+                 wallHeightInput.addEventListener('focus', function(e) {
+                    if (e.target.value == String(lastEnteredHeight)) {
+                        e.target.select();
+                    }
+                 });
+            }
+
+            wallHeightInput.addEventListener('input', function() {
+                const newHeight = parseFloat(this.value);
+                if (!isNaN(newHeight) && newHeight > 0) lastEnteredHeight = newHeight;
+            });
+            wallHeightInput.addEventListener('change', function() {
+                const newHeight = parseFloat(this.value);
+                if (!isNaN(newHeight) && newHeight > 0) lastEnteredHeight = newHeight;
+            });
+
+            wallDiv.querySelector('.add-opening-btn').addEventListener('click', function() {
+                addOpeningInput(this.dataset.wallIdForOpening);
+            });
+            if (!data) updateLabelsForUnit();
+        }
+
+        function addOpeningInput(wallIdForOpening, data = null) {
+            openingCounterGlobal++;
+            const openingsContainer = document.querySelector(`.openings-container[data-wall-id-openings="${wallIdForOpening}"]`);
+            if (!openingsContainer) return;
+            const openingDiv = document.createElement('div');
+            openingDiv.className = 'opening-input-group';
+            openingDiv.setAttribute('data-opening-id', openingCounterGlobal);
+            const unitText = `(${currentUnit})`;
+            openingDiv.innerHTML = `<h5><span>ओपनिंग</span><button type="button" class="remove-opening-btn">&times;</button></h5>
+                <div class="input-group"><label for="opening-type-${openingCounterGlobal}">प्रकार:</label><select id="opening-type-${openingCounterGlobal}" class="opening-type"><option value="door">दरवाजा</option><option value="window">खिड़की</option></select></div>
+                <div class="input-group"><label for="opening-width-${openingCounterGlobal}">चौड़ाई ${unitText}:</label><input type="number" id="opening-width-${openingCounterGlobal}" class="opening-width" step="any"></div>
+                <div class="input-group"><label for="opening-height-${openingCounterGlobal}">ऊँचाई ${unitText}:</label><input type="number" id="opening-height-${openingCounterGlobal}" class="opening-height" step="any"></div>
+                <div class="input-group"><label for="opening-x-offset-${openingCounterGlobal}">X-ऑफसेट (बाएं किनारे से) ${unitText}:</label><input type="number" id="opening-x-offset-${openingCounterGlobal}" class="opening-x-offset" step="any" placeholder="0"></div>
+                <div class="input-group y-offset-group" id="y-offset-group-${openingCounterGlobal}" style="display:none;"><label for="opening-y-offset-${openingCounterGlobal}">Y-ऑफसेट (फर्श से) ${unitText}:</label><input type="number" id="opening-y-offset-${openingCounterGlobal}" class="opening-y-offset" value="0" step="any"></div>`;
+            openingsContainer.appendChild(openingDiv);
+
+            const typeSelect = openingDiv.querySelector(`#opening-type-${openingCounterGlobal}`);
+            const yOffsetInput = openingDiv.querySelector(`#opening-y-offset-${openingCounterGlobal}`);
+            const yOffsetGroup = openingDiv.querySelector(`#y-offset-group-${openingCounterGlobal}`);
+            const xOffsetInput = openingDiv.querySelector(`#opening-x-offset-${openingCounterGlobal}`);
+
+
+            if (data) {
+                typeSelect.value = data.type;
+                openingDiv.querySelector(`#opening-width-${openingCounterGlobal}`).value = data.width;
+                openingDiv.querySelector(`#opening-height-${openingCounterGlobal}`).value = data.height;
+                xOffsetInput.value = data.xOffset !== undefined ? data.xOffset : ""; 
+                if (data.type === 'window') yOffsetInput.value = data.yOffset;
+            } else {
+                 xOffsetInput.value = ""; 
+            }
+            
+            function toggleYOffsetVisibility() {
+                yOffsetGroup.style.display = typeSelect.value === 'door' ? 'none' : 'block';
+                if(typeSelect.value === 'door') yOffsetInput.value = 0;
+                updateLabelsForUnit();
+            }
+            toggleYOffsetVisibility(); typeSelect.addEventListener('change', toggleYOffsetVisibility);
+            openingDiv.querySelector('.remove-opening-btn').addEventListener('click', () => openingDiv.remove());
+            if (!data) updateLabelsForUnit();
+        }
+
+        function addMultipleSameWalls() {
+            const numToAdd = parseInt(numSameWallsInput.value) || 0;
+            if (numToAdd <= 0) { alert("दीवारों की मान्य संख्या डालें (>=1)."); return; }
+            const allWallGroups = wallsContainer.querySelectorAll('.wall-input-group');
+            if (allWallGroups.length === 0) { alert("कॉपी करने के लिए कम से कम एक दीवार मौजूद होनी चाहिए।"); return; }
+            const lastWallGroup = allWallGroups[allWallGroups.length - 1];
+            const lastWallId = lastWallGroup.dataset.wallId;
+            const templateData = {
+                width: parseFloat(lastWallGroup.querySelector(`#wall-width-${lastWallId}`).value),
+                height: parseFloat(lastWallGroup.querySelector(`#wall-height-${lastWallId}`).value),
+                isDoubleSided: lastWallGroup.querySelector(`#wall-double-${lastWallId}`).checked,
+                rotateSheetVisual: lastWallGroup.querySelector(`#wall-rotate-sheet-${lastWallId}`).checked,
+                openings: Array.from(lastWallGroup.querySelectorAll('.opening-input-group')).map(opGroup => {
+                    const opId = opGroup.dataset.openingId; const typeSel = opGroup.querySelector(`#opening-type-${opId}`);
+                    const xOffsetVal = opGroup.querySelector(`#opening-x-offset-${opId}`).value;
+                    return { 
+                        type: typeSel.value, 
+                        width: parseFloat(opGroup.querySelector(`#opening-width-${opId}`).value), 
+                        height: parseFloat(opGroup.querySelector(`#opening-height-${opId}`).value), 
+                        xOffset: xOffsetVal === "" ? 0 : parseFloat(xOffsetVal), 
+                        yOffset: (typeSel.value === 'window' ? parseFloat(opGroup.querySelector(`#opening-y-offset-${opId}`).value) : 0) 
+                    };
+                })};
+            if (isNaN(templateData.width) || templateData.width <= 0 || isNaN(templateData.height) || templateData.height <= 0) {
+                alert("अंतिम दीवार में अमान्य आयाम हैं।"); return;
+            }
+            for (let i = 0; i < numToAdd; i++) {
+                const clonedData = JSON.parse(JSON.stringify(templateData));
+                clonedData.originalId = `${lastWallGroup.querySelector('h4').textContent} की कॉपी #${i+1}`;
+                addWallInput(clonedData);
+            }
+            updateLabelsForUnit();
+        }
+
+        function saveProjectData(projectName) { 
+            const projectDataToSave = { settings: {}, walls: [], projectName: projectName }; 
+            projectDataToSave.projectKeyVersion = LOCAL_STORAGE_KEY.split('_').pop();
+
+            function getNumVal(id){ const el = document.getElementById(id); return el ? (parseFloat(el.value)||0) : 0; }
+            projectDataToSave.settings = {
+                unit: currentUnit,
+                sheetWidth:getNumVal('sheet-width'), sheetHeight:getNumVal('sheet-height'), wastage:getNumVal('wastage'),
+                allowPieceRotation: document.getElementById('allow-piece-rotation').checked,
+                studSpacing:getNumVal('stud-spacing'), studLength:getNumVal('stud-length'), trackLength:getNumVal('track-length'),
+                trackOnSides:document.getElementById('track-on-sides').checked,
+                advancedOpeningFraming: document.getElementById('advanced-opening-framing').checked,
+                lastEnteredHeight:lastEnteredHeight,
+                costSheet:getNumVal('cost-sheet'), costStud:getNumVal('cost-stud'), costTrack:getNumVal('cost-track'),
+                costScrewsPer100:getNumVal('cost-screws'), costTapePerMeter:getNumVal('cost-tape'),
+                costCompoundPerKg:getNumVal('cost-compound'), costCornerBeadPerMeter:getNumVal('cost-corner-bead')
+            };
+
+            document.querySelectorAll('#walls-container .wall-input-group').forEach(wallGroup => {
+                const wallId = wallGroup.dataset.wallId;
+                const wallObj = {
+                    originalId: wallGroup.querySelector('h4').textContent,
+                    width: parseFloat(wallGroup.querySelector(`#wall-width-${wallId}`).value),
+                    height: parseFloat(wallGroup.querySelector(`#wall-height-${wallId}`).value),
+                    isDoubleSided: wallGroup.querySelector(`#wall-double-${wallId}`).checked,
+                    rotateSheetVisual: wallGroup.querySelector(`#wall-rotate-sheet-${wallId}`).checked,
+                    openings: Array.from(wallGroup.querySelectorAll('.opening-input-group')).map(opGroup => {
+                        const opId = opGroup.dataset.openingId; const typeSel = opGroup.querySelector(`#opening-type-${opId}`);
+                        const xOffsetVal = opGroup.querySelector(`#opening-x-offset-${opId}`).value;
+                        return { 
+                            type: typeSel.value, 
+                            width: parseFloat(opGroup.querySelector(`#opening-width-${opId}`).value), 
+                            height: parseFloat(opGroup.querySelector(`#opening-height-${opId}`).value), 
+                            xOffset: xOffsetVal === "" ? 0 : parseFloat(xOffsetVal), 
+                            yOffset: (typeSel.value === 'window' ? parseFloat(opGroup.querySelector(`#opening-y-offset-${opId}`).value) : 0)
+                        };
+                    })};
+                projectDataToSave.walls.push(wallObj);
+            });
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(projectDataToSave));
+                alert(`प्रोजेक्ट "${projectName}" सफलतापूर्वक सहेजा गया!`);
+            }
+            catch (e) { console.error("Save error:", e); alert('प्रोजेक्ट सहेजने में त्रुटि हुई।'); }
+        }
+
+        function loadProject(showAlert = true) {
+            const savedDataString = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (savedDataString) {
+                try {
+                    const projectData = JSON.parse(savedDataString);
+
+                    activeProjectName = projectData.projectName || "अनाम प्रोजेक्ट"; 
+
+                    const s = projectData.settings;
+                    unitButtons.forEach(btn=>btn.classList.toggle('active',btn.dataset.unit===s.unit)); currentUnit=s.unit;
+                    function setVal(id,val){ if(document.getElementById(id) && val !== undefined) document.getElementById(id).value=val; }
+                    setVal('sheet-width',s.sheetWidth||120);setVal('sheet-height',s.sheetHeight||240);setVal('wastage',s.wastage||10);
+                    if(document.getElementById('allow-piece-rotation')) document.getElementById('allow-piece-rotation').checked = typeof s.allowPieceRotation === 'boolean' ? s.allowPieceRotation : true;
+
+                    setVal('stud-spacing',s.studSpacing||60);setVal('stud-length',s.studLength||300);setVal('track-length',s.trackLength||300);
+                    if(document.getElementById('track-on-sides')) document.getElementById('track-on-sides').checked=s.trackOnSides||false;
+                    if(document.getElementById('advanced-opening-framing')) document.getElementById('advanced-opening-framing').checked = typeof s.advancedOpeningFraming === 'boolean' ? s.advancedOpeningFraming : true;
+
+                    lastEnteredHeight=parseFloat(s.lastEnteredHeight)||null;
+                    setVal('cost-sheet',s.costSheet||500);setVal('cost-stud',s.costStud||150);setVal('cost-track',s.costTrack||120);
+                    setVal('cost-screws',s.costScrewsPer100||50);setVal('cost-tape',s.costTapePerMeter||2);
+                    setVal('cost-compound',s.costCompoundPerKg||25);setVal('cost-corner-bead',s.costCornerBeadPerMeter||30);
+
+                    wallsContainer.innerHTML=''; wallCounter=0; openingCounterGlobal=0;
+                    if (projectData.walls) {
+                        projectData.walls.forEach(wallData => addWallInput(wallData));
+                    }
+                    updateLabelsForUnit();
+                    if (showAlert) alert(`प्रोजेक्ट "${activeProjectName}" सफलतापूर्वक लोड किया गया!`);
+                    calculateAndDisplay();
+                } catch (e) { console.error("Load error:", e); if(showAlert)alert('प्रोजेक्ट लोड करने में त्रुटि हुई।');}
+            } else {
+                if (showAlert) alert('कोई सहेजा गया प्रोजेक्ट नहीं मिला।');
+                activeProjectName = "अनाम प्रोजेक्ट"; 
+            }
+        }
+
+        function resetProject() {
+            if (confirm('क्या आप वाकई सभी इनपुट रीसेट करना और सहेजे गए प्रोजेक्ट को हटाना चाहते हैं?')) {
+                localStorage.removeItem(LOCAL_STORAGE_KEY);
+
+                activeProjectName = "अनाम प्रोजेक्ट"; 
+
+                wallsContainer.innerHTML='';wallCounter=0;openingCounterGlobal=0;lastEnteredHeight=null;
+                function setDefVal(id, val) { if(document.getElementById(id)) document.getElementById(id).value = val; }
+                function setDefChk(id, val) { if(document.getElementById(id)) document.getElementById(id).checked = val; }
+                setDefVal('sheet-width',120);setDefVal('sheet-height',240);setDefVal('wastage',10);
+                setDefChk('allow-piece-rotation', true);
+                setDefVal('stud-spacing',60);setDefVal('stud-length',300);setDefVal('track-length',300);
+                setDefChk('track-on-sides', false);
+                setDefChk('advanced-opening-framing', true);
+                if(numSameWallsInput) numSameWallsInput.value=1;
+                setDefVal('cost-sheet',500);setDefVal('cost-stud',150);setDefVal('cost-track',120);
+                setDefVal('cost-screws',50);setDefVal('cost-tape',2);setDefVal('cost-compound',25);setDefVal('cost-corner-bead',30);
+                currentUnit='cm';unitButtons.forEach(btn=>btn.classList.toggle('active',btn.dataset.unit===currentUnit));
+                addWallInput(); updateLabelsForUnit();
+                totalResultsDiv.style.display='none';visualizationAndDetailsContainer.style.display='none';
+                visualizationAndDetailsContainer.innerHTML='<h2>लेआउट और सामग्री (प्रति दीवार) 🖼️</h2>';
+
+                const clc = document.getElementById('cutting-layout-container');
+                if (clc) {
+                    clc.innerHTML = '<h2>सुझाई गई कटिंग लेआउट 📐</h2><div id="full-sheets-summary" style="margin-bottom:15px;"></div><div id="cut-sheets-visualizations"></div>';
+                    clc.style.display = 'none';
+                }
+                const fssDiv = document.getElementById('full-sheets-summary');
+                if (fssDiv) fssDiv.innerHTML = '';
+                const csvDiv = document.getElementById('cut-sheets-visualizations');
+                if (csvDiv) csvDiv.innerHTML = '';
+
+                errorDiv.style.display='none';
+                alert('प्रोजेक्ट रीसेट कर दिया गया है।');
+            }
+        }
+
+        function _formatDimension(val, unit, conv) {
+            const actualConversions = conv || CONVERSIONS;
+            if (val === undefined || val === null || isNaN(val)) return 'N/A';
+            const convertedValue = val / actualConversions[unit];
+            return Number.isInteger(convertedValue) ? convertedValue.toString() : convertedValue.toFixed(1);
+        }
+
+        function calculateAndDisplay() {
+            errorDiv.style.display = 'none'; errorDiv.innerHTML = '';
+            totalResultsDiv.style.display = 'none';
+            visualizationAndDetailsContainer.style.display = 'none';
+            visualizationAndDetailsContainer.innerHTML = '<h2>लेआउट और सामग्री (प्रति दीवार) 🖼️</h2>';
+
+            const cuttingLayoutContainerEl = document.getElementById('cutting-layout-container');
+            if (cuttingLayoutContainerEl) {
+                 cuttingLayoutContainerEl.innerHTML = '<h2>सुझाई गई कटिंग लेआउट 📐</h2><div id="full-sheets-summary" style="margin-bottom:15px;"></div><div id="cut-sheets-visualizations"></div>';
+                 cuttingLayoutContainerEl.style.display = 'none';
+            }
+            const fullSheetsSummaryDivEl = document.getElementById('full-sheets-summary');
+            if (fullSheetsSummaryDivEl) fullSheetsSummaryDivEl.innerHTML = '';
+            const cutSheetsVisualizationsDivEl = document.getElementById('cut-sheets-visualizations');
+            if (cutSheetsVisualizationsDivEl) cutSheetsVisualizationsDivEl.innerHTML = '';
+
+            if (loadingIndicator) loadingIndicator.style.display = 'block';
+
+            let errors = [];
+            const conversionFactorToCm = CONVERSIONS[currentUnit];
+            let overallTotalWallAreaCm2ForGypsum = 0;
+            let overallTotalStudLengthCm = 0;
+            let overallTotalTrackLengthCm = 0;
+            const wallInputsData = [];
+            let allSheetPiecesForCuttingLayout = [];
+            function gId(id){return document.getElementById(id);}
+
+            let overallTotalBasicStuds = 0;
+            let overallTotalJackStuds = 0;
+            let overallTotalHeaders = 0;
+            let overallTotalSills = 0;
+            let overallTotalCrippleStuds = 0;
+
+
+            const studSpacingInput = parseFloat(gId('stud-spacing').value);
+            const studLengthInput = parseFloat(gId('stud-length').value);
+            const trackLengthInput = parseFloat(gId('track-length').value);
+            const trackOnSides = gId('track-on-sides').checked;
+            const advancedOpeningFramingEnabled = gId('advanced-opening-framing').checked;
+            const sheetWidthSetting = parseFloat(gId('sheet-width').value);
+            const sheetHeightSetting = parseFloat(gId('sheet-height').value);
+            const wastagePercentage = parseFloat(gId('wastage').value);
+            const allowPieceRotationForCutting = gId('allow-piece-rotation').checked;
+            const kerfSizeCm = 0;
+
+            if (gId('walls-container').children.length === 0) errors.push("कृपया कम से कम एक दीवार जोड़ें।");
+            if (isNaN(studSpacingInput)||studSpacingInput<=0) errors.push("स्टड स्पेसिंग मान्य नहीं है।");
+            if (isNaN(studLengthInput)||studLengthInput<=0) errors.push("मानक स्टड लंबाई मान्य नहीं है।");
+            if (isNaN(trackLengthInput)||trackLengthInput<=0) errors.push("मानक ट्रैक लंबाई मान्य नहीं है।");
+            if (isNaN(sheetWidthSetting)||sheetWidthSetting<=0) errors.push("जिप्सम शीट की चौड़ाई मान्य नहीं है।");
+            if (isNaN(sheetHeightSetting)||sheetHeightSetting<=0) errors.push("जिप्सम शीट की लंबाई मान्य नहीं है।");
+            if (isNaN(wastagePercentage)||wastagePercentage<0) errors.push("बर्बादी प्रतिशत मान्य नहीं है।");
+
+            const studSpacingCm = studSpacingInput * conversionFactorToCm;
+            const standardStudLengthCm = studLengthInput * conversionFactorToCm;
+            const standardTrackLengthCm = trackLengthInput * conversionFactorToCm;
+            const baseSheetWidthCm = sheetWidthSetting * conversionFactorToCm;
+            const baseSheetHeightCm = sheetHeightSetting * conversionFactorToCm;
+            const sheetAreaCm2Global = baseSheetWidthCm * baseSheetHeightCm;
+
+            Array.from(gId('walls-container').children).forEach(group => {
+                const wallId = group.dataset.wallId;
+                const wallName = group.querySelector('h4').textContent || `दीवार ${wallId}`;
+                const width = parseFloat(group.querySelector(`#wall-width-${wallId}`).value);
+                const height = parseFloat(group.querySelector(`#wall-height-${wallId}`).value);
+                let wallErrorsLocal = [];
+                if (isNaN(width) || width <= 0) wallErrorsLocal.push(`${wallName}: कृपया एक मान्य चौड़ाई दर्ज करें।`);
+                if (isNaN(height) || height <= 0) wallErrorsLocal.push(`${wallName}: कृपया एक मान्य ऊँचाई दर्ज करें।`);
+
+                const isDoubleSided = group.querySelector(`#wall-double-${wallId}`).checked;
+
+                const wallDataForCalc = {
+                    idCanvas: `wall-canvas-${wallId}`, name: wallName,
+                    widthCm: width*conversionFactorToCm, heightCm: height*conversionFactorToCm,
+                    rotateSheetVisual: group.querySelector(`#wall-rotate-sheet-${wallId}`).checked,
+                    openings: [], sheetPieces: [], framingDetails: { basicStuds:0, jackStuds:0, crippleStuds:0, headers:0, sills:0 }
+                };
+                Array.from(group.querySelectorAll('.opening-input-group')).forEach(opGroup => {
+                    const opId = opGroup.dataset.openingId, type = opGroup.querySelector(`#opening-type-${opId}`).value;
+                    const oW = parseFloat(opGroup.querySelector(`#opening-width-${opId}`).value), oH = parseFloat(opGroup.querySelector(`#opening-height-${opId}`).value);
+                    const oXInput = opGroup.querySelector(`#opening-x-offset-${opId}`).value; 
+                    const oX = oXInput === "" ? 0 : parseFloat(oXInput); 
+                    const oY = type==='window'?parseFloat(opGroup.querySelector(`#opening-y-offset-${opId}`).value):0;
+
+                    if(isNaN(oW)||oW<=0) wallErrorsLocal.push(`${wallName} - ओपनिंग ${opId}: अमान्य चौड़ाई।`);
+                    if(isNaN(oH)||oH<=0) wallErrorsLocal.push(`${wallName} - ओपनिंग ${opId}: अमान्य ऊँचाई।`);
+                    if(isNaN(oX)||oX<0) wallErrorsLocal.push(`${wallName} - ओपनिंग ${opId}: अमान्य X-ऑफसेट।`); 
+                    if((type==='window'&&(isNaN(oY)||oY<0))) wallErrorsLocal.push(`${wallName} - ओपनिंग ${opId}: अमान्य Y-ऑफसेट।`);
+                    const oWidthCm = oW*conversionFactorToCm, oHeightCm = oH*conversionFactorToCm;
+                    const oXOffsetCm = oX*conversionFactorToCm, oYOffsetCm = oY*conversionFactorToCm;
+                    if(oXOffsetCm+oWidthCm > wallDataForCalc.widthCm+0.01) wallErrorsLocal.push(`${wallName} - ओपनिंग ${opId}: दीवार की चौड़ाई से बाहर।`);
+                    if(oYOffsetCm+oHeightCm > wallDataForCalc.heightCm+0.01) wallErrorsLocal.push(`${wallName} - ओपनिंग ${opId}: दीवार की ऊँचाई से बाहर।`);
+                    if (wallErrorsLocal.length === 0) wallDataForCalc.openings.push({type,id:opId, oWidthCm,oHeightCm,oXOffsetCm,oYOffsetCm});
+                });
+
+                if (wallErrorsLocal.length > 0) { errors.push(...wallErrorsLocal); return; }
+
+                let totalOpeningsAreaCm2 = wallDataForCalc.openings.reduce((sum,op)=>sum + op.oWidthCm*op.oHeightCm, 0);
+                let singleSideAreaCm2 = wallDataForCalc.widthCm * wallDataForCalc.heightCm;
+                let netGypsumAreaSingleSide = Math.max(0, singleSideAreaCm2 - totalOpeningsAreaCm2);
+                let wallGypsumAreaCm2 = isDoubleSided ? (netGypsumAreaSingleSide * 2) : netGypsumAreaSingleSide;
+                overallTotalWallAreaCm2ForGypsum += wallGypsumAreaCm2;
+                wallDataForCalc.gypsumAreaCm2 = wallGypsumAreaCm2;
+                wallDataForCalc.theoreticalSheets = sheetAreaCm2Global > 0 ? wallGypsumAreaCm2 / sheetAreaCm2Global : 0;
+
+                // --- START OF STUD CALCULATION (Corrected Logic) ---
+                wallStudLengthCm = 0; 
+                wallDataForCalc.framingDetails = { basicStuds: 0, jackStuds: 0, crippleStuds: 0, headers: 0, sills: 0 };
+                let currentWallRegularStudsCount = 0; 
+
+                if (studSpacingCm > 0 && wallDataForCalc.widthCm > 0 && wallDataForCalc.heightCm > 0) {
+                    let positions = new Set();
+                    if (!trackOnSides) {
+                        positions.add(0); // Stud at start
+                        if (wallDataForCalc.widthCm > 0.01) { // Add end stud only if there's width
+                            positions.add(parseFloat(wallDataForCalc.widthCm.toFixed(2)));
+                        }
+                         // Intermediate studs
+                        for (let x = studSpacingCm; x < wallDataForCalc.widthCm; x += studSpacingCm) {
+                           positions.add(parseFloat(x.toFixed(2)));
+                        }
+                    } else { // trackOnSides is true
+                        // Only intermediate studs
+                        for (let x = studSpacingCm; x < wallDataForCalc.widthCm; x += studSpacingCm) {
+                           positions.add(parseFloat(x.toFixed(2)));
+                        }
+                    }
+                    currentWallRegularStudsCount = positions.size;
+                    
+                    wallDataForCalc.framingDetails.basicStuds = currentWallRegularStudsCount; 
+                    wallStudLengthCm += currentWallRegularStudsCount * wallDataForCalc.heightCm;
+
+                    if (advancedOpeningFramingEnabled) {
+                        // `basicStuds` already accounts for regularly spaced studs.
+                        // Now, add specific components for openings. King studs are handled by `basicStuds` if they align.
+                        // If king studs are *additional* (don't align with regular spacing), they should be added here.
+                        // The current `basicStuds` from `positions.size` should be the primary grid.
+                        // Advanced framing ADDS to the *length* and specific *counts* of jack/header etc.
+                        
+                        // Reset basicStuds count if advanced framing will define it more accurately based on openings.
+                        // Let the basic studs be the grid, and advanced framing adds components.
+                        // The number of *vertical members* will be basicStuds (grid) + 2 king studs per opening (if not aligned) + jack studs.
+
+                        let actualBasicStuds = new Set(positions); // Start with grid positions
+
+                        wallDataForCalc.openings.forEach(op => {
+                            // Add king stud positions explicitly for advanced framing, Set handles duplicates
+                            actualBasicStuds.add(parseFloat(op.oXOffsetCm.toFixed(2)));
+                            actualBasicStuds.add(parseFloat((op.oXOffsetCm + op.oWidthCm).toFixed(2)));
+                            
+                            // Length for King studs (already part of full height stud length if they align with grid)
+                            // The number of basic studs should reflect unique vertical full-height members.
+                            // Length for Jack studs
+                            wallStudLengthCm += 2 * op.oHeightCm; 
+                            wallDataForCalc.framingDetails.jackStuds += 2;
+                            
+                            wallStudLengthCm += op.oWidthCm; 
+                            wallDataForCalc.framingDetails.headers += 1;
+                            
+                            if (op.type === 'window') {
+                                wallStudLengthCm += op.oWidthCm; 
+                                wallDataForCalc.framingDetails.sills += 1;
+                            }
+                            let spaceAboveOpeningCm = wallDataForCalc.heightCm - (op.oYOffsetCm + op.oHeightCm); 
+                            if (op.type === 'door') { spaceAboveOpeningCm = wallDataForCalc.heightCm - op.oHeightCm; }
+                            let spaceBelowOpeningCm = (op.type === 'window') ? op.oYOffsetCm : 0;
+                            
+                            for (let x = op.oXOffsetCm + studSpacingCm; x < op.oXOffsetCm + op.oWidthCm; x += studSpacingCm) {
+                                if (x > op.oXOffsetCm + 0.01 && x < op.oXOffsetCm + op.oWidthCm - 0.01) { 
+                                    if (spaceAboveOpeningCm > 0.1) {
+                                        wallStudLengthCm += spaceAboveOpeningCm;
+                                        wallDataForCalc.framingDetails.crippleStuds++;
+                                    }
+                                    if (op.type === 'window' && spaceBelowOpeningCm > 0.1) {
+                                        wallStudLengthCm += spaceBelowOpeningCm;
+                                        wallDataForCalc.framingDetails.crippleStuds++;
+                                    }
+                                }
+                            }
+                        });
+                         // Recalculate basic stud length based on unique full height positions from grid and king studs
+                        wallDataForCalc.framingDetails.basicStuds = actualBasicStuds.size;
+                        wallStudLengthCm = wallDataForCalc.framingDetails.basicStuds * wallDataForCalc.heightCm + 
+                                           (wallDataForCalc.framingDetails.jackStuds * 0) + // Jack length already added
+                                           (wallDataForCalc.framingDetails.headers * 0) + // Header length already added
+                                           (wallDataForCalc.framingDetails.sills * 0) + // Sill length already added
+                                           (wallDataForCalc.framingDetails.crippleStuds * 0); // Cripple length already added
+
+                        // Add lengths of non-full-height members again to ensure total length is correct
+                         wallDataForCalc.openings.forEach(op => {
+                            wallStudLengthCm += 2 * op.oHeightCm; // Jack
+                            wallStudLengthCm += op.oWidthCm; // Header
+                            if (op.type === 'window') wallStudLengthCm += op.oWidthCm; // Sill
+                             let spaceAboveOpeningCm = wallDataForCalc.heightCm - (op.oYOffsetCm + op.oHeightCm);
+                             if (op.type === 'door') { spaceAboveOpeningCm = wallDataForCalc.heightCm - op.oHeightCm; }
+                             let spaceBelowOpeningCm = (op.type === 'window') ? op.oYOffsetCm : 0;
+                              for (let x = op.oXOffsetCm + studSpacingCm; x < op.oXOffsetCm + op.oWidthCm; x += studSpacingCm) {
+                                 if (x > op.oXOffsetCm + 0.01 && x < op.oXOffsetCm + op.oWidthCm - 0.01) {
+                                     if (spaceAboveOpeningCm > 0.1) wallStudLengthCm += spaceAboveOpeningCm;
+                                     if (op.type === 'window' && spaceBelowOpeningCm > 0.1) wallStudLengthCm += spaceBelowOpeningCm;
+                                 }
+                             }
+                         });
+
+
+                    } else { 
+                         wallDataForCalc.openings.forEach(op => {
+                            wallStudLengthCm += op.oWidthCm; 
+                            if (op.type === 'window') wallStudLengthCm += op.oWidthCm; 
+                         });
+                    }
+                }
+                // --- END OF STUD CALCULATION ---
+
+
+                overallTotalStudLengthCm += wallStudLengthCm; wallDataForCalc.studLengthCm = wallStudLengthCm;
+                wallDataForCalc.studPieces = standardStudLengthCm > 0 && wallStudLengthCm > 0 ? Math.ceil(wallStudLengthCm / standardStudLengthCm) : 0;
+                let wallTrackLengthCm = 2 * wallDataForCalc.widthCm; if (trackOnSides) wallTrackLengthCm += 2 * wallDataForCalc.heightCm;
+                overallTotalTrackLengthCm += wallTrackLengthCm; wallDataForCalc.trackLengthCm = wallTrackLengthCm;
+                wallDataForCalc.trackPieces = standardTrackLengthCm > 0 && wallTrackLengthCm > 0 ? Math.ceil(wallTrackLengthCm / standardTrackLengthCm) : 0;
+
+                wallInputsData.push(wallDataForCalc);
+                window.gypsumCalculatorLastCalculatedWallData = wallInputsData;
+
+                if (wallDataForCalc.framingDetails) {
+                    overallTotalBasicStuds += (wallDataForCalc.framingDetails.basicStuds || 0);
+                    overallTotalJackStuds += (wallDataForCalc.framingDetails.jackStuds || 0);
+                    overallTotalHeaders += (wallDataForCalc.framingDetails.headers || 0);
+                    overallTotalSills += (wallDataForCalc.framingDetails.sills || 0);
+                    overallTotalCrippleStuds += (wallDataForCalc.framingDetails.crippleStuds || 0);
+                }
+
+                const tempCanvas = document.createElement('canvas');
+                const sheetWForVisual = wallDataForCalc.rotateSheetVisual ? baseSheetHeightCm : baseSheetWidthCm;
+                const sheetHForVisual = wallDataForCalc.rotateSheetVisual ? baseSheetWidthCm : baseSheetHeightCm;
+                drawSingleWallLayout(tempCanvas, wallDataForCalc, sheetWForVisual, sheetHForVisual, studSpacingCm, trackOnSides, true, kerfSizeCm, advancedOpeningFramingEnabled);
+
+                const baseWallIdForPiece = wallDataForCalc.idCanvas.replace('wall-canvas-', '');
+
+                const firstSidePieces = wallDataForCalc.sheetPieces.map(p => ({
+                    widthCm: p.widthCm,
+                    heightCm: p.heightCm,
+                    originalData: {
+                        widthCm: p.widthCm,
+                        heightCm: p.heightCm,
+                        wallName: wallDataForCalc.name,
+                        wallId: baseWallIdForPiece,
+                        originalId: p.id
+                    },
+                    id: `${baseWallIdForPiece}-${p.id}-side1`,
+                }));
+                allSheetPiecesForCuttingLayout.push(...firstSidePieces);
+
+                if (isDoubleSided) {
+                    const secondSidePieces = wallDataForCalc.sheetPieces.map(p => ({
+                        widthCm: p.widthCm,
+                        heightCm: p.heightCm,
+                        originalData: {
+                            widthCm: p.widthCm,
+                            heightCm: p.heightCm,
+                            wallName: wallDataForCalc.name + " (दूसरी तरफ)",
+                            wallId: baseWallIdForPiece,
+                            originalId: p.id
+                        },
+                        id: `${baseWallIdForPiece}-${p.id}-side2`,
+                    }));
+                    allSheetPiecesForCuttingLayout.push(...secondSidePieces);
+                }
+            });
+
+            if (errors.length > 0) {
+                errorDiv.innerHTML = errors.join('<br>');
+                errorDiv.style.display = 'block';
+                if (loadingIndicator) loadingIndicator.style.display = 'none';
+                return;
+            }
+
+            try {
+                const blob = new Blob([workerCode], { type: 'application/javascript' });
+                const workerUrl = URL.createObjectURL(blob);
+                const cuttingWorker = new Worker(workerUrl);
+                URL.revokeObjectURL(workerUrl);
+
+                cuttingWorker.postMessage({
+                    allPieces: allSheetPiecesForCuttingLayout,
+                    sheetW: baseSheetWidthCm,
+                    sheetH: baseSheetHeightCm,
+                    allowRotation: allowPieceRotationForCutting,
+                    kerfCm: kerfSizeCm,
+                    potpackFunctionString: potpack.toString(),
+                    generateLayoutsFunctionString: generateOptimizedCuttingLayouts.toString()
+                });
+
+                cuttingWorker.onmessage = function(event) {
+                    if (event.data.type === 'error') {
+                        console.error('Worker Error:', event.data.message, event.data.stack);
+                        errorDiv.innerHTML = 'कटिंग लेआउट गणना में त्रुटि (वर्कर): ' + event.data.message;
+                        errorDiv.style.display = 'block';
+                        if (loadingIndicator) loadingIndicator.style.display = 'none';
+                        cuttingWorker.terminate();
+                        return;
+                    }
+
+                    if (event.data.type === 'layoutsComplete') {
+                        const cuttingLayoutsFromWorker = event.data.data;
+                        const actualSheetsUsedFromCutting = cuttingLayoutsFromWorker.length;
+
+                        if (actualSheetsUsedFromCutting > 0) {
+                            displayCuttingLayouts(cuttingLayoutsFromWorker, baseSheetWidthCm, baseSheetHeightCm);
+                        } else if (allSheetPiecesForCuttingLayout.length > 0) {
+                             if(document.getElementById('result-cutting-layout-sheets')) document.getElementById('result-cutting-layout-sheets').textContent = 'N/A (पैकिंग त्रुटि)';
+                             const clc = document.getElementById('cutting-layout-container');
+                             if (clc) clc.style.display = 'none';
+                        } else {
+                             if(document.getElementById('result-cutting-layout-sheets')) document.getElementById('result-cutting-layout-sheets').textContent = 'N/A (कोई पीस नहीं)';
+                             const clc = document.getElementById('cutting-layout-container');
+                             if (clc) clc.style.display = 'none';
+                        }
+
+                        gId('result-wall-count').textContent = wallInputsData.length;
+                        gId('result-wall-area').textContent = `${(overallTotalWallAreaCm2ForGypsum / 10000).toFixed(2)} वर्ग मी (${overallTotalWallAreaCm2ForGypsum.toFixed(0)} वर्ग सेमी)`;
+                        gId('result-sheet-area').textContent = `${(sheetAreaCm2Global / 10000).toFixed(2)} वर्ग मी (${sheetAreaCm2Global.toFixed(0)} वर्ग सेमी)`;
+                        let overallTheoreticalSheets = sheetAreaCm2Global > 0 ? overallTotalWallAreaCm2ForGypsum / sheetAreaCm2Global : 0;
+                        gId('result-theoretical-sheets').textContent = sheetAreaCm2Global > 0 ? overallTheoreticalSheets.toFixed(2) : 'N/A';
+                        let overallTotalSheetsWithWastage = Math.ceil(overallTheoreticalSheets * (1 + wastagePercentage / 100));
+                        gId('result-total-sheets').textContent = overallTotalSheetsWithWastage;
+
+                        if (actualSheetsUsedFromCutting > 0) {
+                           gId('result-cutting-layout-sheets').textContent = actualSheetsUsedFromCutting;
+                        }
+
+                        let overallStudPieces = standardStudLengthCm > 0 && overallTotalStudLengthCm > 0 ? Math.ceil(overallTotalStudLengthCm / standardStudLengthCm) : 0;
+                        let overallTrackPieces = standardTrackLengthCm > 0 && overallTotalTrackLengthCm > 0 ? Math.ceil(overallTotalTrackLengthCm / standardTrackLengthCm) : 0;
+                        gId('result-total-stud-length').textContent = `${_formatDimension(overallTotalStudLengthCm, currentUnit, CONVERSIONS)} ${currentUnit} (${overallTotalStudLengthCm.toFixed(0)} सेमी)`;
+                        gId('result-stud-pieces').textContent = overallStudPieces;
+                        gId('result-total-track-length').textContent = `${_formatDimension(overallTotalTrackLengthCm, currentUnit, CONVERSIONS)} ${currentUnit} (${overallTotalTrackLengthCm.toFixed(0)} सेमी)`;
+                        gId('result-track-pieces').textContent = overallTrackPieces;
+
+                        gId('result-total-basic-studs').textContent = overallTotalBasicStuds;
+                        gId('result-total-jack-studs').textContent = overallTotalJackStuds;
+                        gId('result-total-headers').textContent = overallTotalHeaders;
+                        gId('result-total-sills').textContent = overallTotalSills;
+                        gId('result-total-cripple-studs').textContent = overallTotalCrippleStuds;
+
+                        const summaryDivEl = totalResultsDiv.querySelector('.overall-framing-details-summary');
+                        if (summaryDivEl) {
+                            let anyAdvancedFramingMemberExists = overallTotalJackStuds > 0 || overallTotalHeaders > 0 || overallTotalSills > 0 || overallTotalCrippleStuds > 0;
+                            let anyBasicStudExists = overallTotalBasicStuds > 0;
+
+                            if (!anyBasicStudExists && !anyAdvancedFramingMemberExists) {
+                                summaryDivEl.style.display = 'none'; 
+                            } else {
+                                summaryDivEl.style.display = 'block';
+                                summaryDivEl.querySelector('#result-total-basic-studs').parentElement.style.display = anyBasicStudExists ? 'block' : 'none';
+                                summaryDivEl.querySelector('#result-total-jack-studs').parentElement.style.display = overallTotalJackStuds > 0 ? 'block' : 'none';
+                                summaryDivEl.querySelector('#result-total-headers').parentElement.style.display = overallTotalHeaders > 0 ? 'block' : 'none';
+                                summaryDivEl.querySelector('#result-total-sills').parentElement.style.display = overallTotalSills > 0 ? 'block' : 'none';
+                                summaryDivEl.querySelector('#result-total-cripple-studs').parentElement.style.display = overallTotalCrippleStuds > 0 ? 'block' : 'none';
+                            }
+                        }
+
+
+                        const totalGypsumAreaM2 = overallTotalWallAreaCm2ForGypsum / 10000;
+                        let estimatedScrews = Math.ceil(totalGypsumAreaM2 * SCREWS_PER_SQ_METER);
+                        let tapeSheets = actualSheetsUsedFromCutting > 0 ? actualSheetsUsedFromCutting : overallTotalSheetsWithWastage;
+                        let estimatedTapeMeters = Math.ceil(tapeSheets * TAPE_PER_SHEET_METERS);
+                        let estimatedCompoundKg = (totalGypsumAreaM2 * COMPOUND_PER_SQ_METER_KG);
+                        let estimatedCornerBeadMeters = 0;
+                        if (trackOnSides) wallInputsData.forEach(wall => estimatedCornerBeadMeters += (2 * wall.heightCm) / 100);
+                        wallInputsData.forEach(wall => {
+                            if (!trackOnSides) {
+                                wall.openings.forEach(op => {
+                                    estimatedCornerBeadMeters += (2 * op.oHeightCm) / 100;
+                                });
+                            } else {
+                                wall.openings.forEach(op => {
+                                    estimatedCornerBeadMeters += (2 * op.oWidthCm) / 100;
+                                });
+                            }
+                        });
+                        estimatedCornerBeadMeters = Math.ceil(estimatedCornerBeadMeters);
+
+                        gId('result-screws').textContent = estimatedScrews;
+                        gId('result-tape').textContent = estimatedTapeMeters;
+                        gId('result-compound').textContent = estimatedCompoundKg.toFixed(1);
+                        gId('result-corner-bead').textContent = estimatedCornerBeadMeters;
+
+                        const costSheet = parseFloat(gId('cost-sheet').value)||0;
+                        const costStud = parseFloat(gId('cost-stud').value)||0;
+                        const costTrack = parseFloat(gId('cost-track').value)||0;
+                        const costScrewsPer100 = parseFloat(gId('cost-screws').value)||0;
+                        const costTapePerMeter = parseFloat(gId('cost-tape').value)||0;
+                        const costCompoundPerKg = parseFloat(gId('cost-compound').value)||0;
+                        const costCornerBeadPerMeter = parseFloat(gId('cost-corner-bead').value)||0;
+
+                        let totalEstimatedCost = 0;
+                        const sheetsForCost = actualSheetsUsedFromCutting > 0 ? actualSheetsUsedFromCutting : overallTotalSheetsWithWastage;
+                        const sheetsCost = sheetsForCost * costSheet; totalEstimatedCost += sheetsCost;
+                        const studsCost = overallStudPieces * costStud; totalEstimatedCost += studsCost;
+                        const tracksCost = overallTrackPieces * costTrack; totalEstimatedCost += tracksCost;
+                        const screwsCost = (estimatedScrews / 100) * costScrewsPer100; totalEstimatedCost += screwsCost;
+                        const tapeCost = estimatedTapeMeters * costTapePerMeter; totalEstimatedCost += tapeCost;
+                        const compoundCost = estimatedCompoundKg * costCompoundPerKg; totalEstimatedCost += compoundCost;
+                        const cornerBeadCost = estimatedCornerBeadMeters * costCornerBeadPerMeter; totalEstimatedCost += cornerBeadCost;
+
+                        gId('cost-result-sheets').textContent = sheetsCost.toFixed(2);
+                        gId('cost-result-studs').textContent = studsCost.toFixed(2);
+                        gId('cost-result-tracks').textContent = tracksCost.toFixed(2);
+                        gId('cost-result-screws').textContent = screwsCost.toFixed(2);
+                        gId('cost-result-tape').textContent = tapeCost.toFixed(2);
+                        gId('cost-result-compound').textContent = compoundCost.toFixed(2);
+                        gId('cost-result-corner-bead').textContent = cornerBeadCost.toFixed(2);
+                        gId('cost-result-total').textContent = totalEstimatedCost.toFixed(2);
+
+                        totalResultsDiv.querySelector('.additional-materials-results').style.display = 'block';
+                        totalResultsDiv.querySelector('.cost-estimation-results').style.display = 'block';
+                        totalResultsDiv.style.display = 'block';
+
+                        if (wallInputsData.length > 0 && baseSheetWidthCm > 0 && baseSheetHeightCm > 0) {
+                            visualizationAndDetailsContainer.innerHTML = '<h2>लेआउट और सामग्री (प्रति दीवार) 🖼️</h2>';
+                            wallInputsData.forEach(wallData => {
+                                const wallWrapper = document.createElement('div'); wallWrapper.className = 'wall-visualization-wrapper accordion-item';
+                                const headerButton = document.createElement('button');
+                                headerButton.className = 'accordion-header';
+                                headerButton.setAttribute('aria-expanded', 'false');
+                                headerButton.innerHTML = `<h3>${wallData.name}</h3><span class="accordion-icon">▶</span>`;
+
+
+                                const contentDiv = document.createElement('div');
+                                contentDiv.className = 'accordion-content';
+                                contentDiv.style.display = 'none';
+
+                                const canvasEl = document.createElement('canvas'); canvasEl.id = wallData.idCanvas; canvasEl.className = 'wall-canvas';
+                                const detailsDiv = document.createElement('div'); detailsDiv.className = 'individual-wall-results-container';
+                                const individualWallTotalSheets = sheetAreaCm2Global > 0 ? Math.ceil(wallData.theoreticalSheets * (1 + wastagePercentage/100)) : 0;
+
+                                let framingDetailsHtml = '';
+                                if (advancedOpeningFramingEnabled && wallData.framingDetails) {
+                                    const hasOpenings = wallData.openings && wallData.openings.length > 0;
+                                    const basicStudLabel = hasOpenings ? "मुख्य/किंग स्टड" : "मुख्य स्टड";
+
+                                    framingDetailsHtml = `<div class="framing-details"><h4>अतिरिक्त फ्रेमिंग विवरण:</h4><ul class="framing-details-list">`;
+                                    if (wallData.framingDetails.basicStuds) framingDetailsHtml += `<li>${basicStudLabel}: ${wallData.framingDetails.basicStuds} नग</li>`;
+                                    if (wallData.framingDetails.jackStuds) framingDetailsHtml += `<li>जैक स्टड: ${wallData.framingDetails.jackStuds} नग</li>`;
+                                    if (wallData.framingDetails.headers) framingDetailsHtml += `<li>हेडर: ${wallData.framingDetails.headers} नग</li>`;
+                                    if (wallData.framingDetails.sills) framingDetailsHtml += `<li>सिल: ${wallData.framingDetails.sills} नग</li>`;
+                                    if (wallData.framingDetails.crippleStuds) framingDetailsHtml += `<li>क्रिप्पल स्टड: ${wallData.framingDetails.crippleStuds} नग</li>`;
+                                    framingDetailsHtml += `</ul></div>`;
+                                }
+
+                                detailsDiv.innerHTML = `<h3>${wallData.name} - सामग्री (अलग से)</h3>
+                                    <p>दीवार का क्षेत्रफल (जिप्सम): ${(_formatDimension(wallData.gypsumAreaCm2 / 10000, 'm', CONVERSIONS))} वर्ग मी</p>
+                                    <p>आवश्यक सैद्धांतिक शीट: ${wallData.theoreticalSheets.toFixed(2)}</p>
+                                    <p><strong>बर्बादी सहित कुल शीट (अनुमानित): ${individualWallTotalSheets}</strong></p>
+                                    <div class="framing-results"><h4>फ्रेमिंग:</h4>
+                                        <p>स्टड लंबाई: ${(_formatDimension(wallData.studLengthCm, currentUnit, CONVERSIONS))} ${currentUnit}</p>
+                                        <p>स्टड (पीस में): ${wallData.studPieces}</p>
+                                        <p>ट्रैक लंबाई: ${(_formatDimension(wallData.trackLengthCm, currentUnit, CONVERSIONS))} ${currentUnit}</p>
+                                        <p>ट्रैक (पीस में): ${wallData.trackPieces}</p>
+                                        ${framingDetailsHtml}
+                                    </div>
+                                    <div class="sheet-pieces-results" style="margin-top:10px;padding-top:10px;border-top:1px dotted var(--border-color);"><h4>जिप्सम शीट के टुकड़े (इस दीवार के लिए):</h4><ul id="sheet-pieces-list-${wallData.idCanvas.replace('wall-canvas-','')}" style="list-style-type:disc;padding-left:20px;font-size:0.9rem;"></ul></div>`;
+
+                                contentDiv.appendChild(canvasEl);
+                                contentDiv.appendChild(detailsDiv);
+                                wallWrapper.appendChild(headerButton);
+                                wallWrapper.appendChild(contentDiv);
+                                visualizationAndDetailsContainer.appendChild(wallWrapper);
+
+                                headerButton.addEventListener('click', () => {
+                                    const isHidden = contentDiv.style.display === 'none';
+                                    contentDiv.style.display = isHidden ? 'block' : 'none';
+                                    headerButton.setAttribute('aria-expanded', isHidden.toString());
+                                    const icon = headerButton.querySelector('.accordion-icon');
+                                    if (icon) icon.textContent = isHidden ? '▼' : '▶';
+
+                                    if (isHidden && !canvasEl.dataset.drawn) {
+                                        const sheetWForVisual = wallData.rotateSheetVisual ? baseSheetHeightCm : baseSheetWidthCm;
+                                        const sheetHForVisual = wallData.rotateSheetVisual ? baseSheetWidthCm : baseSheetHeightCm;
+                                        drawSingleWallLayout(canvasEl, wallData, sheetWForVisual, sheetHForVisual, studSpacingCm, trackOnSides, false, kerfSizeCm, advancedOpeningFramingEnabled);
+                                        canvasEl.dataset.drawn = 'true';
+                                    }
+                                });
+
+                                const sheetPiecesListUl = detailsDiv.querySelector(`#sheet-pieces-list-${wallData.idCanvas.replace('wall-canvas-','')}`);
+                                if (sheetPiecesListUl && wallData.sheetPieces && wallData.sheetPieces.length > 0) {
+                                    const pieceCounts = {};
+                                    wallData.sheetPieces.forEach(piece => {
+                                        const pieceKey = `${_formatDimension(piece.widthCm, currentUnit, CONVERSIONS)}${currentUnit} चौ. x ${_formatDimension(piece.heightCm, currentUnit, CONVERSIONS)}${currentUnit} ऊँ. (ID: ${piece.id})`;
+                                        pieceCounts[pieceKey] = (pieceCounts[pieceKey] || 0) + 1;
+                                    });
+                                    Object.entries(pieceCounts).sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0])).forEach(([size, count]) => {
+                                        const listItem = document.createElement('li'); listItem.textContent = `${size} - ${count} नग`;
+                                        sheetPiecesListUl.appendChild(listItem);
+                                    });
+                                    if (Object.keys(pieceCounts).length === 0) sheetPiecesListUl.parentElement.style.display = 'none';
+                                } else if (sheetPiecesListUl) {
+                                    sheetPiecesListUl.parentElement.style.display = 'none';
+                                }
+                            });
+                            visualizationAndDetailsContainer.style.display = 'block';
+                        }
+
+                        if (loadingIndicator) loadingIndicator.style.display = 'none';
+                        cuttingWorker.terminate();
+                    }
+                };
+                cuttingWorker.onerror = function(error) {
+                    console.error('Worker error:', error);
+                    errorDiv.innerHTML = 'कटिंग लेआउट गणना में त्रुटि हुई। अधिक जानकारी के लिए कंसोल देखें।';
+                    errorDiv.style.display = 'block';
+                    if (loadingIndicator) loadingIndicator.style.display = 'none';
+                    cuttingWorker.terminate();
+                };
+            } catch (e) {
+                console.error("Failed to create or use web worker:", e);
+                errorDiv.innerHTML = 'वेब वर्कर बनाने में त्रुटि हुई। ब्राउज़र वेब वर्कर का समर्थन नहीं कर सकता है या कोई स्क्रिप्ट त्रुटि है।';
+                errorDiv.style.display = 'block';
+                if (loadingIndicator) loadingIndicator.style.display = 'none';
+            }
+        }
+
+        function drawSingleWallLayout(canvasElement, wallData, sheetWidthCm_param, sheetHeightCm_param, studSpacingCmToDraw, drawTrackOnSides, isForPieceCollectionOnly = false, kerfCm_ignored = 0, isAdvancedFramingEnabled = false) {
+            const kerfCm = 0;
+            const ctx = canvasElement.getContext('2d');
+            const CONTAINER_MAX_WIDTH_PX = Math.min(650, (document.querySelector('.container')?.clientWidth || 650) - 50);
+            const WALL_MAX_DISPLAY_WIDTH_PX = CONTAINER_MAX_WIDTH_PX;
+            const WALL_MAX_DISPLAY_HEIGHT_PX = 450;
+            const PADDING_PX = 15;
+            const MIN_TEXT_SIZE_PX = 6;
+            const DEFAULT_TEXT_SIZE_PX = 9;
+
+            let scaleFactor = wallData.widthCm > 0 ? WALL_MAX_DISPLAY_WIDTH_PX / wallData.widthCm : 0.01;
+            if (wallData.heightCm * scaleFactor > WALL_MAX_DISPLAY_HEIGHT_PX && wallData.heightCm > 0) {
+                scaleFactor = WALL_MAX_DISPLAY_HEIGHT_PX / wallData.heightCm;
+            }
+            if (wallData.widthCm * scaleFactor > WALL_MAX_DISPLAY_WIDTH_PX && wallData.widthCm > 0) {
+                 scaleFactor = WALL_MAX_DISPLAY_WIDTH_PX / wallData.widthCm;
+            }
+            if (scaleFactor <= 0) scaleFactor = 0.01;
+
+            const wallDisplayWidthPx = wallData.widthCm * scaleFactor;
+            const wallDisplayHeightPx = wallData.heightCm * scaleFactor;
+            const titleHeight = DEFAULT_TEXT_SIZE_PX * 2.5;
+            const drawingOffsetY = titleHeight + PADDING_PX;
+
+            canvasElement.width = Math.max(WALL_MAX_DISPLAY_WIDTH_PX, wallDisplayWidthPx) + 2 * PADDING_PX;
+            canvasElement.height = wallDisplayHeightPx + 2 * PADDING_PX + titleHeight;
+            ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+            if (!isForPieceCollectionOnly) {
+                ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+                ctx.font = `bold ${DEFAULT_TEXT_SIZE_PX + 2}px 'Noto Sans Devanagari', sans-serif`;
+                ctx.fillStyle = getCssVar('--primary-color');
+                ctx.textAlign = 'left';
+                ctx.fillText(`${wallData.name} (${_formatDimension(wallData.widthCm, currentUnit, CONVERSIONS)}${currentUnit} x ${_formatDimension(wallData.heightCm, currentUnit, CONVERSIONS)}${currentUnit})`, PADDING_PX, titleHeight / 2);
+                ctx.textAlign = 'center';
+                ctx.fillStyle = getCssVar('--canvas-wall-color');
+                ctx.fillRect(PADDING_PX, drawingOffsetY, wallDisplayWidthPx, wallDisplayHeightPx);
+
+                const studColor = getCssVar('--canvas-stud-color');
+                const trackColor = getCssVar('--canvas-track-color');
+                const framingLineWidth = parseFloat(getCssVar('--canvas-framing-line-width'));
+                ctx.lineWidth = framingLineWidth;
+
+                if (wallData.widthCm > 0 && wallData.heightCm > 0) {
+                    ctx.strokeStyle = trackColor;
+                    ctx.beginPath(); ctx.moveTo(PADDING_PX, drawingOffsetY); ctx.lineTo(PADDING_PX + wallDisplayWidthPx, drawingOffsetY); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(PADDING_PX, drawingOffsetY + wallDisplayHeightPx); ctx.lineTo(PADDING_PX + wallDisplayWidthPx, drawingOffsetY + wallDisplayHeightPx); ctx.stroke();
+                    if (drawTrackOnSides) {
+                        ctx.beginPath(); ctx.moveTo(PADDING_PX, drawingOffsetY); ctx.lineTo(PADDING_PX, drawingOffsetY + wallDisplayHeightPx); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(PADDING_PX + wallDisplayWidthPx, drawingOffsetY); ctx.lineTo(PADDING_PX + wallDisplayWidthPx, drawingOffsetY + wallDisplayHeightPx); ctx.stroke();
+                    }
+                }
+                // Draw Regularly Spaced Studs & Opening Framing
+                let studPositionsToDraw = new Set();
+                if (!drawTrackOnSides) {
+                    studPositionsToDraw.add(0);
+                    if(wallData.widthCm > 0.01) studPositionsToDraw.add(wallData.widthCm);
+                }
+                for (let x = studSpacingCmToDraw; x < wallData.widthCm; x += studSpacingCmToDraw) {
+                    studPositionsToDraw.add(x);
+                }
+
+                if (isAdvancedFramingEnabled) {
+                     wallData.openings.forEach(op => {
+                        studPositionsToDraw.add(op.oXOffsetCm); // King stud left
+                        studPositionsToDraw.add(op.oXOffsetCm + op.oWidthCm); // King stud right
+                     });
+                } else { // Simplified: add studs at opening edges if not advanced
+                    wallData.openings.forEach(op => {
+                        studPositionsToDraw.add(op.oXOffsetCm);
+                        studPositionsToDraw.add(op.oXOffsetCm + op.oWidthCm);
+                    });
+                }
+                
+                ctx.strokeStyle = studColor;
+                Array.from(studPositionsToDraw).sort((a,b) => a-b).forEach(studXCm => {
+                    const studDisplayX = PADDING_PX + studXCm * scaleFactor;
+                    // Avoid drawing over edge tracks if trackOnSides is true AND stud is at 0 or wallWidth
+                    if (drawTrackOnSides && (Math.abs(studXCm) < 0.01 || Math.abs(studXCm - wallData.widthCm) < 0.01) ) {
+                        // Don't draw, track is there
+                    } else if (studDisplayX >= PADDING_PX - 0.1 && studDisplayX <= PADDING_PX + wallDisplayWidthPx + 0.1) { // Ensure within bounds
+                         ctx.beginPath(); ctx.moveTo(studDisplayX, drawingOffsetY); ctx.lineTo(studDisplayX, drawingOffsetY + wallDisplayHeightPx); ctx.stroke();
+                    }
+                });
+
+
+                wallData.openings.forEach(op => {
+                    const opDrawX = PADDING_PX + op.oXOffsetCm * scaleFactor;
+                    const opDrawY_openingTopCm = op.oYOffsetCm;
+                    const opDrawY_openingTopPx = drawingOffsetY + opDrawY_openingTopCm * scaleFactor;
+                    const opDrawW = op.oWidthCm * scaleFactor;
+                    const opDrawH_opening = op.oHeightCm * scaleFactor;
+                    const opY_openingBottomPx = opDrawY_openingTopPx + opDrawH_opening;
+
+                    if (isAdvancedFramingEnabled) {
+                        // King studs already drawn by the general stud drawing logic if they align or are added to studPositionsToDraw
+                        
+                        ctx.strokeStyle = getCssVar('--canvas-jack-stud-color'); 
+                        ctx.beginPath(); ctx.moveTo(opDrawX, opDrawY_openingTopPx); ctx.lineTo(opDrawX, opY_openingBottomPx); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(opDrawX + opDrawW, opDrawY_openingTopPx); ctx.lineTo(opDrawX + opDrawW, opY_openingBottomPx); ctx.stroke();
+
+
+                        ctx.strokeStyle = getCssVar('--canvas-header-sill-color'); 
+                        ctx.beginPath(); ctx.moveTo(opDrawX, opDrawY_openingTopPx); ctx.lineTo(opDrawX + opDrawW, opDrawY_openingTopPx); ctx.stroke(); 
+                        if (op.type === 'window') {
+                            ctx.beginPath(); ctx.moveTo(opDrawX, opY_openingBottomPx); ctx.lineTo(opDrawX + opDrawW, opY_openingBottomPx); ctx.stroke(); 
+                        }
+                        
+                        ctx.strokeStyle = getCssVar('--canvas-cripple-stud-color'); 
+                        for (let xCm = op.oXOffsetCm + studSpacingCmToDraw; xCm < op.oXOffsetCm + op.oWidthCm; xCm += studSpacingCmToDraw) {
+                            if (xCm <= op.oXOffsetCm + 0.01 || xCm >= op.oXOffsetCm + op.oWidthCm - 0.01) continue; 
+
+                            const crippleDrawX = PADDING_PX + xCm * scaleFactor;
+                            if (opDrawY_openingTopCm > 0.1) { 
+                                ctx.beginPath(); ctx.moveTo(crippleDrawX, drawingOffsetY); ctx.lineTo(crippleDrawX, opDrawY_openingTopPx); ctx.stroke();
+                            }
+                            if (op.type === 'window' && (wallData.heightCm - (opDrawY_openingTopCm + op.oHeightCm)) > 0.1 ) {
+                                ctx.beginPath(); ctx.moveTo(crippleDrawX, opY_openingBottomPx); ctx.lineTo(crippleDrawX, drawingOffsetY + wallDisplayHeightPx); ctx.stroke();
+                            }
+                        }
+                    } 
+                    // Simplified opening framing (horizontals) is implicitly handled by the sheet pieces covering them or not.
+                    // Verticals for simplified framing already drawn by general stud logic.
+                });
+            } // end !isForPieceCollectionOnly
+
+            ctx.lineWidth = 1;
+            let actualSheetWidthCm = sheetWidthCm_param;
+            let actualSheetHeightCm = sheetHeightCm_param;
+
+            if (actualSheetWidthCm <= 0 || actualSheetHeightCm <= 0) return;
+            let currentColumnXCm = 0; let applyStaggerToThisColumn = false;
+            let pieceCounterForWall = 0;
+            wallData.sheetPieces = [];
+
+            while (currentColumnXCm < wallData.widthCm) {
+                let pieceWCm = Math.min(actualSheetWidthCm, wallData.widthCm - currentColumnXCm);
+                if (pieceWCm <= 0.01) break;
+
+                if (applyStaggerToThisColumn && wallData.heightCm > actualSheetHeightCm / 1.9 && actualSheetHeightCm > 0) {
+                    let bottomPieceHCm = actualSheetHeightCm / 2;
+                     if (wallData.heightCm < bottomPieceHCm + actualSheetHeightCm) {
+                        bottomPieceHCm = (wallData.heightCm > actualSheetHeightCm) ? (wallData.heightCm - actualSheetHeightCm) : 0;
+                    }
+                    if (bottomPieceHCm < 10 && bottomPieceHCm > 0.1) bottomPieceHCm = 10;
+
+                    if (bottomPieceHCm > 0.1) {
+                        drawSheetPiece(ctx, PADDING_PX + currentColumnXCm * scaleFactor, drawingOffsetY + (wallData.heightCm - bottomPieceHCm) * scaleFactor, pieceWCm * scaleFactor, bottomPieceHCm * scaleFactor, pieceWCm, bottomPieceHCm, wallData.openings, currentColumnXCm, (wallData.heightCm - bottomPieceHCm), scaleFactor, PADDING_PX, drawingOffsetY, wallData, isForPieceCollectionOnly, pieceCounterForWall++, kerfCm);
+
+                        let yRunnerCm = 0;
+                        let remainingTopHCm = wallData.heightCm - bottomPieceHCm;
+
+                        while(yRunnerCm < remainingTopHCm) {
+                            let pieceHCm = Math.min(actualSheetHeightCm, remainingTopHCm - yRunnerCm);
+                            if (pieceHCm <= 0.01) break;
+                            drawSheetPiece(ctx, PADDING_PX + currentColumnXCm * scaleFactor, drawingOffsetY + yRunnerCm * scaleFactor, pieceWCm * scaleFactor, pieceHCm * scaleFactor, pieceWCm, pieceHCm, wallData.openings, currentColumnXCm, yRunnerCm, scaleFactor, PADDING_PX, drawingOffsetY, wallData, isForPieceCollectionOnly, pieceCounterForWall++, kerfCm);
+                            yRunnerCm += pieceHCm;
+                        }
+                    } else {
+                        pieceCounterForWall = drawFullHeightColumn(ctx, currentColumnXCm, pieceWCm, actualSheetHeightCm, wallData, scaleFactor, PADDING_PX, drawingOffsetY, wallData, isForPieceCollectionOnly, pieceCounterForWall, kerfCm);
+                    }
+                } else {
+                    pieceCounterForWall = drawFullHeightColumn(ctx, currentColumnXCm, pieceWCm, actualSheetHeightCm, wallData, scaleFactor, PADDING_PX, drawingOffsetY, wallData, isForPieceCollectionOnly, pieceCounterForWall, kerfCm);
+                }
+                currentColumnXCm += pieceWCm;
+                applyStaggerToThisColumn = !applyStaggerToThisColumn;
+            }
+
+            if (!isForPieceCollectionOnly) {
+                const openingColor = getCssVar('--canvas-opening-color');
+                const openingBorderColor = getCssVar('--canvas-opening-border-color');
+                ctx.lineWidth = 1;
+                wallData.openings.forEach(op => {
+                    const opX = PADDING_PX + op.oXOffsetCm * scaleFactor; const opW = op.oWidthCm * scaleFactor;
+                    const opH_actual_px = op.oHeightCm * scaleFactor; let opY_display_px;
+
+                    if (op.type === 'door') {
+                        if (op.oYOffsetCm === 0) { 
+                           opY_display_px = drawingOffsetY + wallDisplayHeightPx - opH_actual_px;
+                        } else { 
+                           opY_display_px = drawingOffsetY + op.oYOffsetCm * scaleFactor;
+                        }
+                        if (op.oYOffsetCm === 0 && op.oHeightCm >= wallData.heightCm - 0.1) {
+                            opY_display_px = drawingOffsetY;
+                        }
+                    } else { 
+                        opY_display_px = drawingOffsetY + op.oYOffsetCm * scaleFactor;
+                    }
+                    const opH_display_px = opH_actual_px;
+
+                    ctx.fillStyle = openingColor; ctx.fillRect(opX, opY_display_px, opW, opH_display_px);
+                    ctx.strokeStyle = openingBorderColor; ctx.strokeRect(opX, opY_display_px, opW, opH_display_px);
+                    addSheetLabel(ctx, opX, opY_display_px, opW, opH_display_px, op.oWidthCm, op.oHeightCm, DEFAULT_TEXT_SIZE_PX -1, MIN_TEXT_SIZE_PX, currentUnit, CONVERSIONS, op.type === 'door' ? "दरवाजा" : "खिड़की");
+                });
+                ctx.strokeStyle = getCssVar('--border-color');
+                ctx.lineWidth = 1.5; ctx.strokeRect(PADDING_PX, drawingOffsetY, wallDisplayWidthPx, wallDisplayHeightPx);
+            }
+
+            function drawFullHeightColumn(ctx, colXCm, pieceWCm, sheetHCm_param, wallD, scale, padX, drawOY, wallDataObject, forCollectionOnly, pieceIdCounter, kerfCm_ignored) {
+                const kerfCm = 0;
+                let currentYCm = 0;
+                while (currentYCm < wallD.heightCm) {
+                    let pieceHCm = Math.min(sheetHCm_param, wallD.heightCm - currentYCm);
+                    if (pieceHCm <= 0.01) break;
+                    drawSheetPiece(ctx, padX + colXCm * scale, drawOY + currentYCm * scale, pieceWCm * scale, pieceHCm * scale, pieceWCm, pieceHCm, wallD.openings, colXCm, currentYCm, scale, padX, drawOY, wallDataObject, forCollectionOnly, pieceIdCounter++, kerfCm);
+                    currentYCm += pieceHCm;
+                }
+                return pieceIdCounter;
+            }
+            function drawSheetPiece(ctx, pDX, pDY, pDW, pDH, pAWcm, pAHcm, ops, colXcm, pAYcm, scale, cPX, cDOY, wallDataObject, forCollectionOnly, pieceIdForThisWall, kerfCm_ignored) {
+                const kerfCm = 0;
+                if (pAWcm <=0 || pAHcm <=0) return;
+
+                if (wallDataObject && wallDataObject.sheetPieces) {
+                    wallDataObject.sheetPieces.push({
+                        widthCm: parseFloat(pAWcm.toFixed(1)),
+                        heightCm: parseFloat(pAHcm.toFixed(1)),
+                        id: pieceIdForThisWall,
+                    });
+                }
+                if (forCollectionOnly) return;
+
+                ctx.fillStyle = getCssVar('--canvas-sheet-color'); ctx.fillRect(pDX, pDY, pDW, pDH);
+                ctx.strokeStyle = getCssVar('--canvas-sheet-border'); ctx.strokeRect(pDX, pDY, pDW, pDH);
+                let showLbl = !ops.some(op => {
+                    const sX1=colXcm, sY1=pAYcm, sX2=colXcm+pAWcm, sY2=pAYcm+pAHcm;
+                    const oX1=op.oXOffsetCm, oY1=op.oYOffsetCm, oX2=op.oXOffsetCm+op.oWidthCm, oY2=op.oYOffsetCm+op.oHeightCm;
+                    if (!(sX2 < oX1 + 0.1 || sX1 > oX2 - 0.1 || sY2 < oY1 + 0.1 || sY1 > oY2 - 0.1)) { 
+                        return (Math.max(0,Math.min(sX2,oX2)-Math.max(sX1,oX1)) * Math.max(0,Math.min(sY2,oY2)-Math.max(sY1,oY1))) > (pAWcm*pAHcm*0.5); 
+                    } return false;
+                });
+                if(showLbl) addSheetLabel(ctx, pDX, pDY, pDW, pDH, pAWcm, pAHcm, DEFAULT_TEXT_SIZE_PX, MIN_TEXT_SIZE_PX, currentUnit, CONVERSIONS);
+            }
+            function addSheetLabel(ctx, pDX,pDY,pDW,pDH,pWCm,pHCm,defFS,minFS,unit,conv,pref="") {
+                if(pDW<1||pDH<1)return; const wTxt=_formatDimension(pWCm,unit,conv); const hTxt=_formatDimension(pHCm,unit,conv);
+                let lbl=`${pref} ${wTxt}x${hTxt}`.trim(); let fs=defFS; ctx.font=`${fs}px 'Noto Sans Devanagari',sans-serif`;
+                const tallSlim=pDW<pDH/2.5&&pDH>pDW*2.5&&pDH>25&&pDW>5; 
+                if(tallSlim){ 
+                    ctx.save(); ctx.textAlign='center';ctx.textBaseline='middle';ctx.translate(pDX+pDW/2,pDY+pDH/2);ctx.rotate(-Math.PI/2);
+                    const rotLbl=`${pref} ${hTxt}x${wTxt}`.trim(); 
+                    fs=defFS;ctx.font=`${fs}px 'Noto Sans Devanagari',sans-serif`;
+                    while(fs>minFS&&(ctx.measureText(rotLbl).width>pDH-4||fs*1.2 >pDW-4)){fs--;ctx.font=`${fs}px 'Noto Sans Devanagari',sans-serif`;}
+                    if(fs>=minFS&&ctx.measureText(rotLbl).width<=pDH-4&&fs*1.2<=pDW-4){ctx.fillStyle=getCssVar('--canvas-text-color');ctx.fillText(rotLbl,0,0);}
+                    ctx.restore();
+                }else{ 
+                    fs=defFS;ctx.font=`${fs}px 'Noto Sans Devanagari',sans-serif`;
+                    while(fs>minFS&&(ctx.measureText(lbl).width>pDW-4||fs*1.2 >pDH-4)){fs--;ctx.font=`${fs}px 'Noto Sans Devanagari',sans-serif`;}
+                    if(fs>=minFS&&ctx.measureText(lbl).width<=pDW-4&&fs*1.2<=pDH-4&&pDW>10&&pDH>10){ctx.fillStyle=getCssVar('--canvas-text-color');ctx.fillText(lbl,pDX+pDW/2,pDY+pDH/2);}
+                }
+            }
+            function getCssVar(varName) { return getComputedStyle(document.documentElement).getPropertyValue(varName).trim(); }
+        }
+
+        function potpack(boxes, w_container, h_container, padding = 0, kerf_ignored = 0) {
+            const kerf = 0; 
+            boxes.sort((a, b) => (b.h + padding*2 + kerf) - (a.h + padding*2 + kerf) || (b.w + padding*2 + kerf) - (a.w + padding*2 + kerf) );
+            const spaces = [{x: 0, y: 0, w: w_container, h: h_container}]; 
+            let width = 0; let height = 0; let placedBoxesThisAttempt = [];
+            for (const box of boxes) {
+                if (box.x_potpack !== undefined && box.y_potpack !== undefined) continue; 
+
+                const boxW = box.w + padding * 2; 
+                const boxH = box.h + padding * 2; 
+
+                for (let i = spaces.length - 1; i >= 0; i--) {
+                    const space = spaces[i];
+                    if (boxW > space.w || boxH > space.h) continue; 
+
+                    const placedBox = {...box, x: space.x, y: space.y, x_potpack: space.x, y_potpack: space.y, placedW: box.w, placedH: box.h};
+                    height = Math.max(height, placedBox.y + boxH); 
+                    width = Math.max(width, placedBox.x + boxW);   
+                    placedBoxesThisAttempt.push(placedBox);
+
+                    if (boxW === space.w && boxH === space.h) { 
+                        const last = spaces.pop(); if (i < spaces.length) spaces[i] = last;
+                    } else if (boxH === space.h) { 
+                        space.x += boxW + kerf; space.w -= (boxW + kerf);
+                    } else if (boxW === space.w) { 
+                        space.y += boxH + kerf; space.h -= (boxH + kerf);
+                    } else { 
+                        spaces.push({ x: space.x + boxW + kerf, y: space.y, w: space.w - (boxW + kerf), h: boxH });
+                        space.y += boxH + kerf; space.h -= (boxH + kerf);
+                    }
+                    break; 
+                }
+            }
+            let placedArea = 0; placedBoxesThisAttempt.forEach(b => { placedArea += (b.w + padding*2) * (b.h + padding*2); });
+            return { w: w_container, h: h_container, fill: (w_container * h_container > 0) ? (placedArea / (w_container * h_container)) : 0, placedBoxes: placedBoxesThisAttempt };
+        }
+
+        function generateOptimizedCuttingLayouts(allPieces_worker, sheetW_worker, sheetH_worker, allowRotation_worker, kerfCm_ignored) {
+            const kerfCm = 0; 
+            if (!allPieces_worker || allPieces_worker.length === 0) return [];
+            let layouts = [];
+
+            let remainingPieces = allPieces_worker.map(p_from_main => ({
+                w: p_from_main.widthCm,
+                h: p_from_main.heightCm,
+                originalData: p_from_main.originalData,
+                id: p_from_main.id, 
+                placed: false,
+                rotatedForPacking: false 
+            }));
+
+            let safetyBreak = 0;
+            const MAX_ITERATIONS = 1000 + allPieces_worker.length; 
+
+            while (remainingPieces.some(p => !p.placed) && safetyBreak < MAX_ITERATIONS) {
+                safetyBreak++;
+                let piecesToAttemptOnNewSheet = remainingPieces.filter(p => !p.placed);
+                if (piecesToAttemptOnNewSheet.length === 0) break;
+
+                let currentIterationPieces_no_rot = JSON.parse(JSON.stringify(piecesToAttemptOnNewSheet)); 
+                 currentIterationPieces_no_rot.forEach(p => p.rotatedForPacking = false);
+
+                let packResultNoRotation = potpack_arg( 
+                    currentIterationPieces_no_rot,
+                    sheetW_worker, sheetH_worker, 0, kerfCm
+                );
+                let bestPackForThisSheet = packResultNoRotation.placedBoxes;
+                let bestFill = packResultNoRotation.fill;
+
+                if (allowRotation_worker) {
+                    let currentIterationPieces_with_rot = JSON.parse(JSON.stringify(piecesToAttemptOnNewSheet)); 
+                    currentIterationPieces_with_rot.forEach(p => {
+                        if (p.h <= sheetW_worker && p.w <= sheetH_worker && p.w !== p.h) { 
+                           const tempW = p.w; p.w = p.h; p.h = tempW;
+                           p.rotatedForPacking = true;
+                        } else {
+                           p.rotatedForPacking = false; 
+                        }
+                    });
+                    currentIterationPieces_with_rot.sort((a, b) => (b.h) - (a.h) || (b.w) - (a.w) );
+
+                    let packResultWithRotation = potpack_arg(
+                        currentIterationPieces_with_rot,
+                        sheetW_worker, sheetH_worker, 0, kerfCm
+                    );
+
+                    if (packResultWithRotation.placedBoxes.length > bestPackForThisSheet.length ||
+                        (packResultWithRotation.placedBoxes.length === bestPackForThisSheet.length && packResultWithRotation.fill > bestFill)) {
+                        bestPackForThisSheet = packResultWithRotation.placedBoxes;
+                        bestFill = packResultWithRotation.fill;
+                    }
+                }
+
+                if (bestPackForThisSheet.length > 0) {
+                    layouts.push({
+                        sheetNumber: layouts.length + 1,
+                        pieces: bestPackForThisSheet.map(packedPiece => {
+                            const originalPieceInRemaining = remainingPieces.find(rp => rp.id === packedPiece.id && !rp.placed);
+                            if (originalPieceInRemaining) {
+                                originalPieceInRemaining.placed = true;
+                            }
+                            return { 
+                                x: packedPiece.x, y: packedPiece.y,
+                                w: packedPiece.placedW, h: packedPiece.placedH, 
+                                original: packedPiece.originalData, 
+                                rotated: packedPiece.rotatedForPacking 
+                            };
+                        }),
+                        width: sheetW_worker, height: sheetH_worker, fill: bestFill
+                    });
+                } else if (piecesToAttemptOnNewSheet.length > 0) {
+                    remainingPieces.filter(p => !p.placed).forEach(p => p.placed = true); 
+                    break; 
+                }
+            }
+            return layouts;
+        }
+
+        function displayCuttingLayouts(layouts, sheetW_cm, sheetH_cm) {
+            const cuttingLayoutContainerEl = document.getElementById('cutting-layout-container');
+            const fullSheetsSummaryDivEl = document.getElementById('full-sheets-summary');
+            const cutSheetsVisualizationsDivEl = document.getElementById('cut-sheets-visualizations');
+
+            if (!cuttingLayoutContainerEl || !fullSheetsSummaryDivEl || !cutSheetsVisualizationsDivEl) {
+                console.error("Cutting layout display containers not found in displayCuttingLayouts.");
+                return;
+            }
+            fullSheetsSummaryDivEl.innerHTML = '';
+            cutSheetsVisualizationsDivEl.innerHTML = '';
+
+            if (!layouts || layouts.length === 0) {
+                return;
+            }
+
+            let fullSheetCount = 0;
+            const fullSheetWallSources = {}; 
+
+            layouts.forEach(layout => {
+                const isFullSheet = layout.pieces.length === 1 &&
+                                    Math.abs(layout.pieces[0].w - sheetW_cm) < 0.1 && 
+                                    Math.abs(layout.pieces[0].h - sheetH_cm) < 0.1 && 
+                                    !layout.pieces[0].rotated; 
+
+                if (isFullSheet) {
+                    fullSheetCount++;
+                    const piece = layout.pieces[0];
+                    const wallName = piece.original.wallName || "अज्ञात दीवार";
+                    if (!fullSheetWallSources[wallName]) {
+                        fullSheetWallSources[wallName] = 0;
+                    }
+                    fullSheetWallSources[wallName]++;
+                } else {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'cutting-sheet-wrapper';
+
+                    const title = document.createElement('h4');
+                    title.textContent = `कटी हुई शीट #${layout.sheetNumber} (उपयोग: ${(layout.fill * 100).toFixed(1)}%)`;
+                    wrapper.appendChild(title);
+
+                    const canvas = document.createElement('canvas');
+                    canvas.className = 'cutting-sheet-canvas';
+                    wrapper.appendChild(canvas);
+
+                    const pieceDetailsUl = document.createElement('ul');
+                    pieceDetailsUl.className = 'cutting-layout-piece-details';
+
+                    const MAX_CANVAS_WIDTH = Math.min(400, (document.querySelector('.container')?.clientWidth || 400) - 80) ; 
+                    let canvasScale = MAX_CANVAS_WIDTH / layout.width;
+                    if (layout.height * canvasScale > MAX_CANVAS_WIDTH * 1.5) { 
+                        canvasScale = (MAX_CANVAS_WIDTH * 1.5) / layout.height;
+                    }
+                    if (layout.width * canvasScale > MAX_CANVAS_WIDTH) {
+                        canvasScale = MAX_CANVAS_WIDTH / layout.width;
+                    }
+                    if (canvasScale <= 0) canvasScale = 0.1; 
+
+                    const canvasPadding = 15; 
+                    canvas.width = layout.width * canvasScale + 2 * canvasPadding;
+                    canvas.height = layout.height * canvasScale + 2 * canvasPadding;
+                    const ctx = canvas.getContext('2d');
+
+                    ctx.fillStyle = getCssVar('--cutting-layout-sheet-bg');
+                    ctx.fillRect(canvasPadding, canvasPadding, layout.width * canvasScale, layout.height * canvasScale);
+                    ctx.strokeStyle = '#ccc'; 
+                    ctx.strokeRect(canvasPadding, canvasPadding, layout.width * canvasScale, layout.height * canvasScale);
+
+                    ctx.fillStyle = getCssVar('--canvas-text-color');
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    let sheetDimFontSize = 10;
+                    ctx.font = `italic ${sheetDimFontSize}px 'Noto Sans Devanagari', sans-serif`;
+                    const sheetDimText = `शीट: ${_formatDimension(layout.width, currentUnit, CONVERSIONS)} x ${_formatDimension(layout.height, currentUnit, CONVERSIONS)} ${currentUnit}`;
+                    
+                    while(sheetDimFontSize > 6 && ctx.measureText(sheetDimText).width > (layout.width * canvasScale / 2) ) {
+                        sheetDimFontSize--;
+                        ctx.font = `italic ${sheetDimFontSize}px 'Noto Sans Devanagari', sans-serif`;
+                    }
+                    if (sheetDimFontSize >= 6) { 
+                       ctx.fillText(sheetDimText, canvasPadding + 5, canvasPadding - sheetDimFontSize - 3); 
+                    }
+
+
+                    let totalPieceAreaOnSheetCm2 = 0;
+
+                    layout.pieces.forEach((piece, index) => {
+                        if (piece.x === undefined || piece.y === undefined) return; 
+
+                        const pieceDrawX = canvasPadding + piece.x * canvasScale;
+                        const pieceDrawY = canvasPadding + piece.y * canvasScale;
+                        const pieceDrawW = piece.w * canvasScale; 
+                        const pieceDrawH = piece.h * canvasScale; 
+                        
+                        totalPieceAreaOnSheetCm2 += piece.w * piece.h;
+
+                        ctx.fillStyle = getCssVar('--cutting-layout-piece-bg');
+                        ctx.fillRect(pieceDrawX, pieceDrawY, pieceDrawW, pieceDrawH);
+                        ctx.strokeStyle = getCssVar('--cutting-layout-piece-border');
+                        ctx.strokeRect(pieceDrawX, pieceDrawY, pieceDrawW, pieceDrawH);
+
+                        ctx.fillStyle = getCssVar('--canvas-text-color');
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        const originalWidthForLabel = piece.original.widthCm;
+                        const originalHeightForLabel = piece.original.heightCm;
+                        const originalAreaCm2 = originalWidthForLabel * originalHeightForLabel;
+                        const originalAreaInCurrentUnitSq = originalAreaCm2 / (CONVERSIONS[currentUnit] * CONVERSIONS[currentUnit]);
+
+
+                        const pieceLabelText = `${_formatDimension(originalWidthForLabel, currentUnit, CONVERSIONS)}x${_formatDimension(originalHeightForLabel, currentUnit, CONVERSIONS)}${piece.rotated ? ' (R)' : ''}`;
+                        let fontSize = 8;
+                        ctx.font = `${fontSize}px 'Noto Sans Devanagari', sans-serif`;
+
+                        while(fontSize > 4 && (ctx.measureText(pieceLabelText).width > pieceDrawW - 4 )) {
+                            fontSize--;
+                            ctx.font = `${fontSize}px 'Noto Sans Devanagari', sans-serif`;
+                        }
+                        
+                        if (fontSize >= 4 && pieceDrawW > 10 && pieceDrawH > 10) { 
+                             ctx.fillText(pieceLabelText, pieceDrawX + pieceDrawW / 2, pieceDrawY + pieceDrawH / 2);
+                        }
+
+                        const listItem = document.createElement('li');
+                        const wallNameText = piece.original.wallName || 'अज्ञात दीवार';
+                        const pieceIdText = (piece.original.wallId !== undefined && piece.original.originalId !== undefined) ? ` (मूल ID: ${piece.original.wallId}-${piece.original.originalId})` : '';
+                        
+                        listItem.innerHTML = `<strong>पीस ${index + 1}:</strong> ${_formatDimension(originalWidthForLabel, currentUnit, CONVERSIONS)} x ${_formatDimension(originalHeightForLabel, currentUnit, CONVERSIONS)} ${currentUnit}
+                                            (क्षेत्रफल: ${originalAreaInCurrentUnitSq.toFixed(1)} ${currentUnit}²)
+                                            ${piece.rotated ? '(घुमाया हुआ)' : ''} - <em>${wallNameText}</em>${pieceIdText}`;
+                        pieceDetailsUl.appendChild(listItem);
+                    });
+
+                    wrapper.appendChild(pieceDetailsUl);
+
+                    const sheetTotalAreaCm2 = layout.width * layout.height;
+                    const wastageOnSheetCm2 = sheetTotalAreaCm2 - totalPieceAreaOnSheetCm2;
+
+                    const totalUsedAreaOnSheetDisplay = (totalPieceAreaOnSheetCm2 / (CONVERSIONS[currentUnit] * CONVERSIONS[currentUnit])).toFixed(1);
+                    const wastageOnSheetDisplay = (wastageOnSheetCm2 / (CONVERSIONS[currentUnit] * CONVERSIONS[currentUnit])).toFixed(1);
+                    
+                    const sheetInfoDiv = document.createElement('div');
+                    sheetInfoDiv.className = 'cutting-sheet-info';
+                    sheetInfoDiv.style.marginTop = '10px';
+                    sheetInfoDiv.innerHTML = `
+                        कुल सामग्री उपयोग (इस शीट पर): <b>${totalUsedAreaOnSheetDisplay} ${currentUnit}²</b> <br>
+                        अनुमानित बर्बादी (इस शीट पर): <b>${wastageOnSheetDisplay} ${currentUnit}²</b>
+                    `;
+                    wrapper.appendChild(sheetInfoDiv);
+
+
+                    cutSheetsVisualizationsDivEl.appendChild(wrapper);
+                }
+            });
+
+            if (fullSheetCount > 0) {
+                const summaryTitle = document.createElement('h4');
+                summaryTitle.textContent = `पूरी शीटें (${fullSheetCount} नग):`;
+                fullSheetsSummaryDivEl.appendChild(summaryTitle);
+
+                Object.entries(fullSheetWallSources).forEach(([wallName, count]) => {
+                    const entry = document.createElement('div');
+                    entry.className = 'full-sheet-entry';
+                    entry.textContent = `${count} पूरी शीटें ${wallName} के लिए (${_formatDimension(sheetW_cm, currentUnit, CONVERSIONS)} x ${_formatDimension(sheetH_cm, currentUnit, CONVERSIONS)} ${currentUnit} प्रत्येक)।`;
+                    fullSheetsSummaryDivEl.appendChild(entry);
+                });
+            }
+             if (cuttingLayoutContainerEl) {
+                 if (layouts.length > 0) cuttingLayoutContainerEl.style.display = 'block';
+                 else cuttingLayoutContainerEl.style.display = 'none';
+             }
+        }
+
+        function getCssVar(varName) { return getComputedStyle(document.documentElement).getPropertyValue(varName).trim(); }
+
+        function exportMaterialListToCsv() {
+            if (document.getElementById('total-results-container').style.display === 'none' || document.getElementById('error-messages').style.display === 'block') {
+                alert("पहले सामग्री की गणना करें और सुनिश्चित करें कि कोई त्रुटि नहीं है।"); return;
+            }
+            const currentProjectNameForCSV = activeProjectName || "अनाम_प्रोजेक्ट"; 
+
+            function gIdVal(id){ const el = document.getElementById(id); return el ? el.textContent : '';}
+            function numVal(id){const el = document.getElementById(id); return el ? (parseFloat(el.value)||0) : 0;}
+            const actualSheetsForCsvText = gIdVal('result-cutting-layout-sheets');
+            const actualSheetsForCsv = (actualSheetsForCsvText !== 'N/A (कोई पीस नहीं)' && actualSheetsForCsvText !== 'N/A (पैकिंग त्रुटि)' && !isNaN(parseFloat(actualSheetsForCsvText))) ? parseFloat(actualSheetsForCsvText) : parseFloat(gIdVal('result-total-sheets'));
+
+
+            const dataRows = [
+                ["प्रोजेक्ट का नाम:", currentProjectNameForCSV, "", "", ""],
+                ["सामग्री", "मात्रा", "इकाई", "प्रति इकाई लागत", "कुल लागत"],
+                ["जिप्सम शीट", actualSheetsForCsv, "नग",numVal('cost-sheet').toFixed(2), (actualSheetsForCsv * numVal('cost-sheet')).toFixed(2) ],
+                ["स्टड",gIdVal('result-stud-pieces'),"नग",numVal('cost-stud').toFixed(2),gIdVal('cost-result-studs')],
+                ["ट्रैक",gIdVal('result-track-pieces'),"नग",numVal('cost-track').toFixed(2),gIdVal('cost-result-tracks')],
+                ["स्क्रू",gIdVal('result-screws'),"नग",`${numVal('cost-screws').toFixed(2)} (प्रति 100)`,gIdVal('cost-result-screws')],
+                ["जॉइंट टेप",gIdVal('result-tape'),"मीटर",numVal('cost-tape').toFixed(2),gIdVal('cost-result-tape')],
+                ["जॉइंट कंपाउंड",gIdVal('result-compound'),"किग्रा",numVal('cost-compound').toFixed(2),gIdVal('cost-result-compound')],
+                ["कॉर्नर बीड",gIdVal('result-corner-bead'),"मीटर",numVal('cost-corner-bead').toFixed(2),gIdVal('cost-result-corner-bead')],
+                ["","","","कुल:",gIdVal('cost-result-total')]
+            ];
+
+            let csvContent = "\uFEFF"; 
+            dataRows.forEach(row=>csvContent+=row.map(item=>`"${String(item).replace(/"/g,'""')}"`).join(",")+"\r\n");
+            const blob = new Blob([csvContent],{type:'text/csv;charset=utf-8;'});
+            const link = document.createElement("a");
+            if(link.download !== undefined){
+                const url = URL.createObjectURL(blob);
+                const filename = `जिप्सम_सामग्री_${currentProjectNameForCSV.replace(/[^a-z0-9अ-ज्ञإلى-ي]+/gi, '_')}.csv`; 
+                link.setAttribute("href",url); link.setAttribute("download",filename);
+                link.style.visibility='hidden'; document.body.appendChild(link); link.click();
+                document.body.removeChild(link); URL.revokeObjectURL(url);
+                alert(`सामग्री सूची "${filename}" के रूप में डाउनलोड की गई!`);
+            } else { alert("आपका ब्राउज़र स्वचालित CSV डाउनलोड का समर्थन नहीं करता है।"); }
+        }
+
+        if (!localStorage.getItem(LOCAL_STORAGE_KEY) && wallsContainer.children.length === 0) {
+            addWallInput();
+        }
+    });
+    </script>
+</body>
+</html>
+```
