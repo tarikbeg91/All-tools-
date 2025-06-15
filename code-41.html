@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Article Reader Pro (Stream & Local TTS)</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mozilla/readability@0.5.0/Readability.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #f4f7f6; --text-color: #333; --container-bg: #ffffff;
+            --primary-color: #007bff; --secondary-color: #17a2b8;
+            --border-color: #ddd; --danger-color: #dc3545; --success-color: #28a745;
+            --font-size-base: 16px; --line-height-base: 1.6;
+            --player-red: #d32f2f; --player-gold: #bcaaa4; --player-light-gray: #e0e0e0;
+        }
+        .dark-mode {
+            --bg-color: #121212; --text-color: #e0e0e0; --container-bg: #1e1e1e;
+            --primary-color: #4dabf7; --secondary-color: #4dd0e1;
+            --border-color: #444; --danger-color: #e57373; --success-color: #66bb6a;
+            --player-red: #e57373; --player-gold: #90a4ae; --player-light-gray: #424242;
+        }
+        .sepia-mode {
+            --bg-color: #f4e8c1; --text-color: #5b4636; --container-bg: #fbf0d9;
+            --primary-color: #795548; --secondary-color: #8d6e63;
+            --border-color: #d7ccc8; --danger-color: #a1887f; --success-color: #7cb342;
+            --player-red: #8d6e63; --player-gold: #a1887f; --player-light-gray: #d7ccc8;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); line-height: var(--line-height-base); transition: background-color 0.3s, color 0.3s; margin: 0; padding-top: 5px; }
+        #progress-bar { position: fixed; top: 0; left: 0; height: 5px; background: var(--primary-color); width: 0%; z-index: 9999; transition: width 0.1s; }
+        .main-container { max-width: 800px; margin: 20px auto; padding: 20px; background-color: var(--container-bg); border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        h1, h2, h3 { color: var(--primary-color); }
+        .tabs { border-bottom: 2px solid var(--border-color); overflow: hidden; margin-bottom: 20px; display: flex; flex-wrap: wrap; }
+        .tab-link { background: transparent; border: none; cursor: pointer; padding: 14px 16px; font-size: 17px; color: var(--text-color); border-bottom: 3px solid transparent; }
+        .tab-link.active { color: var(--primary-color); border-bottom-color: var(--primary-color); font-weight: bold; }
+        input[type="url"], input[type="search"], input[type="text"], select { background-color: var(--container-bg); color: var(--text-color); border: 1px solid var(--border-color); width: 100%; padding: 12px; box-sizing: border-box; border-radius: 6px; font-size: 16px; margin-top: 10px; }
+        button.tool-btn, .tool-btn-secondary { background-color: var(--primary-color); color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 15px; }
+        .tool-btn-secondary { background-color: var(--secondary-color); margin-left: 10px; }
+        .danger-btn { background-color: var(--danger-color) !important; }
+        #clearUrlBtn { height: 46.4px; margin-top: 10px; font-size: 1.2em; background-color: var(--danger-color); color:white; border-radius:6px; border:none; cursor:pointer; padding: 0 12px;}
+        .result-box { background-color: var(--bg-color); margin-top: 15px; padding: 15px; border-radius: 6px; font-size: var(--font-size-base); }
+        .single-story { border-bottom: 2px dashed var(--border-color); padding-bottom: 20px; margin-bottom: 20px; }
+        .single-story:last-child { border-bottom: none; margin-bottom: 0; }
+        .single-story img { max-width: 100%; height: auto; display: block; margin: 15px auto; border-radius: 8px; }
+        .story-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .header-buttons { display: flex; gap: 8px; flex-wrap: wrap; align-items: center;}
+        .header-buttons button { background-color: var(--secondary-color); color: white; border: none; border-radius: 5px; padding: 6px 12px; font-size: 14px; cursor: pointer; }
+        .header-buttons .save-btn.saved { background-color: var(--danger-color); }
+        .theme-toggle-container { position: fixed; top: 15px; right: 20px; z-index: 1000; display:flex; gap: 5px;}
+        .theme-toggle { background: var(--container-bg); border: 1px solid var(--border-color); border-radius: 50%; width: 40px; height: 40px; cursor: pointer; font-size: 20px; display: flex; justify-content: center; align-items: center; }
+        #ae_loading { margin-top: 15px; color: var(--primary-color); font-style: italic; text-align: center; }
+        .library-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color); }
+        .library-item .item-title { flex-grow: 1; cursor: pointer; }
+        .library-item .item-controls { display: flex; align-items: center; gap: 8px; }
+        .library-item .read-status-toggle { cursor: pointer; font-size: 1.1em; padding: 0 5px; }
+        .library-item.selected { background-color: var(--border-color); }
+        .library-item .delete-btn { background-color: var(--danger-color); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+        .item-more-options-btn { background: transparent; border: none; color: var(--text-color); font-size: 1.5em; cursor: pointer; padding: 0 8px; line-height: 1; }
+        .item-context-menu { position: absolute; background-color: var(--container-bg); border: 1px solid var(--border-color); border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 1005; display: none; padding: 5px 0; font-size: 0.9em; }
+        .item-context-menu button { background: none; border: none; color: var(--text-color); padding: 8px 16px; width: 100%; text-align: left; cursor: pointer; }
+        .item-context-menu button:hover { background-color: var(--bg-color); }
+        
+        #lib-article-text-content { white-space: pre-wrap;  background-color: var(--bg-color);  padding: 15px;  border-radius: 6px;  max-height: 50vh;  overflow-y: auto; border: 1px solid var(--border-color); line-height: 1.7; }
+        #lib-article-current-tags .tag-item { background-color: var(--secondary-color); color: white; padding: 3px 8px; border-radius: 4px; margin-right: 5px; margin-bottom: 5px; font-size: 0.9em; display: inline-block; }
+        #lib-article-current-tags .tag-remove-btn { margin-left: 4px; border: none; background: transparent; color: white; cursor: pointer; font-weight: bold; }
+        
+        #audioPlayerContainer { display: none; flex-direction: column; gap: 10px; margin-top: 15px; padding: 15px; border-radius: 8px; background-color: var(--bg-color); border: 1px solid var(--border-color); }
+        #audioPlayerContainer .visualizer-container { width: 100%; height: 60px; display: flex; align-items: center; justify-content: center; }
+        #audioPlayerContainer .progress-container { display: flex; align-items: center; gap: 10px; font-size: 0.8em; color: var(--text-color); }
+        #audioPlayerContainer input[type="range"] { -webkit-appearance: none; width: 100%; height: 4px; background: var(--player-light-gray); outline: none; margin: 0; cursor: pointer; background-image: linear-gradient(var(--player-red), var(--player-red)); background-size: 0% 100%; background-repeat: no-repeat; }
+        #audioPlayerContainer input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 14px; background: var(--player-red); border-radius: 50%; cursor: pointer; }
+        #audioPlayerContainer input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: var(--player-red); border-radius: 50%; cursor: pointer; border: none; }
+        #audioPlayerContainer .controls-container { display: flex; justify-content: space-around; align-items: center; }
+        #audioPlayerContainer .controls-container button { background: none; border: none; cursor: pointer; font-size: 1.8em; color: var(--player-gold); padding: 5px; }
+        #audioPlayerContainer .controls-container button.play-pause-btn { background-color: var(--player-red); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.5em; }
+        #audioPlayerContainer .controls-container button:disabled { opacity: 0.4; cursor: not-allowed; }
+        #audioPlayerContainer .controls-container button.active { color: var(--player-red); }
+        
+        .queue-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 10020; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
+        .queue-modal-overlay.show { display: flex; opacity: 1; }
+        .queue-modal-content { background-color: var(--container-bg); color: var(--text-color); padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80vh; display: flex; flex-direction: column; }
+        .queue-modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; }
+        .queue-modal-header h3 { margin: 0; color: var(--primary-color); }
+        #queue-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
+        .queue-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border-color); cursor: grab; user-select: none; }
+        .queue-item:last-child { border-bottom: none; }
+        .queue-item.playing { font-weight: bold; color: var(--primary-color); background-color: var(--bg-color); }
+        .queue-item.dragging { opacity: 0.5; background: var(--border-color); }
+        .queue-item-title { flex-grow: 1; cursor: pointer; /* क्यू आइटम को क्लिक करने योग्य बनाने के लिए */ }
+        .queue-item .delete-btn { background-color: var(--danger-color); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+
+        .link-list-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; background-color: var(--bg-color); }
+        .link-list-item .link-title { font-weight: bold; flex-grow: 1; margin-right: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .link-list-item .link-actions button { padding: 6px 10px; font-size: 0.9em; margin-left: 8px; background-color: var(--secondary-color); color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .link-list-item .link-actions button:hover { opacity: 0.8; }
+        
+        .settings-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); z-index: 10010;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
+        }
+        .settings-modal-overlay.show { opacity: 1; pointer-events: auto; }
+        .settings-modal-content {
+            background-color: var(--container-bg); color: var(--text-color);
+            padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            width: 90%; max-width: 600px; max-height: 90vh;
+            display: flex; flex-direction: column;
+            transform: scale(0.95); transition: transform 0.3s ease;
+        }
+        .settings-modal-overlay.show .settings-modal-content { transform: scale(1); }
+        .settings-modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; }
+        .settings-modal-header h2 { margin: 0; color: var(--primary-color); }
+        .settings-close-btn { background: transparent; border: none; font-size: 28px; font-weight: bold; color: var(--text-color); cursor: pointer; padding: 0 10px; }
+        .settings-modal-body { overflow-y: auto; padding-right: 15px; margin-right: -15px; }
+        .settings-modal-body fieldset { border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .settings-modal-body legend { font-weight: bold; color: var(--primary-color); padding: 0 10px; }
+        .setting-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        .setting-item:last-child { margin-bottom: 0; }
+        .setting-item label { flex-shrink: 0; }
+        .setting-control { display: flex; gap: 15px; align-items: center; flex-grow: 1; justify-content: flex-end; }
+        .setting-control button, .setting-control select { background-color: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 5px; padding: 8px 12px; cursor: pointer; }
+        .setting-control input[type="radio"] + label { cursor: pointer; }
+        .setting-control .danger-btn { background-color: var(--danger-color); color: white; }
+        .setting-control .range-control { display: flex; align-items: center; gap: 10px; }
+        .danger-zone { border-color: var(--danger-color); }
+        .danger-zone legend { color: var(--danger-color); }
+        .settings-modal-footer { border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 10px; text-align: right; }
+
+        /* Fallback share modal styling */
+        .fallback-share-modal {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background-color: var(--container-bg); color: var(--text-color);
+            padding: 20px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 10050; width: 90%; max-width: 400px;
+        }
+        .fallback-share-modal textarea { width: calc(100% - 20px); min-height: 100px; margin-bottom: 10px; padding: 10px; background-color: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 6px; }
+        
+        /* Toast Notification Styles */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 10060; display: flex; flex-direction: column; gap: 10px; }
+        .toast-notification { background-color: var(--primary-color); color: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); opacity: 0; transform: translateX(100%); transition: opacity 0.3s ease, transform 0.3s ease; font-size: 0.9em; }
+        .toast-notification.show { opacity: 1; transform: translateX(0); }
+        .toast-notification.success { background-color: var(--success-color); }
+        .toast-notification.error { background-color: var(--danger-color); }
+        .toast-notification.warning { background-color: var(--player-gold); color: var(--text-color); }
+        .toast-actions button { background: rgba(255,255,255,0.2); color: white; border: none; padding: 5px 10px; margin-left: 10px; border-radius: 4px; cursor: pointer; }
+
+        /* Back to top button style */
+        #backToTopBtn { display: none; position: fixed; bottom: 20px; left: 20px; z-index: 99; border: none; outline: none; background-color: var(--primary-color); color: white; cursor: pointer; padding: 10px 15px; border-radius: 50%; font-size: 18px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        #backToTopBtn:hover { background-color: var(--secondary-color); }
+
+        /* Other minor styles from potential previous versions if missing */
+        .library-playlist-controls { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .library-playlist-controls button { margin-left: 0 !important; } /* Override margin for these specific buttons */
+        #libVoiceSelectorContainer, #voiceSelectorContainerSetting { display: flex; /* Use flex for better alignment */ align-items: center; gap: 10px;}
+        .article-body-content img { max-width: 100%; height: auto; display: block; margin: 15px auto; border-radius: 8px; }
+        hr { border: 0; height: 1px; background-color: var(--border-color); margin: 20px 0; }
+        .library-item input[type="checkbox"].playlist-checkbox { margin-right: 10px; transform: scale(1.2); cursor:pointer; }
+        .bookmark-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color); }
+        .bookmark-item:last-child { border-bottom: none; }
+        .bookmark-item .item-title { flex-grow: 1; cursor: pointer; }
+        .bookmark-item .delete-btn { background-color: var(--danger-color); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.9em; }
+        #bookmark-controls { margin-bottom:15px; display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; }
+        #bookmark-controls input, #bookmark-controls select { margin-top:0; }
+        #bookmark-list-container { margin-top:15px; }
+
+    </style>
+</head>
+<body>
+    <div id="progress-bar"></div>
+    <div class="theme-toggle-container">
+        <button class="theme-toggle" onclick="toggleTheme('light')" title="लाइट मोड">☀️</button>
+        <button class="theme-toggle" onclick="toggleTheme('dark')" title="डार्क मोड">🌓</button>
+        <button class="theme-toggle" onclick="toggleTheme('sepia')" title="सेपिया मोड">📜</button>
+        <button class="theme-toggle" onclick="openSettingsModal()" title="सेटिंग्स">⚙️</button>
+    </div>
+    <div class="main-container">
+        <h1>आर्टिकल रीडर प्रो</h1>
+        <div id="googleSearchContainer" style="margin-bottom: 15px; display: flex; gap: 5px;"><input type="search" id="googleSearchQuery" placeholder="गूगल पर खोजें..." style="flex-grow: 1; margin-top:0;"><button onclick="performGoogleSearch()" class="tool-btn" style="margin-top:0; padding: 12px 15px;" title="खोजें">🔍</button></div>
+        <div id="internalNavHistoryContainer" style="display: none; justify-content:space-between; margin-bottom:10px;"><button id="historyBackBtn" onclick="navigateHistory(-1)" disabled>⬅️ पिछला</button><button id="historyForwardBtn" onclick="navigateHistory(1)" disabled>➡️ अगला</button></div>
+        <div class="tabs"><button class="tab-link active" onclick="openTool(event, 'ArticleExtractor')">आर्टिकल निकालें</button><button class="tab-link" onclick="openTool(event, 'MyLibrary')">मेरी लाइब्रेरी <span id="library-count">(0)</span></button><button class="tab-link" onclick="openTool(event, 'Bookmarks')">बुकमार्क <span id="bookmark-count">(0)</span></button></div>
+        
+        <div id="ArticleExtractor" class="tool-content" style="display:block;">
+            <p>किसी भी आर्टिकल का लिंक, कैटेगरी पेज या वेबसाइट का होमपेज लिंक यहाँ डालें।</p>
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <input type="url" id="articleUrl" placeholder="https://example.com/" style="flex-grow: 1; margin-top:0;">
+                <button id="clearUrlBtn" onclick="clearUrlInput()" title="URL साफ़ करें">✗</button>
+            </div>
+            <div style="margin-top: 10px; margin-bottom: 5px; display: flex; flex-wrap: wrap; align-items: center; gap: 15px;">
+                <div><input type="checkbox" id="crawlSiteToggle" name="crawlSiteToggle" checked onchange="toggleDepthSelector()"><label for="crawlSiteToggle" style="font-size: 0.9em; cursor:pointer;">इस URL से जुड़े अन्य आर्टिकल भी खोजें</label></div>
+                <div id="depthSelectorContainer" style="display: inline-block;"><label for="crawlDepth" style="font-size: 0.9em;">खोज की गहराई:</label><select id="crawlDepth" name="crawlDepth" style="font-size: 0.9em; padding: 5px;"><option value="0">केवल यह पेज (या इस पेज के लिंक)</option><option value="1" selected>1 स्तर गहरा</option><option value="2">2 स्तर गहरा</option><option value="3">3 स्तर गहरा (धीमा हो सकता है)</option></select></div>
+            </div>
+            <div style="margin-top: 15px; margin-bottom: 5px;">
+                <input type="search" id="extractorSearch" placeholder="वर्तमान आर्टिकल्स में खोजें..." oninput="filterExtractedArticles()" style="width: calc(100% - 145px); margin-right: 10px; margin-top:0;">
+                <button onclick="clearExtractorSearch()" class="tool-btn-secondary" style="padding: 10px 15px; margin-top: 0; font-size:0.9em;">खोज साफ़ करें</button>
+            </div>
+            <button class="tool-btn" onclick="ae_startExtraction()">आर्टिकल निकालें</button>
+            <button id="toggleCrawlBtn" class="tool-btn-secondary" onclick="toggleCrawling()" style="display: none;">⏹️ क्रॉलिंग रोकें</button>
+            <button class="tool-btn-secondary" onclick="clearResults()">परिणाम साफ़ करें</button>
+            <button id="playAllExtractedBtn" class="tool-btn-secondary" onclick="playAllExtractedArticles()" style="display: none; background-color: var(--success-color); margin-left:10px; margin-top:15px;">▶️ सभी प्ले करें</button>
+            <div id="ae_loading" style="display:none;"></div>
+            <div class="result-box" id="ae_result"></div>
+        </div>
+        
+        <div id="MyLibrary" class="tool-content" style="display:none;">
+            <h2>सेव किए गए आर्टिकल</h2>
+            <div class="library-controls">
+                <input type="search" id="librarySearch" placeholder="टाइटल से खोजें..." oninput="loadLibrary()">
+                <select id="librarySort" onchange="loadLibrary()">
+                    <option value="date_desc">सबसे नया पहले</option><option value="date_asc">सबसे पुराना पहले</option>
+                    <option value="title_asc">टाइटल (A-Z)</option><option value="title_desc">टाइटल (Z-A)</option>
+                </select>
+                <div id="libraryTagFilterContainer" style="display:inline-block; margin-left:10px;"><label for="libraryTagFilter" style="font-size:0.9em;">टैग फ़िल्टर:</label><select id="libraryTagFilter" onchange="loadLibrary()" style="font-size:0.9em; padding:5px; width:auto; margin-top:0;"><option value="">सभी टैग</option></select></div>
+                <div id="libraryReadStatusFilterContainer" style="display:inline-block; margin-left:10px;"><label for="libraryReadStatusFilter" style="font-size:0.9em;">स्थिति फ़िल्टर:</label><select id="libraryReadStatusFilter" onchange="loadLibrary()" style="font-size:0.9em; padding:5px; width:auto; margin-top:0;"><option value="all">सभी</option><option value="read">पढ़ा हुआ</option><option value="unread">अपठित</option></select></div>
+                <button id="clearLibraryFiltersBtn" class="tool-btn-secondary" onclick="clearLibraryFilters()" style="margin-top:0; margin-left: 10px; font-size:0.9em; padding:8px 12px; display:none;">फ़िल्टर साफ़ करें</button>
+            </div>
+            <div class="library-playlist-controls">
+                <button id="playSelectedBtn" onclick="playSelectedLibraryItems()" class="tool-btn-secondary" style="margin-top:10px; margin-left:0; display:none; background-color: var(--success-color);">चयनित चलाएं</button>
+                <button id="createSelectedMp3Btn" onclick="createSelectedMp3()" class="tool-btn-secondary" style="margin-top:10px; margin-left:10px; display:none;">चयनित का MP3 बनाएं</button>
+                <button id="viewQueueBtn" onclick="openQueueModal()" class="tool-btn-secondary" style="margin-top:10px; margin-left:10px; display:none;">क्यू देखें (<span id="queue-count">0</span>)</button>
+                <div style="margin-top:10px; margin-left:10px;"><input type="checkbox" id="autoPlayNextToggle" onchange="handleAutoPlayToggle(this.checked)"><label for="autoPlayNextToggle" style="font-size: 0.9em; cursor:pointer;">अगला ऑटो-प्ले करें</label></div>
+            </div>
+            <div class="library-controls" style="margin-top:10px;">
+                <button onclick="exportLibrary()" class="tool-btn-secondary" style="margin-top:0; margin-left:0; font-size:0.9em; padding:8px 12px;">लाइब्रेरी एक्सपोर्ट करें</button>
+                <input type="file" id="importLibraryFile" accept=".json" onchange="importLibraryHandler(event)" style="display:none;">
+                <button onclick="document.getElementById('importLibraryFile').click()" class="tool-btn-secondary" style="margin-top:0; font-size:0.9em; padding:8px 12px;">लाइब्रेरी इंपोर्ट करें</button>
+            </div>
+            <div id="library-content-wrapper" style="margin-top:15px;">
+                <div id="library-list-container"><div id="library-list"></div></div>
+                <div id="library-article-view" style="display: none;">
+                    <h3 id="lib-article-title"></h3>
+                    <p style="margin-top:0; margin-bottom: 5px;"><small>मूल URL: <a id="lib-article-original-url" href="#" target="_blank" rel="noopener noreferrer"></a></small></p>
+                    <div style="margin-bottom:15px; margin-top:5px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <button onclick="copyLibraryArticleText()" class="tool-btn-secondary" style="padding: 8px 12px; font-size: 0.9em; margin-left:0; margin-top:0;">पूरा टेक्स्ट कॉपी करें</button>
+                        <button id="shareLibArticleBtn" class="tool-btn-secondary" style="padding: 8px 12px; font-size: 0.9em; background-color: var(--success-color); margin-top:0;">शेयर करें</button>
+                        <div style="margin-left:auto;"><label for="libFontSize" style="font-size:0.9em;">फ़ॉन्ट: </label><button onclick="changeLibraryFontSize(-1)" title="फ़ॉन्ट घटाएं" style="padding:5px 8px; font-size:0.8em;">A-</button><button onclick="changeLibraryFontSize(1)" title="फ़ॉन्ट बढ़ाएं" style="padding:5px 8px; font-size:0.8em;">A+</button></div>
+                    </div>
+                    <div id="audioPlayerContainer">
+                        <div class="visualizer-container"><canvas id="audioVisualizer" width="300" height="60"></canvas></div>
+                        <div class="progress-container"><span class="current-time">0:00</span><input type="range" class="progress-bar" value="0" min="0" max="100" step="0.1"><span class="total-time">0:00</span></div>
+                        <div class="controls-container"><button class="shuffle-btn" title="शफल">🔀</button><button class="skip-btn prev-btn" title="पिछला">⏮️</button><button class="play-pause-btn" title="प्ले/पॉज़">▶️</button><button class="skip-btn next-btn" title="अगला">⏭️</button><button class="repeat-btn" title="रिपीट">🔁</button></div>
+                    </div>
+                    <div id="sleep-timer-controls" style="margin-top: 15px; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+                        <label for="sleepTimerSelect" style="font-weight: bold; color: var(--primary-color);">⏲️ स्लीप टाइमर:</label>
+                        <select id="sleepTimerSelect" onchange="setSleepTimer(this.value)" style="padding: 5px 8px; font-size: 0.9em; background-color: var(--bg-color); color: var(--text-color); border:1px solid var(--border-color); border-radius:4px; cursor:pointer; margin-top:0;">
+                            <option value="0">बंद</option><option value="5">5 मिनट</option><option value="15">15 मिनट</option>
+                            <option value="30">30 मिनट</option><option value="60">60 मिनट</option><option value="-1">इस आर्टिकल के अंत में</option>
+                        </select>
+                        <button id="cancelSleepTimerBtn" onclick="cancelSleepTimer()" style="display: none; background-color: var(--danger-color); color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.9em; margin-top:0;">रद्द करें</button>
+                        <span id="sleepTimerDisplay" style="margin-left: auto; font-size: 0.9em; font-style: italic;"></span>
+                    </div>
+                    <div id="lib-article-text-content"></div>
+                    <div id="lib-article-tags-container" style="margin-top: 15px;">
+                        <h4>टैग्स:</h4><div id="lib-article-current-tags" style="margin-bottom:10px;"></div>
+                        <div style="display: flex; gap: 5px; align-items:center;">
+                            <input type="text" id="lib-new-tag-input" placeholder="नया टैग जोड़ें" style="flex-grow:1; margin-top:0; font-size:0.9em; padding:8px;">
+                            <button onclick="addTagToCurrentLibraryArticle()" class="tool-btn-secondary" style="margin-top:0;padding: 8px 12px; font-size: 0.9em;">टैग जोड़ें</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="Bookmarks" class="tool-content" style="display:none;">
+            <h2>बुकमार्क</h2>
+            <div id="bookmark-controls">
+                <input type="text" id="bookmarkName" placeholder="नाम (वैकल्पिक)" style="flex:1;">
+                <input type="url" id="bookmarkUrl" placeholder="https://example.com/" required style="flex:2;">
+                <select id="bookmarkAssignFolder" title="फ़ोल्डर चुनें" style="flex:1;"></select>
+                <button class="tool-btn" onclick="addBookmark()" style="padding:10px 15px; font-size:0.9em; margin-top:0;">बुकमार्क जोड़ें</button>
+            </div>
+             <div id="bookmark-controls" style="margin-top:5px;">
+                <input type="text" id="newBookmarkFolderName" placeholder="नया फ़ोल्डर नाम" style="flex:1;">
+                <button class="tool-btn-secondary" onclick="createBookmarkFolder()" style="padding:10px 15px; font-size:0.9em; margin-left:0; margin-top:0;">फ़ोल्डर बनाएँ</button>
+                <select id="bookmarkFolderFilter" onchange="loadBookmarks()" title="फ़ोल्डर द्वारा फ़िल्टर करें" style="flex:1; margin-left:auto;"></select>
+            </div>
+            <div id="bookmark-list-container">
+                <div id="bookmark-list"></div>
+            </div>
+        </div>
+    </div>
+    <button id="backToTopBtn" onclick="scrollToTop()" title="ऊपर जाएं">⬆️</button>
+    <div id="toast-container"></div>
+    
+    <div id="queueModal" class="queue-modal-overlay">
+        <div class="queue-modal-content">
+            <div class="queue-modal-header"><h3>प्लेबैक क्यू</h3><button class="settings-close-btn" onclick="closeQueueModal()">×</button></div>
+            <ul id="queue-list"></ul>
+            <div class="queue-modal-footer" style="text-align:right; margin-top:15px; border-top: 1px solid var(--border-color); padding-top:15px;">
+                <button class="tool-btn-secondary danger-btn" style="margin-left:0; margin-top:0;" onclick="clearQueue()">क्यू साफ़ करें</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="settingsModal" class="settings-modal-overlay">
+        <div class="settings-modal-content">
+            <div class="settings-modal-header">
+                <h2>सेटिंग्स</h2>
+                <button class="settings-close-btn" onclick="closeSettingsModal()">×</button>
+            </div>
+            <div class="settings-modal-body">
+                <fieldset>
+                    <legend>थीम</legend>
+                    <div class="setting-item">
+                        <label>रंग योजना चुनें:</label>
+                        <div class="setting-control">
+                            <input type="radio" id="theme_light" name="theme_setting" value="light"><label for="theme_light">☀️ लाइट</label>
+                            <input type="radio" id="theme_dark" name="theme_setting" value="dark"><label for="theme_dark">🌓 डार्क</label>
+                            <input type="radio" id="theme_sepia" name="theme_setting" value="sepia"><label for="theme_sepia">📜 सेपिया</label>
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>आर्टिकल डिस्प्ले</legend>
+                    <div class="setting-item">
+                        <label for="displayModeSetting">कंटेंट डिस्प्ले मोड:</label>
+                        <div class="setting-control">
+                            <select id="displayModeSetting" style="margin-top:0;">
+                                <option value="image-text">इमेज और टेक्स्ट</option>
+                                <option value="text-only">केवल टेक्स्ट</option>
+                            </select>
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>टेक्स्ट-टू-स्पीच (TTS)</legend>
+                    <div class="setting-item">
+                        <label for="ttsMethodSetting">TTS इंजन:</label>
+                        <div class="setting-control">
+                             <select id="ttsMethodSetting" style="margin-top:0;">
+                                <option value="stream">Google स्ट्रीम (अनुशंसित)</option>
+                                <option value="local">डिवाइस TTS</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label for="ttsRateSetting">बोलने की गति:</label>
+                        <div class="setting-control range-control">
+                            <input type="range" id="ttsRateSetting" min="0.5" max="2" step="0.1" value="1" style="margin-top:0;">
+                            <span id="ttsRateDisplaySetting">1.0x</span>
+                        </div>
+                    </div>
+                    <div class="setting-item" id="voiceSelectorContainerSetting" style="display:none;">
+                        <label for="voiceSelectorSetting">आवाज़ (डिवाइस TTS):</label>
+                        <div class="setting-control">
+                            <select id="voiceSelectorSetting" style="margin-top:0;"></select>
+                        </div>
+                    </div>
+                     <div class="setting-item" id="libVoiceSelectorContainer" style="display:none;"> 
+                        <label for="libVoiceSelector">आवाज़ (डिवाइस TTS):</label>
+                        <div class="setting-control">
+                            <select id="libVoiceSelector" onchange="setTTSVoice(this.value)" style="margin-top:0;"></select>
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset class="danger-zone">
+                    <legend>डेटा प्रबंधन</legend>
+                    <div class="setting-item">
+                        <label>लाइब्रेरी डेटा:</label>
+                        <div class="setting-control">
+                            <button class="tool-btn-secondary" onclick="exportLibrary()" style="background-color:var(--secondary-color); margin-top:0;">एक्सपोर्ट</button>
+                            <button class="tool-btn-secondary" onclick="document.getElementById('importLibraryFile').click()" style="background-color:var(--secondary-color); margin-top:0;">इंपोर्ट</button>
+                            <button class="danger-btn" onclick="clearLibraryData()" style="margin-top:0;">लाइब्रेरी साफ़ करें</button>
+                        </div>
+                    </div>
+                     <div class="setting-item">
+                        <label>बुकमार्क डेटा:</label>
+                        <div class="setting-control">
+                            <button class="danger-btn" onclick="clearBookmarksData()" style="margin-top:0;">बुकमार्क साफ़ करें</button>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label>सभी सेटिंग्स और डेटा:</label>
+                        <div class="setting-control">
+                            <button class="danger-btn" onclick="resetAllSettings()" style="margin-top:0;">सब रीसेट करें</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="settings-modal-footer">
+                <button class="tool-btn" onclick="closeSettingsModal()" style="background-color:var(--success-color); margin-top:0;">सहेजें और बंद करें</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // --- Embedded Service Worker Code ---
+    const serviceWorkerCode = `self.addEventListener('install',e=>e.waitUntil(self.skipWaiting()));self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('fetch',e=>{if(e.request.url.includes('article-proxyy.rockysmail69.workers.dev')){e.respondWith(fetch(e.request))}});`;
+
+    // --- Global Variables & Setup ---
+    const MY_PRIVATE_PROXY = 'https://article-proxyy.rockysmail69.workers.dev'; 
+    let allFoundLinks = new Set();
+    let currentProcessIndex = 0;
+    let isProcessing = false; // For article extraction crawling
+    const speechApiSupported = 'speechSynthesis' in window;
+    const mediaSessionSupported = ('mediaSession' in navigator);
+    let localSpeechSynth;
+    let audioQueue = [], currentAudioElement = null, currentStreamController = null;
+    let localTtsQueue = [];
+    
+    let isPlaying = false; 
+    let isPaused = false;  
+
+    let wasSpeakingBeforeTabSwitch = false; 
+    let navigationHistory = [], currentHistoryIndex = -1, isNavigatingHistory = false;
+    let currentDisplayMode = 'image-text'; 
+    let isCrawlingPaused = false; 
+    let sleepTimerId = null, sleepTimerIntervalId = null, sleepTimerEndTime = 0, stopAtArticleEnd = false;
+    
+    let playQueue = [];
+    let currentQueueIndex = -1; 
+    let currentArticleTotalChunks = 0; 
+    let visualizerContext = { audioCtx: null, analyser: null, source: null, animationFrameId: null, dataArray: null, bufferLength: 0, canvas: null, canvasCtx: null };
+    let audioPlayerState = { isShuffle: false, repeatMode: 'off', unshuffledQueue: [], currentArticle: null }; 
+    
+    const STORAGE_KEY_THEME = 'articleReaderTheme_s1';
+    const STORAGE_KEY_LIBRARY = 'articleReaderLibrary_s7_pro'; 
+    const STORAGE_KEY_FONT_SIZE = 'articleReaderFontSize_s1';
+    const STORAGE_KEY_LIBRARY_FONT_SIZE = 'articleReaderLibraryFontSize_s1';
+    const STORAGE_KEY_TTS_METHOD = 'articleReaderTTSMethod_v1';
+    const STORAGE_KEY_TTS_RATE = 'articleReaderTTSRate_v1';
+    const STORAGE_KEY_TTS_VOICE = 'articleReaderTTSVoice_v1';
+    const STORAGE_KEY_DISPLAY_MODE = 'articleReaderDisplayMode_s1';
+    const STORAGE_KEY_BOOKMARKS = 'articleReaderBookmarks_s3'; 
+    const STORAGE_KEY_OFFLINE_ARTICLE = 'articleReaderOfflineArticle_s1'; 
+    const STORAGE_KEY_AUTOPLAY = 'articleReaderAutoplay_v1';
+    const STORAGE_KEY_PLAYBACK_POSITIONS = 'articleReaderPlaybackPositions_v1';
+    const STORAGE_KEY_PLAY_QUEUE = 'articleReaderPlayQueue_v1';
+    
+    // --- Helper Functions (Playback, Visualizer, Queue) ---
+    function savePlaybackPosition(articleUrl, type, position) { if (!articleUrl) return; const positions = JSON.parse(localStorage.getItem(STORAGE_KEY_PLAYBACK_POSITIONS) || '{}'); const articleId = btoa(encodeURIComponent(articleUrl)); positions[articleId] = { type, position, timestamp: new Date().getTime() }; localStorage.setItem(STORAGE_KEY_PLAYBACK_POSITIONS, JSON.stringify(positions)); }
+    function getPlaybackPosition(articleUrl) { if (!articleUrl) return null; const positions = JSON.parse(localStorage.getItem(STORAGE_KEY_PLAYBACK_POSITIONS) || '{}'); const articleId = btoa(encodeURIComponent(articleUrl)); if (positions[articleId] && (new Date().getTime() - positions[articleId].timestamp > 30 * 24 * 60 * 60 * 1000)) { delete positions[articleId]; localStorage.setItem(STORAGE_KEY_PLAYBACK_POSITIONS, JSON.stringify(positions)); return null; } return positions[articleId] || null; }
+    function clearPlaybackPosition(articleUrl) { if (!articleUrl) return; const positions = JSON.parse(localStorage.getItem(STORAGE_KEY_PLAYBACK_POSITIONS) || '{}'); const articleId = btoa(encodeURIComponent(articleUrl)); if (positions[articleId]) { delete positions[articleId]; localStorage.setItem(STORAGE_KEY_PLAYBACK_POSITIONS, JSON.stringify(positions)); } }
+    function saveQueue() { const queueToSave = { items: playQueue, currentIndex: currentQueueIndex, isShuffle: audioPlayerState.isShuffle, repeatMode: audioPlayerState.repeatMode, unshuffledQueue: audioPlayerState.unshuffledQueue }; localStorage.setItem(STORAGE_KEY_PLAY_QUEUE, JSON.stringify(queueToSave)); }
+    function loadQueue() { const savedQueue = JSON.parse(localStorage.getItem(STORAGE_KEY_PLAY_QUEUE) || 'null'); if (savedQueue && Array.isArray(savedQueue.items)) { playQueue = savedQueue.items; currentQueueIndex = savedQueue.currentIndex; audioPlayerState.isShuffle = savedQueue.isShuffle || false; audioPlayerState.repeatMode = savedQueue.repeatMode || 'off'; audioPlayerState.unshuffledQueue = savedQueue.unshuffledQueue || []; updateQueueDisplay(); } }
+    function setupVisualizer(audioElement) { if (!visualizerContext.audioCtx) { visualizerContext.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } if (visualizerContext.source) { visualizerContext.source.disconnect(); } visualizerContext.canvas = document.getElementById('audioVisualizer'); visualizerContext.canvasCtx = visualizerContext.canvas.getContext('2d'); visualizerContext.source = visualizerContext.audioCtx.createMediaElementSource(audioElement); visualizerContext.analyser = visualizerContext.audioCtx.createAnalyser(); visualizerContext.analyser.fftSize = 256; visualizerContext.bufferLength = visualizerContext.analyser.frequencyBinCount; visualizerContext.dataArray = new Uint8Array(visualizerContext.bufferLength); visualizerContext.source.connect(visualizerContext.analyser); visualizerContext.analyser.connect(visualizerContext.audioCtx.destination); drawVisualization(); }
+    function drawVisualization() { visualizerContext.animationFrameId = requestAnimationFrame(drawVisualization); visualizerContext.analyser.getByteFrequencyData(visualizerContext.dataArray); const { canvas, canvasCtx, bufferLength, dataArray } = visualizerContext; canvasCtx.clearRect(0, 0, canvas.width, canvas.height); const barWidth = (canvas.width / bufferLength) * 2.5; let barHeight; let x = 0; const themeColor = getComputedStyle(document.documentElement).getPropertyValue('--player-red').trim(); for (let i = 0; i < bufferLength; i++) { barHeight = dataArray[i] / 2; canvasCtx.fillStyle = themeColor; canvasCtx.fillRect(x, (canvas.height - barHeight) / 2, barWidth, barHeight); x += barWidth + 1; } }
+    function stopVisualization() { if (visualizerContext.animationFrameId) { cancelAnimationFrame(visualizerContext.animationFrameId); visualizerContext.animationFrameId = null; } const canvas = document.getElementById('audioVisualizer'); if (canvas) { const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height); } }
+    function openQueueModal() { updateQueueDisplay(); document.getElementById('queueModal').classList.add('show'); }
+    function closeQueueModal() { document.getElementById('queueModal').classList.remove('show'); }
+    function addToQueue(articleData, playNext = false) { if (!articleData || !articleData.url) { showToast("क्यू में जोड़ने के लिए अमान्य लेख डेटा।", "error"); return; } if (playQueue.find(item => item.url === articleData.url)) { showToast("यह आर्टिकल पहले से ही क्यू में है।", "warning"); return; } if (!articleData.title) articleData.title = "अज्ञात शीर्षक"; if (playNext) { playQueue.splice(currentQueueIndex + 1, 0, articleData); showToast(`'${articleData.title.substring(0, 20)}...' अगला बजेगा।`, 'success'); } else { playQueue.push(articleData); showToast(`'${articleData.title.substring(0, 20)}...' क्यू में जोड़ा गया।`, 'success'); } if (!isPlaying && !isPaused && playQueue.length > 0) { startQueuePlayback(); } updateQueueDisplay(); saveQueue(); }
+    function removeFromQueue(index) { if (index > -1 && index < playQueue.length) { const wasCurrentlyPlayingItem = (index === currentQueueIndex); playQueue.splice(index, 1); if (index < currentQueueIndex) { currentQueueIndex--; } else if (index === currentQueueIndex && playQueue.length === 0) { currentQueueIndex = -1; } else if (index === currentQueueIndex && index >= playQueue.length) { currentQueueIndex = playQueue.length > 0 ? playQueue.length -1 : -1; } updateQueueDisplay(); saveQueue(); if (wasCurrentlyPlayingItem) { stopTTS(); if(playQueue.length > 0) { playNextInQueueOrAutoplay(true); } else { hideAudioPlayer(); audioPlayerState.currentArticle = null; } } } }
+    function clearQueue() { playQueue = []; currentQueueIndex = -1; stopTTS(); updateQueueDisplay(); saveQueue(); showToast("क्यू साफ़ कर दिया गया है।", "info"); hideAudioPlayer(); audioPlayerState.currentArticle = null;}
+    
+    function updateQueueDisplay() {
+        const queueList = document.getElementById('queue-list');
+        const queueCount = document.getElementById('queue-count');
+        const viewQueueBtn = document.getElementById('viewQueueBtn');
+        queueList.innerHTML = '';
+
+        if (playQueue.length === 0) {
+            queueList.innerHTML = '<li><p style="text-align:center; padding: 20px 0; font-style:italic;">क्यू खाली है।</p></li>';
+            viewQueueBtn.style.display = 'none';
+        } else {
+            viewQueueBtn.style.display = 'inline-block';
+            queueCount.textContent = playQueue.length;
+            playQueue.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = 'queue-item';
+                if (index === currentQueueIndex && (isPlaying || isPaused)) li.classList.add('playing'); 
+                li.dataset.index = index;
+                li.draggable = true;
+                li.innerHTML = `
+                    <span style="cursor: move;" title="क्रम बदलें">⠿</span>
+                    <span class="queue-item-title" title="प्ले करें: ${item.title}" onclick="handleQueueItemClick(${index})">${item.title}</span>
+                    <button class="delete-btn" title="क्यू से हटाएं" onclick="removeFromQueue(${index})">✗</button>
+                `;
+                queueList.appendChild(li);
+            });
+            addQueueDragDropListeners();
+        }
+    }
+
+    function addQueueDragDropListeners() { const items = document.querySelectorAll('#queue-list .queue-item'); let dragStartIndex; items.forEach(item => { item.addEventListener('dragstart', e => { dragStartIndex = parseInt(e.currentTarget.dataset.index); e.currentTarget.classList.add('dragging'); }); item.addEventListener('dragend', e => e.currentTarget.classList.remove('dragging')); item.addEventListener('dragover', e => e.preventDefault()); item.addEventListener('drop', e => { e.preventDefault(); const dragEndIndex = parseInt(e.currentTarget.dataset.index); const [reorderedItem] = playQueue.splice(dragStartIndex, 1); playQueue.splice(dragEndIndex, 0, reorderedItem); if (dragStartIndex === currentQueueIndex) currentQueueIndex = dragEndIndex; else if (dragStartIndex < currentQueueIndex && dragEndIndex >= currentQueueIndex) currentQueueIndex--; else if (dragStartIndex > currentQueueIndex && dragEndIndex <= currentQueueIndex) currentQueueIndex++; updateQueueDisplay(); saveQueue(); }); }); }
+    
+    function startQueuePlayback() { 
+        if (playQueue.length > 0) {
+            const indexToPlay = currentQueueIndex !== -1 && currentQueueIndex < playQueue.length ? currentQueueIndex : 0;
+            if (indexToPlay < playQueue.length) { 
+                playQueueItem(indexToPlay);
+            } else if (playQueue.length > 0) { 
+                playQueueItem(0);
+            }
+        }
+    }
+    
+    async function handleQueueItemClick(index) {
+        if (index >= 0 && index < playQueue.length) {
+            if (index === currentQueueIndex && (isPlaying || isPaused)) {
+                handlePlayPause(); 
+                return;
+            }
+            await playQueueItem(index);
+            closeQueueModal(); 
+        } else {
+            console.error("Invalid index for queue item click:", index);
+        }
+    }
+
+    async function playQueueItem(index) {
+        if (index >= 0 && index < playQueue.length) {
+            currentQueueIndex = index;
+            saveQueue(); 
+            const articleData = playQueue[index];
+            await createAudioPlayer(articleData); 
+            updateQueueDisplay(); 
+        } else {
+            if (audioPlayerState.repeatMode === 'all' && playQueue.length > 0) {
+                await playQueueItem(0);
+            } else {
+                currentQueueIndex = -1;
+                saveQueue();
+                if (isPlaying || isPaused) { 
+                     showToast("प्लेबैक क्यू समाप्त।", "info");
+                }
+                stopTTS(); 
+                updateQueueDisplay(); 
+                hideAudioPlayer(); 
+                audioPlayerState.currentArticle = null;
+            }
+        }
+    }
+    
+    // --- Audio Player Functions ---
+    async function createAudioPlayer(articleData) {
+        await showSavedArticle(articleData); 
+        const playerContainer = document.getElementById('audioPlayerContainer');
+        playerContainer.style.display = 'flex';
+        playerContainer.querySelector('.play-pause-btn').onclick = handlePlayPause;
+        playerContainer.querySelector('.next-btn').onclick = () => playNextInQueueOrAutoplay();
+        playerContainer.querySelector('.prev-btn').onclick = playPreviousInQueue;
+        playerContainer.querySelector('.shuffle-btn').onclick = toggleShuffle;
+        playerContainer.querySelector('.repeat-btn').onclick = toggleRepeat;
+        playerContainer.querySelector('.progress-bar').oninput = (e) => seekAudio(e.target.value);
+        
+        if (!audioPlayerState.currentArticle || articleData.url !== audioPlayerState.currentArticle.url || (!isPlaying && !isPaused)) {
+            playTTS(articleData);
+        } else {
+            audioPlayerState.currentArticle = articleData; 
+            updatePlayerUI();
+        }
+    }
+
+    function hideAudioPlayer() { const playerContainer = document.getElementById('audioPlayerContainer'); if (playerContainer) { playerContainer.style.display = 'none'; } stopVisualization(); }
+    
+    function handlePlayPause() {
+        if (!audioPlayerState.currentArticle) {
+            if (playQueue.length > 0) {
+                const indexToPlay = currentQueueIndex >= 0 && currentQueueIndex < playQueue.length ? currentQueueIndex : 0;
+                if (indexToPlay < playQueue.length) playQueueItem(indexToPlay);
+                else showToast("चलाने के लिए कोई आर्टिकल नहीं है।", "warning");
+            } else {
+                showToast("चलाने के लिए कोई आर्टिकल नहीं है।", "warning");
+            }
+            return;
+        }
+
+        if (isPlaying) {
+            pauseTTS();
+        } else if (isPaused) {
+            resumeTTS();
+        } else { 
+            playTTS(audioPlayerState.currentArticle);
+        }
+    }
+
+    function updatePlayerUI() {
+        const playerContainer = document.getElementById('audioPlayerContainer');
+        if (!playerContainer) return;
+
+        const playPauseBtn = playerContainer.querySelector('.play-pause-btn');
+        let showPauseIcon = isPlaying && audioPlayerState.currentArticle;
+        playPauseBtn.innerHTML = showPauseIcon ? '⏸️' : '▶️';
+        
+        const shuffleBtn = playerContainer.querySelector('.shuffle-btn');
+        shuffleBtn.classList.toggle('active', audioPlayerState.isShuffle);
+        const repeatBtn = playerContainer.querySelector('.repeat-btn');
+        repeatBtn.classList.toggle('active', audioPlayerState.repeatMode !== 'off');
+        if (audioPlayerState.repeatMode === 'one') {
+            repeatBtn.innerHTML = '🔁<sub style="font-size: 0.5em; vertical-align: top;">1</sub>';
+        } else {
+            repeatBtn.innerHTML = '🔁';
+        }
+        const prevBtn = playerContainer.querySelector('.prev-btn');
+        const nextBtn = playerContainer.querySelector('.next-btn');
+
+        if (playQueue.length > 0 && currentQueueIndex !== -1) { 
+            prevBtn.disabled = currentQueueIndex <= 0;
+            nextBtn.disabled = currentQueueIndex >= playQueue.length - 1 && audioPlayerState.repeatMode !== 'all';
+        } else { 
+            prevBtn.disabled = true;
+            nextBtn.disabled = true;
+        }
+        updateQueueDisplay(); 
+    }
+
+    function playPreviousInQueue() { if (currentQueueIndex > 0) { playQueueItem(currentQueueIndex - 1); } }
+    function toggleShuffle() { audioPlayerState.isShuffle = !audioPlayerState.isShuffle; if (audioPlayerState.isShuffle) { audioPlayerState.unshuffledQueue = [...playQueue]; if (currentQueueIndex !== -1 && currentQueueIndex < playQueue.length) { const head = playQueue.slice(0, currentQueueIndex + 1); const tail = playQueue.slice(currentQueueIndex + 1); for (let i = tail.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [tail[i], tail[j]] = [tail[j], tail[i]]; } playQueue = [...head, ...tail]; } showToast("शफल चालू।", "success"); } else { if (audioPlayerState.unshuffledQueue.length > 0) { const currentUrl = playQueue[currentQueueIndex]?.url; playQueue = [...audioPlayerState.unshuffledQueue]; currentQueueIndex = playQueue.findIndex(item => item.url === currentUrl); if (currentQueueIndex === -1 && playQueue.length > 0) currentQueueIndex = 0; } showToast("शफल बंद।", "info"); } updateQueueDisplay(); saveQueue(); updatePlayerUI(); }
+    function toggleRepeat() { const modes = ['off', 'all', 'one']; const currentIndexVal = modes.indexOf(audioPlayerState.repeatMode); audioPlayerState.repeatMode = modes[(currentIndexVal + 1) % modes.length]; if (audioPlayerState.repeatMode === 'off') showToast("रिपीट बंद।"); if (audioPlayerState.repeatMode === 'all') showToast("पूरी प्लेलिस्ट रिपीट करें।"); if (audioPlayerState.repeatMode === 'one') showToast("यह ट्रैक रिपीट करें।"); updatePlayerUI(); saveQueue(); }
+    function updateAudioProgress(e) { const { duration, currentTime } = e.target; const playerContainer = document.getElementById('audioPlayerContainer'); if (duration && playerContainer && isFinite(duration) && isFinite(currentTime)) { const progressPercent = (currentTime / duration) * 100; const progressBar = playerContainer.querySelector('.progress-bar'); progressBar.value = progressPercent; progressBar.style.backgroundSize = `${progressPercent}% 100%`; playerContainer.querySelector('.current-time').textContent = formatTime(currentTime); playerContainer.querySelector('.total-time').textContent = formatTime(duration); } else if (playerContainer) { playerContainer.querySelector('.current-time').textContent = formatTime(0); playerContainer.querySelector('.total-time').textContent = formatTime(0); }}
+    function seekAudio(value) { if (currentAudioElement && currentAudioElement.duration && isFinite(currentAudioElement.duration)) { currentAudioElement.currentTime = (value / 100) * currentAudioElement.duration; } }
+    function formatTime(seconds) { if (!isFinite(seconds) || seconds < 0) return "0:00"; const floorSeconds = Math.floor(seconds); const m = Math.floor(floorSeconds / 60); const s = floorSeconds % 60; return `${m}:${s.toString().padStart(2, '0')}`; }
+
+    function playTTS(article) {
+        if (!article) {
+            console.warn("playTTS called with null/undefined article");
+            stopTTS(); 
+            hideAudioPlayer();
+            return;
+        }
+        stopTTS(); 
+
+        audioPlayerState.currentArticle = article; 
+        isPlaying = true;
+        isPaused = false;
+        updateMediaSession(article, 'playing');
+        updatePlayerUI();
+
+        const method = localStorage.getItem(STORAGE_KEY_TTS_METHOD) || 'stream';
+        const savedPosition = getPlaybackPosition(article.url);
+
+        if (method === 'local') {
+            playLocalTTSInternal(article, savedPosition);
+        } else {
+            playStreamTTSInternal(article, savedPosition);
+        }
+    }
+
+    function pauseTTS() {
+        if (!isPlaying) return; 
+
+        if (localStorage.getItem(STORAGE_KEY_TTS_METHOD) === 'stream' && currentAudioElement) {
+            currentAudioElement.pause();
+        } else if (localStorage.getItem(STORAGE_KEY_TTS_METHOD) === 'local' && speechApiSupported && localSpeechSynth && localSpeechSynth.speaking) {
+            localSpeechSynth.pause();
+        }
+        isPlaying = false;
+        isPaused = true;
+        updatePlayerUI();
+        updateMediaSession(audioPlayerState.currentArticle, 'paused');
+    }
+
+    function resumeTTS() {
+        if (!isPaused || !audioPlayerState.currentArticle) return; 
+
+        if (localStorage.getItem(STORAGE_KEY_TTS_METHOD) === 'stream' && currentAudioElement) {
+            currentAudioElement.play().catch(e => { console.error("Error resuming stream audio:", e); stopTTS();});
+        } else if (localStorage.getItem(STORAGE_KEY_TTS_METHOD) === 'local' && speechApiSupported && localSpeechSynth && localSpeechSynth.paused) {
+            localSpeechSynth.resume();
+        }
+        isPlaying = true;
+        isPaused = false;
+        updatePlayerUI();
+        updateMediaSession(audioPlayerState.currentArticle, 'playing');
+    }
+
+    function stopTTS() {
+        const currentArticleForPos = audioPlayerState.currentArticle; 
+        if (currentArticleForPos?.url && playQueue.length === 0 && (isPlaying || isPaused)) { 
+            const method = localStorage.getItem(STORAGE_KEY_TTS_METHOD) || 'stream';
+            let chunkIndex = -1;
+            if (method === 'stream' && currentAudioElement) {
+                 chunkIndex = currentArticleTotalChunks - audioQueue.length -1;
+            } else if (method === 'local') {
+                 chunkIndex = currentArticleTotalChunks - localTtsQueue.length -1;
+            }
+            if (chunkIndex >= 0 && chunkIndex < currentArticleTotalChunks -1 ) {
+                savePlaybackPosition(currentArticleForPos.url, method, chunkIndex);
+            }
+        }
+
+        stopVisualization();
+        if (currentStreamController) {
+            currentStreamController.abort();
+            currentStreamController = null;
+        }
+        if (currentAudioElement) {
+            currentAudioElement.pause();
+            currentAudioElement.removeAttribute('src'); 
+            currentAudioElement.load(); 
+            currentAudioElement = null;
+        }
+        if (speechApiSupported && localSpeechSynth) {
+            localSpeechSynth.cancel();
+        }
+
+        isPlaying = false;
+        isPaused = false;
+        audioQueue = [];
+        localTtsQueue = [];
+
+        if (mediaSessionSupported) {
+            navigator.mediaSession.playbackState = 'none';
+            navigator.mediaSession.metadata = null;
+        }
+        updatePlayerUI(); 
+    }
+
+    function playLocalTTSInternal(article, savedPosition = null) {
+        if (!speechApiSupported || !article.textContent) {
+            showToast("बोलने के लिए टेक्स्ट नहीं है या डिवाइस TTS समर्थित नहीं है।", "error");
+            stopTTS(); 
+            return;
+        }
+        const fullText = (article.title || "") + ". " + article.textContent;
+        const allChunks = fullText.match(/[^.!?]+[.!?]*\s*/g) || [fullText];
+        currentArticleTotalChunks = allChunks.length;
+        let startIndex = 0;
+        if (playQueue.length === 0 && savedPosition && savedPosition.type === 'local' && savedPosition.position < allChunks.length) {
+            startIndex = savedPosition.position;
+        }
+        localTtsQueue = allChunks.slice(startIndex);
+        if (localTtsQueue.length === 0) {
+            showToast("बोलने के लिए कोई टेक्स्ट नहीं मिला।", 'error');
+            stopTTS();
+            return;
+        }
+        processLocalTtsQueueInternal();
+    }
+
+    function processLocalTtsQueueInternal() {
+        if (!isPlaying || localTtsQueue.length === 0) { 
+            if (isPlaying && audioPlayerState.currentArticle) { 
+                const currentArticleUrl = audioPlayerState.currentArticle.url;
+                clearPlaybackPosition(currentArticleUrl);
+                if (audioPlayerState.repeatMode === 'one') {
+                    playTTS(audioPlayerState.currentArticle); 
+                    return;
+                }
+                if (stopAtArticleEnd) {
+                    showToast("आर्टिकल समाप्त। स्लीप टाइमर के अनुसार ऑडियो रोका जा रहा है।", "info");
+                    cancelSleepTimer();
+                    stopTTS();
+                } else {
+                    const willPlayNext = playNextInQueueOrAutoplay();
+                    if (!willPlayNext && playQueue.length === 0) { 
+                         stopTTS(); 
+                         hideAudioPlayer();
+                         audioPlayerState.currentArticle = null;
+                    } else if (!willPlayNext) { 
+                        stopTTS();
+                    }
+                }
+            }
+            return;
+        }
+
+        if (localSpeechSynth.speaking || localSpeechSynth.pending) {
+            setTimeout(processLocalTtsQueueInternal, 100);
+            return;
+        }
+        const chunk = localTtsQueue.shift();
+        if (!chunk || !chunk.trim()) {
+            processLocalTtsQueueInternal();
+            return;
+        }
+        const utterance = new SpeechSynthesisUtterance(chunk);
+        const rate = parseFloat(localStorage.getItem(STORAGE_KEY_TTS_RATE) || '1');
+        const voiceURI = localStorage.getItem(STORAGE_KEY_TTS_VOICE);
+        const voices = localSpeechSynth.getVoices();
+        if (voices.length === 0) {
+            showToast("आवाज़ें अभी भी लोड हो रही हैं, कृपया कुछ क्षण प्रतीक्षा करें।", "warning");
+            stopTTS(); 
+            return;
+        }
+        const selectedVoice = voices.find(v => v.voiceURI === voiceURI);
+        utterance.lang = selectedVoice ? selectedVoice.lang : 'hi-IN';
+        utterance.rate = rate;
+        if (selectedVoice) utterance.voice = selectedVoice;
+        utterance.onend = () => { if(isPlaying) setTimeout(processLocalTtsQueueInternal, 50); }; 
+        utterance.onerror = (e) => { if (e.error === 'interrupted') return; console.error("SpeechSynthesisUtterance Error:", e); showToast(`डिवाइस TTS में त्रुटि: ${e.error || 'अज्ञात'}`, 'error', 6000); stopTTS(); };
+        setTimeout(() => { if(isPlaying) localSpeechSynth.speak(utterance); }, 10); 
+    }
+
+    async function playStreamTTSInternal(article, savedPosition = null) {
+        const fullText = (article.title || "") + ". " + article.textContent;
+        const allChunks = fullText.replace(/\s+/g, ' ').trim().match(/.{1,180}/g) || [];
+        currentArticleTotalChunks = allChunks.length;
+        let startIndex = 0;
+        if (playQueue.length === 0 && savedPosition && savedPosition.type === 'stream' && savedPosition.position < allChunks.length) {
+            startIndex = savedPosition.position;
+        }
+        audioQueue = allChunks.slice(startIndex);
+        if (audioQueue.length === 0) {
+            showToast("बोलने के लिए टेक्स्ट नहीं है।", "error");
+            stopTTS();
+            return;
+        }
+        currentStreamController = new AbortController();
+        processAudioQueueInternal();
+    }
+
+    async function processAudioQueueInternal() {
+        if (!isPlaying || audioQueue.length === 0) { 
+             if (isPlaying && audioPlayerState.currentArticle) {
+                const currentArticleUrl = audioPlayerState.currentArticle.url;
+                clearPlaybackPosition(currentArticleUrl);
+                if (audioPlayerState.repeatMode === 'one') {
+                    playTTS(audioPlayerState.currentArticle);
+                    return;
+                }
+                if (stopAtArticleEnd) {
+                    showToast("आर्टिकल समाप्त। स्लीप टाइमर के अनुसार ऑडियो रोका जा रहा है।", "info");
+                    cancelSleepTimer();
+                    stopTTS();
+                } else {
+                    const willPlayNext = playNextInQueueOrAutoplay();
+                     if (!willPlayNext && playQueue.length === 0) {
+                         stopTTS();
+                         hideAudioPlayer();
+                         audioPlayerState.currentArticle = null;
+                    } else if (!willPlayNext) {
+                        stopTTS();
+                    }
+                }
+            }
+            return;
+        }
+        if (isPaused) return; 
+
+        const chunk = audioQueue.shift();
+        try {
+            const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=hi&client=tw-ob`;
+            const proxyUrl = `${MY_PRIVATE_PROXY}/?url=${encodeURIComponent(ttsUrl)}`;
+            const response = await fetch(proxyUrl, { signal: currentStreamController?.signal });
+            if (!response.ok) throw new Error(`API Error ${response.status}`);
+            const blob = await response.blob();
+            if (blob.size === 0) throw new Error("Empty audio data");
+            const audioUrl = URL.createObjectURL(blob);
+            currentAudioElement = new Audio(audioUrl);
+            if (visualizerContext.audioCtx && visualizerContext.audioCtx.state === 'suspended') { visualizerContext.audioCtx.resume(); }
+            setupVisualizer(currentAudioElement);
+            currentAudioElement.addEventListener('timeupdate', updateAudioProgress);
+            currentAudioElement.addEventListener('loadedmetadata', updateAudioProgress);
+            currentAudioElement.playbackRate = parseFloat(localStorage.getItem(STORAGE_KEY_TTS_RATE) || '1');
+            await currentAudioElement.play(); 
+            currentAudioElement.onended = () => { URL.revokeObjectURL(audioUrl); if(isPlaying) processAudioQueueInternal(); };
+            currentAudioElement.onerror = () => { showToast("ऑडियो चलाने में त्रुटि।", "error"); stopTTS(); }
+        } catch (error) { if (error.name !== 'AbortError') { showToast(`स्ट्रीमिंग त्रुटि: ${error.message}`, 'error'); stopTTS(); } }
+    }
+    
+    // --- Core Functions (UI, Data Management etc.) ---
+    function toggleTheme(themeName) { document.body.classList.remove('dark-mode', 'sepia-mode', 'light-mode'); if (themeName === 'dark') document.body.classList.add('dark-mode'); else if (themeName === 'sepia') document.body.classList.add('sepia-mode'); else document.body.classList.add('light-mode'); localStorage.setItem(STORAGE_KEY_THEME, themeName); }
+    function applySavedTheme() { const savedTheme = localStorage.getItem(STORAGE_KEY_THEME) || 'light'; toggleTheme(savedTheme); }
+    function openTool(evt, toolName) { const currentActiveTab = document.querySelector('.tab-link.active'); if (evt && currentActiveTab === evt.currentTarget) return; document.querySelectorAll('.tool-content').forEach(el => el.style.display = 'none'); document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active')); const toolElement = document.getElementById(toolName); if (toolElement) toolElement.style.display = 'block'; const targetTab = evt ? evt.currentTarget : document.querySelector(`.tab-link[onclick*="'${toolName}'"]`); if (targetTab) targetTab.classList.add('active'); if (toolName === 'MyLibrary' || toolName === 'Bookmarks') { if(toolName === 'MyLibrary') { loadLibrary(); populateTagFilter(); } if(toolName === 'Bookmarks') { loadBookmarks(); } document.getElementById('internalNavHistoryContainer').style.display = 'none'; document.getElementById('toggleCrawlBtn').style.display = 'none'; } else if (toolName === 'ArticleExtractor') { updateHistoryButtons(); } }
+    async function fetchWithProxy(url) { const proxyUrl = `${MY_PRIVATE_PROXY}/?url=${encodeURIComponent(url)}`; try { const response = await fetch(proxyUrl, { signal: AbortSignal.timeout(20000) }); if (!response.ok) throw new Error(`प्रॉक्सी सर्वर से जवाब नहीं मिला (स्टेटस: ${response.status})`); return await response.text(); } catch (error) { if (error.name === 'AbortError' || error.name === 'TimeoutError') { throw new Error('अनुरोध में बहुत अधिक समय लगा (टाइमआउट)।'); } throw error; } }
+    
+    function createStoryElement(article, sourceUrl) {
+        const storyDiv = document.createElement('div');
+        storyDiv.className = 'single-story';
+        storyDiv.dataset.textContentForSearch = (article.textContent || "").toLowerCase(); 
+
+        const articleDataForStorage = { 
+            title: article.title || "शीर्षक उपलब्ध नहीं",
+            content: article.content || "",      
+            textContent: article.textContent || "", 
+            byline: article.byline || "उपलब्ध नहीं",
+            url: sourceUrl, 
+            length: article.length,
+            excerpt: article.excerpt,
+            siteName: article.siteName
+        };
+        storyDiv.dataset.articleData = JSON.stringify(articleDataForStorage);
+
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'story-header';
+        const titleH3 = document.createElement('h3');
+        titleH3.textContent = article.title || "शीर्षक उपलब्ध नहीं";
+        const headerButtons = document.createElement('div');
+        headerButtons.className = 'header-buttons';
+        const listenBtn = document.createElement('button');
+        listenBtn.textContent = '▶️ सुनें';
+        listenBtn.title = 'आर्टिकल सुनें';
+        listenBtn.onclick = () => { 
+            clearQueue(); 
+            const dataFromElement = JSON.parse(storyDiv.dataset.articleData);
+            addToQueue(dataFromElement); 
+        };
+        const mp3Btn = document.createElement('button');
+        mp3Btn.innerHTML = '🗣️ MP3';
+        mp3Btn.title = 'MP3 ऑडियो डाउनलोड करें';
+        mp3Btn.onclick = (e) => { if (!article.textContent) { showToast("MP3 बनाने के लिए टेक्स्ट उपलब्ध नहीं है।", "error"); return; } downloadTextAsMp3(article.textContent, article.title || "audio", e.currentTarget); };
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'save-btn';
+        saveBtn.innerHTML = isSaved(sourceUrl) ? '❤️ सेव है' : '🤍 सेव करें';
+        saveBtn.title = isSaved(sourceUrl) ? 'लाइब्रेरी से हटाएं' : 'लाइब्रेरी में सेव करें';
+        if (isSaved(sourceUrl)) saveBtn.classList.add('saved');
+        saveBtn.onclick = () => toggleSaveArticle(articleDataForStorage, sourceUrl, saveBtn); 
+        const moreOptionsBtn = document.createElement('button');
+        moreOptionsBtn.innerHTML = '⋮';
+        moreOptionsBtn.title = 'और विकल्प';
+        moreOptionsBtn.style.fontSize = '1.2em';
+        moreOptionsBtn.onclick = (e) => { e.stopPropagation(); showItemContextMenu(e.currentTarget, articleDataForStorage); }; 
+        headerButtons.append(listenBtn, mp3Btn, saveBtn, moreOptionsBtn);
+        headerDiv.append(titleH3, headerButtons);
+        const wordCount = article.textContent ? article.textContent.split(/\s+/).filter(Boolean).length : 0;
+        const readingTime = Math.ceil(wordCount / 200);
+        const authorP = document.createElement('p');
+        authorP.innerHTML = `<em style="font-size: 0.9em;">लेखक: ${article.byline || 'उपलब्ध नहीं'} | पढ़ने का समय: ~${readingTime} मिनट</em>`;
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'article-body-content';
+        if (article.content) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = article.content;
+            const displayMode = localStorage.getItem(STORAGE_KEY_DISPLAY_MODE) || 'image-text';
+            if (displayMode === 'text-only') {
+                tempDiv.querySelectorAll('img, figure, picture').forEach(el => el.remove());
+            } else {
+                tempDiv.querySelectorAll('img').forEach(img => {
+                    const originalSrc = img.getAttribute('src') || img.dataset.src;
+                    if (originalSrc) {
+                        try { img.src = new URL(originalSrc, sourceUrl).href; } catch (e) { console.warn("Invalid image URL:", originalSrc); }
+                    }
+                    img.loading = 'lazy';
+                });
+            }
+            tempDiv.querySelectorAll('a[href]').forEach(linkElement => {
+                const originalHref = linkElement.getAttribute('href');
+                if (originalHref && !originalHref.startsWith('#') && !originalHref.startsWith('javascript:')) {
+                    try {
+                        const absoluteUrl = new URL(originalHref, sourceUrl).href;
+                        linkElement.style.cssText = 'color: var(--primary-color); text-decoration: underline; cursor: pointer;';
+                        linkElement.title = `रीडर में खोलें: ${absoluteUrl.substring(0,70)}...`;
+                        linkElement.setAttribute('data-reader-target-url', absoluteUrl);
+                        linkElement.href = 'javascript:void(0);';
+                        linkElement.removeAttribute('target');
+                    } catch (e) {
+                        linkElement.target = '_blank';
+                        linkElement.rel = 'noopener noreferrer';
+                    }
+                }
+            });
+            contentDiv.innerHTML = tempDiv.innerHTML;
+        } else {
+            contentDiv.innerHTML = "<p><em>इस आर्टिकल का कंटेंट लोड नहीं हो सका।</em></p>";
+        }
+        storyDiv.innerHTML = ''; 
+        storyDiv.append(headerDiv, authorP, document.createElement('hr'), contentDiv);
+        
+        const playAllBtn = document.getElementById('playAllExtractedBtn');
+        if (playAllBtn && playAllBtn.style.display === 'none' && document.querySelectorAll('#ae_result .single-story').length >=0 ) { 
+            playAllBtn.style.display = 'inline-block';
+        }
+        return storyDiv;
+    }
+
+    async function playAllExtractedArticles() {
+        const resultDiv = document.getElementById('ae_result');
+        const storyElements = resultDiv.querySelectorAll('.single-story');
+
+        if (storyElements.length === 0) {
+            showToast("प्ले करने के लिए कोई आर्टिकल नहीं मिला।", "warning");
+            return;
+        }
+
+        const articleUrlsToProcess = [];
+        storyElements.forEach(storyEl => {
+            try {
+                const articleData = JSON.parse(storyEl.dataset.articleData);
+                if (articleData && articleData.url) {
+                    articleUrlsToProcess.push(articleData.url);
+                }
+            } catch(e) {
+                console.warn("Could not get URL from story element:", storyEl, e);
+            }
+        });
+
+        if (articleUrlsToProcess.length === 0) {
+            showToast("प्ले करने के लिए कोई वैध आर्टिकल URL नहीं मिला।", "error");
+            return;
+        }
+
+        clearQueue(); 
+        showToast(`सभी ${articleUrlsToProcess.length} आर्टिकल को प्रोसेस किया जा रहा है... कृपया प्रतीक्षा करें।`, "info", articleUrlsToProcess.length * 2000); 
+
+        let articlesAddedToQueueCount = 0;
+        const playAllBtn = document.getElementById('playAllExtractedBtn');
+        const originalBtnText = playAllBtn.innerHTML;
+        playAllBtn.innerHTML = 'प्रोसेसिंग...';
+        playAllBtn.disabled = true;
+
+        for (let i = 0; i < articleUrlsToProcess.length; i++) {
+            const url = articleUrlsToProcess[i];
+            showToast(`आर्टिकल ${i + 1}/${articleUrlsToProcess.length} लोड हो रहा है: ${url.substring(0,30)}...`, "info", 3000);
+            try {
+                const html = await fetchWithProxy(url);
+                const doc = new DOMParser().parseFromString(html, "text/html");
+                const baseEl = doc.createElement('base');
+                baseEl.href = url;
+                doc.head.appendChild(baseEl);
+
+                const readableArticle = new Readability(doc.cloneNode(true)).parse();
+
+                if (readableArticle && readableArticle.textContent && readableArticle.title) {
+                    addToQueue({
+                        title: readableArticle.title,
+                        textContent: readableArticle.textContent,
+                        content: readableArticle.content, 
+                        byline: readableArticle.byline,
+                        url: url 
+                    });
+                    articlesAddedToQueueCount++;
+                } else {
+                    console.warn(`आर्टिकल ${url} से कंटेंट नहीं निकाला जा सका।`);
+                    showToast(`आर्टिकल ${url.substring(0,30)}... से कंटेंट नहीं निकाला जा सका।`, "warning", 2000);
+                }
+            } catch (error) {
+                console.error(`आर्टिकल ${url} को प्रोसेस करने में त्रुटि:`, error);
+                showToast(`आर्टिकल ${url.substring(0,30)}... को प्रोसेस करने में त्रुटि।`, "error", 2000);
+            }
+            if (articlesAddedToQueueCount > 0 && articlesAddedToQueueCount % 5 === 0) {
+                 await new Promise(resolve => setTimeout(resolve, 200));
+            }
+        }
+        
+        playAllBtn.innerHTML = originalBtnText;
+        playAllBtn.disabled = false;
+
+        if (articlesAddedToQueueCount > 0) {
+            startQueuePlayback(); 
+            showToast(`${articlesAddedToQueueCount} आर्टिकल सफलतापूर्वक क्यू में जोड़े गए और प्लेबैक शुरू हुआ!`, "success");
+            openTool(null, 'MyLibrary'); 
+        } else {
+            showToast("कोई भी आर्टिकल प्लेबैक के लिए क्यू में नहीं जोड़ा जा सका।", "error");
+        }
+    }
+
+
+    document.addEventListener('click', function(event) { let targetElement = event.target.closest('a[data-reader-target-url]'); if (targetElement && document.getElementById('ae_result').contains(targetElement)) { event.preventDefault(); event.stopPropagation(); const urlToLoad = targetElement.getAttribute('data-reader-target-url'); showToast(`आंतरिक लिंक लोड हो रहा है...`, 'info'); document.getElementById('articleUrl').value = urlToLoad; document.getElementById('crawlSiteToggle').checked = false; if (!isNavigatingHistory) addToHistory(urlToLoad); ae_startExtraction(true); window.scrollTo(0,0); } });
+    async function downloadTextAsMp3(text, filename, btn) { const originalText = btn ? btn.innerHTML : ''; if (btn) { btn.innerHTML = 'प्रोसेसिंग...'; btn.disabled = true; } showToast('MP3 निर्माण शुरू हो रहा है...', 'info'); const cleanedText = (text || "").replace(/\s+/g, ' ').trim(); if (!cleanedText) { showToast('MP3 बनाने के लिए कोई टेक्स्ट नहीं है।', 'error'); if (btn) { btn.innerHTML = originalText; btn.disabled = false; } return; } const chunks = cleanedText.match(/.{1,180}/g) || [cleanedText]; const audioBlobs = []; try { for (let i = 0; i < chunks.length; i++) { if (btn) btn.innerHTML = `भाग ${i+1}/${chunks.length}...`; const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunks[i])}&tl=hi&client=tw-ob`; const audioResponse = await fetch(`${MY_PRIVATE_PROXY}/?url=${encodeURIComponent(ttsUrl)}`, { signal: AbortSignal.timeout(20000) }); if (!audioResponse.ok) throw new Error(`TTS API त्रुटि (स्टेटस: ${audioResponse.status})`); const blob = await audioResponse.blob(); if (blob.size === 0 || !blob.type.startsWith('audio/')) throw new Error('अमान्य ऑडियो डेटा'); audioBlobs.push(blob); } const combinedBlob = new Blob(audioBlobs, { type: 'audio/mpeg' }); const downloadUrl = URL.createObjectURL(combinedBlob); const a = document.createElement('a'); a.href = downloadUrl; const safeFilename = (filename || "audio").replace(/[^a-z0-9\u0900-\u097F\s._-]/gi, '_').replace(/\s+/g, '_'); a.download = `${safeFilename}.mp3`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(downloadUrl); showToast("MP3 डाउनलोड शुरू!", "success"); } catch (error) { showToast(`MP3 त्रुटि: ${error.message}`, 'error', 7000); } finally { if (btn) { btn.innerHTML = originalText; btn.disabled = false; } } }
+    async function ae_startExtraction(isNavigationAction = false) { stopTTS(); const urlInput = document.getElementById('articleUrl').value.trim(); const loadingDiv = document.getElementById('ae_loading'); const resultDiv = document.getElementById('ae_result'); if (!urlInput) { showToast('कृपया एक URL डालें।', 'error'); return; } let initialUrlObj; try { initialUrlObj = new URL(urlInput); } catch (_) { showToast('अमान्य URL.', 'error'); return; } if (!isNavigatingHistory && !isNavigationAction) { addToHistory(initialUrlObj.href); } loadingDiv.style.display = 'block'; resultDiv.innerHTML = ''; allFoundLinks = new Set(); currentProcessIndex = 0; isProcessing = false; try { loadingDiv.innerText = "पेज का विश्लेषण..."; const shouldCrawl = !isNavigationAction && document.getElementById('crawlSiteToggle').checked; const html = await fetchWithProxy(initialUrlObj.href); const doc = new DOMParser().parseFromString(html, "text/html"); const base = new URL(initialUrlObj.href); const article = new Readability(doc.cloneNode(true)).parse(); if (article && article.content && article.title) { resultDiv.appendChild(createStoryElement(article, initialUrlObj.href)); allFoundLinks.add(initialUrlObj.href); } else { console.warn("Readability failed or insufficient content for:", initialUrlObj.href, article); if (resultDiv.innerHTML === '') { resultDiv.innerHTML = `<p>इस URL से आर्टिकल कंटेंट नहीं निकाला जा सका: <a href="${initialUrlObj.href}" target="_blank" rel="noopener noreferrer">${initialUrlObj.href}</a>. कृपया मूल लिंक पर प्रयास करें।</p>`;} } if (shouldCrawl) { loadingDiv.innerText = "संबंधित लेखों के लिए लिंक्स खोज रहा है..."; const linksToProcess = new Set(); doc.querySelectorAll('a[href]').forEach(a => { try { const href = a.getAttribute('href'); if (!href || href.startsWith('#') || href.startsWith('javascript:')) return; const absoluteUrl = new URL(href, base.href); if (absoluteUrl.hostname === base.hostname) { linksToProcess.add(absoluteUrl.href.split('#')[0]); } } catch (e) {} }); const initialSize = allFoundLinks.size; allFoundLinks = new Set([...allFoundLinks, ...linksToProcess]); if (allFoundLinks.size > initialSize || (allFoundLinks.size === 0 && linksToProcess.size > 0 && (!article || !article.content)) ) { processNextLink(); } else { loadingDiv.style.display = 'none'; if (resultDiv.innerHTML === '' && (!article || !article.content)) { resultDiv.innerHTML = `<p>कोई पठनीय आर्टिकल नहीं मिला।</p>`; } } } else { loadingDiv.style.display = 'none'; if (!article || !article.content && resultDiv.innerHTML === '') { resultDiv.innerHTML = `<p>इस URL से आर्टिकल नहीं निकाला जा सका।</p>`; } } } catch (error) { resultDiv.innerHTML = `<p>त्रुटि: ${error.message}</p>`; showToast(`त्रुटि: ${error.message}`, 'error'); loadingDiv.style.display = 'none'; } }
+    async function processNextLink() { if (isProcessing) return; const linksArray = Array.from(allFoundLinks); if (currentProcessIndex >= linksArray.length) { document.getElementById('ae_loading').style.display = 'none'; if(document.getElementById('ae_result').innerHTML === '') { document.getElementById('ae_result').innerHTML = `<p>कोई पठनीय आर्टिकल नहीं मिला।</p>`; } return; } const link = linksArray[currentProcessIndex]; if (currentProcessIndex === 0 && document.querySelector('#ae_result .single-story')) { currentProcessIndex++; processNextLink(); return; } isProcessing = true; const loadingDiv = document.getElementById('ae_loading'); loadingDiv.innerText = `आर्टिकल (${currentProcessIndex + 1}/${linksArray.length}) लोड हो रहा है: ${link.substring(0,50)}...`; try { const html = await fetchWithProxy(link); const doc = new DOMParser().parseFromString(html, "text/html"); doc.head.insertAdjacentHTML('beforeend', `<base href="${link}">`); const article = new Readability(doc, {charThreshold: 500}).parse(); if (article && article.content && article.title) { document.getElementById('ae_result').appendChild(createStoryElement(article, link)); } else {console.warn("Readability failed or insufficient content for (crawled):", link, article);} } catch (e) { console.warn(`Could not process article from ${link}: ${e.message}`); } finally { currentProcessIndex++; isProcessing = false; setTimeout(processNextLink, 50); } }
+    function toggleDepthSelector() { document.getElementById('depthSelectorContainer').style.display = document.getElementById('crawlSiteToggle').checked ? 'inline-block' : 'none'; }
+    function clearResults() { stopTTS(); document.getElementById('ae_result').innerHTML = ''; document.getElementById('articleUrl').value = ''; allFoundLinks.clear(); currentProcessIndex = 0; navigationHistory = []; currentHistoryIndex = -1; updateHistoryButtons(); showToast("परिणाम साफ़।"); hideAudioPlayer(); audioPlayerState.currentArticle = null; const playAllBtn = document.getElementById('playAllExtractedBtn'); if (playAllBtn) { playAllBtn.style.display = 'none'; } }
+    function clearUrlInput() { const i = document.getElementById('articleUrl'); i.value = ''; i.focus(); }
+    function filterExtractedArticles() { const term = document.getElementById('extractorSearch').value.toLowerCase(); document.querySelectorAll('.single-story').forEach(div => { const text = (div.textContent || "").toLowerCase(); div.style.display = text.includes(term) ? 'block' : 'none'; }); }
+    function clearExtractorSearch() { const i = document.getElementById('extractorSearch'); i.value = ''; filterExtractedArticles(); }
+    function getLibrary() { return JSON.parse(localStorage.getItem(STORAGE_KEY_LIBRARY) || '{}'); }
+    function saveLibrary(library) { localStorage.setItem(STORAGE_KEY_LIBRARY, JSON.stringify(library)); updateLibraryCount(); populateTagFilter(); if(document.getElementById('MyLibrary').style.display === 'block') loadLibrary(); }
+    function isSaved(url) { return !!getLibrary()[btoa(encodeURIComponent(url))]; }
+    function toggleSaveArticle(articleData, url, btn) { 
+        const lib = getLibrary(); 
+        const id = btoa(encodeURIComponent(url)); 
+        if (lib[id]) { 
+            delete lib[id]; 
+            btn.innerHTML = '🤍 सेव करें'; btn.classList.remove('saved'); 
+        } else { 
+            lib[id] = { ...articleData, savedAt: new Date().toISOString(), tags: [], isRead: false }; 
+            btn.innerHTML = '❤️ सेव है'; btn.classList.add('saved'); 
+        } 
+        saveLibrary(lib); 
+    }
+    function toggleReadStatus(storyId, articleUrl) { const lib = getLibrary(); if (lib[storyId]) { lib[storyId].isRead = !lib[storyId].isRead; saveLibrary(lib); loadLibrary(); } }
+    function loadLibrary() { const library = getLibrary(); const listDiv = document.getElementById('library-list'); const searchTerm = document.getElementById('librarySearch').value.toLowerCase(); const sortOrder = document.getElementById('librarySort').value; const selectedTag = document.getElementById('libraryTagFilter')?.value || ""; const selectedReadStatus = document.getElementById('libraryReadStatusFilter')?.value || "all"; const clearFiltersBtn = document.getElementById('clearLibraryFiltersBtn'); if (clearFiltersBtn) { clearFiltersBtn.style.display = (searchTerm || selectedTag || selectedReadStatus !== 'all') ? 'inline-block' : 'none'; } let itemsArray = Object.values(library).map(item => ({...item, id: btoa(encodeURIComponent(item.url))})); if (searchTerm) itemsArray = itemsArray.filter(item => item.title?.toLowerCase().includes(searchTerm)); if (selectedTag) itemsArray = itemsArray.filter(item => item.tags?.includes(selectedTag)); if (selectedReadStatus === "read") itemsArray = itemsArray.filter(item => item.isRead === true); else if (selectedReadStatus === "unread") itemsArray = itemsArray.filter(item => !item.isRead); itemsArray.sort((a, b) => { switch (sortOrder) { case 'date_asc': return new Date(a.savedAt) - new Date(b.savedAt); case 'title_asc': return (a.title || "").localeCompare(b.title || "", 'hi'); case 'title_desc': return (b.title || "").localeCompare(a.title || "", 'hi'); default: return new Date(b.savedAt) - new Date(a.savedAt); } }); listDiv.innerHTML = ''; if (itemsArray.length === 0) { listDiv.innerHTML = '<p>लाइब्रेरी खाली है या कोई परिणाम नहीं मिला।</p>'; } else { itemsArray.forEach(itemData => { const itemDiv = document.createElement('div'); itemDiv.className = 'library-item'; itemDiv.id = `lib-item-${itemData.id}`; itemDiv.innerHTML = ` <input type="checkbox" class="playlist-checkbox" data-url="${itemData.url}" onchange="updatePlaylistControls()" title="प्लेलिस्ट में जोड़ें"> <span class="item-title">${itemData.title || "N/A"}</span> <div class="item-controls"> <span class="read-status-toggle" title="${itemData.isRead ? 'अपठित करें' : 'पढ़ा करें'}">${itemData.isRead ? '✅' : '📖'}</span> <button class="item-more-options-btn">⋮</button> <button class="delete-btn">हटाएँ</button> </div> `; itemDiv.querySelector('.item-title').onclick = () => {
+        const existingQueueIndex = playQueue.findIndex(pqItem => pqItem.url === itemData.url);
+        if (existingQueueIndex !== -1) {
+            playQueueItem(existingQueueIndex);
+        } else {
+            clearQueue(); 
+            addToQueue(itemData); 
+        }
+    }; itemDiv.querySelector('.read-status-toggle').onclick = (e) => { e.stopPropagation(); toggleReadStatus(itemData.id, itemData.url); }; itemDiv.querySelector('.delete-btn').onclick = (e) => { e.stopPropagation(); deleteLibraryItem(itemData.id, itemData.url); }; itemDiv.querySelector('.item-more-options-btn').onclick = (e) => { e.stopPropagation(); showItemContextMenu(e.currentTarget, itemData); }; listDiv.appendChild(itemDiv); }); } updatePlaylistControls(); }
+    function showItemContextMenu(button, articleData) { document.querySelectorAll('.item-context-menu').forEach(menu => menu.remove()); const menu = document.createElement('div'); menu.className = 'item-context-menu'; menu.innerHTML = ` <button class="play-next-btn">▶️ अगला चलाएं</button> <button class="add-to-queue-btn">⏯️ क्यू में जोड़ें</button> `; document.body.appendChild(menu); menu.querySelector('.play-next-btn').addEventListener('click', () => { addToQueue(articleData, true); menu.remove(); }); menu.querySelector('.add-to-queue-btn').addEventListener('click', () => { addToQueue(articleData, false); menu.remove(); }); const rect = button.getBoundingClientRect(); const menuHeight = menu.offsetHeight; const menuWidth = menu.offsetWidth; let top = rect.bottom; let left = rect.right - menuWidth; if (top + menuHeight > window.innerHeight) { top = rect.top - menuHeight; } if (left < 0) { left = rect.left; } menu.style.top = `${top + window.scrollY}px`; menu.style.left = `${left + window.scrollX}px`; menu.style.display = 'block'; setTimeout(() => { document.addEventListener('click', () => menu.remove(), { once: true }); }, 0); }
+    function deleteLibraryItem(storyId, url) { const lib = getLibrary(); delete lib[storyId]; if (navigator.serviceWorker?.controller) { navigator.serviceWorker.controller.postMessage({ action: 'delete-article-from-cache', url: url }); } saveLibrary(lib); const view = document.getElementById('library-article-view'); if (view && view.dataset.currentArticleUrl === url) { view.style.display = 'none'; view.dataset.hasContent = 'false'; hideAudioPlayer(); if(audioPlayerState.currentArticle && audioPlayerState.currentArticle.url === url) { stopTTS(); audioPlayerState.currentArticle = null; } } showToast("हटाया गया।"); }
+    function clearLibraryFilters() { document.getElementById('librarySearch').value = ''; document.getElementById('libraryTagFilter').value = ''; document.getElementById('libraryReadStatusFilter').value = 'all'; loadLibrary(); showToast("सभी फ़िल्टर साफ़।"); }
+    async function showSavedArticle(articleData) { const view = document.getElementById('library-article-view'); const textEl = document.getElementById('lib-article-text-content'); document.getElementById('lib-article-title').textContent = articleData.title; document.getElementById('lib-article-original-url').href = articleData.url; document.getElementById('lib-article-original-url').textContent = articleData.url.substring(0, 60) + '...'; textEl.textContent = articleData.textContent || "टेक्स्ट नहीं मिला।"; document.getElementById('shareLibArticleBtn').onclick = () => shareLibraryArticle(articleData); const tagContainer = document.getElementById('lib-article-tags-container'); const isLibraryArticle = isSaved(articleData.url); if (isLibraryArticle) { tagContainer.style.display = 'block'; const library = getLibrary(); const libraryItem = library[btoa(encodeURIComponent(articleData.url))]; displayArticleTags(articleData.url, libraryItem ? libraryItem.tags : []); } else { tagContainer.style.display = 'none'; } applySavedLibraryFontSize(); view.style.display = 'block'; view.dataset.currentArticleUrl = articleData.url; view.dataset.hasContent = 'true'; document.querySelectorAll('.library-item.selected').forEach(el => el.classList.remove('selected')); if (isLibraryArticle) { document.getElementById(`lib-item-${btoa(encodeURIComponent(articleData.url))}`)?.classList.add('selected'); if (!getLibrary()[btoa(encodeURIComponent(articleData.url))].isRead) { toggleReadStatus(btoa(encodeURIComponent(articleData.url)), articleData.url); } } openTool(null, 'MyLibrary'); document.getElementById('library-content-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    function populateTagFilter() { const tags = new Set(); Object.values(getLibrary()).forEach(item => item.tags?.forEach(tag => tags.add(tag))); const sel = document.getElementById('libraryTagFilter'); const val = sel.value; sel.innerHTML = '<option value="">सभी टैग</option>'; Array.from(tags).sort().forEach(tag => sel.innerHTML += `<option value="${tag}">${tag}</option>`); sel.value = val; }
+    function displayArticleTags(url, tags) { const div = document.getElementById('lib-article-current-tags'); div.innerHTML = tags?.length ? '' : '<em>कोई टैग नहीं।</em>'; tags?.forEach(tag => { const span = document.createElement('span'); span.className = 'tag-item'; span.textContent = tag; const btn = document.createElement('button'); btn.className = 'tag-remove-btn'; btn.textContent = '✗'; btn.onclick = () => removeTagFromCurrentLibraryArticle(tag); span.appendChild(btn); div.appendChild(span); }); }
+    function addTagToCurrentLibraryArticle() { const input = document.getElementById('lib-new-tag-input'); const url = document.getElementById('library-article-view').dataset.currentArticleUrl; const name = input.value.trim().toLowerCase(); if (!url || !name) return; const lib = getLibrary(); const id = btoa(encodeURIComponent(url)); if (lib[id]) { lib[id].tags = lib[id].tags || []; if (!lib[id].tags.includes(name)) { lib[id].tags.push(name); saveLibrary(lib); displayArticleTags(url, lib[id].tags); input.value = ''; } } }
+    function removeTagFromCurrentLibraryArticle(tagName) { const url = document.getElementById('library-article-view').dataset.currentArticleUrl; if (!url || !tagName) return; const lib = getLibrary(); const id = btoa(encodeURIComponent(url)); if (lib[id]?.tags) { lib[id].tags = lib[id].tags.filter(t => t !== tagName); saveLibrary(lib); displayArticleTags(url, lib[id].tags); } }
+    async function copyLibraryArticleText() { const textEl = document.getElementById('lib-article-text-content'); const titleEl = document.getElementById('lib-article-title'); const urlEl = document.getElementById('lib-article-original-url'); if (!textEl || !titleEl || !urlEl) { showToast('कॉपी करने के लिए आवश्यक तत्व नहीं मिले।', 'error'); return; } const title = titleEl.textContent || "कोई शीर्षक नहीं"; const url = urlEl.href || "कोई URL नहीं"; const content = textEl.textContent || ""; if (content.trim() === "") { showToast("कॉपी करने के लिए कोई टेक्स्ट उपलब्ध नहीं है।", 'warning'); return; } const textToCopy = `शीर्षक: ${title}\nURL: ${url}\n\n${content}`; try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(textToCopy); showToast('आर्टिकल टेक्स्ट सफलतापूर्वक कॉपी हुआ!', 'success'); } else { const textArea = document.createElement('textarea'); textArea.value = textToCopy; textArea.style.position = 'fixed'; textArea.style.top = '-9999px'; textArea.style.left = '-9999px'; document.body.appendChild(textArea); textArea.focus(); textArea.select(); document.execCommand('copy'); document.body.removeChild(textArea); showToast('आर्टिकल टेक्स्ट कॉपी हुआ (fallback method)!', 'success'); } } catch (err) { console.error('कॉपी करने में विफल:', err); showToast('कॉपी विफल। ब्राउज़र ने अनुमति नहीं दी।', 'error'); } }
+    async function shareLibraryArticle(articleData) { let shareText = `शीर्षक: ${articleData.title}\nURL: ${articleData.url}\n\n${(articleData.textContent || "").substring(0, 1500)}...`; const data = { title: articleData.title, text: shareText, url: articleData.url }; if (navigator.share) { try { await navigator.share(data); } catch (e) {console.warn("Share API error:", e)} } else displayFallbackShareOptions(data); }
+    function displayFallbackShareOptions(data, isBulkShare = false) { const existingModal = document.querySelector('.fallback-share-modal'); if (existingModal) existingModal.remove(); const cont = document.createElement('div'); cont.className = 'fallback-share-modal'; let modalContent = `<button class="settings-close-btn" style="float:right; padding:0; line-height:1;" onclick="this.parentElement.remove()">×</button><h4>शेयर करें</h4><textarea id="fallback-share-text" readonly>${data.text}</textarea><div style="margin-top: 10px;"><button class="tool-btn" style="margin-top:0; background-color:var(--success-color);" onclick="copyFallbackText()">टेक्स्ट कॉपी करें</button>`; if (!isBulkShare && data.url) { modalContent += `<a href="mailto:?subject=${encodeURIComponent(data.title)}&body=${encodeURIComponent(data.url)}" class="tool-btn-secondary" style="margin-top:0;">ईमेल</a><a href="https://wa.me/?text=${encodeURIComponent(data.title + '\n' + data.url)}" data-action="share/whatsapp/share" target="_blank" class="tool-btn-secondary" style="margin-top:0;">व्हाट्सएप</a>`; } modalContent += `</div>`; cont.innerHTML = modalContent; document.body.appendChild(cont); }
+    function copyFallbackText() { const textArea = document.getElementById('fallback-share-text'); if (textArea) { textArea.select(); textArea.setSelectionRange(0, 999999); try { const successful = document.execCommand('copy'); if (successful) showToast('टेक्स्ट क्लिपबोर्ड पर कॉपी हुआ!', 'success'); else showToast('कॉपी करने में विफल।', 'error'); } catch (err) { showToast('कॉपी करने में विफल।', 'error'); } } }
+    function updateLibraryCount() { document.getElementById('library-count').textContent = `(${Object.keys(getLibrary()).length})`; }
+    function getBookmarks() { return JSON.parse(localStorage.getItem(STORAGE_KEY_BOOKMARKS) || '[]'); }
+    function saveBookmarks(bookmarks) { localStorage.setItem(STORAGE_KEY_BOOKMARKS, JSON.stringify(bookmarks)); updateBookmarkCount(); loadBookmarks(); populateBookmarkFolderSelectors(); }
+    function addBookmark() { const nameInput = document.getElementById('bookmarkName'); const urlInput = document.getElementById('bookmarkUrl'); const folderSelect = document.getElementById('bookmarkAssignFolder'); const name = nameInput.value.trim(); const url = urlInput.value.trim(); const folder = folderSelect.value; if (!url) { showToast('कृपया URL डालें', 'error'); return; } const bookmarks = getBookmarks(); bookmarks.push({ name: name || url, url: url, addedAt: new Date().toISOString(), folder: folder }); saveBookmarks(bookmarks); nameInput.value = ''; urlInput.value = ''; showToast('बुकमार्क जोड़ा गया!', 'success'); }
+    function loadBookmarks() { const folderFilter = document.getElementById('bookmarkFolderFilter').value; let bookmarks = getBookmarks(); if (folderFilter) { bookmarks = bookmarks.filter(bm => bm.folder === folderFilter); } const list = document.getElementById('bookmark-list'); list.innerHTML = ''; if (bookmarks.length === 0) { list.innerHTML = '<p>कोई बुकमार्क नहीं मिला।</p>'; } else { bookmarks.forEach((bm, index) => { const div = document.createElement('div'); div.className = 'bookmark-item'; div.innerHTML = `<span class="item-title" title="${bm.url}">${bm.name}</span><button class="delete-btn">हटाएँ</button>`; div.querySelector('.item-title').onclick = () => { document.getElementById('articleUrl').value = bm.url; openTool(null, 'ArticleExtractor'); ae_startExtraction(); }; div.querySelector('.delete-btn').onclick = () => { const allBms = getBookmarks(); allBms.splice(allBms.findIndex(b => b.url === bm.url && b.addedAt === bm.addedAt), 1); saveBookmarks(allBms); }; list.appendChild(div); }); } updateBookmarkCount(); }
+    function getBookmarkFolders() { const bookmarks = getBookmarks(); const folders = new Set(['Default']); bookmarks.forEach(bm => { if(bm.folder) folders.add(bm.folder) }); return Array.from(folders).sort(); }
+    function populateBookmarkFolderSelectors() { const folders = getBookmarkFolders(); const filterSelect = document.getElementById('bookmarkFolderFilter'); const assignSelect = document.getElementById('bookmarkAssignFolder'); const currentFilter = filterSelect.value; const currentAssign = assignSelect.value; filterSelect.innerHTML = '<option value="">सभी फ़ोल्डर</option>'; assignSelect.innerHTML = ''; folders.forEach(folder => { filterSelect.innerHTML += `<option value="${folder}">${folder}</option>`; assignSelect.innerHTML += `<option value="${folder}">${folder}</option>`; }); filterSelect.value = currentFilter; assignSelect.value = currentAssign || 'Default'; }
+    function createBookmarkFolder() { const nameInput = document.getElementById('newBookmarkFolderName'); const newFolder = nameInput.value.trim(); if (newFolder) { const folders = getBookmarkFolders(); if (!folders.includes(newFolder)) { const filterSelect = document.getElementById('bookmarkFolderFilter'); const assignSelect = document.getElementById('bookmarkAssignFolder'); filterSelect.innerHTML += `<option value="${newFolder}">${newFolder}</option>`; assignSelect.innerHTML += `<option value="${newFolder}">${newFolder}</option>`; showToast(`फ़ोल्डर '${newFolder}' बनाया गया!`, 'success'); nameInput.value = ''; } else { showToast('यह फ़ोल्डर पहले से मौजूद है।', 'warning'); } } }
+    function updateBookmarkCount() { document.getElementById('bookmark-count').textContent = `(${getBookmarks().length})`; }
+    function changeFontSize(d) { const el = document.getElementById('ae_result'); let s = parseFloat(window.getComputedStyle(el).fontSize) + d; el.style.fontSize = `${Math.max(10, Math.min(30, s))}px`; localStorage.setItem(STORAGE_KEY_FONT_SIZE, el.style.fontSize); }
+    function applySavedFontSize() { const size = localStorage.getItem(STORAGE_KEY_FONT_SIZE); if (size) document.getElementById('ae_result').style.fontSize = size; }
+    function changeLibraryFontSize(d) { const el = document.getElementById('lib-article-text-content'); let s = parseFloat(window.getComputedStyle(el).fontSize) + d; el.style.fontSize = `${Math.max(10, Math.min(30, s))}px`; localStorage.setItem(STORAGE_KEY_LIBRARY_FONT_SIZE, el.style.fontSize); }
+    function applySavedLibraryFontSize() { const size = localStorage.getItem(STORAGE_KEY_LIBRARY_FONT_SIZE); if (size) document.getElementById('lib-article-text-content').style.fontSize = size; }
+    function setDisplayMode(m) { currentDisplayMode = m; localStorage.setItem(STORAGE_KEY_DISPLAY_MODE,m); showToast(`डिस्प्ले मोड बदला गया। कंटेंट को फिर से निकालने पर लागू होगा।`, 'info');}
+    function applySavedDisplayMode() { const m=localStorage.getItem(STORAGE_KEY_DISPLAY_MODE)||'image-text'; currentDisplayMode = m; document.getElementById('displayModeSetting').value = m;}
+    function showToast(msg, type='info', dur=3000, actions=null) { const cont = document.getElementById('toast-container'); const t = document.createElement('div'); t.className = `toast-notification ${type}`; t.textContent = msg; if (actions) { const actionsDiv = document.createElement('div'); actionsDiv.className = 'toast-actions'; actions.forEach(action => { const btn = document.createElement('button'); btn.textContent = action.text; btn.onclick = () => { action.callback(); t.remove(); }; actionsDiv.appendChild(btn); }); t.appendChild(actionsDiv); } cont.appendChild(t); setTimeout(() => t.classList.add('show'), 100); setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 500); }, dur); }
+    function scrollToTop() { window.scrollTo({top: 0, behavior: 'smooth'}); }
+    window.onscroll = function() { const btn = document.getElementById("backToTopBtn"); if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) { btn.style.display = "block"; } else { btn.style.display = "none"; } };
+    function addToHistory(url) { if (currentHistoryIndex < navigationHistory.length - 1) navigationHistory = navigationHistory.slice(0, currentHistoryIndex + 1); if (navigationHistory.at(-1) !== url) { navigationHistory.push(url); currentHistoryIndex = navigationHistory.length - 1; } updateHistoryButtons(); }
+    function updateHistoryButtons() { const backBtn = document.getElementById('historyBackBtn'); const fwdBtn = document.getElementById('historyForwardBtn'); const cont = document.getElementById('internalNavHistoryContainer'); cont.style.display = document.getElementById('ArticleExtractor').style.display === 'block' && navigationHistory.length > 1 ? 'flex' : 'none'; backBtn.disabled = currentHistoryIndex <= 0; fwdBtn.disabled = currentHistoryIndex >= navigationHistory.length - 1; }
+    function navigateHistory(dir) { if (isNavigatingHistory) return; isNavigatingHistory = true; const newIndex = currentHistoryIndex + dir; if (newIndex >= 0 && newIndex < navigationHistory.length) { currentHistoryIndex = newIndex; document.getElementById('articleUrl').value = navigationHistory[newIndex]; ae_startExtraction(true).finally(() => isNavigatingHistory = false); } else { isNavigatingHistory = false; } }
+    function migrateLibraryData() {}
+    function updateTTSControlVisibility() { const method = localStorage.getItem(STORAGE_KEY_TTS_METHOD) || 'stream'; const showVoiceSelector = method === 'local' && speechApiSupported; document.getElementById('libVoiceSelectorContainer').style.display = showVoiceSelector ? 'flex' : 'none'; document.getElementById('voiceSelectorContainerSetting').style.display = showVoiceSelector ? 'flex' : 'none'; }
+    function setTTSMethod(method) { localStorage.setItem(STORAGE_KEY_TTS_METHOD, method); stopTTS(); updateTTSControlVisibility(); showToast(`ऑडियो स्रोत अब ${method === 'stream' ? 'Google स्ट्रीम' : 'डिवाइस TTS'} है।`, 'success'); }
+    function setTTSRate(rate) { const rateValue = parseFloat(rate).toFixed(1); localStorage.setItem(STORAGE_KEY_TTS_RATE, rateValue); if (isPlaying && localStorage.getItem(STORAGE_KEY_TTS_METHOD) === 'local' && speechApiSupported && localSpeechSynth && localSpeechSynth.speaking) { stopTTS(); showToast("नई गति लागू करने के लिए ऑडियो को फिर से शुरू करें।", "info"); } if (currentAudioElement) { currentAudioElement.playbackRate = rateValue; } document.getElementById('ttsRateDisplaySetting').textContent = `${rateValue}x`; }
+    function setTTSVoice(voiceURI) { localStorage.setItem(STORAGE_KEY_TTS_VOICE, voiceURI); document.getElementById('libVoiceSelector').value = voiceURI; document.getElementById('voiceSelectorSetting').value = voiceURI; if(isPlaying && localStorage.getItem(STORAGE_KEY_TTS_METHOD) === 'local') { stopTTS(); showToast("नई आवाज़ लागू करने के लिए ऑडियो को फिर से शुरू करें।", "info");} }
+    function populateVoiceSelector() { if (!speechApiSupported || !localSpeechSynth) return; const voices = localSpeechSynth.getVoices(); if (voices.length === 0) { console.warn("getVoices() returned an empty array. Retrying in 1s."); setTimeout(populateVoiceSelector, 1000); return; } const libVoiceSelector = document.getElementById('libVoiceSelector'); const settingsVoiceSelector = document.getElementById('voiceSelectorSetting'); const currentLibVoice = libVoiceSelector.value; const currentSettingsVoice = settingsVoiceSelector.value; libVoiceSelector.innerHTML = ''; settingsVoiceSelector.innerHTML = ''; const hindiVoices = voices.filter(v => v.lang.toLowerCase().startsWith('hi')); const otherVoices = voices.filter(v => !v.lang.toLowerCase().startsWith('hi')); const createOption = (voice) => `<option value="${voice.voiceURI}">${voice.name} (${voice.lang})</option>`; let optionsHTML = ''; if (hindiVoices.length > 0) { optionsHTML += `<optgroup label="हिन्दी">` + hindiVoices.map(createOption).join('') + `</optgroup>`; } if (otherVoices.length > 0) { optionsHTML += `<optgroup label="अन्य भाषाएं">` + otherVoices.map(createOption).join('') + `</optgroup>`; } libVoiceSelector.innerHTML = optionsHTML; settingsVoiceSelector.innerHTML = optionsHTML; const savedVoice = localStorage.getItem(STORAGE_KEY_TTS_VOICE); if (savedVoice && voices.find(v => v.voiceURI === savedVoice)) { libVoiceSelector.value = savedVoice; settingsVoiceSelector.value = savedVoice; } else if (hindiVoices.length > 0) { libVoiceSelector.value = hindiVoices[0].voiceURI; settingsVoiceSelector.value = hindiVoices[0].voiceURI; localStorage.setItem(STORAGE_KEY_TTS_VOICE, hindiVoices[0].voiceURI); } else if (currentLibVoice && voices.find(v => v.voiceURI === currentLibVoice)) { libVoiceSelector.value = currentLibVoice; } else if (currentSettingsVoice && voices.find(v => v.voiceURI === currentSettingsVoice)) { settingsVoiceSelector.value = currentSettingsVoice; } else if (voices.length > 0) { libVoiceSelector.value = voices[0].voiceURI; settingsVoiceSelector.value = voices[0].voiceURI; localStorage.setItem(STORAGE_KEY_TTS_VOICE, voices[0].voiceURI); } updateTTSControlVisibility(); }
+    function applySavedTTSSettings() { const savedRate = localStorage.getItem(STORAGE_KEY_TTS_RATE) || '1.0'; document.getElementById('ttsRateSetting').value = savedRate; setTTSRate(savedRate); const savedMethod = localStorage.getItem(STORAGE_KEY_TTS_METHOD) || 'stream'; document.getElementById('ttsMethodSetting').value = savedMethod; updateTTSControlVisibility(); }
+    function setSleepTimer(minutes) { cancelSleepTimer(); if (minutes == 0) return; if (minutes == -1) { stopAtArticleEnd = true; document.getElementById('sleepTimerDisplay').textContent = "आर्टिकल के अंत में रुकेगा।"; document.getElementById('cancelSleepTimerBtn').style.display = 'inline-block'; showToast("स्लीप टाइमर सेट: आर्टिकल के अंत में रुकेगा।", "success"); } else { const durationInMs = parseInt(minutes, 10) * 60 * 1000; sleepTimerEndTime = Date.now() + durationInMs; sleepTimerId = setTimeout(() => { showToast("स्लीप टाइमर समाप्त। ऑडियो रोका जा रहा है।", "info"); stopTTS(); cancelSleepTimer(); }, durationInMs); sleepTimerIntervalId = setInterval(updateSleepTimerDisplay, 1000); updateSleepTimerDisplay(); document.getElementById('cancelSleepTimerBtn').style.display = 'inline-block'; showToast(`${minutes} मिनट का स्लीप टाइमर सेट किया गया।`, "success"); } }
+    function updateSleepTimerDisplay() { const remainingTime = sleepTimerEndTime - Date.now(); if (remainingTime <= 0) { cancelSleepTimer(); return; } const minutes = Math.floor(remainingTime / 60000); const seconds = Math.floor((remainingTime % 60000) / 1000).toString().padStart(2, '0'); document.getElementById('sleepTimerDisplay').textContent = `बाकी समय: ${minutes}:${seconds}`; }
+    function cancelSleepTimer() { if (sleepTimerId) { clearTimeout(sleepTimerId); sleepTimerId = null; } if (sleepTimerIntervalId) { clearInterval(sleepTimerIntervalId); sleepTimerIntervalId = null; } stopAtArticleEnd = false; const timerDisplay = document.getElementById('sleepTimerDisplay'); if (timerDisplay) { timerDisplay.textContent = ""; document.getElementById('sleepTimerSelect').value = "0"; document.getElementById('cancelSleepTimerBtn').style.display = 'none'; } }
+    function updatePlaylistControls() { const show = document.querySelectorAll('.playlist-checkbox:checked').length > 0; document.getElementById('playSelectedBtn').style.display = show ? 'inline-block' : 'none'; document.getElementById('createSelectedMp3Btn').style.display = show ? 'inline-block' : 'none'; }
+    function playSelectedLibraryItems() { const selectedUrls = Array.from(document.querySelectorAll('.playlist-checkbox:checked')).map(cb => cb.dataset.url); if (selectedUrls.length > 0) { clearQueue(); const library = getLibrary(); selectedUrls.forEach(url => { const articleId = btoa(encodeURIComponent(url)); if (library[articleId]) { addToQueue(library[articleId]); } }); startQueuePlayback(); } }
+    async function createSelectedMp3() { const checkboxes = document.querySelectorAll('.playlist-checkbox:checked'); if (checkboxes.length === 0) return; const btn = document.getElementById('createSelectedMp3Btn'); const lib = getLibrary(); let text = ''; checkboxes.forEach(cb => { const articleData = lib[btoa(encodeURIComponent(cb.dataset.url))]; if (articleData) text += `${articleData.title}.\n${articleData.textContent}\n\n`; }); await downloadTextAsMp3(text, 'playlist', btn); }
+    function playNextInQueueOrAutoplay(fromRemoval = false) {
+        let nextIndexToPlay = -1;
+
+        if (!fromRemoval && currentQueueIndex < playQueue.length - 1) { 
+            nextIndexToPlay = currentQueueIndex + 1;
+        } else if (fromRemoval && currentQueueIndex < playQueue.length) { 
+            nextIndexToPlay = currentQueueIndex; 
+        } else if (audioPlayerState.repeatMode === 'all' && playQueue.length > 0) { 
+            nextIndexToPlay = 0;
+        }
+        
+        if (nextIndexToPlay !== -1 && nextIndexToPlay < playQueue.length) { 
+            playQueueItem(nextIndexToPlay);
+            return true;
+        }
+
+        const isAutoplayOn = document.getElementById('autoPlayNextToggle').checked;
+        if (isAutoplayOn && audioPlayerState.currentArticle) {
+            const currentUrl = audioPlayerState.currentArticle.url;
+            const allItemElements = Array.from(document.querySelectorAll('#library-list .library-item'));
+            const currentIndexInDom = allItemElements.findIndex(el => el.id === `lib-item-${btoa(encodeURIComponent(currentUrl))}`);
+            if (currentIndexInDom > -1 && currentIndexInDom < allItemElements.length - 1) {
+                const nextItemEl = allItemElements[currentIndexInDom + 1];
+                const nextUrl = nextItemEl.querySelector('.playlist-checkbox')?.dataset.url;
+                if (nextUrl) {
+                    const nextArticleData = getLibrary()[btoa(encodeURIComponent(nextUrl))];
+                    if (nextArticleData) {
+                        clearQueue(); 
+                        addToQueue(nextArticleData); 
+                        return true;
+                    }
+                }
+            }
+        }
+        
+        if (isPlaying || isPaused) { 
+             showToast("प्लेबैक क्यू समाप्त।", "info");
+        }
+        stopTTS(); 
+        hideAudioPlayer();
+        currentQueueIndex = -1; 
+        audioPlayerState.currentArticle = null; 
+        updateQueueDisplay(); 
+        saveQueue();
+        return false;
+    }
+    function handleAutoPlayToggle(isChecked) { localStorage.setItem(STORAGE_KEY_AUTOPLAY, isChecked); }
+    function updateMediaSession(article, state = 'playing') { if (!mediaSessionSupported) return; if (!article || !article.title) { navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none'; return; } navigator.mediaSession.metadata = new MediaMetadata({ title: article.title, artist: article.byline || window.location.hostname, album: 'आर्टिकल रीडर प्रो', artwork: [{ src: 'https://cdn-icons-png.flaticon.com/512/864/864348.png', sizes: '512x512', type: 'image/png' }] }); navigator.mediaSession.playbackState = state; }
+    const settingsModal = document.getElementById('settingsModal');
+    function openSettingsModal() { loadSettingsIntoModal(); settingsModal.style.pointerEvents = 'auto'; settingsModal.classList.add('show'); window.addEventListener('keydown', handleSettingsEscKey); }
+    function closeSettingsModal() { settingsModal.classList.remove('show'); setTimeout(() => { settingsModal.style.pointerEvents = 'none'; }, 300); window.removeEventListener('keydown', handleSettingsEscKey); }
+    function handleSettingsEscKey(e) { if (e.key === 'Escape') { closeSettingsModal(); } }
+    settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) { closeSettingsModal(); } });
+    function loadSettingsIntoModal() { const currentTheme = localStorage.getItem(STORAGE_KEY_THEME) || 'light'; document.querySelector(`input[name="theme_setting"][value="${currentTheme}"]`).checked = true; applySavedDisplayMode(); applySavedTTSSettings(); }
+    document.querySelectorAll('input[name="theme_setting"]').forEach(radio => { radio.addEventListener('change', (e) => toggleTheme(e.target.value)); });
+    document.getElementById('displayModeSetting').addEventListener('change', (e) => { setDisplayMode(e.target.value); });
+    document.getElementById('ttsMethodSetting').addEventListener('change', (e) => { setTTSMethod(e.target.value); loadSettingsIntoModal(); });
+    document.getElementById('ttsRateSetting').addEventListener('input', (e) => { setTTSRate(e.target.value); });
+    document.getElementById('voiceSelectorSetting').addEventListener('change', (e) => { setTTSVoice(e.target.value); });
+    function exportLibrary() { const library = getLibrary(); if (Object.keys(library).length === 0) { showToast("लाइब्रेरी खाली है, एक्सपोर्ट करने के लिए कुछ नहीं है।", "warning"); return; } const dataStr = JSON.stringify(library, null, 2); const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr); const exportFileDefaultName = 'article_reader_library_export.json'; const linkElement = document.createElement('a'); linkElement.setAttribute('href', dataUri); linkElement.setAttribute('download', exportFileDefaultName); linkElement.click(); showToast("लाइब्रेरी एक्सपोर्ट की गई!", "success"); }
+    function importLibraryHandler(event) { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (e) => { try { const importedLibrary = JSON.parse(e.target.result); if (typeof importedLibrary === 'object' && importedLibrary !== null) { const currentLibrary = getLibrary(); const mergedLibrary = { ...currentLibrary, ...importedLibrary }; saveLibrary(mergedLibrary); showToast("लाइब्रेरी सफलतापूर्वक इंपोर्ट की गई!", "success"); loadLibrary(); } else { throw new Error("अमान्य JSON संरचना।"); } } catch (err) { showToast("लाइब्रेरी इंपोर्ट करने में त्रुटि: " + err.message, "error"); } }; reader.readAsText(file); event.target.value = null; } }
+    function clearLibraryData() { if (confirm('क्या आप वाकई अपनी पूरी लाइब्रेरी हटाना चाहते हैं? यह क्रिया वापस नहीं की जा सकती।')) { localStorage.removeItem(STORAGE_KEY_LIBRARY); localStorage.removeItem(STORAGE_KEY_PLAYBACK_POSITIONS); localStorage.removeItem(STORAGE_KEY_PLAY_QUEUE); loadLibrary(); updateLibraryCount(); const view = document.getElementById('library-article-view'); if (view) view.style.display = 'none'; audioPlayerState.currentArticle = null; stopTTS(); showToast('लाइब्रेरी साफ़ कर दी गई है।', 'success'); } }
+    function clearBookmarksData() { if (confirm('क्या आप वाकई अपने सभी बुकमार्क हटाना चाहते हैं? यह क्रिया वापस नहीं की जा सकती।')) { localStorage.removeItem(STORAGE_KEY_BOOKMARKS); loadBookmarks(); updateBookmarkCount(); showToast('सभी बुकमार्क हटा दिए गए हैं।', 'success'); } }
+    function resetAllSettings() { if (confirm('क्या आप वाकई सभी सेटिंग्स और डेटा को डिफ़ॉल्ट पर रीसेट करना चाहते हैं? आपकी लाइब्रेरी और बुकमार्क सहित सब कुछ हटा दिया जाएगा।')) { Object.keys(localStorage).forEach(key => { if (key.startsWith('articleReader')) { localStorage.removeItem(key); } }); showToast('सभी सेटिंग्स रीसेट कर दी गई हैं। पेज रीलोड हो रहा है...', 'success', 3000); setTimeout(() => location.reload(), 3000); } }
+    function performGoogleSearch() { const query = document.getElementById('googleSearchQuery').value; if (query.trim()) { const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`; window.open(searchUrl, '_blank'); } }
+
+    // --- Initialization ---
+    document.addEventListener('DOMContentLoaded', () => {
+        loadQueue();
+        migrateLibraryData(); applySavedTheme(); updateLibraryCount(); updateBookmarkCount(); 
+        applySavedFontSize(); applySavedLibraryFontSize(); applySavedDisplayMode(); 
+        toggleDepthSelector(); populateTagFilter(); populateBookmarkFolderSelectors(); 
+        if (speechApiSupported) {
+            localSpeechSynth = window.speechSynthesis;
+            const loadVoices = () => { 
+                const voices = localSpeechSynth.getVoices(); 
+                if (voices.length > 0) { 
+                    populateVoiceSelector(); 
+                } else if (localSpeechSynth.onvoiceschanged === undefined) { 
+                    setTimeout(loadVoices, 200);
+                }
+            };
+            loadVoices();
+            if (localSpeechSynth.onvoiceschanged !== undefined) { 
+                localSpeechSynth.onvoiceschanged = loadVoices; 
+            }
+        }
+        applySavedTTSSettings();
+        const autoPlay = localStorage.getItem(STORAGE_KEY_AUTOPLAY) === 'true';
+        if (autoPlay) document.getElementById('autoPlayNextToggle').checked = true;
+        
+        document.addEventListener('visibilitychange', () => {
+            // Audio continues playing on tab switch by default
+        });
+
+        window.addEventListener('beforeunload', () => { if (isPlaying || isPaused) { stopTTS(); } });
+        
+        if (mediaSessionSupported) {
+            navigator.mediaSession.setActionHandler('play', () => handlePlayPause());
+            navigator.mediaSession.setActionHandler('pause', () => handlePlayPause());
+            navigator.mediaSession.setActionHandler('stop', () => stopTTS());
+            navigator.mediaSession.setActionHandler('previoustrack', () => playPreviousInQueue());
+            navigator.mediaSession.setActionHandler('nexttrack', () => playNextInQueueOrAutoplay());
+        }
+
+        const g=document.getElementById('googleSearchQuery');if(g)g.addEventListener('keypress',(e)=>{if(e.key==='Enter'){e.preventDefault();performGoogleSearch();}});
+        const p=new URLSearchParams(window.location.search),url=p.get('url'),r=document.getElementById('ae_result'),i=document.getElementById('articleUrl');
+        if(url){if(i)i.value=url;ae_startExtraction();}
+        const tab=document.querySelector('.tab-link');if(tab&&!url)openTool({currentTarget:tab},'ArticleExtractor');else if(url)openTool({currentTarget:document.querySelector('.tab-link[onclick*="ArticleExtractor"]')},'ArticleExtractor');
+        updateHistoryButtons();
+        updatePlayerUI(); 
+        
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                try { 
+                    const blob = new Blob([serviceWorkerCode], { type: 'application/javascript' }); 
+                    navigator.serviceWorker.register(URL.createObjectURL(blob))
+                        .then(reg => console.log('ServiceWorker registered.'))
+                        .catch(err => console.error('ServiceWorker registration failed:', err)); 
+                } catch (e) { 
+                    console.error('Blob SW creation failed:', e); 
+                }
+            });
+        }
+    });
+    </script>
+</body>
+</html>
