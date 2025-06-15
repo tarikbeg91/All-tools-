@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ज़मीन मापन कैलकुलेटर (सभी मोड)</title>
+    <style>
+        /* Google Font Import (Poppins) */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+        body {
+            font-family: 'Poppins', Arial, sans-serif; 
+            background-color: #f8f9fa; 
+            color: #495057; 
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px; 
+            box-sizing: border-box;
+        }
+
+        .calculator-container {
+            background-color: #ffffff;
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); 
+            width: 100%;
+            max-width: 800px; 
+        }
+
+        h1 {
+            text-align: center;
+            color: #343a40; 
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        h2 {
+            text-align: center;
+            color: #495057;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            font-size: 1.4em; 
+            border-bottom: 1px solid #e9ecef; 
+            padding-bottom: 10px;
+        }
+        h3 { 
+            color: #343a40;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        h4 {
+             text-align: left;
+             color: #495057;
+             margin-top: 0;
+             margin-bottom: 12px;
+             font-size: 1.05em;
+             border-bottom: 1px solid #ddd;
+             padding-bottom: 6px;
+        }
+
+
+        hr {
+            margin: 25px 0;
+            border: 0;
+            border-top: 1px solid #dee2e6;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px; 
+            font-weight: 500; 
+            font-size: 0.9em;
+            color: #495057;
+            text-align: left;
+        }
+
+        input[type="number"], select, input[type="text"] {
+            width: 100%;
+            padding: 12px; 
+            margin-bottom: 15px; 
+            border: 1px solid #ced4da; 
+            border-radius: 6px; 
+            box-sizing: border-box;
+            font-size: 0.95em;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        input[type="number"]:focus, select:focus, input[type="text"]:focus {
+            border-color: #20c997; 
+            box-shadow: 0 0 0 0.2rem rgba(32, 201, 151, 0.25); 
+            outline: none;
+        }
+        input[type="text"][readonly] {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+        
+        button, .action-button {
+            background-color: #20c997; 
+            color: white;
+            padding: 12px 20px; 
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            margin-top: 8px;
+            margin-right: 5px; /* Add some right margin to buttons in a row */
+        }
+         button:last-child, .action-button:last-child {
+            margin-right: 0; /* No right margin for the last button in a row */
+        }
+
+        button#calculateBtn {
+            width: 100%;
+            padding: 14px 20px;
+            font-size: 1.1em;
+            margin-top: 25px;
+            background-color: #17a2b8; 
+        }
+        button:hover, .action-button:hover {
+            background-color: #1baa80; 
+            transform: translateY(-1px); 
+        }
+         button#calculateBtn:hover {
+            background-color: #138496;
+        }
+
+        .remove-rectangle-btn {
+            background-color: #dc3545; 
+            padding: 6px 10px;
+            font-size: 0.8em;
+            position: absolute; top: 10px; right: 10px;
+        }
+         .remove-rectangle-btn:hover {
+            background-color: #c82333;
+        }
+        #addRectangleBtn {
+            background-color: #28a745; 
+            margin-bottom: 15px; display: inline-block; width: auto;
+        }
+        #addRectangleBtn:hover {
+            background-color: #218838;
+        }
+        
+        .input-note, .area-note, .diagram-note {
+            font-size: 0.88em; 
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px; /* Increased margin for notes */
+        }
+        .input-note {background-color: #e9f5fd; border-color: #bce8f1; margin-top: -10px;} /* Adjusted margin */
+        .area-note {background-color: #fceded; border-color: #f5c6cb; color: #a94442; text-align: center;}
+        .diagram-note {background-color: #fcf8e3; border-color: #faebcc; color: #8a6d3b;}
+
+        .input-mode-selector {
+            margin-bottom: 20px; 
+            padding-bottom: 20px; 
+            border-bottom: 1px solid #dee2e6; 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 10px; /* Increased gap */
+        }
+        .input-mode-selector label {
+            margin: 0; 
+            font-weight: normal; 
+            cursor: pointer; 
+            padding: 10px 15px; 
+            border: 1px solid #dee2e6; 
+            border-radius:6px; 
+            background-color: #e9ecef; 
+            font-size:0.9em;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        .input-mode-selector input[type="radio"] {display: none;}
+        .input-mode-selector input[type="radio"]:checked + span {
+            background-color: #20c997; 
+            color: white; 
+            border-color: #1baa80; 
+            font-weight:500;
+        }
+         .input-mode-selector label:hover span:not(input[type="radio"]:checked + span) { /* Only hover if not checked */
+            background-color: #d1d5db;
+        }
+
+
+        .dimensions-grid {display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 20px;}
+        .dimension-input-group {display: flex; flex-direction: column;}
+        .dimension-input-group > div {display: flex; align-items: center;}
+        .dimension-input-group > div input[type="number"] {flex-grow: 1; margin-right: 10px; margin-bottom:0;}
+        .dimension-input-group > div select {width: 110px; margin-bottom:0; padding: 11px;}
+        .dimension-input-group label {margin-bottom: 6px;}
+
+        /* Card-like sections */
+        #areaInputSection,
+        #dimensionsInputSection,
+        #diagonalInputSection,
+        #customPlotSection,
+        #shapeTemplateSection,
+        #drawingModeSection,
+        .results-section,
+        .session-management {
+            border: 1px solid #e9ecef;
+            padding: 20px;
+            margin-bottom: 25px; /* Increased margin between sections */
+            border-radius: 8px;
+            background-color: #fdfdfd; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        #customPlotSection .rectangle-set, #shapeTemplateSection .template-measurements {
+            border: 1px solid #e0e0e0; 
+            padding: 15px; margin-bottom: 15px; 
+            border-radius: 6px; background-color: #f9f9f9; position: relative;
+        }
+
+
+        #plotCanvas {border:1px solid #adb5bd; cursor:crosshair; background-color: #fff; margin-bottom: 15px; touch-action: none;}
+        
+        #drawingModeSelectorOptions { margin-bottom: 15px; text-align: left; }
+        #drawingModeSelectorOptions label { display: inline-block; margin-right: 15px; }
+
+        #drawingModeSection .checkbox-options label { display: inline-block; margin-right: 15px; font-weight: normal;}
+
+
+        #drawingModeSection .controls {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+        #drawingModeSection .controls button {
+            margin: 5px 8px; 
+        }
+        #scaleInputSection { margin-top: 20px; padding:15px; border: 1px dashed #ced4da; border-radius:6px;}
+
+
+        .results-section {margin-top: 25px;}
+        .result-item {display: flex; align-items: center; margin-bottom: 10px;}
+        .result-item label {flex-basis: 150px; margin-bottom: 0; font-size:0.95em;}
+        .result-item input[type="text"] {flex-grow: 1; margin-bottom: 0;}
+        
+        .session-management {
+            background-color: #f8f9fa; 
+        }
+        .session-management input[type="text"], .session-management select {
+             margin-bottom: 0; 
+        }
+         .session-management > div { /* Direct children divs for better spacing */
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .session-management label { margin-bottom: 0;} /* Align label with select */
+
+
+        .conversion-info {margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; font-size: 0.85em; color: #555;}
+        .conversion-info p {margin: 5px 0;}
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <h1>ज़मीन मापन कैलकुलेटर</h1>
+
+        <div class="input-mode-selector">
+            <label><input type="radio" name="inputMode" value="area" onchange="toggleInputMode()"><span>सीधे क्षेत्रफल</span></label>
+            <label><input type="radio" name="inputMode" value="dimensions_avg" onchange="toggleInputMode()"><span>4 भुजा (औसत)</span></label>
+            <label><input type="radio" name="inputMode" value="dimensions_diag" onchange="toggleInputMode()"><span>4 भुजा + विकर्ण</span></label>
+            <label><input type="radio" name="inputMode" value="custom_plot" onchange="toggleInputMode()"><span>कस्टम प्लॉट (आयतें)</span></label>
+            <label><input type="radio" name="inputMode" value="shape_template" onchange="toggleInputMode()"><span>आकृति टेम्पलेट</span></label>
+            <label><input type="radio" name="inputMode" value="draw_measure" checked onchange="toggleInputMode()"><span>ड्रॉ करके मापें</span></label>
+        </div>
+        
+
+        <div id="areaInputSection" class="hidden">
+            <h2>सीधे क्षेत्रफल डालें</h2>
+            <label for="inputValue">मान डालें:</label>
+            <input type="number" id="inputValue" placeholder="जैसे 1, 10, 100">
+            <p class="input-note">नोट: यदि 'बीघा' इकाई चुनते हैं, तो दशमलव मान (जैसे 11.3) का अर्थ होगा 11 बीघा और 3 बिस्वा।</p>
+            <label for="inputUnitArea">इकाई चुनें:</label>
+            <select id="inputUnitArea">
+                <option value="bigha">बीघा</option><option value="biswa">बिस्वा</option><option value="gatha">गट्ठा</option>
+                <option value="sqmeter">वर्ग मीटर</option><option value="sqgaj">वर्ग गज (स्थानीय)</option>
+                <option value="sqfeet">वर्ग फ़ीट</option><option value="sqinch">वर्ग इंच</option>
+            </select>
+        </div>
+
+        <div id="dimensionsInputSection" class="hidden">
+            <h2>4 भुजा (औसत विधि)</h2>
+            <p class="diagram-note">कृपया भूखंड की चारों भुजाओं की माप और उनकी इकाइयाँ डालें।</p>
+            <div class="dimensions-grid">
+                <div class="dimension-input-group"><label for="length1">लंबाई 1 (L1):</label><div><input type="number" id="length1" placeholder="मान"><select id="length1Unit"><option value="feet">फीट</option><option value="meter">मीटर</option><option value="gaj_linear">गज</option></select></div></div>
+                <div class="dimension-input-group"><label for="length2">लंबाई 2 (L2):</label><div><input type="number" id="length2" placeholder="मान"><select id="length2Unit"><option value="feet">फीट</option><option value="meter">मीटर</option><option value="gaj_linear">गज</option></select></div></div>
+                <div class="dimension-input-group"><label for="width1">चौड़ाई 1 (W1):</label><div><input type="number" id="width1" placeholder="मान"><select id="width1Unit"><option value="feet">फीट</option><option value="meter">मीटर</option><option value="gaj_linear">गज</option></select></div></div>
+                <div class="dimension-input-group"><label for="width2">चौड़ाई 2 (W2):</label><div><input type="number" id="width2" placeholder="मान"><select id="width2Unit"><option value="feet">फीट</option><option value="meter">मीटर</option><option value="gaj_linear">गज</option></select></div></div>
+            </div>
+            <p class="area-note"><strong>नोट:</strong> यह गणना औसत लंबाई और औसत चौड़ाई पर आधारित है और केवल एक **अनुमान** प्रदान करती है।</p>
+        </div>
+        
+        <div id="diagonalInputSection" class="hidden">
+            <h2>4 भुजा + विकर्ण (हेरोन विधि)</h2>
+            <p class="diagram-note">कृपया भूखंड की चारों भुजाओं और एक विकर्ण की माप डालें।</p>
+            <div class="dimensions-grid">
+                <div class="dimension-input-group"><label for="diagSideA">भुजा A:</label><div><input type="number" id="diagSideA" placeholder="मान"><select id="diagSideAUnit"><option value="feet">फीट</option><option value="meter">मीटर</option><option value="gaj_linear">गज</option></select></div></div>
+                <div class="dimension-input-group"><label for="diagSideB">भुजा B:</label><div><input type="number" id="diagSideB" placeholder="मान"><select id="diagSideBUnit"><option value="feet">फीट</option><option value="meter">मीटर</option><option value="gaj_linear">गज</option></select></div></div>
+                <div class="dimension-input-group"><label for="diagSideC">भुजा C:</label><div><input type="number" id="diagSideC" placeholder="मान"><select id="diagSideCUnit"><option value="feet">फीट</option><option value="meter">मीटर</option><option value="gaj_linear">गज</option></select></div></div>
+                <div class="dimension-input-group"><label for="diagSideD">भुजा D:</label><div><input type="number" id="diagSideD" placeholder="मान"><select id="diagSideDUnit"><option value="feet">फीट</option><option value="meter">मीटर</option><option value="gaj_linear">गज</option></select></div></div>
+            </div><hr style="margin: 15px 0;">
+            <div class="dimension-input-group" style="margin-top:15px;">
+                <label for="diagP">विकर्ण (P) - (A,B) और (C,D) कोनों के बीच:</label>
+                <div><input type="number" id="diagP" placeholder="मान"><select id="diagPUnit"><option value="feet">फीट</option><option value="meter">मीटर</option><option value="gaj_linear">गज</option></select></div>
+            </div>
+            <p class="area-note" style="margin-top:15px;"><strong>नोट:</strong> सुनिश्चित करें कि भुजाएँ और विकर्ण मान्य त्रिभुज बनाते हैं।</p>
+        </div>
+
+        <div id="customPlotSection" class="hidden">
+            <h2>कस्टम प्लॉट (आयतें जोड़ें)</h2>
+            <p class="diagram-note">अपने प्लॉट को कई आयतों में विभाजित करें और प्रत्येक के आयाम डालें।</p>
+            <div id="rectanglesContainer"></div>
+            <button type="button" id="addRectangleBtn" class="action-button" onclick="addRectangleFields()">+ और आयत जोड़ें</button>
+        </div>
+        
+        <div id="shapeTemplateSection" class="hidden">
+             <h2>आकृति टेम्पलेट से मापें</h2>
+            <label for="shapeTemplateSelector">आकृति टेम्पलेट चुनें:</label>
+            <select id="shapeTemplateSelector" onchange="loadShapeTemplate()">
+                <option value="">--एक टेम्पलेट चुनें--</option>
+                <option value="rectangle">आयत</option>
+                <option value="quad_diag">चतुर्भुज + विकर्ण</option>
+            </select>
+            <div id="shapeDisplayArea"><p>टेम्पलेट चुनें...</p></div>
+            <div id="templateMeasurementsInputArea"></div>
+        </div>
+
+
+        <div id="drawingModeSection" class="hidden">
+            <h2>ड्रॉ करके मापें</h2>
+            <div id="drawingModeSelectorOptions">
+                <label><input type="radio" name="drawingCalcMethod" value="heron" checked onchange="updateDrawingModeUI()"> <span>भुजाओं/विकर्णों से (हेरोन)</span></label>
+                <label><input type="radio" name="drawingCalcMethod" value="shoelace" onchange="updateDrawingModeUI()"> <span>स्केल्ड ड्राइंग से (शूलेस)</span></label>
+            </div>
+            <p id="drawingInstructionsHeron" class="diagram-note">कैनवस पर क्लिक करके कोने बनाएँ (3 से 10 कोने)। आकृति पूरी करने के लिए पहले बिंदु पर दोबारा क्लिक करें या 'आकृति समाप्त करें' दबाएँ। भुजाओं और आवश्यक विकर्णों की माप डालें।</p>
+            <p id="drawingInstructionsShoelace" class="diagram-note hidden">कैनवस पर क्लिक करके कोने बनाएँ। आकृति को यथासंभव सही अनुपात में बनाएँ। समाप्त होने पर, पहली भुजा की वास्तविक लंबाई डालें। पॉइंट्स को ड्रैग करके ठीक भी कर सकते हैं।</p>
+            
+            <div class="checkbox-options" style="margin-bottom:10px; text-align:left;">
+                <label for="snapToGridCheckbox"><input type="checkbox" id="snapToGridCheckbox" onchange="toggleSnapToGrid(this.checked)"> ग्रिड पर स्नैप करें</label>
+                 <label for="editPointsCheckbox" class="hidden"><input type="checkbox" id="editPointsCheckbox" onchange="toggleEditPointsMode(this.checked)"> पॉइंट्स संपादित करें</label>
+            </div>
+
+            <canvas id="plotCanvas"></canvas>
+            <div class="controls">
+                <button class="action-button" id="finishShapeBtn" onclick="finishDrawnShape()">आकृति समाप्त करें</button>
+                <button class="action-button" onclick="undoLastPoint()">पिछला बिंदु हटाएँ</button>
+                <button class="action-button" onclick="resetCanvas()">रीसेट कैनवस</button>
+            </div>
+            <div id="measurementsForDrawnShape" style="margin-top:15px;"><h4>भुजाओं की वास्तविक माप डालें:</h4></div>
+            <div id="diagonalForDrawnShape" class="hidden" style="margin-top:15px;"><h4>आवश्यक विकर्ण की माप:</h4></div>
+            <div id="scaleInputSection" class="hidden" style="margin-top:15px;">
+                <h4>स्केल सेट करें:</h4>
+                <div class="dimension-input-group">
+                    <label for="scaleRefSideLength">भुजा 1 (P1-P2) की वास्तविक लंबाई:</label>
+                    <div><input type="number" id="scaleRefSideLength" placeholder="मान" oninput="redrawCanvasShape()"><select id="scaleRefSideUnit" onchange="redrawCanvasShape()">${unitOptionsHTML}</select></div>
+                </div>
+            </div>
+        </div>
+
+        <button id="calculateBtn" onclick="calculateArea()">गणना करें</button>
+
+        <div class="results-section">
+            <h2>परिणाम:</h2>
+            <div class="result-item"> <label>बीघा:</label> <input type="text" id="resultBigha" readonly> </div>
+            <div class="result-item"> <label>बिस्वा:</label> <input type="text" id="resultBiswa" readonly> </div>
+            <div class="result-item"> <label>गट्ठा:</label> <input type="text" id="resultGatha" readonly> </div>
+            <div class="result-item"> <label>वर्ग मीटर:</label> <input type="text" id="resultSqMeter" readonly> </div>
+            <div class="result-item"> <label>वर्ग गज (स्थानीय):</label> <input type="text" id="resultSqGaj" readonly> </div>
+            <div class="result-item"> <label>वर्ग फ़ीट:</label> <input type="text" id="resultSqFeet" readonly> </div>
+            <div class="result-item"> <label>वर्ग इंच:</label> <input type="text" id="resultSqInch" readonly> </div>
+            <div class="result-item" id="perimeterResultItem" style="display: none;"> <label>परिधि (मीटर में):</label> <input type="text" id="resultPerimeter" readonly> </div>
+        </div>
+         <div class="session-management">
+            <h3>सत्र प्रबंधन</h3>
+            <div>
+                <input type="text" id="sessionName" placeholder="सत्र का नाम (वैकल्पिक)" style="width:auto; max-width:200px;">
+                <button class="action-button" onclick="saveSession()">सत्र सेव करें</button>
+            </div>
+            <div>
+                <label for="savedSessions">सेव किये गए सत्र लोड करें:</label>
+                <select id="savedSessions" style="width:auto; max-width:220px;" onchange="previewSessionDetails(this.value)"></select>
+                <button class="action-button" onclick="loadSelectedSession()">लोड करें</button>
+                <button class="action-button" style="background-color: #dc3545;" onclick="deleteSelectedSession()">हटाएँ</button>
+            </div>
+            <div id="sessionPreview" style="font-size:0.8em; color:#555; margin-top:8px; min-height:20px;"></div>
+        </div>
+        <div class="conversion-info">
+            <p><strong>आधारभूत रूपांतरण:</strong> 1 बीघा = 20 बिस्वा = 133 गट्ठे = 840 वर्ग मीटर = 1000 वर्ग गज (स्थानीय)</p>
+            <hr>
+            <p>1 मीटर = 3.28084 फ़ीट, 1 फ़ीट = 12 इंच, 1 गज (रैखिक) = 3 फ़ीट = 0.9144 मीटर</p>
+            <p>1 वर्ग मीटर = 10.7639 वर्ग फ़ीट, 1 वर्ग गज (मानक) ≈ 0.836127 वर्ग मीटर</p>
+        </div>
+    </div>
+
+    <script>
+        // --- START: CONSTANTS AND GLOBAL VARS ---
+        const BIGHATOSQM = 840, BIGHATOBISWA = 20, BIGHATOGATHA = 133, BIGHATOSQGAJ_LOCAL = 1000;
+        const SQMTOBIGHA = 1 / BIGHATOSQM, SQMTOGATHA = BIGHATOGATHA / BIGHATOSQM, SQMTOSQGAJ_LOCAL = BIGHATOSQGAJ_LOCAL / BIGHATOSQM;
+        const SQMTOSQFEET = 10.7639, SQFEETTOSQINCH = 144;
+        const FEETTOMETER = 0.3048, GAJLINEARTOMETER = 0.9144;
+        const unitOptionsHTML = `<option value="feet">फीट</option><option value="meter">मीटर</option><option value="gaj_linear">गज</option>`;
+        
+        let rectangleCounter = 0;
+        let canvas, ctx, drawnPoints = [], drawnShapeSidesInfo = [], isDrawnShapeClosed = false;
+        const TOUCH_SENSITIVITY = 15; 
+        const MAX_DRAWN_POINTS = 10; 
+        const GRID_SIZE = 20;
+        let snapToGridEnabled = false;
+        let editPointsModeEnabled = false;
+        let draggingPointIndex = -1;
+
+        let highlightedDrawnSideIndex = -1; 
+        let activeHighlightDiagonalPoints = null; 
+        const LOCAL_STORAGE_KEY = 'landCalculatorSessions';
+        // --- END: CONSTANTS AND GLOBAL VARS ---
+
+        // --- START: GEOMETRIC AND UTILITY FUNCTIONS ---
+        function heronsFormula(x,y,z){if(x+y<=z+1e-9||x+z<=y+1e-9||y+z<=x+1e-9)return NaN;const s=(x+y+z)/2;return Math.sqrt(s*(s-x)*(s-y)*(s-z));}
+        function getDimensionInMeters(valId,unitId,allowZero=false){const vE=document.getElementById(valId),uE=document.getElementById(unitId);if(!vE||!uE||vE.value.trim()==='')return NaN;const val=parseFloat(vE.value);const chk=allowZero?(isNaN(val)||val<0):(isNaN(val)||val<=0);if(chk)return NaN;switch(uE.value){case 'feet':return val*FEETTOMETER;case 'meter':return val;case 'gaj_linear':return val*GAJLINEARTOMETER;default:return NaN;}}
+        function formatNumber(num){const e=1e-7;if(Math.abs(num)<e)return"0";if(Math.abs(num)<.0001&&num!==0)return num.toExponential(2);let fN=parseFloat(num.toFixed(4));if(fN===0&&Math.abs(num)>=e&&num!==0)return num.toExponential(2);return fN.toString();}
+        function clearResults(){
+            ['resultBigha','resultBiswa','resultGatha','resultSqMeter','resultSqGaj','resultSqFeet','resultSqInch', 'resultPerimeter'].forEach(id=> {
+                const el = document.getElementById(id);
+                if (el) el.value='';
+            });
+            const perimeterItem = document.getElementById('perimeterResultItem');
+            if(perimeterItem) perimeterItem.style.display = 'none';
+        }
+        
+        function shoelaceFormula(points) { 
+            let area = 0;
+            const n = points.length;
+            if (n < 3) return 0;
+
+            for (let i = 0; i < n; i++) {
+                const p1 = points[i];
+                const p2 = points[(i + 1) % n]; 
+                area += (p1.x * p2.y) - (p2.x * p1.y);
+            }
+            return Math.abs(area / 2.0);
+        }
+
+        // --- START: CUSTOM PLOT & SHAPE TEMPLATE FUNCTIONS ---
+        function createRectangleHTML(id){return`<div class="rectangle-set" id="rectangleSet-${id}"><h4>आयत ${id} ${id>1?`<button type="button" class="action-button remove-rectangle-btn" onclick="removeRectangleFields(${id})">हटाएँ</button>`:''}</h4><div class="dimension-input-group"><label for="rectLength-${id}">लंबाई:</label><div><input type="number" id="rectLength-${id}" placeholder="मान"><select id="rectLengthUnit-${id}">${unitOptionsHTML}</select></div></div><div class="dimension-input-group"><label for="rectWidth-${id}">चौड़ाई:</label><div><input type="number" id="rectWidth-${id}" placeholder="मान"><select id="rectWidthUnit-${id}">${unitOptionsHTML}</select></div></div></div>`;}
+        function addRectangleFields(){rectangleCounter++;document.getElementById('rectanglesContainer').insertAdjacentHTML('beforeend',createRectangleHTML(rectangleCounter));}
+        function removeRectangleFields(id){const el=document.getElementById(`rectangleSet-${id}`);if(el)el.remove();}
+        function loadShapeTemplate(){const type=document.getElementById('shapeTemplateSelector').value;const dA=document.getElementById('shapeDisplayArea'),iA=document.getElementById('templateMeasurementsInputArea');dA.innerHTML='';iA.innerHTML='';if(type==="rectangle"){dA.innerHTML=`<p class="diagram-note">आयत के लिए लंबाई और चौड़ाई डालें।</p>`;iA.innerHTML=`<h4>आयत की माप</h4><div class="dimension-input-group"><label for="tmplRectL">लंबाई:</label><div><input type="number" id="tmplRectL"><select id="tmplRectLUnit">${unitOptionsHTML}</select></div></div><div class="dimension-input-group"><label for="tmplRectW">चौड़ाई:</label><div><input type="number" id="tmplRectW"><select id="tmplRectWUnit">${unitOptionsHTML}</select></div></div>`;}else if(type==="quad_diag"){dA.innerHTML=`<p class="diagram-note">भुजाएँ a,b,c,d और विकर्ण P डालें।</p>`;iA.innerHTML=`<h4>चतुर्भुज+विकर्ण</h4><div class="dimensions-grid"><div class="dimension-input-group"><label for="tmplSideA">A:</label><div><input type="number" id="tmplSideA"><select id="tmplSideAUnit">${unitOptionsHTML}</select></div></div><div class="dimension-input-group"><label for="tmplSideB">B:</label><div><input type="number" id="tmplSideB"><select id="tmplSideBUnit">${unitOptionsHTML}</select></div></div><div class="dimension-input-group"><label for="tmplSideC">C:</label><div><input type="number" id="tmplSideC"><select id="tmplSideCUnit">${unitOptionsHTML}</select></div></div><div class="dimension-input-group"><label for="tmplSideD">D:</label><div><input type="number" id="tmplSideD"><select id="tmplSideDUnit">${unitOptionsHTML}</select></div></div></div><hr style="margin: 15px 0;"><div class="dimension-input-group"><label for="tmplDiagP">विकर्ण P (A,B और C,D के बीच):</label><div><input type="number" id="tmplDiagP"><select id="tmplDiagPUnit">${unitOptionsHTML}</select></div></div>`;}else{dA.innerHTML=`<p>टेम्पलेट चुनें...</p>`;}}
+        
+        // --- START: DRAWING MODE FUNCTIONS ---
+        function initializeCanvas(){
+            canvas=document.getElementById('plotCanvas');
+            if(!canvas) return; 
+            const parentWidth = canvas.parentElement.clientWidth;
+            const cW=Math.max(Math.min(parentWidth*.95,500), 250); 
+            canvas.width=cW;
+            canvas.height=Math.max(Math.min(cW*.7,350), 150); 
+            ctx=canvas.getContext('2d');
+            
+            resetCanvasDrawingState(); 
+            
+            canvas.addEventListener('mousedown',handleMouseDown);
+            canvas.addEventListener('mousemove',handleMouseMove);
+            canvas.addEventListener('mouseup',handleMouseUp);
+            canvas.addEventListener('touchstart',handleMouseDown,{passive:false});
+            canvas.addEventListener('touchmove',handleMouseMove,{passive:false});
+            canvas.addEventListener('touchend',handleMouseUp);
+            const snapCheckbox = document.getElementById('snapToGridCheckbox');
+            if(snapCheckbox) snapCheckbox.checked = snapToGridEnabled;
+        }
+        
+        function resetCanvasDrawingState(){
+            drawnPoints=[];
+            drawnShapeSidesInfo=[];
+            isDrawnShapeClosed=false;
+            highlightedDrawnSideIndex = -1;
+            activeHighlightDiagonalPoints = null;
+            draggingPointIndex = -1;
+            const editCheckbox = document.getElementById('editPointsCheckbox');
+            if(editCheckbox) editCheckbox.checked = false;
+            editPointsModeEnabled = false;
+
+            if(ctx)ctx.clearRect(0,0,canvas.width,canvas.height);
+            const mD=document.getElementById('measurementsForDrawnShape');
+            if(mD)mD.innerHTML='<h4>भुजाओं की वास्तविक माप डालें:</h4>';
+            const dD=document.getElementById('diagonalForDrawnShape');
+            if(dD){
+                dD.innerHTML='<h4>आवश्यक विकर्ण की माप:</h4>';
+                dD.classList.add('hidden');
+            }
+            const scaleSect = document.getElementById('scaleInputSection');
+            if(scaleSect) scaleSect.classList.add('hidden');
+            const scaleRefLen = document.getElementById('scaleRefSideLength');
+            if(scaleRefLen) scaleRefLen.value = '';
+
+
+            if(canvas) canvas.style.cursor = editPointsModeEnabled ? 'grab' : 'crosshair';
+            const finishBtn = document.getElementById('finishShapeBtn');
+            if(finishBtn) finishBtn.disabled = false;
+            redrawCanvasShape();
+        }
+
+        function getInteractionCoords(e){
+            const r=canvas.getBoundingClientRect();
+            let x,y;
+            if(e.touches && e.touches.length > 0){
+                x=e.touches[0].clientX-r.left;
+                y=e.touches[0].clientY-r.top;
+            }else{
+                x=e.clientX-r.left;
+                y=e.clientY-r.top;
+            }
+            if (snapToGridEnabled && draggingPointIndex === -1 && !isDrawnShapeClosed) { 
+                x = Math.round(x / GRID_SIZE) * GRID_SIZE;
+                y = Math.round(y / GRID_SIZE) * GRID_SIZE;
+            }
+            return{x,y};
+        }
+        
+        function handleMouseDown(e) {
+            e.preventDefault();
+            const { x, y } = getInteractionCoords(e);
+
+            if (editPointsModeEnabled && isDrawnShapeClosed) {
+                for (let i = 0; i < drawnPoints.length; i++) {
+                    if (Math.hypot(x - drawnPoints[i].x, y - drawnPoints[i].y) < (TOUCH_SENSITIVITY + 5)) { 
+                        draggingPointIndex = i;
+                        canvas.style.cursor = 'grabbing';
+                        return;
+                    }
+                }
+            } else if (!isDrawnShapeClosed) {
+                if (drawnPoints.length >= MAX_DRAWN_POINTS) {
+                    alert(`अधिकतम ${MAX_DRAWN_POINTS} कोने।`);
+                    return;
+                }
+                if (drawnPoints.length > 2 && Math.hypot(x - drawnPoints[0].x, y - drawnPoints[0].y) < TOUCH_SENSITIVITY) {
+                    finishDrawnShape(); return;
+                }
+                drawnPoints.push({ x, y });
+                const calcMethodRadio = document.querySelector('input[name="drawingCalcMethod"]:checked');
+                const calcMethod = calcMethodRadio ? calcMethodRadio.value : 'heron';
+                if (calcMethod === 'heron' && drawnPoints.length > 1) {
+                    addDrawnSideMeasurementInput(drawnPoints[drawnPoints.length - 2], drawnPoints[drawnPoints.length - 1]);
+                }
+            }
+            redrawCanvasShape();
+        }
+
+        function handleMouseMove(e) {
+            e.preventDefault();
+            if (draggingPointIndex !== -1 && editPointsModeEnabled && isDrawnShapeClosed) {
+                let { x, y } = getInteractionCoords(e); 
+                 if (snapToGridEnabled) { 
+                    x = Math.round(x / GRID_SIZE) * GRID_SIZE;
+                    y = Math.round(y / GRID_SIZE) * GRID_SIZE;
+                }
+                drawnPoints[draggingPointIndex].x = x;
+                drawnPoints[draggingPointIndex].y = y;
+                clearResults(); 
+                redrawCanvasShape();
+            }
+        }
+
+        function handleMouseUp(e) {
+            e.preventDefault();
+            if (draggingPointIndex !== -1) {
+                 const calcMethodRadio = document.querySelector('input[name="drawingCalcMethod"]:checked');
+                const calcMethod = calcMethodRadio ? calcMethodRadio.value : 'heron';
+                if (calcMethod === 'heron' && isDrawnShapeClosed) {
+                    regenerateHeronInputsAfterEdit(); 
+                }
+                draggingPointIndex = -1;
+                canvas.style.cursor = editPointsModeEnabled ? 'grab' : 'default';
+                redrawCanvasShape();
+            }
+        }
+        
+        function regenerateHeronInputsAfterEdit() {
+            document.getElementById('measurementsForDrawnShape').innerHTML = '<h4>भुजाओं की वास्तविक माप डालें:</h4>';
+            drawnShapeSidesInfo = []; 
+            for(let i=0; i < drawnPoints.length; i++) {
+                const p1 = drawnPoints[i];
+                const p2 = drawnPoints[(i+1) % drawnPoints.length]; 
+                addDrawnSideMeasurementInput(p1, p2);
+            }
+            generateDiagonalInputsUI(); 
+        }
+
+        function redrawCanvasShape(){
+            if(!ctx)return;
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            
+            if (snapToGridEnabled || true) { 
+                ctx.beginPath(); ctx.strokeStyle="#e0e0e0"; ctx.lineWidth=0.5;
+                for(let gx=0;gx<=canvas.width;gx+=GRID_SIZE){ctx.moveTo(gx,0);ctx.lineTo(gx,canvas.height);}
+                for(let gy=0;gy<=canvas.height;gy+=GRID_SIZE){ctx.moveTo(0,gy);ctx.lineTo(canvas.width,gy);}
+                ctx.stroke();
+            }
+
+            drawnPoints.forEach((p,i)=>{
+                ctx.fillStyle = (draggingPointIndex === i) ? 'green' : ((i===0)?'blue':'red');
+                ctx.beginPath(); ctx.arc(p.x,p.y, editPointsModeEnabled ? 8 : 6,0,2*Math.PI); ctx.fill();
+                ctx.fillStyle = '#000'; ctx.font = '10px Arial'; ctx.fillText(`P${i+1}`, p.x + 10, p.y - 10);
+            });
+
+            if (drawnPoints.length > 1) {
+                ctx.beginPath(); ctx.moveTo(drawnPoints[0].x, drawnPoints[0].y);
+                for (let i = 1; i < drawnPoints.length; i++) { ctx.lineTo(drawnPoints[i].x, drawnPoints[i].y); }
+                if (isDrawnShapeClosed) { ctx.lineTo(drawnPoints[0].x, drawnPoints[0].y); }
+                ctx.strokeStyle = "#333"; ctx.lineWidth = 2; ctx.stroke();
+            }
+            
+            const calcMethodRadio = document.querySelector('input[name="drawingCalcMethod"]:checked');
+            const calcMethod = calcMethodRadio ? calcMethodRadio.value : 'heron';
+
+
+            if (isDrawnShapeClosed) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+                ctx.font = "10px Arial";
+                ctx.textAlign = "center";
+
+                if (calcMethod === 'heron') {
+                    drawnShapeSidesInfo.forEach((side, index) => {
+                        const lengthInput = document.getElementById(side.lId);
+                        const unitInput = document.getElementById(side.uId);
+                        if (lengthInput && lengthInput.value && side.p1 && side.p2) { 
+                            const midX = (side.p1.x + side.p2.x) / 2;
+                            const midY = (side.p1.y + side.p2.y) / 2;
+                            const angle = Math.atan2(side.p2.y - side.p1.y, side.p2.x - side.p1.x);
+                            const offsetX = Math.sin(angle) * 10; 
+                            const offsetY = -Math.cos(angle) * 10;
+                            ctx.fillText(`${lengthInput.value} ${unitInput.value}`, midX + offsetX, midY + offsetY);
+                        }
+                    });
+                    if (drawnPoints.length >= 4) {
+                         const numDiagonals = drawnPoints.length - 3;
+                         for (let i=0; i < numDiagonals; i++) {
+                            const p_start_idx = 0;
+                            const p_end_idx = i + 2;
+                            const diagId = (drawnPoints.length === 4) ? `dD Len-P0-P2` : `dD Len-P${p_start_idx}-P${p_end_idx}`;
+                            const unitId = (drawnPoints.length === 4) ? `dD Unit-P0-P2` : `dD Unit-P${p_start_idx}-P${p_end_idx}`;
+                            const lengthInput = document.getElementById(diagId);
+                            const unitInput = document.getElementById(unitId);
+                            if(lengthInput && lengthInput.value && drawnPoints[p_start_idx] && drawnPoints[p_end_idx]) {
+                                const p_start = drawnPoints[p_start_idx];
+                                const p_end = drawnPoints[p_end_idx];
+                                const midX = (p_start.x + p_end.x) / 2;
+                                const midY = (p_start.y + p_end.y) / 2;
+                                ctx.fillText(`${lengthInput.value} ${unitInput.value}`, midX, midY + 5); 
+                            }
+                         }
+                    }
+
+                } else if (calcMethod === 'shoelace') {
+                    const refLengthRealEl = document.getElementById('scaleRefSideLength');
+                    const refUnitEl = document.getElementById('scaleRefSideUnit');
+                    const refLengthReal = refLengthRealEl ? parseFloat(refLengthRealEl.value) : NaN;
+                    const refUnit = refUnitEl ? refUnitEl.value : 'फीट';
+
+
+                    if (!isNaN(refLengthReal) && refLengthReal > 0 && drawnPoints.length > 1) {
+                        const p_ref_start = drawnPoints[0];
+                        const p_ref_end = drawnPoints[1];
+                        const refLengthPixel = Math.hypot(p_ref_end.x - p_ref_start.x, p_ref_end.y - p_ref_start.y);
+                        if (refLengthPixel > 1e-6) {
+                            const scaleFactor = refLengthReal / refLengthPixel;
+                            for (let i = 0; i < drawnPoints.length; i++) {
+                                const p1 = drawnPoints[i];
+                                const p2 = drawnPoints[(i + 1) % drawnPoints.length];
+                                const pixelDist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+                                const realDist = pixelDist * scaleFactor;
+                                
+                                const midX = (p1.x + p2.x) / 2;
+                                const midY = (p1.y + p2.y) / 2;
+                                const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+                                const offsetX = Math.sin(angle) * 10;
+                                const offsetY = -Math.cos(angle) * 10;
+                                ctx.fillText(`${realDist.toFixed(1)} ${refUnit}`, midX + offsetX, midY + offsetY);
+                            }
+                        }
+                    }
+                }
+            }
+             ctx.textAlign = "start"; 
+
+            if (highlightedDrawnSideIndex !== -1 && highlightedDrawnSideIndex < drawnShapeSidesInfo.length) {
+                const sideToHighlight = drawnShapeSidesInfo[highlightedDrawnSideIndex];
+                 if (sideToHighlight.p1 && sideToHighlight.p2) { 
+                    ctx.beginPath(); ctx.moveTo(sideToHighlight.p1.x, sideToHighlight.p1.y); 
+                    ctx.lineTo(sideToHighlight.p2.x, sideToHighlight.p2.y);
+                    ctx.strokeStyle = "orange"; ctx.lineWidth = 4; ctx.stroke();
+                 }
+            }
+            if (activeHighlightDiagonalPoints && drawnPoints.length > activeHighlightDiagonalPoints.end && drawnPoints.length > activeHighlightDiagonalPoints.start) {
+                const p_start = drawnPoints[activeHighlightDiagonalPoints.start];
+                const p_end = drawnPoints[activeHighlightDiagonalPoints.end];
+                if (p_start && p_end) {
+                    ctx.beginPath(); ctx.moveTo(p_start.x, p_start.y); ctx.lineTo(p_end.x, p_end.y);
+                    ctx.strokeStyle = "purple"; ctx.lineWidth = 3; ctx.setLineDash([5, 5]); ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+        }
+        
+        function addDrawnSideMeasurementInput(p1, p2) {
+            const sideIndex = drawnShapeSidesInfo.length; 
+            const sideCountDisplay = sideIndex + 1;
+            const lId=`dS Len-${sideCountDisplay}`, uId=`dS Unit-${sideCountDisplay}`, groupId = `dS G-${sideCountDisplay}`;
+            drawnShapeSidesInfo.push({p1, p2, lId, uId, groupId, sideIndex});
+            const sideLabel = `भुजा ${sideCountDisplay}`; 
+            const html=`<div class="dimension-input-group" id="${groupId}"><label for="${lId}">${sideLabel}:</label><div><input type="number" id="${lId}" placeholder="लंबाई" oninput="redrawCanvasShape()" onfocus="highlightDrawnSide(${sideIndex})" onblur="clearDrawnSideHighlight()"><select id="${uId}" onchange="redrawCanvasShape()" onfocus="highlightDrawnSide(${sideIndex})" onblur="clearDrawnSideHighlight()">${unitOptionsHTML}</select></div></div>`;
+            const measurementsDiv = document.getElementById('measurementsForDrawnShape');
+            if(measurementsDiv) measurementsDiv.insertAdjacentHTML('beforeend',html);
+        }
+
+        function finishDrawnShape(){
+            if(drawnPoints.length<3){alert("कम से कम 3 कोने चाहिए।");return;}
+            if(isDrawnShapeClosed) return; 
+
+            const calcMethodRadio = document.querySelector('input[name="drawingCalcMethod"]:checked');
+            const calcMethod = calcMethodRadio ? calcMethodRadio.value : 'heron';
+
+            if (calcMethod === 'heron') {
+                addDrawnSideMeasurementInput(drawnPoints[drawnPoints.length-1], drawnPoints[0]);
+            }
+            
+            isDrawnShapeClosed=true;
+            const finishBtn = document.getElementById('finishShapeBtn');
+            if(finishBtn) finishBtn.disabled = true;
+            const editChkLabel = document.querySelector('label[for="editPointsCheckbox"]');
+            if(editChkLabel) editChkLabel.classList.remove('hidden'); 
+
+            updateDrawingModeUI(); 
+            redrawCanvasShape(); 
+            if(canvas) canvas.style.cursor = editPointsModeEnabled ? 'grab' :'default';
+        }
+        
+        function generateDiagonalInputsUI() { 
+            const dD = document.getElementById('diagonalForDrawnShape');
+            if(!dD) return;
+            dD.innerHTML = ''; 
+            dD.classList.add('hidden');
+
+            if(!isDrawnShapeClosed || drawnPoints.length < 4) return; 
+
+            if(drawnPoints.length === 4){
+                dD.classList.remove('hidden');
+                const id=`dD Len-P0-P2`, uId=`dD Unit-P0-P2`; 
+                dD.innerHTML=`<h4>विकर्ण की माप:</h4><div class="dimension-input-group"><label for="${id}">विकर्ण (कोना 1 - कोना 3):</label><div><input type="number" id="${id}" placeholder="लंबाई" oninput="redrawCanvasShape()" onfocus="highlightSpecificDiagonal(0, 2)" onblur="clearSpecificDiagonalHighlight()"><select id="${uId}" onchange="redrawCanvasShape()" onfocus="highlightSpecificDiagonal(0, 2)" onblur="clearSpecificDiagonalHighlight()">${unitOptionsHTML}</select></div></div>`;
+            } else if (drawnPoints.length > 4) {
+                dD.classList.remove('hidden');
+                let diagonalHTML = `<h4>आवश्यक विकर्णों की माप (पहले कोने से):</h4>`;
+                const numTotalPoints = drawnPoints.length;
+                for (let i = 0; i < numTotalPoints - 3; i++) {
+                    const p_start_index = 0; 
+                    const p_end_index = i + 2; 
+                    const diagId = `dD Len-P${p_start_index}-P${p_end_index}`;
+                    const diagUnitId = `dD Unit-P${p_start_index}-P${p_end_index}`;
+                    const userPoint1Display = p_start_index + 1; 
+                    const userPointEndDisplay = p_end_index + 1; 
+                    diagonalHTML += `
+                        <div class="dimension-input-group">
+                            <label for="${diagId}">विकर्ण (कोना ${userPoint1Display} - कोना ${userPointEndDisplay}):</label>
+                            <div>
+                                <input type="number" id="${diagId}" placeholder="लंबाई" oninput="redrawCanvasShape()" onfocus="highlightSpecificDiagonal(${p_start_index}, ${p_end_index})" onblur="clearSpecificDiagonalHighlight()">
+                                <select id="${diagUnitId}" onchange="redrawCanvasShape()" onfocus="highlightSpecificDiagonal(${p_start_index}, ${p_end_index})" onblur="clearSpecificDiagonalHighlight()">${unitOptionsHTML}</select>
+                            </div>
+                        </div>`;
+                }
+                dD.innerHTML = diagonalHTML;
+            }
+        }
+
+        function undoLastPoint(){
+            const editChk = document.getElementById('editPointsCheckbox');
+            if (editPointsModeEnabled) {
+                alert("पॉइंट्स संपादित मोड में अनडू अक्षम है। पहले इसे अक्षम करें।");
+                return;
+            }
+            if (drawnPoints.length === 0 && !isDrawnShapeClosed) return;
+            
+            let wasClosed = isDrawnShapeClosed;
+
+            if (isDrawnShapeClosed) { 
+                isDrawnShapeClosed = false;
+                if(canvas) canvas.style.cursor = 'crosshair';
+                const finishBtn = document.getElementById('finishShapeBtn');
+                if(finishBtn) finishBtn.disabled = false;
+                const editChkLabel = document.querySelector('label[for="editPointsCheckbox"]');
+                if(editChkLabel) editChkLabel.classList.add('hidden');
+                if(editChk) editChk.checked = false;
+                editPointsModeEnabled = false;
+                
+                const calcMethodRadio = document.querySelector('input[name="drawingCalcMethod"]:checked');
+                const calcMethod = calcMethodRadio ? calcMethodRadio.value : 'heron';
+
+                 if (calcMethod === 'heron' && drawnShapeSidesInfo.length > 0) {
+                    const closingSideInfo = drawnShapeSidesInfo.pop(); 
+                    const groupElement = document.getElementById(closingSideInfo.groupId);
+                    if (groupElement) groupElement.remove();
+                }
+            } else if (drawnPoints.length > 0) { 
+                drawnPoints.pop();
+                const calcMethodRadio = document.querySelector('input[name="drawingCalcMethod"]:checked');
+                const calcMethod = calcMethodRadio ? calcMethodRadio.value : 'heron';
+                if (calcMethod === 'heron' && drawnShapeSidesInfo.length > 0) { 
+                    const lastSideInfo = drawnShapeSidesInfo.pop();
+                    const groupElement = document.getElementById(lastSideInfo.groupId);
+                    if (groupElement) groupElement.remove();
+                }
+            }
+            
+            updateDrawingModeUI(); 
+            clearDrawnSideHighlight(); 
+            redrawCanvasShape();
+
+            if (drawnPoints.length === 0 && drawnShapeSidesInfo.length === 0) { 
+                 resetCanvasDrawingState(); 
+            }
+        }
+
+        function resetCanvas(){resetCanvasDrawingState();clearResults();}
+        function highlightDrawnSide(index) { highlightedDrawnSideIndex = index; activeHighlightDiagonalPoints = null; redrawCanvasShape(); }
+        function clearDrawnSideHighlight() { highlightedDrawnSideIndex = -1; redrawCanvasShape(); }
+        function highlightSpecificDiagonal(startIndex, endIndex) { activeHighlightDiagonalPoints = {start: startIndex, end: endIndex}; highlightedDrawnSideIndex = -1; redrawCanvasShape(); }
+        function clearSpecificDiagonalHighlight() { activeHighlightDiagonalPoints = null; redrawCanvasShape(); }
+        function toggleSnapToGrid(enabled) { snapToGridEnabled = enabled; }
+
+        function toggleEditPointsMode(enabled) {
+            const editChk = document.getElementById('editPointsCheckbox');
+            if (enabled && !isDrawnShapeClosed) {
+                alert("पॉइंट्स संपादित करने के लिए पहले 'आकृति समाप्त करें' पर क्लिक करें।");
+                if(editChk) editChk.checked = false;
+                return;
+            }
+            editPointsModeEnabled = enabled;
+            if(canvas) canvas.style.cursor = editPointsModeEnabled ? 'grab' : (isDrawnShapeClosed ? 'default' : 'crosshair');
+            if (!editPointsModeEnabled) draggingPointIndex = -1; 
+            redrawCanvasShape(); 
+        }
+
+        function updateDrawingModeUI() {
+            const calcMethodRadio = document.querySelector('input[name="drawingCalcMethod"]:checked');
+            const calcMethod = calcMethodRadio ? calcMethodRadio.value : 'heron';
+
+            const heronInstructions = document.getElementById('drawingInstructionsHeron');
+            const shoelaceInstructions = document.getElementById('drawingInstructionsShoelace');
+            const measurementsSection = document.getElementById('measurementsForDrawnShape');
+            const diagonalsSection = document.getElementById('diagonalForDrawnShape');
+            const scaleSection = document.getElementById('scaleInputSection');
+            const editPointsCheckboxLabel = document.querySelector('label[for="editPointsCheckbox"]');
+
+            if(heronInstructions) heronInstructions.classList.toggle('hidden', calcMethod !== 'heron');
+            if(shoelaceInstructions) shoelaceInstructions.classList.toggle('hidden', calcMethod !== 'shoelace');
+            
+            if (calcMethod === 'heron') {
+                if(measurementsSection) measurementsSection.classList.remove('hidden');
+                if (isDrawnShapeClosed) generateDiagonalInputsUI(); else if(diagonalsSection) diagonalsSection.classList.add('hidden');
+                if(scaleSection) scaleSection.classList.add('hidden');
+            } else { 
+                if(measurementsSection) measurementsSection.classList.add('hidden'); 
+                if(diagonalsSection) diagonalsSection.classList.add('hidden');   
+                if (isDrawnShapeClosed) {
+                    if(scaleSection) scaleSection.classList.remove('hidden');
+                } else {
+                    if(scaleSection) scaleSection.classList.add('hidden');
+                }
+            }
+            
+            if(editPointsCheckboxLabel){
+                if (isDrawnShapeClosed) {
+                    editPointsCheckboxLabel.classList.remove('hidden');
+                } else {
+                    editPointsCheckboxLabel.classList.add('hidden');
+                    const editChk = document.getElementById('editPointsCheckbox');
+                    if(editChk) editChk.checked = false; 
+                    editPointsModeEnabled = false; 
+                }
+            }
+
+
+            if (isDrawnShapeClosed) {
+                if (calcMethod === 'shoelace') {
+                    if(measurementsSection) measurementsSection.innerHTML = '<h4>भुजाओं की वास्तविक माप डालें:</h4>'; 
+                    drawnShapeSidesInfo = [];
+                    if(diagonalsSection) {
+                        diagonalsSection.innerHTML = '<h4>आवश्यक विकर्ण की माप:</h4>';
+                        diagonalsSection.classList.add('hidden');
+                    }
+                } else { 
+                    if(scaleSection) scaleSection.classList.add('hidden');
+                    const scaleRefLen = document.getElementById('scaleRefSideLength');
+                    if(scaleRefLen) scaleRefLen.value = '';
+                    
+                    if(measurementsSection) measurementsSection.innerHTML = '<h4>भुजाओं की वास्तविक माप डालें:</h4>';
+                    drawnShapeSidesInfo = []; 
+                    if (drawnPoints.length > 0) { 
+                        for(let i=0; i < drawnPoints.length; i++) {
+                            addDrawnSideMeasurementInput(drawnPoints[i], drawnPoints[(i+1)%drawnPoints.length]);
+                        }
+                        generateDiagonalInputsUI();
+                    }
+                }
+            }
+            clearResults();
+            redrawCanvasShape(); 
+        }
+        // --- END: DRAWING MODE FUNCTIONS ---
+
+
+        // --- SESSION MANAGEMENT FUNCTIONS ---
+        function collectSessionData() { 
+            const sessionData = {
+                inputMode: document.querySelector('input[name="inputMode"]:checked')?.value,
+                area: { value: document.getElementById('inputValue')?.value, unit: document.getElementById('inputUnitArea')?.value },
+                dimensionsAvg: { l1: document.getElementById('length1')?.value, l1u: document.getElementById('length1Unit')?.value, l2: document.getElementById('length2')?.value, l2u: document.getElementById('length2Unit')?.value, w1: document.getElementById('width1')?.value, w1u: document.getElementById('width1Unit')?.value, w2: document.getElementById('width2')?.value, w2u: document.getElementById('width2Unit')?.value, },
+                dimensionsDiag: { sA: document.getElementById('diagSideA')?.value, sAU: document.getElementById('diagSideAUnit')?.value, sB: document.getElementById('diagSideB')?.value, sBU: document.getElementById('diagSideBUnit')?.value, sC: document.getElementById('diagSideC')?.value, sCU: document.getElementById('diagSideCUnit')?.value, sD: document.getElementById('diagSideD')?.value, sDU: document.getElementById('diagSideDUnit')?.value, p: document.getElementById('diagP')?.value,   pU: document.getElementById('diagPUnit')?.value, },
+                customPlot: [], 
+                shapeTemplate: { type: document.getElementById('shapeTemplateSelector')?.value, rectL: document.getElementById('tmplRectL')?.value, rectLU: document.getElementById('tmplRectLUnit')?.value, rectW: document.getElementById('tmplRectW')?.value, rectWU: document.getElementById('tmplRectWUnit')?.value, quadA: document.getElementById('tmplSideA')?.value, quadAU: document.getElementById('tmplSideAUnit')?.value, quadB: document.getElementById('tmplSideB')?.value, quadBU: document.getElementById('tmplSideBUnit')?.value, quadC: document.getElementById('tmplSideC')?.value, quadCU: document.getElementById('tmplSideCUnit')?.value, quadD: document.getElementById('tmplSideD')?.value, quadDU: document.getElementById('tmplSideDUnit')?.value, quadP: document.getElementById('tmplDiagP')?.value, quadPU: document.getElementById('tmplDiagPUnit')?.value, },
+                drawMeasure: { calcMethod: document.querySelector('input[name="drawingCalcMethod"]:checked')?.value, points: drawnPoints, isClosed: isDrawnShapeClosed, snapToGrid: snapToGridEnabled, heronSides: [],  heronDiagonals: {}, scaleRefLength: document.getElementById('scaleRefSideLength')?.value, scaleRefUnit: document.getElementById('scaleRefSideUnit')?.value },
+            };
+            const rectangleSets = document.querySelectorAll('#rectanglesContainer .rectangle-set');
+            rectangleSets.forEach(set => { const id = set.id.split('-')[1]; sessionData.customPlot.push({ id: id, length: document.getElementById(`rectLength-${id}`)?.value, lengthUnit: document.getElementById(`rectLengthUnit-${id}`)?.value, width: document.getElementById(`rectWidth-${id}`)?.value, widthUnit: document.getElementById(`rectWidthUnit-${id}`)?.value, }); });
+            if (sessionData.drawMeasure.calcMethod === 'heron' && isDrawnShapeClosed) {
+                drawnShapeSidesInfo.forEach(side => { sessionData.drawMeasure.heronSides.push({ id: side.lId, value: document.getElementById(side.lId)?.value, unit: document.getElementById(side.uId)?.value }); });
+                if (drawnPoints.length === 4) { const diagId = `dD Len-P0-P2`; const unitId = `dD Unit-P0-P2`; sessionData.drawMeasure.heronDiagonals[diagId] = { value: document.getElementById(diagId)?.value, unit: document.getElementById(unitId)?.value }; }
+                else if (drawnPoints.length > 4) { const numDiagonals = drawnPoints.length - 3; for (let i = 0; i < numDiagonals; i++) { const p_end_index = i + 2; const diagId = `dD Len-P0-P${p_end_index}`; const unitId = `dD Unit-P0-P${p_end_index}`; sessionData.drawMeasure.heronDiagonals[diagId] = { value: document.getElementById(diagId)?.value, unit: document.getElementById(unitId)?.value }; } }
+            } return sessionData;
+        }
+        function saveSession() {
+            const sessionNameInput = document.getElementById('sessionName'); let sessionName = sessionNameInput.value.trim(); const timestamp = new Date(); const defaultName = `सत्र ${timestamp.toLocaleDateString('hi-IN')} ${timestamp.toLocaleTimeString('hi-IN')}`; if (!sessionName) { sessionName = defaultName; } const currentData = collectSessionData(); let sessions = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]'); const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`; sessions.push({  id: sessionId, name: sessionName,  timestamp: timestamp.toISOString(), data: currentData  }); localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sessions)); alert(`सत्र "${sessionName}" सेव किया गया!`); sessionNameInput.value = ''; populateSavedSessionsDropdown(); previewSessionDetails(sessionId);
+        }
+        function populateSavedSessionsDropdown() {
+            const sessions = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]'); const selectElement = document.getElementById('savedSessions'); selectElement.innerHTML = '<option value="">--एक सत्र चुनें--</option>'; sessions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); sessions.forEach(session => { const option = document.createElement('option'); option.value = session.id; option.textContent = `${session.name} (${new Date(session.timestamp).toLocaleString('hi-IN')})`; selectElement.appendChild(option); }); previewSessionDetails('');
+        }
+        function previewSessionDetails(sessionId) {
+            const previewDiv = document.getElementById('sessionPreview'); if (!sessionId) { previewDiv.textContent = ''; return; } const sessions = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]'); const session = sessions.find(s => s.id === sessionId); if (session) { previewDiv.textContent = `नाम: ${session.name}, सेव किया गया: ${new Date(session.timestamp).toLocaleString('hi-IN')}`; } else { previewDiv.textContent = ''; }
+        }
+        function loadSelectedSession() {
+            const sessionId = document.getElementById('savedSessions').value; if (!sessionId) { alert("कृपया लोड करने के लिए एक सत्र चुनें।"); return; } const sessions = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]'); const sessionToLoad = sessions.find(s => s.id === sessionId); if (sessionToLoad) { applySessionData(sessionToLoad.data); alert(`सत्र "${sessionToLoad.name}" लोड किया गया!`); } else { alert("चुना हुआ सत्र नहीं मिला।"); }
+        }
+        function applySessionData(data) {
+            clearAllInputFields(); const modeRadio = document.querySelector(`input[name="inputMode"][value="${data.inputMode}"]`); if (modeRadio) modeRadio.checked = true; toggleInputMode(); 
+            if (data.area) { document.getElementById('inputValue').value = data.area.value || ''; document.getElementById('inputUnitArea').value = data.area.unit || 'bigha'; }
+            if (data.dimensionsAvg) { document.getElementById('length1').value = data.dimensionsAvg.l1 || ''; document.getElementById('length1Unit').value = data.dimensionsAvg.l1u || 'feet'; document.getElementById('length2').value = data.dimensionsAvg.l2 || ''; document.getElementById('length2Unit').value = data.dimensionsAvg.l2u || 'feet'; document.getElementById('width1').value = data.dimensionsAvg.w1 || ''; document.getElementById('width1Unit').value = data.dimensionsAvg.w1u || 'feet'; document.getElementById('width2').value = data.dimensionsAvg.w2 || ''; document.getElementById('width2Unit').value = data.dimensionsAvg.w2u || 'feet'; }
+            if (data.dimensionsDiag) { 
+                document.getElementById('diagSideA').value = data.dimensionsDiag.sA || ''; document.getElementById('diagSideAUnit').value = data.dimensionsDiag.sAU || 'feet';
+                document.getElementById('diagSideB').value = data.dimensionsDiag.sB || ''; document.getElementById('diagSideBUnit').value = data.dimensionsDiag.sBU || 'feet';
+                document.getElementById('diagSideC').value = data.dimensionsDiag.sC || ''; document.getElementById('diagSideCUnit').value = data.dimensionsDiag.sCU || 'feet';
+                document.getElementById('diagSideD').value = data.dimensionsDiag.sD || ''; document.getElementById('diagSideDUnit').value = data.dimensionsDiag.sDU || 'feet';
+                document.getElementById('diagP').value = data.dimensionsDiag.p || ''; document.getElementById('diagPUnit').value = data.dimensionsDiag.pU || 'feet';
+            }
+            if (data.customPlot && data.customPlot.length > 0) { document.getElementById('rectanglesContainer').innerHTML = ''; rectangleCounter = 0; data.customPlot.forEach(rectData => { addRectangleFields(); document.getElementById(`rectLength-${rectangleCounter}`).value = rectData.length || ''; document.getElementById(`rectLengthUnit-${rectangleCounter}`).value = rectData.lengthUnit || 'feet'; document.getElementById(`rectWidth-${rectangleCounter}`).value = rectData.width || ''; document.getElementById(`rectWidthUnit-${rectangleCounter}`).value = rectData.widthUnit || 'feet'; });}
+            if (data.shapeTemplate) { 
+                const sel = document.getElementById('shapeTemplateSelector'); if(sel) sel.value = data.shapeTemplate.type || '';
+                loadShapeTemplate(); // This will create the inputs
+                if(data.shapeTemplate.type === 'rectangle'){
+                    document.getElementById('tmplRectL').value = data.shapeTemplate.rectL || ''; document.getElementById('tmplRectLUnit').value = data.shapeTemplate.rectLU || 'feet';
+                    document.getElementById('tmplRectW').value = data.shapeTemplate.rectW || ''; document.getElementById('tmplRectWUnit').value = data.shapeTemplate.rectWU || 'feet';
+                } else if (data.shapeTemplate.type === 'quad_diag'){
+                    document.getElementById('tmplSideA').value = data.shapeTemplate.quadA || ''; document.getElementById('tmplSideAUnit').value = data.shapeTemplate.quadAU || 'feet';
+                    document.getElementById('tmplSideB').value = data.shapeTemplate.quadB || ''; document.getElementById('tmplSideBUnit').value = data.shapeTemplate.quadBU || 'feet';
+                    document.getElementById('tmplSideC').value = data.shapeTemplate.quadC || ''; document.getElementById('tmplSideCUnit').value = data.shapeTemplate.quadCU || 'feet';
+                    document.getElementById('tmplSideD').value = data.shapeTemplate.quadD || ''; document.getElementById('tmplSideDUnit').value = data.shapeTemplate.quadDU || 'feet';
+                    document.getElementById('tmplDiagP').value = data.shapeTemplate.quadP || ''; document.getElementById('tmplDiagPUnit').value = data.shapeTemplate.quadPU || 'feet';
+                }
+            }
+            if (data.inputMode === 'draw_measure' && data.drawMeasure) { const dmData = data.drawMeasure; const drawMethodRadio = document.querySelector(`input[name="drawingCalcMethod"][value="${dmData.calcMethod}"]`); if (drawMethodRadio) drawMethodRadio.checked = true; snapToGridEnabled = dmData.snapToGrid || false; document.getElementById('snapToGridCheckbox').checked = snapToGridEnabled; drawnPoints = dmData.points || []; isDrawnShapeClosed = dmData.isClosed || false; updateDrawingModeUI(); if (isDrawnShapeClosed) { document.getElementById('finishShapeBtn').disabled = true; const editChkLabel = document.querySelector('label[for="editPointsCheckbox"]'); if(editChkLabel) editChkLabel.classList.remove('hidden'); } else { document.getElementById('finishShapeBtn').disabled = false; } if (dmData.calcMethod === 'heron') { document.getElementById('measurementsForDrawnShape').innerHTML = '<h4>भुजाओं की वास्तविक माप डालें:</h4>'; drawnShapeSidesInfo = []; if (drawnPoints.length > 0) { for(let i=0; i < drawnPoints.length; i++) { const p1_load = drawnPoints[i]; const p2_load = drawnPoints[(i+1)%drawnPoints.length]; addDrawnSideMeasurementInput(p1_load, p2_load); } dmData.heronSides.forEach(savedSide => { const valEl = document.getElementById(savedSide.id); const unitElId = savedSide.id.replace('Len', 'Unit'); const unitEl = document.getElementById(unitElId); if(valEl) valEl.value = savedSide.value || ''; if(unitEl) unitEl.value = savedSide.unit || 'feet'; }); } generateDiagonalInputsUI(); Object.keys(dmData.heronDiagonals || {}).forEach(diagIdKey => { const valEl = document.getElementById(diagIdKey); const unitElId = diagIdKey.replace('Len', 'Unit'); const unitEl = document.getElementById(unitElId); if(valEl) valEl.value = dmData.heronDiagonals[diagIdKey].value || ''; if(unitEl) unitEl.value = dmData.heronDiagonals[diagIdKey].unit || 'feet'; }); } else if (dmData.calcMethod === 'shoelace') { document.getElementById('scaleRefSideLength').value = dmData.scaleRefLength || ''; document.getElementById('scaleRefSideUnit').value = dmData.scaleRefUnit || 'feet'; } redrawCanvasShape(); } clearResults();
+        }
+        function deleteSelectedSession() {
+            const sessionId = document.getElementById('savedSessions').value; if (!sessionId) { alert("कृपया हटाने के लिए एक सत्र चुनें।"); return; } if (confirm("क्या आप वाकई इस सत्र को हटाना चाहते हैं?")) { let sessions = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]'); sessions = sessions.filter(s => s.id !== sessionId); localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sessions)); alert("सत्र हटा दिया गया।"); populateSavedSessionsDropdown(); }
+        }
+
+        // --- START: MAIN CONTROL FUNCTIONS ---
+        function toggleInputMode(){
+            const modeRadio = document.querySelector('input[name="inputMode"]:checked');
+            if (!modeRadio) return; 
+            const mode = modeRadio.value;
+
+            ['areaInputSection','dimensionsInputSection','diagonalInputSection','customPlotSection','shapeTemplateSection','drawingModeSection'].forEach(id=>{
+                const el = document.getElementById(id);
+                if(el) el.classList.add('hidden');
+            });
+            
+            let sTS='';
+            if(mode==='area')sTS='areaInputSection';
+            else if(mode==='dimensions_avg')sTS='dimensionsInputSection';
+            else if(mode==='dimensions_diag')sTS='diagonalInputSection';
+            else if(mode==='custom_plot')sTS='customPlotSection';
+            else if(mode==='shape_template')sTS='shapeTemplateSection';
+            else if(mode==='draw_measure')sTS='drawingModeSection';
+            
+            const sectionToShow = document.getElementById(sTS);
+            if(sectionToShow) sectionToShow.classList.remove('hidden'); 
+            
+            clearResults(); 
+            
+            if(mode==='draw_measure'){
+                if(!canvas||!ctx) { 
+                    initializeCanvas(); 
+                } else { 
+                     resetCanvasDrawingState(); 
+                }
+                 updateDrawingModeUI(); 
+            } else {
+                 clearAllInputFields(); 
+            }
+            
+            if(mode==='custom_plot'){
+                const rectContainer = document.getElementById('rectanglesContainer');
+                if(rectContainer && rectContainer.children.length===0){
+                    rectangleCounter=0;
+                    addRectangleFields();
+                }
+            } else {
+                const rectContainer = document.getElementById('rectanglesContainer');
+                if(rectContainer) rectContainer.innerHTML='';
+                rectangleCounter=0;
+            }
+            
+            if(mode==='shape_template'){loadShapeTemplate();}
+        }
+
+        function clearAllInputFields(){
+            document.getElementById('inputValue').value='';['length1','length2','width1','width2','diagSideA','diagSideB','diagSideC','diagSideD','diagP','tmplRectL','tmplRectW','tmplSideA','tmplSideB','tmplSideC','tmplSideD','tmplDiagP'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+            const cMradio=document.querySelector('input[name="inputMode"]:checked'); 
+            const cM = cMradio ? cMradio.value : ""; 
+            
+            const rectContainer = document.getElementById('rectanglesContainer');
+            if (rectContainer) {
+                if(cM==='custom_plot'){ if(rectContainer.children.length===0) {rectangleCounter=0; addRectangleFields();}}
+                else{rectContainer.innerHTML='';rectangleCounter=0;}
+            }
+
+            const tmplArea = document.getElementById('templateMeasurementsInputArea');
+            const shapeSel = document.getElementById('shapeTemplateSelector');
+            if(tmplArea && shapeSel) {
+                 tmplArea.innerHTML='';
+                 shapeSel.value='';
+                 loadShapeTemplate();
+            }
+            
+            if(canvas && ctx){ 
+                resetCanvasDrawingState();
+            }
+        }
+        
+        function calculateArea() {
+            const modeRadio = document.querySelector('input[name="inputMode"]:checked');
+            if(!modeRadio) { alert("कृपया एक इनपुट मोड चुनें।"); return; }
+            const mode = modeRadio.value;
+            
+            let valSqM = NaN;
+            let perimeterM = 0; 
+
+            try {
+                if (mode === 'draw_measure') {
+                    if(!isDrawnShapeClosed)throw Error("पहले 'आकृति समाप्त करें' पर क्लिक करें।");
+                    if(drawnPoints.length<3) throw Error("आकृति के लिए कम से कम 3 कोने चाहिए।");
+                    
+                    const calcMethodRadio = document.querySelector('input[name="drawingCalcMethod"]:checked');
+                    const calcMethod = calcMethodRadio ? calcMethodRadio.value : 'heron';
+                    const sL_m_for_perimeter = [];
+
+                    if (calcMethod === 'heron') {
+                        if (drawnShapeSidesInfo.length !== drawnPoints.length) {
+                            throw Error(`भुजाओं की संख्या (${drawnShapeSidesInfo.length}) कोनों की संख्या (${drawnPoints.length}) से मेल नहीं खाती।`);
+                        }
+                        for(const sI of drawnShapeSidesInfo){
+                            const l=getDimensionInMeters(sI.lId,sI.uId);
+                            if(isNaN(l))throw Error(`भुजा (ID: ${sI.lId}) के लिए अमान्य लंबाई।`);
+                            sL_m_for_perimeter.push(l);
+                        }
+                        const numPoints = drawnPoints.length;
+                        valSqM = 0;
+                        if(numPoints===3){ valSqM=heronsFormula(sL_m_for_perimeter[0],sL_m_for_perimeter[1],sL_m_for_perimeter[2]); if(isNaN(valSqM)) throw Error(`त्रिभुज की भुजाएँ मान्य नहीं हैं।`); }
+                        else if (numPoints === 4) { const d_P0_P2_m=getDimensionInMeters('dD Len-P0-P2','dD Unit-P0-P2'); if(isNaN(d_P0_P2_m))throw Error("विकर्ण (1-3) के लिए मान्य लंबाई डालें।"); const A1=heronsFormula(sL_m_for_perimeter[0], sL_m_for_perimeter[1], d_P0_P2_m); const A2=heronsFormula(d_P0_P2_m, sL_m_for_perimeter[2], sL_m_for_perimeter[3]); if(isNaN(A1)||isNaN(A2))throw Error("भुजाएँ/विकर्ण मान्य त्रिभुज नहीं बनाते।"); valSqM=A1+A2; }
+                        else { let diags_m = []; for (let i = 0; i < numPoints - 3; i++) { const p_e_idx = i + 2; const dId = `dD Len-P0-P${p_e_idx}`; const dUId = `dD Unit-P0-P${p_e_idx}`; const dv = getDimensionInMeters(dId, dUId); if (isNaN(dv)) throw Error(`विकर्ण (1-${p_e_idx+1}) के लिए मान्य लंबाई डालें.`); diags_m.push(dv); } let aT = heronsFormula(sL_m_for_perimeter[0], sL_m_for_perimeter[1], diags_m[0]); if(isNaN(aT)) throw Error(`त्रिभुज 1 माप अमान्य।`); valSqM+=aT; for(let i=0;i<numPoints-3;i++){ const s_a=diags_m[i]; const s_b=sL_m_for_perimeter[i+2]; let s_c; if(i<numPoints-4){s_c=diags_m[i+1];}else{s_c=sL_m_for_perimeter[numPoints-1];} aT=heronsFormula(s_a,s_b,s_c); if(isNaN(aT)) throw Error(`त्रिभुज ${i+2} माप अमान्य।`); valSqM+=aT;}}
+
+                    } else if (calcMethod === 'shoelace') {
+                        const refLengthReal = getDimensionInMeters('scaleRefSideLength', 'scaleRefSideUnit');
+                        if (isNaN(refLengthReal) || refLengthReal <= 0) throw Error("भुजा 1 के लिए मान्य वास्तविक लंबाई डालें।");
+                        const p_ref_start = drawnPoints[0]; const p_ref_end = drawnPoints[1];
+                        const refLengthPixel = Math.hypot(p_ref_end.x - p_ref_start.x, p_ref_end.y - p_ref_start.y);
+                        if (refLengthPixel < 1e-6) throw Error("संदर्भ भुजा की पिक्सेल लंबाई बहुत कम है।");
+                        const scaleFactor = refLengthReal / refLengthPixel;
+                        const realPoints = drawnPoints.map(point => ({ x: point.x * scaleFactor, y: point.y * scaleFactor }));
+                        valSqM = shoelaceFormula(realPoints);
+
+                        for (let i = 0; i < realPoints.length; i++) {
+                            const p1_real = realPoints[i];
+                            const p2_real = realPoints[(i + 1) % realPoints.length];
+                            sL_m_for_perimeter.push(Math.hypot(p2_real.x - p1_real.x, p2_real.y - p1_real.y));
+                        }
+                    }
+                    if (sL_m_for_perimeter.length > 0) {
+                        perimeterM = sL_m_for_perimeter.reduce((sum, length) => sum + length, 0);
+                    }
+
+                } else { 
+                    if (mode === 'area') { const raw = document.getElementById('inputValue').value; if(raw.trim()==='')throw Error("कृपया क्षेत्रफल का मान डालें।"); const inp=parseFloat(raw),unit=document.getElementById('inputUnitArea').value; if(isNaN(inp)||inp<0)throw Error("क्षेत्रफल का मान 0 या उससे अधिक होना चाहिए।"); if(unit==='bigha'){ if(raw.includes('.')){const[iS,fS]=raw.split('.');const iP=parseInt(iS,10),aB=parseInt(fS,10);if(isNaN(iP)||iP<0||isNaN(aB)||aB<0||aB>=BIGHATOBISWA)throw Error(`'बीघा' में दशमलव (${fS}) बिस्वा (0-${BIGHATOBISWA-1}) होना चाहिए।`);valSqM=(iP+(aB/BIGHATOBISWA))*BIGHATOSQM;} else{const intVal = parseInt(raw, 10); if(isNaN(intVal)||intVal<0)throw Error("बीघा का मान मान्य संख्या होनी चाहिए।");valSqM=intVal*BIGHATOSQM;} } else if(unit==='biswa')valSqM=inp*(BIGHATOSQM/BIGHATOBISWA); else if(unit==='gatha')valSqM=inp*(BIGHATOSQM/BIGHATOGATHA); else if(unit==='sqmeter')valSqM=inp; else if(unit==='sqgaj')valSqM=inp*(BIGHATOSQM/BIGHATOSQGAJ_LOCAL); else if(unit==='sqfeet')valSqM=inp/SQMTOSQFEET; else if(unit==='sqinch')valSqM=inp/(SQMTOSQFEET*SQFEETTOSQINCH); else throw Error("अज्ञात क्षेत्रफल इकाई!");
+                    } else if (mode === 'dimensions_avg') { const[l1,l2,w1,w2]=['length1','length2','width1','width2'].map(id=>getDimensionInMeters(id,id+'Unit')); if([l1,l2,w1,w2].some(isNaN))throw Error("सभी 4 भुजाओं के लिए मान्य सकारात्मक मान डालें।"); valSqM=((l1+l2)/2)*((w1+w2)/2); perimeterM = l1+l2+w1+w2; }
+                    else if (mode === 'dimensions_diag') { const[a,b,c,d,p]=['diagSideA','diagSideB','diagSideC','diagSideD','diagP'].map(id=>getDimensionInMeters(id,id+'Unit')); if([a,b,c,d,p].some(isNaN))throw Error("सभी 5 मापों के लिए मान्य सकारात्मक मान डालें।"); const A1=heronsFormula(a,b,p),A2=heronsFormula(c,d,p); if(isNaN(A1)||isNaN(A2))throw Error("अमान्य माप। दी गई भुजाएँ/विकर्ण वैध त्रिभुज नहीं बनाते।"); valSqM=A1+A2; perimeterM=a+b+c+d; }
+                    else if (mode === 'custom_plot') { const sets=document.querySelectorAll('#rectanglesContainer .rectangle-set'); if(sets.length===0)throw Error("गणना के लिए कम से कम एक आयत जोड़ें।");valSqM=0; perimeterM=0; for(let i=0;i<sets.length;i++){const sId=sets[i].id.split('-')[1];const l=getDimensionInMeters(`rectLength-${sId}`,`rectLengthUnit-${sId}`),w=getDimensionInMeters(`rectWidth-${sId}`,`rectWidthUnit-${sId}`);if(isNaN(l)||isNaN(w))throw Error(`आयत ${sId} के लिए अमान्य मान।`);valSqM+=(l*w);}}
+                    else if (mode === 'shape_template') { const typeRadio=document.getElementById('shapeTemplateSelector'); const type = typeRadio ? typeRadio.value : ""; if(!type)throw Error("कृपया एक आकृति टेम्पलेट चुनें।"); if(type==="rectangle"){const l=getDimensionInMeters('tmplRectL','tmplRectLUnit'),w=getDimensionInMeters('tmplRectW','tmplRectWUnit');if(isNaN(l)||isNaN(w))throw Error("आयत के लिए मान्य लंबाई और चौड़ाई डालें।");valSqM=l*w; perimeterM=2*(l+w);} else if(type==="quad_diag"){const[a,b,c,d,p]=['tmplSideA','tmplSideB','tmplSideC','tmplSideD','tmplDiagP'].map(id=>getDimensionInMeters(id,id+'Unit'));if([a,b,c,d,p].some(isNaN))throw Error("टेम्पलेट के सभी 5 मापों के लिए मान्य सकारात्मक मान डालें।");const A1=heronsFormula(a,b,p),A2=heronsFormula(c,d,p);if(isNaN(A1)||isNaN(A2))throw Error("टेम्पलेट की भुजाएँ/विकर्ण वैध त्रिभुज नहीं बनाते।");valSqM=A1+A2; perimeterM=a+b+c+d;}}
+                }
+
+                if(isNaN(valSqM)||valSqM<0)throw Error("अंतिम गणना के परिणामस्वरूप अमान्य क्षेत्रफल आया। इनपुट जांचें।");
+                const shapeTemplateSelector = document.getElementById('shapeTemplateSelector');
+                const showPerimeterFlag = mode === 'draw_measure' || 
+                                          mode === 'dimensions_avg' || 
+                                          mode === 'dimensions_diag' || 
+                                          (mode === 'shape_template' && shapeTemplateSelector && shapeTemplateSelector.value !== '');
+                displayResults(valSqM, perimeterM, showPerimeterFlag);
+            }catch(e){alert(e.message||"एक अज्ञात त्रुटि हुई।");clearResults();}
+        }
+        
+        function displayResults(vSM, perimeterM, showPerimeter = false){ 
+            const tBD=parseFloat((vSM*SQMTOBIGHA).toFixed(10));let bP=Math.floor(tBD),bsP=parseFloat(((tBD-bP)*BIGHATOBISWA).toFixed(8));const ep=1e-7;if(bsP>=BIGHATOBISWA-ep){bP++;bsP=0;}else if(Math.abs(bsP)<ep)bsP=0;if(bsP<0&&Math.abs(bsP)<ep)bsP=0;document.getElementById('resultBigha').value=formatNumber(bP);document.getElementById('resultBiswa').value=formatNumber(bsP);document.getElementById('resultGatha').value=formatNumber(vSM*SQMTOGATHA);document.getElementById('resultSqMeter').value=formatNumber(vSM);document.getElementById('resultSqGaj').value=formatNumber(vSM*SQMTOSQGAJ_LOCAL);document.getElementById('resultSqFeet').value=formatNumber(vSM*SQMTOSQFEET);document.getElementById('resultSqInch').value=formatNumber(vSM*SQMTOSQFEET*SQFEETTOSQINCH);
+            
+            const perimeterItem = document.getElementById('perimeterResultItem');
+            const perimeterInput = document.getElementById('resultPerimeter');
+            if (showPerimeter && perimeterM > 0 && perimeterItem && perimeterInput) {
+                perimeterInput.value = formatNumber(perimeterM);
+                perimeterItem.style.display = 'flex';
+            } else if (perimeterItem && perimeterInput) {
+                perimeterInput.value = '';
+                perimeterItem.style.display = 'none';
+            }
+        }
+        // --- END: MAIN CONTROL FUNCTIONS ---
+        
+        window.onload=()=>{
+            const iMRadio = document.querySelector('input[name="inputMode"][value="draw_measure"]');
+            if(iMRadio) iMRadio.checked = true; 
+            toggleInputMode(); 
+            populateSavedSessionsDropdown();
+        };
+    </script>
+</body>
+</html>
