@@ -163,6 +163,24 @@
         #bookmark-controls input, #bookmark-controls select { margin-top:0; }
         #bookmark-list-container { margin-top:15px; }
 
+        /* RSS Feed Specific Styles */
+        #rss-feed-controls { display:flex; gap:10px; align-items:flex-end; margin-bottom:15px; flex-wrap: wrap;}
+        #rss-feed-controls input {flex-grow:1; margin-top:0;}
+        #rss-feed-controls button {margin-top:0; padding:12px 15px; font-size:0.9em;}
+
+        #subscribedFeedsList ul { list-style: none; padding-left: 0; }
+        #subscribedFeedsList li { margin-bottom: 8px; padding: 8px; background-color: var(--bg-color); border-radius: 4px; display:flex; justify-content:space-between; align-items:center;}
+        #subscribedFeedsList li a { color: var(--primary-color); text-decoration: none; font-weight: bold; flex-grow:1;}
+        #subscribedFeedsList li a:hover { text-decoration: underline; }
+        #rssArticlesContainer { border-top: 1px solid var(--border-color); margin-top:20px; padding-top:15px;}
+        .rss-article-item { /* Same as library-item or define new */
+            display: flex; justify-content: space-between; align-items: center; padding: 10px;
+            border-bottom: 1px solid var(--border-color); cursor:pointer;
+        }
+        .rss-article-item:last-child { border-bottom: none; }
+        .rss-article-item:hover { background-color: var(--bg-color); }
+        .rss-article-item .item-title { flex-grow: 1; }
+        .rss-article-item small { color: var(--text-color); opacity: 0.7; font-size:0.8em;}
     </style>
 </head>
 <body>
@@ -177,7 +195,12 @@
         <h1>आर्टिकल रीडर प्रो</h1>
         <div id="googleSearchContainer" style="margin-bottom: 15px; display: flex; gap: 5px;"><input type="search" id="googleSearchQuery" placeholder="गूगल पर खोजें..." style="flex-grow: 1; margin-top:0;"><button onclick="performGoogleSearch()" class="tool-btn" style="margin-top:0; padding: 12px 15px;" title="खोजें">🔍</button></div>
         <div id="internalNavHistoryContainer" style="display: none; justify-content:space-between; margin-bottom:10px;"><button id="historyBackBtn" onclick="navigateHistory(-1)" disabled>⬅️ पिछला</button><button id="historyForwardBtn" onclick="navigateHistory(1)" disabled>➡️ अगला</button></div>
-        <div class="tabs"><button class="tab-link active" onclick="openTool(event, 'ArticleExtractor')">आर्टिकल निकालें</button><button class="tab-link" onclick="openTool(event, 'MyLibrary')">मेरी लाइब्रेरी <span id="library-count">(0)</span></button><button class="tab-link" onclick="openTool(event, 'Bookmarks')">बुकमार्क <span id="bookmark-count">(0)</span></button></div>
+        <div class="tabs">
+            <button class="tab-link active" onclick="openTool(event, 'ArticleExtractor')">आर्टिकल निकालें</button>
+            <button class="tab-link" onclick="openTool(event, 'MyLibrary')">मेरी लाइब्रेरी <span id="library-count">(0)</span></button>
+            <button class="tab-link" onclick="openTool(event, 'Bookmarks')">बुकमार्क <span id="bookmark-count">(0)</span></button>
+            <button class="tab-link" onclick="openTool(event, 'RSSFeeds')">RSS फ़ीड्स <span id="rss-feed-count">(0)</span></button>
+        </div>
         
         <div id="ArticleExtractor" class="tool-content" style="display:block;">
             <p>किसी भी आर्टिकल का लिंक, कैटेगरी पेज या वेबसाइट का होमपेज लिंक यहाँ डालें।</p>
@@ -277,6 +300,23 @@
                 <div id="bookmark-list"></div>
             </div>
         </div>
+
+        <div id="RSSFeeds" class="tool-content" style="display:none;">
+            <h2>RSS फ़ीड्स</h2>
+            <div id="rss-feed-controls">
+                <input type="url" id="rssFeedUrlInput" placeholder="वेबसाइट URL या RSS फ़ीड URL डालें">
+                <button class="tool-btn" onclick="addRssFeed()">फ़ीड जोड़ें</button>
+                <button id="refreshAllRssFeedsBtn" class="tool-btn-secondary" onclick="refreshAllRssFeeds()" style="margin-left:10px;">🔄 सभी रिफ्रेश करें</button>
+            </div>
+            <div id="subscribedFeedsListContainer" style="margin-top:15px;">
+                 <div id="subscribedFeedsList"></div>
+            </div>
+            <div id="rssArticlesContainer" style="margin-top:15px;">
+                <h3 id="rssFeedTitleDisplay"></h3>
+                <div id="rssArticlesList"></div>
+            </div>
+        </div>
+
     </div>
     <button id="backToTopBtn" onclick="scrollToTop()" title="ऊपर जाएं">⬆️</button>
     <div id="toast-container"></div>
@@ -368,6 +408,12 @@
                             <button class="danger-btn" onclick="clearBookmarksData()" style="margin-top:0;">बुकमार्क साफ़ करें</button>
                         </div>
                     </div>
+                     <div class="setting-item">
+                        <label>RSS फ़ीड डेटा:</label>
+                        <div class="setting-control">
+                            <button class="danger-btn" onclick="clearRssFeedsData()" style="margin-top:0;">RSS फ़ीड्स साफ़ करें</button>
+                        </div>
+                    </div>
                     <div class="setting-item">
                         <label>सभी सेटिंग्स और डेटा:</label>
                         <div class="setting-control">
@@ -425,7 +471,9 @@
     const STORAGE_KEY_AUTOPLAY = 'articleReaderAutoplay_v1';
     const STORAGE_KEY_PLAYBACK_POSITIONS = 'articleReaderPlaybackPositions_v1';
     const STORAGE_KEY_PLAY_QUEUE = 'articleReaderPlayQueue_v1';
-    
+    const STORAGE_KEY_RSS_FEEDS = 'articleReaderRssFeeds_v2'; 
+
+
     // --- Helper Functions (Playback, Visualizer, Queue) ---
     function savePlaybackPosition(articleUrl, type, position) { if (!articleUrl) return; const positions = JSON.parse(localStorage.getItem(STORAGE_KEY_PLAYBACK_POSITIONS) || '{}'); const articleId = btoa(encodeURIComponent(articleUrl)); positions[articleId] = { type, position, timestamp: new Date().getTime() }; localStorage.setItem(STORAGE_KEY_PLAYBACK_POSITIONS, JSON.stringify(positions)); }
     function getPlaybackPosition(articleUrl) { if (!articleUrl) return null; const positions = JSON.parse(localStorage.getItem(STORAGE_KEY_PLAYBACK_POSITIONS) || '{}'); const articleId = btoa(encodeURIComponent(articleUrl)); if (positions[articleId] && (new Date().getTime() - positions[articleId].timestamp > 30 * 24 * 60 * 60 * 1000)) { delete positions[articleId]; localStorage.setItem(STORAGE_KEY_PLAYBACK_POSITIONS, JSON.stringify(positions)); return null; } return positions[articleId] || null; }
@@ -449,10 +497,12 @@
 
         if (playQueue.length === 0) {
             queueList.innerHTML = '<li><p style="text-align:center; padding: 20px 0; font-style:italic;">क्यू खाली है।</p></li>';
-            viewQueueBtn.style.display = 'none';
+            if (viewQueueBtn) viewQueueBtn.style.display = 'none';
         } else {
-            viewQueueBtn.style.display = 'inline-block';
-            queueCount.textContent = playQueue.length;
+            if (viewQueueBtn) {
+                 viewQueueBtn.style.display = 'inline-block';
+                 queueCount.textContent = playQueue.length;
+            }
             playQueue.forEach((item, index) => {
                 const li = document.createElement('li');
                 li.className = 'queue-item';
@@ -841,7 +891,7 @@
     // --- Core Functions (UI, Data Management etc.) ---
     function toggleTheme(themeName) { document.body.classList.remove('dark-mode', 'sepia-mode', 'light-mode'); if (themeName === 'dark') document.body.classList.add('dark-mode'); else if (themeName === 'sepia') document.body.classList.add('sepia-mode'); else document.body.classList.add('light-mode'); localStorage.setItem(STORAGE_KEY_THEME, themeName); }
     function applySavedTheme() { const savedTheme = localStorage.getItem(STORAGE_KEY_THEME) || 'light'; toggleTheme(savedTheme); }
-    function openTool(evt, toolName) { const currentActiveTab = document.querySelector('.tab-link.active'); if (evt && currentActiveTab === evt.currentTarget) return; document.querySelectorAll('.tool-content').forEach(el => el.style.display = 'none'); document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active')); const toolElement = document.getElementById(toolName); if (toolElement) toolElement.style.display = 'block'; const targetTab = evt ? evt.currentTarget : document.querySelector(`.tab-link[onclick*="'${toolName}'"]`); if (targetTab) targetTab.classList.add('active'); if (toolName === 'MyLibrary' || toolName === 'Bookmarks') { if(toolName === 'MyLibrary') { loadLibrary(); populateTagFilter(); } if(toolName === 'Bookmarks') { loadBookmarks(); } document.getElementById('internalNavHistoryContainer').style.display = 'none'; document.getElementById('toggleCrawlBtn').style.display = 'none'; } else if (toolName === 'ArticleExtractor') { updateHistoryButtons(); } }
+    function openTool(evt, toolName) { const currentActiveTab = document.querySelector('.tab-link.active'); if (evt && currentActiveTab === evt.currentTarget) return; document.querySelectorAll('.tool-content').forEach(el => el.style.display = 'none'); document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active')); const toolElement = document.getElementById(toolName); if (toolElement) toolElement.style.display = 'block'; const targetTab = evt ? evt.currentTarget : document.querySelector(`.tab-link[onclick*="'${toolName}'"]`); if (targetTab) targetTab.classList.add('active'); if (toolName === 'MyLibrary' || toolName === 'Bookmarks' || toolName === 'RSSFeeds') { if(toolName === 'MyLibrary') { loadLibrary(); populateTagFilter(); } if(toolName === 'Bookmarks') { loadBookmarks(); } if (toolName === 'RSSFeeds') { displaySubscribedFeeds(); if(getSubscribedFeeds().length > 0 && !document.getElementById('rssArticlesList').hasChildNodes()){ displayRssFeedArticles(getSubscribedFeeds()[0]); } updateRssFeedCount(); } document.getElementById('internalNavHistoryContainer').style.display = 'none'; document.getElementById('toggleCrawlBtn').style.display = 'none'; } else if (toolName === 'ArticleExtractor') { updateHistoryButtons(); } }
     async function fetchWithProxy(url) { const proxyUrl = `${MY_PRIVATE_PROXY}/?url=${encodeURIComponent(url)}`; try { const response = await fetch(proxyUrl, { signal: AbortSignal.timeout(20000) }); if (!response.ok) throw new Error(`प्रॉक्सी सर्वर से जवाब नहीं मिला (स्टेटस: ${response.status})`); return await response.text(); } catch (error) { if (error.name === 'AbortError' || error.name === 'TimeoutError') { throw new Error('अनुरोध में बहुत अधिक समय लगा (टाइमआउट)।'); } throw error; } }
     
     function createStoryElement(article, sourceUrl) {
@@ -867,6 +917,7 @@
         titleH3.textContent = article.title || "शीर्षक उपलब्ध नहीं";
         const headerButtons = document.createElement('div');
         headerButtons.className = 'header-buttons';
+        
         const listenBtn = document.createElement('button');
         listenBtn.textContent = '▶️ सुनें';
         listenBtn.title = 'आर्टिकल सुनें';
@@ -875,22 +926,37 @@
             const dataFromElement = JSON.parse(storyDiv.dataset.articleData);
             addToQueue(dataFromElement); 
         };
+
         const mp3Btn = document.createElement('button');
         mp3Btn.innerHTML = '🗣️ MP3';
         mp3Btn.title = 'MP3 ऑडियो डाउनलोड करें';
         mp3Btn.onclick = (e) => { if (!article.textContent) { showToast("MP3 बनाने के लिए टेक्स्ट उपलब्ध नहीं है।", "error"); return; } downloadTextAsMp3(article.textContent, article.title || "audio", e.currentTarget); };
+        
         const saveBtn = document.createElement('button');
         saveBtn.className = 'save-btn';
         saveBtn.innerHTML = isSaved(sourceUrl) ? '❤️ सेव है' : '🤍 सेव करें';
         saveBtn.title = isSaved(sourceUrl) ? 'लाइब्रेरी से हटाएं' : 'लाइब्रेरी में सेव करें';
         if (isSaved(sourceUrl)) saveBtn.classList.add('saved');
         saveBtn.onclick = () => toggleSaveArticle(articleDataForStorage, sourceUrl, saveBtn); 
+
+        const copyBtn = document.createElement('button');
+        copyBtn.innerHTML = '📄 कॉपी';
+        copyBtn.title = 'आर्टिकल कॉपी करें';
+        copyBtn.onclick = () => copyArticleContent(articleDataForStorage);
+
+        const shareBtn = document.createElement('button');
+        shareBtn.innerHTML = '🔗 शेयर';
+        shareBtn.title = 'आर्टिकल शेयर करें';
+        shareBtn.style.backgroundColor = 'var(--success-color)';
+        shareBtn.onclick = () => shareLibraryArticle(articleDataForStorage); 
+
         const moreOptionsBtn = document.createElement('button');
         moreOptionsBtn.innerHTML = '⋮';
         moreOptionsBtn.title = 'और विकल्प';
         moreOptionsBtn.style.fontSize = '1.2em';
         moreOptionsBtn.onclick = (e) => { e.stopPropagation(); showItemContextMenu(e.currentTarget, articleDataForStorage); }; 
-        headerButtons.append(listenBtn, mp3Btn, saveBtn, moreOptionsBtn);
+        
+        headerButtons.append(listenBtn, mp3Btn, saveBtn, copyBtn, shareBtn, moreOptionsBtn);
         headerDiv.append(titleH3, headerButtons);
         const wordCount = article.textContent ? article.textContent.split(/\s+/).filter(Boolean).length : 0;
         const readingTime = Math.ceil(wordCount / 200);
@@ -942,6 +1008,48 @@
         }
         return storyDiv;
     }
+
+    async function copyArticleContent(articleData) {
+        if (!articleData || !articleData.title || !articleData.textContent) {
+            showToast('कॉपी करने के लिए आवश्यक डेटा नहीं मिला।', 'error');
+            return;
+        }
+        const textToCopy = `शीर्षक: ${articleData.title}\nURL: ${articleData.url || 'उपलब्ध नहीं'}\n\n${articleData.textContent}`;
+        
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(textToCopy);
+                showToast('आर्टिकल टेक्स्ट सफलतापूर्वक कॉपी हुआ!', 'success');
+            } else {
+                // Fallback for non-secure contexts or older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = textToCopy;
+                textArea.style.position = 'fixed'; 
+                textArea.style.opacity = '0'; // Make it invisible but still part of the DOM for selection
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        showToast('आर्टिकल टेक्स्ट कॉपी हुआ (fallback)!', 'success');
+                    } else {
+                        throw new Error('Fallback copy command failed.');
+                    }
+                } catch (err) {
+                    console.error('Fallback copy error:', err);
+                    showToast('कॉपी विफल। ब्राउज़र ने अनुमति नहीं दी। मैन्युअल रूप से कॉपी करें।', 'error', 5000);
+                    // As a last resort, show the text in a modal for manual copying
+                    displayFallbackShareOptions({text: textToCopy, title: articleData.title, url: articleData.url}, true);
+                }
+                document.body.removeChild(textArea);
+            }
+        } catch (err) {
+            console.error('कॉपी करने में विफल (मुख्य प्रयास):', err);
+            showToast('कॉपी विफल। ब्राउज़र ने अनुमति नहीं दी या कोई त्रुटि हुई।', 'error', 5000);
+        }
+    }
+
 
     async function playAllExtractedArticles() {
         const resultDiv = document.getElementById('ae_result');
@@ -1067,8 +1175,56 @@
     function displayArticleTags(url, tags) { const div = document.getElementById('lib-article-current-tags'); div.innerHTML = tags?.length ? '' : '<em>कोई टैग नहीं।</em>'; tags?.forEach(tag => { const span = document.createElement('span'); span.className = 'tag-item'; span.textContent = tag; const btn = document.createElement('button'); btn.className = 'tag-remove-btn'; btn.textContent = '✗'; btn.onclick = () => removeTagFromCurrentLibraryArticle(tag); span.appendChild(btn); div.appendChild(span); }); }
     function addTagToCurrentLibraryArticle() { const input = document.getElementById('lib-new-tag-input'); const url = document.getElementById('library-article-view').dataset.currentArticleUrl; const name = input.value.trim().toLowerCase(); if (!url || !name) return; const lib = getLibrary(); const id = btoa(encodeURIComponent(url)); if (lib[id]) { lib[id].tags = lib[id].tags || []; if (!lib[id].tags.includes(name)) { lib[id].tags.push(name); saveLibrary(lib); displayArticleTags(url, lib[id].tags); input.value = ''; } } }
     function removeTagFromCurrentLibraryArticle(tagName) { const url = document.getElementById('library-article-view').dataset.currentArticleUrl; if (!url || !tagName) return; const lib = getLibrary(); const id = btoa(encodeURIComponent(url)); if (lib[id]?.tags) { lib[id].tags = lib[id].tags.filter(t => t !== tagName); saveLibrary(lib); displayArticleTags(url, lib[id].tags); } }
-    async function copyLibraryArticleText() { const textEl = document.getElementById('lib-article-text-content'); const titleEl = document.getElementById('lib-article-title'); const urlEl = document.getElementById('lib-article-original-url'); if (!textEl || !titleEl || !urlEl) { showToast('कॉपी करने के लिए आवश्यक तत्व नहीं मिले।', 'error'); return; } const title = titleEl.textContent || "कोई शीर्षक नहीं"; const url = urlEl.href || "कोई URL नहीं"; const content = textEl.textContent || ""; if (content.trim() === "") { showToast("कॉपी करने के लिए कोई टेक्स्ट उपलब्ध नहीं है।", 'warning'); return; } const textToCopy = `शीर्षक: ${title}\nURL: ${url}\n\n${content}`; try { if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(textToCopy); showToast('आर्टिकल टेक्स्ट सफलतापूर्वक कॉपी हुआ!', 'success'); } else { const textArea = document.createElement('textarea'); textArea.value = textToCopy; textArea.style.position = 'fixed'; textArea.style.top = '-9999px'; textArea.style.left = '-9999px'; document.body.appendChild(textArea); textArea.focus(); textArea.select(); document.execCommand('copy'); document.body.removeChild(textArea); showToast('आर्टिकल टेक्स्ट कॉपी हुआ (fallback method)!', 'success'); } } catch (err) { console.error('कॉपी करने में विफल:', err); showToast('कॉपी विफल। ब्राउज़र ने अनुमति नहीं दी।', 'error'); } }
-    async function shareLibraryArticle(articleData) { let shareText = `शीर्षक: ${articleData.title}\nURL: ${articleData.url}\n\n${(articleData.textContent || "").substring(0, 1500)}...`; const data = { title: articleData.title, text: shareText, url: articleData.url }; if (navigator.share) { try { await navigator.share(data); } catch (e) {console.warn("Share API error:", e)} } else displayFallbackShareOptions(data); }
+    
+    async function copyLibraryArticleText() { // This is for the Library view's copy button
+        const titleEl = document.getElementById('lib-article-title');
+        const urlEl = document.getElementById('lib-article-original-url');
+        const contentEl = document.getElementById('lib-article-text-content');
+
+        if (!titleEl || !urlEl || !contentEl) {
+            showToast('कॉपी करने के लिए आवश्यक तत्व नहीं मिले।', 'error');
+            return;
+        }
+        const articleData = {
+            title: titleEl.textContent,
+            url: urlEl.href,
+            textContent: contentEl.textContent
+        };
+        await copyArticleContent(articleData); // Use the generic copy function
+    }
+
+    async function shareLibraryArticle(articleData) { // Modified to share full text
+        if (!articleData || !articleData.title || !articleData.textContent) {
+            showToast('शेयर करने के लिए आवश्यक डेटा नहीं मिला।', 'error');
+            return;
+        }
+        // Construct full text for sharing. Some platforms might truncate it.
+        let shareText = `शीर्षक: ${articleData.title}\nURL: ${articleData.url || 'उपलब्ध नहीं'}\n\n${articleData.textContent}`; 
+        
+        const dataToShare = { 
+            title: articleData.title, 
+            text: shareText, 
+            url: articleData.url // URL is still useful for some share targets
+        };
+
+        if (navigator.share) { 
+            try { 
+                await navigator.share(dataToShare); 
+            } catch (e) {
+                console.warn("Share API error:", e);
+                // If native share fails with NotAllowedError (often for large text), or any other error, fall back.
+                if (e.name === 'NotAllowedError' || e.name === 'AbortError') {
+                    showToast('शेयरिंग विफल हुई या रद्द कर दी गई। फॉलबैक का उपयोग किया जा रहा है।', 'warning');
+                    displayFallbackShareOptions(dataToShare, true); // True for bulk means no social buttons
+                } else {
+                     displayFallbackShareOptions(dataToShare, true);
+                }
+            } 
+        } else {
+            displayFallbackShareOptions(dataToShare, true);
+        } 
+    }
+
     function displayFallbackShareOptions(data, isBulkShare = false) { const existingModal = document.querySelector('.fallback-share-modal'); if (existingModal) existingModal.remove(); const cont = document.createElement('div'); cont.className = 'fallback-share-modal'; let modalContent = `<button class="settings-close-btn" style="float:right; padding:0; line-height:1;" onclick="this.parentElement.remove()">×</button><h4>शेयर करें</h4><textarea id="fallback-share-text" readonly>${data.text}</textarea><div style="margin-top: 10px;"><button class="tool-btn" style="margin-top:0; background-color:var(--success-color);" onclick="copyFallbackText()">टेक्स्ट कॉपी करें</button>`; if (!isBulkShare && data.url) { modalContent += `<a href="mailto:?subject=${encodeURIComponent(data.title)}&body=${encodeURIComponent(data.url)}" class="tool-btn-secondary" style="margin-top:0;">ईमेल</a><a href="https://wa.me/?text=${encodeURIComponent(data.title + '\n' + data.url)}" data-action="share/whatsapp/share" target="_blank" class="tool-btn-secondary" style="margin-top:0;">व्हाट्सएप</a>`; } modalContent += `</div>`; cont.innerHTML = modalContent; document.body.appendChild(cont); }
     function copyFallbackText() { const textArea = document.getElementById('fallback-share-text'); if (textArea) { textArea.select(); textArea.setSelectionRange(0, 999999); try { const successful = document.execCommand('copy'); if (successful) showToast('टेक्स्ट क्लिपबोर्ड पर कॉपी हुआ!', 'success'); else showToast('कॉपी करने में विफल।', 'error'); } catch (err) { showToast('कॉपी करने में विफल।', 'error'); } } }
     function updateLibraryCount() { document.getElementById('library-count').textContent = `(${Object.keys(getLibrary()).length})`; }
@@ -1171,10 +1327,213 @@
     function resetAllSettings() { if (confirm('क्या आप वाकई सभी सेटिंग्स और डेटा को डिफ़ॉल्ट पर रीसेट करना चाहते हैं? आपकी लाइब्रेरी और बुकमार्क सहित सब कुछ हटा दिया जाएगा।')) { Object.keys(localStorage).forEach(key => { if (key.startsWith('articleReader')) { localStorage.removeItem(key); } }); showToast('सभी सेटिंग्स रीसेट कर दी गई हैं। पेज रीलोड हो रहा है...', 'success', 3000); setTimeout(() => location.reload(), 3000); } }
     function performGoogleSearch() { const query = document.getElementById('googleSearchQuery').value; if (query.trim()) { const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`; window.open(searchUrl, '_blank'); } }
 
+    // --- RSS Feed Functions ---
+    function getSubscribedFeeds() { return JSON.parse(localStorage.getItem(STORAGE_KEY_RSS_FEEDS) || '[]'); }
+    function saveSubscribedFeeds(feeds) { localStorage.setItem(STORAGE_KEY_RSS_FEEDS, JSON.stringify(feeds)); displaySubscribedFeeds(); updateRssFeedCount(); }
+    function updateRssFeedCount() { document.getElementById('rss-feed-count').textContent = `(${getSubscribedFeeds().length})`;}
+    async function addRssFeed() {
+        const urlInputEl = document.getElementById('rssFeedUrlInput');
+        const urlInput = urlInputEl.value.trim();
+        if (!urlInput) { showToast("कृपया URL डालें।", "error"); return; }
+        showToast("RSS फ़ीड खोजा जा रहा है...", "info");
+        try {
+            let feedUrl = urlInput;
+            if (!urlInput.toLowerCase().endsWith('.xml') && !urlInput.toLowerCase().endsWith('.rss') && !urlInput.toLowerCase().includes('/feed')) {
+                const foundFeedUrl = await findRssFeedUrlOnPage(urlInput);
+                if (foundFeedUrl) { feedUrl = foundFeedUrl; showToast(`RSS फ़ीड मिला: ${feedUrl}`, "info"); }
+                else { showToast("इस पेज पर कोई स्पष्ट RSS फ़ीड नहीं मिला। दिए गए URL को फ़ीड के रूप में इस्तेमाल करने का प्रयास किया जा रहा है।", "warning"); }
+            }
+            const parsedFeed = await parseRssFeed(feedUrl);
+            if (!parsedFeed || !parsedFeed.items || parsedFeed.items.length === 0) { showToast("RSS फ़ीड को पार्स नहीं किया जा सका या उसमें कोई आइटम नहीं है।", "error"); return; }
+            const feeds = getSubscribedFeeds();
+            if (feeds.some(f => f.url === feedUrl)) { showToast("यह फ़ीड पहले से सब्सक्राइब किया हुआ है।", "warning"); return; }
+            feeds.push({ title: parsedFeed.title || feedUrl, url: feedUrl, lastFetched: new Date().toISOString(), items: parsedFeed.items.slice(0, 30) }); // Store latest 30
+            saveSubscribedFeeds(feeds);
+            urlInputEl.value = '';
+            showToast(`फ़ीड "${parsedFeed.title || feedUrl}" सफलतापूर्वक जोड़ा गया!`, "success");
+            displayRssFeedArticles(feeds[feeds.length-1]);
+        } catch (error) { console.error("फ़ीड जोड़ने में त्रुटि:", error); showToast(`फ़ीड जोड़ने में त्रुटि: ${error.message}`, "error", 5000); }
+    }
+    async function findRssFeedUrlOnPage(pageUrl) {
+        try {
+            const html = await fetchWithProxy(pageUrl);
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
+            const rssLink = doc.querySelector('link[type="application/rss+xml"]');
+            if (rssLink && rssLink.href) return new URL(rssLink.href, pageUrl).href;
+            const atomLink = doc.querySelector('link[type="application/atom+xml"]');
+            if (atomLink && atomLink.href) return new URL(atomLink.href, pageUrl).href;
+            return null;
+        } catch (error) { console.warn(`पेज से RSS फ़ीड खोजने में त्रुटि ${pageUrl}:`, error); return null; }
+    }
+    async function parseRssFeed(feedUrl) {
+        showToast(`फ़ीड ${feedUrl.substring(0,40)}... पार्स किया जा रहा है`, "info", 2000);
+        const xmlText = await fetchWithProxy(feedUrl);
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, "application/xml");
+        const errorNode = xmlDoc.querySelector("parsererror"); 
+        if (errorNode) { console.error("XML पार्सिंग त्रुटि:", errorNode.textContent); throw new Error("फ़ीड XML को पार्स नहीं किया जा सका।");}
+        const feed = { title: '', items: [] };
+        let channelTitleElement = xmlDoc.querySelector("feed > title"); 
+        let itemElementsSelector = "feed > entry";
+        if (!channelTitleElement) { 
+            channelTitleElement = xmlDoc.querySelector("channel > title");
+            itemElementsSelector = "channel > item";
+        }
+        if (channelTitleElement) feed.title = channelTitleElement.textContent.trim();
+        else { console.warn("फ़ीड शीर्षक नहीं मिला for:", feedUrl); feed.title = feedUrl; }
+
+        xmlDoc.querySelectorAll(itemElementsSelector).forEach(itemElem => {
+            let title = itemElem.querySelector("title")?.textContent.trim();
+            let link;
+            if (itemElementsSelector === "feed > entry") { 
+                link = itemElem.querySelector("link[rel='alternate']")?.getAttribute('href') || itemElem.querySelector("link")?.getAttribute('href');
+            } else { 
+                link = itemElem.querySelector("link")?.textContent.trim();
+            }
+            if (link && !link.startsWith('http') && !link.includes('://')) { 
+                 try { link = new URL(link, feedUrl).href; } catch(e){ console.warn("Invalid link in feed:", link); link = null;}
+            }
+            const pubDate = itemElem.querySelector("pubDate")?.textContent.trim() || itemElem.querySelector("published")?.textContent.trim() || itemElem.querySelector("updated")?.textContent.trim();
+            let description = itemElem.querySelector("description")?.textContent.trim() || itemElem.querySelector("summary")?.textContent.trim() || itemElem.querySelector("content")?.textContent.trim();
+            if (description) { 
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = description;
+                description = tempDiv.textContent || tempDiv.innerText || "";
+                description = description.substring(0, 150) + (description.length > 150 ? "..." : "");
+            }
+            if (title && link) feed.items.push({ title, link, pubDate, description });
+        });
+        if(feed.items.length === 0) console.warn("कोई आइटम पार्स नहीं हुआ for:", feedUrl, xmlDoc);
+        return feed;
+    }
+    function displaySubscribedFeeds() {
+        const feeds = getSubscribedFeeds();
+        const listDiv = document.getElementById('subscribedFeedsList');
+        listDiv.innerHTML = '<h4>सब्सक्राइब किए गए फ़ीड्स:</h4>';
+        if (feeds.length === 0) { listDiv.innerHTML += '<p>अभी कोई फ़ीड सब्सक्राइब नहीं किया गया है।</p>'; document.getElementById('rssFeedTitleDisplay').textContent = ''; document.getElementById('rssArticlesList').innerHTML = ''; return; }
+        const ul = document.createElement('ul');
+        feeds.forEach((feed, index) => {
+            const li = document.createElement('li');
+            const feedTitleText = feed.title.length > 60 ? feed.title.substring(0, 57) + '...' : feed.title;
+            li.innerHTML = `
+                <a href="#" onclick="displayRssFeedArticles(getSubscribedFeeds()[${index}]); return false;" title="${feed.title}">${feedTitleText}</a>
+                <div>
+                    <button onclick="refreshRssFeed(${index})" title="रिफ्रेश" style="margin-left:5px; font-size:0.8em; padding: 3px 6px;">🔄</button>
+                    <button onclick="deleteRssFeed(${index})" title="हटाएं" style="margin-left:5px; font-size:0.8em; padding: 3px 6px; background-color:var(--danger-color); color:white; border:none; border-radius:3px;">✗</button>
+                </div>`;
+            ul.appendChild(li);
+        });
+        listDiv.appendChild(ul);
+    }
+    function displayRssFeedArticles(feed) {
+        if (!feed) return;
+        document.getElementById('rssFeedTitleDisplay').textContent = `आर्टिकल: ${feed.title}`;
+        const articlesListDiv = document.getElementById('rssArticlesList');
+        articlesListDiv.innerHTML = '';
+        if (!feed.items || feed.items.length === 0) { articlesListDiv.innerHTML = '<p>इस फ़ीड में कोई आर्टिकल नहीं है या अभी लोड नहीं हुए हैं।</p>'; return; }
+        feed.items.forEach(item => {
+            const articleDiv = document.createElement('div');
+            articleDiv.className = 'rss-article-item';
+            let itemHtml = `<span class="item-title" title="${item.title}">${item.title}</span>`;
+            if (item.pubDate) itemHtml += `<br><small>प्रकाशित: ${new Date(item.pubDate).toLocaleString()}</small>`;
+            articleDiv.innerHTML = itemHtml;
+            articleDiv.onclick = () => { document.getElementById('articleUrl').value = item.link; openTool(null, 'ArticleExtractor'); ae_startExtraction(true); window.scrollTo(0,0); };
+            articlesListDiv.appendChild(articleDiv);
+        });
+        const rssFeedsTab = document.getElementById('RSSFeeds');
+        if (rssFeedsTab && rssFeedsTab.style.display !== 'none') { document.getElementById('rssArticlesContainer').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    }
+    function deleteRssFeed(index) {
+        if (!confirm("क्या आप वाकई इस RSS फ़ीड को हटाना चाहते हैं?")) return;
+        const feeds = getSubscribedFeeds();
+        feeds.splice(index, 1);
+        saveSubscribedFeeds(feeds); 
+        if (feeds.length === 0) { 
+            document.getElementById('rssFeedTitleDisplay').textContent = '';
+            document.getElementById('rssArticlesList').innerHTML = '';
+        } else if (document.getElementById('rssArticlesList').innerHTML !== '' && !feeds.find(f => document.getElementById('rssFeedTitleDisplay').textContent.includes(f.title))) {
+             displayRssFeedArticles(feeds[0]);
+        }
+        showToast("RSS फ़ीड हटाया गया।", "success");
+    }
+    async function refreshRssFeed(index) {
+        const feeds = getSubscribedFeeds();
+        if (!feeds[index]) return;
+        const feedToRefresh = feeds[index];
+        const refreshBtn = document.querySelector(`#subscribedFeedsList li:nth-child(${index + 1}) button[title="रिफ्रेश"]`);
+        const originalBtnContent = refreshBtn ? refreshBtn.innerHTML : '🔄';
+        if(refreshBtn) {refreshBtn.innerHTML = 'लोड हो रहा है...'; refreshBtn.disabled = true;}
+
+        showToast(`फ़ीड "${feedToRefresh.title.substring(0,30)}..." रिफ्रेश हो रहा है...`, "info");
+        try {
+            const parsedFeed = await parseRssFeed(feedToRefresh.url);
+            if (!parsedFeed || !parsedFeed.items) { showToast("फ़ीड को पार्स नहीं किया जा सका या कोई आइटम नहीं मिला।", "error"); return; }
+            feeds[index].items = parsedFeed.items.slice(0, 30);
+            feeds[index].lastFetched = new Date().toISOString();
+            feeds[index].title = parsedFeed.title || feeds[index].title;
+            saveSubscribedFeeds(feeds); 
+            showToast(`फ़ीड "${feeds[index].title.substring(0,30)}..." सफलतापूर्वक रिफ्रेश किया गया!`, "success");
+            if (document.getElementById('rssFeedTitleDisplay').textContent.includes(feeds[index].title) || 
+                (feeds.length === 1 && index === 0) ) { 
+                displayRssFeedArticles(feeds[index]);
+            }
+        } catch (error) { console.error("फ़ीड रिफ्रेश करने में त्रुटि:", error); showToast(`फ़ीड रिफ्रेश करने में त्रुटि: ${error.message}`, "error", 5000); }
+        finally { if(refreshBtn) {refreshBtn.innerHTML = originalBtnContent; refreshBtn.disabled = false;} }
+    }
+    async function refreshAllRssFeeds() {
+        const feeds = getSubscribedFeeds();
+        if (feeds.length === 0) { showToast("रिफ्रेश करने के लिए कोई फ़ीड नहीं है।", "info"); return; }
+        
+        const mainRefreshBtn = document.getElementById('refreshAllRssFeedsBtn');
+        const originalMainBtnText = mainRefreshBtn.innerHTML;
+        mainRefreshBtn.innerHTML = 'प्रोसेसिंग...';
+        mainRefreshBtn.disabled = true;
+
+        showToast(`सभी ${feeds.length} फ़ीड्स रिफ्रेश हो रहे हैं...`, "info", feeds.length * 1500);
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (let i = 0; i < feeds.length; i++) {
+            const feedToRefresh = feeds[i];
+            const listItemRefreshBtn = document.querySelector(`#subscribedFeedsList li:nth-child(${i + 1}) button[title="रिफ्रेश"]`);
+            const originalListItemBtnContent = listItemRefreshBtn ? listItemRefreshBtn.innerHTML : '🔄';
+            if(listItemRefreshBtn) { listItemRefreshBtn.innerHTML = 'लोड...'; listItemRefreshBtn.disabled = true;}
+            
+            try {
+                const parsedFeed = await parseRssFeed(feedToRefresh.url);
+                if (parsedFeed && parsedFeed.items) {
+                    feeds[i].items = parsedFeed.items.slice(0, 30);
+                    feeds[i].lastFetched = new Date().toISOString();
+                    feeds[i].title = parsedFeed.title || feeds[i].title;
+                    successCount++;
+                } else {
+                    errorCount++;
+                }
+            } catch (error) {
+                console.error(`फ़ीड ${feedToRefresh.url} रिफ्रेश करने में त्रुटि:`, error);
+                errorCount++;
+            } finally {
+                 if(listItemRefreshBtn) { listItemRefreshBtn.innerHTML = originalListItemBtnContent; listItemRefreshBtn.disabled = false;}
+            }
+            if (document.getElementById('rssFeedTitleDisplay').textContent.includes(feeds[i].title)) {
+                displayRssFeedArticles(feeds[i]); 
+            }
+             await new Promise(resolve => setTimeout(resolve, 300)); 
+        }
+        saveSubscribedFeeds(feeds); 
+        mainRefreshBtn.innerHTML = originalMainBtnText;
+        mainRefreshBtn.disabled = false;
+        showToast(`${successCount} फ़ीड सफलतापूर्वक रिफ्रेश हुए। ${errorCount > 0 ? errorCount + ' में त्रुटि।' : ''}`, successCount > 0 ? "success" : "warning", 5000);
+    }
+
+    function clearRssFeedsData() { if (confirm('क्या आप वाकई अपने सभी RSS फ़ीड्स हटाना चाहते हैं?')) { localStorage.removeItem(STORAGE_KEY_RSS_FEEDS); displaySubscribedFeeds(); updateRssFeedCount(); document.getElementById('rssFeedTitleDisplay').textContent = ''; document.getElementById('rssArticlesList').innerHTML = ''; showToast('सभी RSS फ़ीड्स हटा दिए गए हैं।', 'success'); } }
+
+
     // --- Initialization ---
     document.addEventListener('DOMContentLoaded', () => {
         loadQueue();
-        migrateLibraryData(); applySavedTheme(); updateLibraryCount(); updateBookmarkCount(); 
+        migrateLibraryData(); applySavedTheme(); updateLibraryCount(); updateBookmarkCount(); updateRssFeedCount();
         applySavedFontSize(); applySavedLibraryFontSize(); applySavedDisplayMode(); 
         toggleDepthSelector(); populateTagFilter(); populateBookmarkFolderSelectors(); 
         if (speechApiSupported) {
@@ -1232,4 +1591,4 @@
     });
     </script>
 </body>
-</html>
+                    </html>
