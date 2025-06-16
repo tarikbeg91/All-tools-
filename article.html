@@ -889,6 +889,12 @@
     }
     
     // --- Core Functions (UI, Data Management etc.) ---
+    function removeUrlsFromText(text) {
+        if (!text) return "";
+        const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+        return text.replace(urlRegex, '');
+    }
+
     function toggleTheme(themeName) { document.body.classList.remove('dark-mode', 'sepia-mode', 'light-mode'); if (themeName === 'dark') document.body.classList.add('dark-mode'); else if (themeName === 'sepia') document.body.classList.add('sepia-mode'); else document.body.classList.add('light-mode'); localStorage.setItem(STORAGE_KEY_THEME, themeName); }
     function applySavedTheme() { const savedTheme = localStorage.getItem(STORAGE_KEY_THEME) || 'light'; toggleTheme(savedTheme); }
     function openTool(evt, toolName) { const currentActiveTab = document.querySelector('.tab-link.active'); if (evt && currentActiveTab === evt.currentTarget) return; document.querySelectorAll('.tool-content').forEach(el => el.style.display = 'none'); document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active')); const toolElement = document.getElementById(toolName); if (toolElement) toolElement.style.display = 'block'; const targetTab = evt ? evt.currentTarget : document.querySelector(`.tab-link[onclick*="'${toolName}'"]`); if (targetTab) targetTab.classList.add('active'); if (toolName === 'MyLibrary' || toolName === 'Bookmarks' || toolName === 'RSSFeeds') { if(toolName === 'MyLibrary') { loadLibrary(); populateTagFilter(); } if(toolName === 'Bookmarks') { loadBookmarks(); } if (toolName === 'RSSFeeds') { displaySubscribedFeeds(); if(getSubscribedFeeds().length > 0 && !document.getElementById('rssArticlesList').hasChildNodes()){ displayRssFeedArticles(getSubscribedFeeds()[0]); } updateRssFeedCount(); } document.getElementById('internalNavHistoryContainer').style.display = 'none'; document.getElementById('toggleCrawlBtn').style.display = 'none'; } else if (toolName === 'ArticleExtractor') { updateHistoryButtons(); } }
@@ -941,12 +947,12 @@
 
         const copyBtn = document.createElement('button');
         copyBtn.innerHTML = '📄 कॉपी';
-        copyBtn.title = 'आर्टिकल कॉपी करें';
+        copyBtn.title = 'आर्टिकल (बिना URLs के) कॉपी करें';
         copyBtn.onclick = () => copyArticleContent(articleDataForStorage);
 
         const shareBtn = document.createElement('button');
         shareBtn.innerHTML = '🔗 शेयर';
-        shareBtn.title = 'आर्टिकल शेयर करें';
+        shareBtn.title = 'आर्टिकल (बिना URLs के) शेयर करें';
         shareBtn.style.backgroundColor = 'var(--success-color)';
         shareBtn.onclick = () => shareLibraryArticle(articleDataForStorage); 
 
@@ -1014,33 +1020,32 @@
             showToast('कॉपी करने के लिए आवश्यक डेटा नहीं मिला।', 'error');
             return;
         }
-        const textToCopy = `शीर्षक: ${articleData.title}\nURL: ${articleData.url || 'उपलब्ध नहीं'}\n\n${articleData.textContent}`;
+        const filteredTextContent = removeUrlsFromText(articleData.textContent);
+        const textToCopy = `शीर्षक: ${articleData.title}\n\n${filteredTextContent}`;
         
         try {
             if (navigator.clipboard && window.isSecureContext) {
                 await navigator.clipboard.writeText(textToCopy);
-                showToast('आर्टिकल टेक्स्ट सफलतापूर्वक कॉपी हुआ!', 'success');
+                showToast('आर्टिकल टेक्स्ट (बिना URLs के) सफलतापूर्वक कॉपी हुआ!', 'success');
             } else {
-                // Fallback for non-secure contexts or older browsers
                 const textArea = document.createElement('textarea');
                 textArea.value = textToCopy;
                 textArea.style.position = 'fixed'; 
-                textArea.style.opacity = '0'; // Make it invisible but still part of the DOM for selection
+                textArea.style.opacity = '0'; 
                 document.body.appendChild(textArea);
                 textArea.focus();
                 textArea.select();
                 try {
                     const successful = document.execCommand('copy');
                     if (successful) {
-                        showToast('आर्टिकल टेक्स्ट कॉपी हुआ (fallback)!', 'success');
+                        showToast('आर्टिकल टेक्स्ट (बिना URLs के) कॉपी हुआ (fallback)!', 'success');
                     } else {
                         throw new Error('Fallback copy command failed.');
                     }
                 } catch (err) {
                     console.error('Fallback copy error:', err);
                     showToast('कॉपी विफल। ब्राउज़र ने अनुमति नहीं दी। मैन्युअल रूप से कॉपी करें।', 'error', 5000);
-                    // As a last resort, show the text in a modal for manual copying
-                    displayFallbackShareOptions({text: textToCopy, title: articleData.title, url: articleData.url}, true);
+                    displayFallbackShareOptions({text: textToCopy, title: articleData.title}, true); 
                 }
                 document.body.removeChild(textArea);
             }
@@ -1176,7 +1181,7 @@
     function addTagToCurrentLibraryArticle() { const input = document.getElementById('lib-new-tag-input'); const url = document.getElementById('library-article-view').dataset.currentArticleUrl; const name = input.value.trim().toLowerCase(); if (!url || !name) return; const lib = getLibrary(); const id = btoa(encodeURIComponent(url)); if (lib[id]) { lib[id].tags = lib[id].tags || []; if (!lib[id].tags.includes(name)) { lib[id].tags.push(name); saveLibrary(lib); displayArticleTags(url, lib[id].tags); input.value = ''; } } }
     function removeTagFromCurrentLibraryArticle(tagName) { const url = document.getElementById('library-article-view').dataset.currentArticleUrl; if (!url || !tagName) return; const lib = getLibrary(); const id = btoa(encodeURIComponent(url)); if (lib[id]?.tags) { lib[id].tags = lib[id].tags.filter(t => t !== tagName); saveLibrary(lib); displayArticleTags(url, lib[id].tags); } }
     
-    async function copyLibraryArticleText() { // This is for the Library view's copy button
+    async function copyLibraryArticleText() { 
         const titleEl = document.getElementById('lib-article-title');
         const urlEl = document.getElementById('lib-article-original-url');
         const contentEl = document.getElementById('lib-article-text-content');
@@ -1187,24 +1192,24 @@
         }
         const articleData = {
             title: titleEl.textContent,
-            url: urlEl.href,
+            url: urlEl.href, // This URL will be ignored by copyArticleContent based on current logic
             textContent: contentEl.textContent
         };
-        await copyArticleContent(articleData); // Use the generic copy function
+        await copyArticleContent(articleData); 
     }
 
-    async function shareLibraryArticle(articleData) { // Modified to share full text
+    async function shareLibraryArticle(articleData) { 
         if (!articleData || !articleData.title || !articleData.textContent) {
             showToast('शेयर करने के लिए आवश्यक डेटा नहीं मिला।', 'error');
             return;
         }
-        // Construct full text for sharing. Some platforms might truncate it.
-        let shareText = `शीर्षक: ${articleData.title}\nURL: ${articleData.url || 'उपलब्ध नहीं'}\n\n${articleData.textContent}`; 
+        const filteredTextContent = removeUrlsFromText(articleData.textContent);
+        let shareText = `शीर्षक: ${articleData.title}\n\n${filteredTextContent}`; 
         
         const dataToShare = { 
             title: articleData.title, 
             text: shareText, 
-            url: articleData.url // URL is still useful for some share targets
+            // url: articleData.url // Uncomment if you want the URL to be part of share data (some platforms use it)
         };
 
         if (navigator.share) { 
@@ -1212,10 +1217,9 @@
                 await navigator.share(dataToShare); 
             } catch (e) {
                 console.warn("Share API error:", e);
-                // If native share fails with NotAllowedError (often for large text), or any other error, fall back.
                 if (e.name === 'NotAllowedError' || e.name === 'AbortError') {
                     showToast('शेयरिंग विफल हुई या रद्द कर दी गई। फॉलबैक का उपयोग किया जा रहा है।', 'warning');
-                    displayFallbackShareOptions(dataToShare, true); // True for bulk means no social buttons
+                    displayFallbackShareOptions(dataToShare, true); 
                 } else {
                      displayFallbackShareOptions(dataToShare, true);
                 }
@@ -1347,7 +1351,7 @@
             if (!parsedFeed || !parsedFeed.items || parsedFeed.items.length === 0) { showToast("RSS फ़ीड को पार्स नहीं किया जा सका या उसमें कोई आइटम नहीं है।", "error"); return; }
             const feeds = getSubscribedFeeds();
             if (feeds.some(f => f.url === feedUrl)) { showToast("यह फ़ीड पहले से सब्सक्राइब किया हुआ है।", "warning"); return; }
-            feeds.push({ title: parsedFeed.title || feedUrl, url: feedUrl, lastFetched: new Date().toISOString(), items: parsedFeed.items.slice(0, 30) }); // Store latest 30
+            feeds.push({ title: parsedFeed.title || feedUrl, url: feedUrl, lastFetched: new Date().toISOString(), items: parsedFeed.items.slice(0, 30) }); 
             saveSubscribedFeeds(feeds);
             urlInputEl.value = '';
             showToast(`फ़ीड "${parsedFeed.title || feedUrl}" सफलतापूर्वक जोड़ा गया!`, "success");
@@ -1591,4 +1595,4 @@
     });
     </script>
 </body>
-                    </html>
+</html>
