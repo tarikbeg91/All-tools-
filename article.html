@@ -25,6 +25,56 @@
             --border-color: #d7ccc8; --danger-color: #a1887f; --success-color: #7cb342;
             --player-red: #8d6e63; --player-gold: #a1887f; --player-light-gray: #d7ccc8;
         }
+        .high-contrast-mode {
+            --bg-color: #000000; 
+            --text-color: #FFFFFF; 
+            --container-bg: #0a0a0a; 
+            --primary-color: #FFFF00; 
+            --secondary-color: #00FFFF; 
+            --border-color: #AAAAAA; 
+            --danger-color: #FF4136; 
+            --success-color: #01FF70;
+            --player-red: #FF4136; 
+            --player-gold: #00FFFF; 
+            --player-light-gray: #333333;
+        }
+        .high-contrast-mode input, .high-contrast-mode select, .high-contrast-mode textarea {
+             background-color: #111 !important; color: #FFF !important; border-color: #AAA !important;
+        }
+        .high-contrast-mode button.tool-btn, 
+        .high-contrast-mode .tool-btn-secondary:not(.danger-btn):not([style*="background-color: var(--success-color)"]) {
+            color: #000000 !important; 
+        }
+        .high-contrast-mode .tool-btn-secondary {
+            background-color: var(--secondary-color) !important;
+        }
+        .high-contrast-mode button.tool-btn {
+             background-color: var(--primary-color) !important;
+        }
+        .high-contrast-mode .danger-btn {
+            background-color: var(--danger-color) !important; color: #FFF !important;
+        }
+         .high-contrast-mode button[style*="background-color: var(--success-color)"]{
+            background-color: var(--success-color) !important; color: #000 !important;
+        }
+        .high-contrast-mode .theme-toggle {
+            background-color: #222 !important; color: #FFF !important; border-color: #AAA !important;
+        }
+        .high-contrast-mode #clearUrlBtn { background-color: var(--danger-color) !important; color: #FFF !important; }
+        .high-contrast-mode .header-buttons button {
+            background-color: var(--secondary-color) !important; color: #000 !important;
+        }
+         .high-contrast-mode .header-buttons .save-btn.saved {
+            background-color: var(--danger-color) !important; color: #FFF !important;
+        }
+        .high-contrast-mode .header-buttons button[title*="शेयर करें"] { 
+             background-color: var(--success-color) !important; color: #000 !important;
+        }
+        .high-contrast-mode #shareLibArticleBtn { /* Specific for library share button */
+             background-color: var(--success-color) !important; color: #000 !important;
+        }
+
+
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); line-height: var(--line-height-base); transition: background-color 0.3s, color 0.3s; margin: 0; padding-top: 5px; }
         #progress-bar { position: fixed; top: 0; left: 0; height: 5px; background: var(--primary-color); width: 0%; z-index: 9999; transition: width 0.1s; }
         .main-container { max-width: 800px; margin: 20px auto; padding: 20px; background-color: var(--container-bg); border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
@@ -85,7 +135,7 @@
         .queue-item:last-child { border-bottom: none; }
         .queue-item.playing { font-weight: bold; color: var(--primary-color); background-color: var(--bg-color); }
         .queue-item.dragging { opacity: 0.5; background: var(--border-color); }
-        .queue-item-title { flex-grow: 1; cursor: pointer; /* क्यू आइटम को क्लिक करने योग्य बनाने के लिए */ }
+        .queue-item-title { flex-grow: 1; cursor: pointer; }
         .queue-item .delete-btn { background-color: var(--danger-color); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
 
         .link-list-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 10px; background-color: var(--bg-color); }
@@ -148,10 +198,9 @@
         #backToTopBtn { display: none; position: fixed; bottom: 20px; left: 20px; z-index: 99; border: none; outline: none; background-color: var(--primary-color); color: white; cursor: pointer; padding: 10px 15px; border-radius: 50%; font-size: 18px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         #backToTopBtn:hover { background-color: var(--secondary-color); }
 
-        /* Other minor styles from potential previous versions if missing */
         .library-playlist-controls { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-        .library-playlist-controls button { margin-left: 0 !important; } /* Override margin for these specific buttons */
-        #libVoiceSelectorContainer, #voiceSelectorContainerSetting { display: flex; /* Use flex for better alignment */ align-items: center; gap: 10px;}
+        .library-playlist-controls button { margin-left: 0 !important; } 
+        #libVoiceSelectorContainer, #voiceSelectorContainerSetting { display: flex; align-items: center; gap: 10px;}
         .article-body-content img { max-width: 100%; height: auto; display: block; margin: 15px auto; border-radius: 8px; }
         hr { border: 0; height: 1px; background-color: var(--border-color); margin: 20px 0; }
         .library-item input[type="checkbox"].playlist-checkbox { margin-right: 10px; transform: scale(1.2); cursor:pointer; }
@@ -163,7 +212,6 @@
         #bookmark-controls input, #bookmark-controls select { margin-top:0; }
         #bookmark-list-container { margin-top:15px; }
 
-        /* RSS Feed Specific Styles */
         #rss-feed-controls { display:flex; gap:10px; align-items:flex-end; margin-bottom:15px; flex-wrap: wrap;}
         #rss-feed-controls input {flex-grow:1; margin-top:0;}
         #rss-feed-controls button {margin-top:0; padding:12px 15px; font-size:0.9em;}
@@ -173,7 +221,7 @@
         #subscribedFeedsList li a { color: var(--primary-color); text-decoration: none; font-weight: bold; flex-grow:1;}
         #subscribedFeedsList li a:hover { text-decoration: underline; }
         #rssArticlesContainer { border-top: 1px solid var(--border-color); margin-top:20px; padding-top:15px;}
-        .rss-article-item { /* Same as library-item or define new */
+        .rss-article-item { 
             display: flex; justify-content: space-between; align-items: center; padding: 10px;
             border-bottom: 1px solid var(--border-color); cursor:pointer;
         }
@@ -189,6 +237,7 @@
         <button class="theme-toggle" onclick="toggleTheme('light')" title="लाइट मोड">☀️</button>
         <button class="theme-toggle" onclick="toggleTheme('dark')" title="डार्क मोड">🌓</button>
         <button class="theme-toggle" onclick="toggleTheme('sepia')" title="सेपिया मोड">📜</button>
+        <button class="theme-toggle" onclick="toggleTheme('high-contrast')" title="उच्च कंट्रास्ट मोड">👁️‍🗨️</button>
         <button class="theme-toggle" onclick="openSettingsModal()" title="सेटिंग्स">⚙️</button>
     </div>
     <div class="main-container">
@@ -346,6 +395,7 @@
                             <input type="radio" id="theme_light" name="theme_setting" value="light"><label for="theme_light">☀️ लाइट</label>
                             <input type="radio" id="theme_dark" name="theme_setting" value="dark"><label for="theme_dark">🌓 डार्क</label>
                             <input type="radio" id="theme_sepia" name="theme_setting" value="sepia"><label for="theme_sepia">📜 सेपिया</label>
+                            <input type="radio" id="theme_high_contrast" name="theme_setting" value="high-contrast"><label for="theme_high_contrast">👁️‍🗨️ उच्च कंट्रास्ट</label>
                         </div>
                     </div>
                 </fieldset>
@@ -436,7 +486,7 @@
     const MY_PRIVATE_PROXY = 'https://article-proxyy.rockysmail69.workers.dev'; 
     let allFoundLinks = new Set();
     let currentProcessIndex = 0;
-    let isProcessing = false; // For article extraction crawling
+    let isProcessing = false; 
     const speechApiSupported = 'speechSynthesis' in window;
     const mediaSessionSupported = ('mediaSession' in navigator);
     let localSpeechSynth;
@@ -472,9 +522,14 @@
     const STORAGE_KEY_PLAYBACK_POSITIONS = 'articleReaderPlaybackPositions_v1';
     const STORAGE_KEY_PLAY_QUEUE = 'articleReaderPlayQueue_v1';
     const STORAGE_KEY_RSS_FEEDS = 'articleReaderRssFeeds_v2'; 
+    const STORAGE_KEY_SCROLL_POSITIONS = 'articleReaderScrollPositions_v1';
+    let scrollSaveTimeout = null; 
 
 
-    // --- Helper Functions (Playback, Visualizer, Queue) ---
+    // --- Helper Functions ---
+    function getScrollPositions() { return JSON.parse(localStorage.getItem(STORAGE_KEY_SCROLL_POSITIONS) || '{}'); }
+    function saveScrollPosition(articleUrl, scrollPercent) { if (!articleUrl) return; const positions = getScrollPositions(); const articleId = btoa(encodeURIComponent(articleUrl)); positions[articleId] = scrollPercent; localStorage.setItem(STORAGE_KEY_SCROLL_POSITIONS, JSON.stringify(positions));}
+    function getSavedScrollPosition(articleUrl) { if (!articleUrl) return null; const positions = getScrollPositions(); const articleId = btoa(encodeURIComponent(articleUrl)); return positions[articleId] || null;}
     function savePlaybackPosition(articleUrl, type, position) { if (!articleUrl) return; const positions = JSON.parse(localStorage.getItem(STORAGE_KEY_PLAYBACK_POSITIONS) || '{}'); const articleId = btoa(encodeURIComponent(articleUrl)); positions[articleId] = { type, position, timestamp: new Date().getTime() }; localStorage.setItem(STORAGE_KEY_PLAYBACK_POSITIONS, JSON.stringify(positions)); }
     function getPlaybackPosition(articleUrl) { if (!articleUrl) return null; const positions = JSON.parse(localStorage.getItem(STORAGE_KEY_PLAYBACK_POSITIONS) || '{}'); const articleId = btoa(encodeURIComponent(articleUrl)); if (positions[articleId] && (new Date().getTime() - positions[articleId].timestamp > 30 * 24 * 60 * 60 * 1000)) { delete positions[articleId]; localStorage.setItem(STORAGE_KEY_PLAYBACK_POSITIONS, JSON.stringify(positions)); return null; } return positions[articleId] || null; }
     function clearPlaybackPosition(articleUrl) { if (!articleUrl) return; const positions = JSON.parse(localStorage.getItem(STORAGE_KEY_PLAYBACK_POSITIONS) || '{}'); const articleId = btoa(encodeURIComponent(articleUrl)); if (positions[articleId]) { delete positions[articleId]; localStorage.setItem(STORAGE_KEY_PLAYBACK_POSITIONS, JSON.stringify(positions)); } }
@@ -570,7 +625,6 @@
         }
     }
     
-    // --- Audio Player Functions ---
     async function createAudioPlayer(articleData) {
         await showSavedArticle(articleData); 
         const playerContainer = document.getElementById('audioPlayerContainer');
@@ -892,12 +946,48 @@
     function removeUrlsFromText(text) {
         if (!text) return "";
         const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])|(\bwww\.[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-        return text.replace(urlRegex, '');
+        return text.replace(urlRegex, '').replace(/\s+/g, ' ').trim();
     }
 
-    function toggleTheme(themeName) { document.body.classList.remove('dark-mode', 'sepia-mode', 'light-mode'); if (themeName === 'dark') document.body.classList.add('dark-mode'); else if (themeName === 'sepia') document.body.classList.add('sepia-mode'); else document.body.classList.add('light-mode'); localStorage.setItem(STORAGE_KEY_THEME, themeName); }
+    function toggleTheme(themeName) { 
+        document.body.classList.remove('dark-mode', 'sepia-mode', 'light-mode', 'high-contrast-mode'); 
+        if (themeName === 'dark') document.body.classList.add('dark-mode'); 
+        else if (themeName === 'sepia') document.body.classList.add('sepia-mode'); 
+        else if (themeName === 'high-contrast') document.body.classList.add('high-contrast-mode');
+        else document.body.classList.add('light-mode');
+        localStorage.setItem(STORAGE_KEY_THEME, themeName); 
+    }
     function applySavedTheme() { const savedTheme = localStorage.getItem(STORAGE_KEY_THEME) || 'light'; toggleTheme(savedTheme); }
-    function openTool(evt, toolName) { const currentActiveTab = document.querySelector('.tab-link.active'); if (evt && currentActiveTab === evt.currentTarget) return; document.querySelectorAll('.tool-content').forEach(el => el.style.display = 'none'); document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active')); const toolElement = document.getElementById(toolName); if (toolElement) toolElement.style.display = 'block'; const targetTab = evt ? evt.currentTarget : document.querySelector(`.tab-link[onclick*="'${toolName}'"]`); if (targetTab) targetTab.classList.add('active'); if (toolName === 'MyLibrary' || toolName === 'Bookmarks' || toolName === 'RSSFeeds') { if(toolName === 'MyLibrary') { loadLibrary(); populateTagFilter(); } if(toolName === 'Bookmarks') { loadBookmarks(); } if (toolName === 'RSSFeeds') { displaySubscribedFeeds(); if(getSubscribedFeeds().length > 0 && !document.getElementById('rssArticlesList').hasChildNodes()){ displayRssFeedArticles(getSubscribedFeeds()[0]); } updateRssFeedCount(); } document.getElementById('internalNavHistoryContainer').style.display = 'none'; document.getElementById('toggleCrawlBtn').style.display = 'none'; } else if (toolName === 'ArticleExtractor') { updateHistoryButtons(); } }
+    
+    let previousToolName = ''; 
+    function openTool(evt, toolName) { 
+        const currentActiveTab = document.querySelector('.tab-link.active'); 
+        if (evt && currentActiveTab === evt.currentTarget && document.getElementById(toolName).style.display === 'block') return; 
+        
+        if (previousToolName === 'MyLibrary') {
+            const contentWrapper = document.getElementById('lib-article-text-content');
+            if (contentWrapper) contentWrapper.onscroll = null; 
+            clearTimeout(scrollSaveTimeout); 
+        }
+
+        document.querySelectorAll('.tool-content').forEach(el => el.style.display = 'none'); 
+        document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active')); 
+        const toolElement = document.getElementById(toolName); 
+        if (toolElement) toolElement.style.display = 'block'; 
+        const targetTab = evt ? evt.currentTarget : document.querySelector(`.tab-link[onclick*="'${toolName}'"]`); 
+        if (targetTab) targetTab.classList.add('active'); 
+        
+        if (toolName === 'MyLibrary' || toolName === 'Bookmarks' || toolName === 'RSSFeeds') { 
+            if(toolName === 'MyLibrary') { loadLibrary(); populateTagFilter(); } 
+            if(toolName === 'Bookmarks') { loadBookmarks(); } 
+            if (toolName === 'RSSFeeds') { displaySubscribedFeeds(); if(getSubscribedFeeds().length > 0 && !document.getElementById('rssArticlesList').hasChildNodes()){ displayRssFeedArticles(getSubscribedFeeds()[0]); } updateRssFeedCount(); } 
+            document.getElementById('internalNavHistoryContainer').style.display = 'none'; 
+            document.getElementById('toggleCrawlBtn').style.display = 'none'; 
+        } else if (toolName === 'ArticleExtractor') { 
+            updateHistoryButtons(); 
+        }
+        previousToolName = toolName; 
+    }
     async function fetchWithProxy(url) { const proxyUrl = `${MY_PRIVATE_PROXY}/?url=${encodeURIComponent(url)}`; try { const response = await fetch(proxyUrl, { signal: AbortSignal.timeout(20000) }); if (!response.ok) throw new Error(`प्रॉक्सी सर्वर से जवाब नहीं मिला (स्टेटस: ${response.status})`); return await response.text(); } catch (error) { if (error.name === 'AbortError' || error.name === 'TimeoutError') { throw new Error('अनुरोध में बहुत अधिक समय लगा (टाइमआउट)।'); } throw error; } }
     
     function createStoryElement(article, sourceUrl) {
@@ -1175,7 +1265,60 @@
     function showItemContextMenu(button, articleData) { document.querySelectorAll('.item-context-menu').forEach(menu => menu.remove()); const menu = document.createElement('div'); menu.className = 'item-context-menu'; menu.innerHTML = ` <button class="play-next-btn">▶️ अगला चलाएं</button> <button class="add-to-queue-btn">⏯️ क्यू में जोड़ें</button> `; document.body.appendChild(menu); menu.querySelector('.play-next-btn').addEventListener('click', () => { addToQueue(articleData, true); menu.remove(); }); menu.querySelector('.add-to-queue-btn').addEventListener('click', () => { addToQueue(articleData, false); menu.remove(); }); const rect = button.getBoundingClientRect(); const menuHeight = menu.offsetHeight; const menuWidth = menu.offsetWidth; let top = rect.bottom; let left = rect.right - menuWidth; if (top + menuHeight > window.innerHeight) { top = rect.top - menuHeight; } if (left < 0) { left = rect.left; } menu.style.top = `${top + window.scrollY}px`; menu.style.left = `${left + window.scrollX}px`; menu.style.display = 'block'; setTimeout(() => { document.addEventListener('click', () => menu.remove(), { once: true }); }, 0); }
     function deleteLibraryItem(storyId, url) { const lib = getLibrary(); delete lib[storyId]; if (navigator.serviceWorker?.controller) { navigator.serviceWorker.controller.postMessage({ action: 'delete-article-from-cache', url: url }); } saveLibrary(lib); const view = document.getElementById('library-article-view'); if (view && view.dataset.currentArticleUrl === url) { view.style.display = 'none'; view.dataset.hasContent = 'false'; hideAudioPlayer(); if(audioPlayerState.currentArticle && audioPlayerState.currentArticle.url === url) { stopTTS(); audioPlayerState.currentArticle = null; } } showToast("हटाया गया।"); }
     function clearLibraryFilters() { document.getElementById('librarySearch').value = ''; document.getElementById('libraryTagFilter').value = ''; document.getElementById('libraryReadStatusFilter').value = 'all'; loadLibrary(); showToast("सभी फ़िल्टर साफ़।"); }
-    async function showSavedArticle(articleData) { const view = document.getElementById('library-article-view'); const textEl = document.getElementById('lib-article-text-content'); document.getElementById('lib-article-title').textContent = articleData.title; document.getElementById('lib-article-original-url').href = articleData.url; document.getElementById('lib-article-original-url').textContent = articleData.url.substring(0, 60) + '...'; textEl.textContent = articleData.textContent || "टेक्स्ट नहीं मिला।"; document.getElementById('shareLibArticleBtn').onclick = () => shareLibraryArticle(articleData); const tagContainer = document.getElementById('lib-article-tags-container'); const isLibraryArticle = isSaved(articleData.url); if (isLibraryArticle) { tagContainer.style.display = 'block'; const library = getLibrary(); const libraryItem = library[btoa(encodeURIComponent(articleData.url))]; displayArticleTags(articleData.url, libraryItem ? libraryItem.tags : []); } else { tagContainer.style.display = 'none'; } applySavedLibraryFontSize(); view.style.display = 'block'; view.dataset.currentArticleUrl = articleData.url; view.dataset.hasContent = 'true'; document.querySelectorAll('.library-item.selected').forEach(el => el.classList.remove('selected')); if (isLibraryArticle) { document.getElementById(`lib-item-${btoa(encodeURIComponent(articleData.url))}`)?.classList.add('selected'); if (!getLibrary()[btoa(encodeURIComponent(articleData.url))].isRead) { toggleReadStatus(btoa(encodeURIComponent(articleData.url)), articleData.url); } } openTool(null, 'MyLibrary'); document.getElementById('library-content-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    async function showSavedArticle(articleData) { 
+        const view = document.getElementById('library-article-view'); 
+        const textEl = document.getElementById('lib-article-text-content'); 
+        document.getElementById('lib-article-title').textContent = articleData.title; 
+        document.getElementById('lib-article-original-url').href = articleData.url; 
+        document.getElementById('lib-article-original-url').textContent = articleData.url.substring(0, 60) + '...'; 
+        textEl.textContent = articleData.textContent || "टेक्स्ट नहीं मिला।"; 
+        document.getElementById('shareLibArticleBtn').onclick = () => shareLibraryArticle(articleData); 
+        const tagContainer = document.getElementById('lib-article-tags-container'); 
+        const isLibraryArticle = isSaved(articleData.url); 
+        if (isLibraryArticle) { 
+            tagContainer.style.display = 'block'; 
+            const library = getLibrary(); 
+            const libraryItem = library[btoa(encodeURIComponent(articleData.url))]; 
+            displayArticleTags(articleData.url, libraryItem ? libraryItem.tags : []); 
+        } else { 
+            tagContainer.style.display = 'none'; 
+        } 
+        applySavedLibraryFontSize(); 
+        view.style.display = 'block'; 
+        view.dataset.currentArticleUrl = articleData.url; 
+        view.dataset.hasContent = 'true'; 
+        document.querySelectorAll('.library-item.selected').forEach(el => el.classList.remove('selected')); 
+        if (isLibraryArticle) { 
+            document.getElementById(`lib-item-${btoa(encodeURIComponent(articleData.url))}`)?.classList.add('selected'); 
+            if (!getLibrary()[btoa(encodeURIComponent(articleData.url))].isRead) { 
+                toggleReadStatus(btoa(encodeURIComponent(articleData.url)), articleData.url); 
+            } 
+        } 
+
+        const contentWrapper = document.getElementById('lib-article-text-content');
+        contentWrapper.onscroll = () => {
+            clearTimeout(scrollSaveTimeout);
+            scrollSaveTimeout = setTimeout(() => {
+                if (contentWrapper.scrollHeight > contentWrapper.clientHeight) { 
+                    const scrollPercent = contentWrapper.scrollTop / (contentWrapper.scrollHeight - contentWrapper.clientHeight);
+                    if (isFinite(scrollPercent) && scrollPercent >= 0 && scrollPercent <= 1) {
+                        saveScrollPosition(articleData.url, scrollPercent);
+                    }
+                }
+            }, 500); 
+        };
+
+        const savedScroll = getSavedScrollPosition(articleData.url);
+        if (savedScroll !== null && contentWrapper.scrollHeight > contentWrapper.clientHeight) {
+            setTimeout(() => {
+                contentWrapper.scrollTop = savedScroll * (contentWrapper.scrollHeight - contentWrapper.clientHeight);
+            }, 100); 
+        } else {
+            contentWrapper.scrollTop = 0; 
+        }
+        openTool(null, 'MyLibrary'); 
+        document.getElementById('library-content-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' }); 
+    }
     function populateTagFilter() { const tags = new Set(); Object.values(getLibrary()).forEach(item => item.tags?.forEach(tag => tags.add(tag))); const sel = document.getElementById('libraryTagFilter'); const val = sel.value; sel.innerHTML = '<option value="">सभी टैग</option>'; Array.from(tags).sort().forEach(tag => sel.innerHTML += `<option value="${tag}">${tag}</option>`); sel.value = val; }
     function displayArticleTags(url, tags) { const div = document.getElementById('lib-article-current-tags'); div.innerHTML = tags?.length ? '' : '<em>कोई टैग नहीं।</em>'; tags?.forEach(tag => { const span = document.createElement('span'); span.className = 'tag-item'; span.textContent = tag; const btn = document.createElement('button'); btn.className = 'tag-remove-btn'; btn.textContent = '✗'; btn.onclick = () => removeTagFromCurrentLibraryArticle(tag); span.appendChild(btn); div.appendChild(span); }); }
     function addTagToCurrentLibraryArticle() { const input = document.getElementById('lib-new-tag-input'); const url = document.getElementById('library-article-view').dataset.currentArticleUrl; const name = input.value.trim().toLowerCase(); if (!url || !name) return; const lib = getLibrary(); const id = btoa(encodeURIComponent(url)); if (lib[id]) { lib[id].tags = lib[id].tags || []; if (!lib[id].tags.includes(name)) { lib[id].tags.push(name); saveLibrary(lib); displayArticleTags(url, lib[id].tags); input.value = ''; } } }
@@ -1183,19 +1326,18 @@
     
     async function copyLibraryArticleText() { 
         const titleEl = document.getElementById('lib-article-title');
-        const urlEl = document.getElementById('lib-article-original-url');
         const contentEl = document.getElementById('lib-article-text-content');
 
-        if (!titleEl || !urlEl || !contentEl) {
+        if (!titleEl || !contentEl) {
             showToast('कॉपी करने के लिए आवश्यक तत्व नहीं मिले।', 'error');
             return;
         }
-        const articleData = {
+        const articleDataForCopy = { 
             title: titleEl.textContent,
-            url: urlEl.href, // This URL will be ignored by copyArticleContent based on current logic
             textContent: contentEl.textContent
+            // url is not needed for copyArticleContent's current logic
         };
-        await copyArticleContent(articleData); 
+        await copyArticleContent(articleDataForCopy); 
     }
 
     async function shareLibraryArticle(articleData) { 
@@ -1203,13 +1345,15 @@
             showToast('शेयर करने के लिए आवश्यक डेटा नहीं मिला।', 'error');
             return;
         }
+        
         const filteredTextContent = removeUrlsFromText(articleData.textContent);
         let shareText = `शीर्षक: ${articleData.title}\n\n${filteredTextContent}`; 
         
         const dataToShare = { 
             title: articleData.title, 
             text: shareText, 
-            // url: articleData.url // Uncomment if you want the URL to be part of share data (some platforms use it)
+            // url: articleData.url // URL is intentionally omitted from dataToShare if we don't want it AT ALL.
+                                 // If some platforms might use it, keep it. For now, removed.
         };
 
         if (navigator.share) { 
@@ -1217,12 +1361,8 @@
                 await navigator.share(dataToShare); 
             } catch (e) {
                 console.warn("Share API error:", e);
-                if (e.name === 'NotAllowedError' || e.name === 'AbortError') {
-                    showToast('शेयरिंग विफल हुई या रद्द कर दी गई। फॉलबैक का उपयोग किया जा रहा है।', 'warning');
-                    displayFallbackShareOptions(dataToShare, true); 
-                } else {
-                     displayFallbackShareOptions(dataToShare, true);
-                }
+                showToast('शेयरिंग विफल हुई या रद्द कर दी गई। फॉलबैक का उपयोग किया जा रहा है।', 'warning');
+                displayFallbackShareOptions(dataToShare, true); 
             } 
         } else {
             displayFallbackShareOptions(dataToShare, true);
@@ -1318,7 +1458,14 @@
     function closeSettingsModal() { settingsModal.classList.remove('show'); setTimeout(() => { settingsModal.style.pointerEvents = 'none'; }, 300); window.removeEventListener('keydown', handleSettingsEscKey); }
     function handleSettingsEscKey(e) { if (e.key === 'Escape') { closeSettingsModal(); } }
     settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) { closeSettingsModal(); } });
-    function loadSettingsIntoModal() { const currentTheme = localStorage.getItem(STORAGE_KEY_THEME) || 'light'; document.querySelector(`input[name="theme_setting"][value="${currentTheme}"]`).checked = true; applySavedDisplayMode(); applySavedTTSSettings(); }
+    function loadSettingsIntoModal() { 
+        const currentTheme = localStorage.getItem(STORAGE_KEY_THEME) || 'light'; 
+        const themeRadio = document.querySelector(`input[name="theme_setting"][value="${currentTheme}"]`);
+        if(themeRadio) themeRadio.checked = true;
+        else document.querySelector(`input[name="theme_setting"][value="light"]`).checked = true; 
+        applySavedDisplayMode(); 
+        applySavedTTSSettings(); 
+    }
     document.querySelectorAll('input[name="theme_setting"]').forEach(radio => { radio.addEventListener('change', (e) => toggleTheme(e.target.value)); });
     document.getElementById('displayModeSetting').addEventListener('change', (e) => { setDisplayMode(e.target.value); });
     document.getElementById('ttsMethodSetting').addEventListener('change', (e) => { setTTSMethod(e.target.value); loadSettingsIntoModal(); });
@@ -1326,7 +1473,7 @@
     document.getElementById('voiceSelectorSetting').addEventListener('change', (e) => { setTTSVoice(e.target.value); });
     function exportLibrary() { const library = getLibrary(); if (Object.keys(library).length === 0) { showToast("लाइब्रेरी खाली है, एक्सपोर्ट करने के लिए कुछ नहीं है।", "warning"); return; } const dataStr = JSON.stringify(library, null, 2); const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr); const exportFileDefaultName = 'article_reader_library_export.json'; const linkElement = document.createElement('a'); linkElement.setAttribute('href', dataUri); linkElement.setAttribute('download', exportFileDefaultName); linkElement.click(); showToast("लाइब्रेरी एक्सपोर्ट की गई!", "success"); }
     function importLibraryHandler(event) { const file = event.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (e) => { try { const importedLibrary = JSON.parse(e.target.result); if (typeof importedLibrary === 'object' && importedLibrary !== null) { const currentLibrary = getLibrary(); const mergedLibrary = { ...currentLibrary, ...importedLibrary }; saveLibrary(mergedLibrary); showToast("लाइब्रेरी सफलतापूर्वक इंपोर्ट की गई!", "success"); loadLibrary(); } else { throw new Error("अमान्य JSON संरचना।"); } } catch (err) { showToast("लाइब्रेरी इंपोर्ट करने में त्रुटि: " + err.message, "error"); } }; reader.readAsText(file); event.target.value = null; } }
-    function clearLibraryData() { if (confirm('क्या आप वाकई अपनी पूरी लाइब्रेरी हटाना चाहते हैं? यह क्रिया वापस नहीं की जा सकती।')) { localStorage.removeItem(STORAGE_KEY_LIBRARY); localStorage.removeItem(STORAGE_KEY_PLAYBACK_POSITIONS); localStorage.removeItem(STORAGE_KEY_PLAY_QUEUE); loadLibrary(); updateLibraryCount(); const view = document.getElementById('library-article-view'); if (view) view.style.display = 'none'; audioPlayerState.currentArticle = null; stopTTS(); showToast('लाइब्रेरी साफ़ कर दी गई है।', 'success'); } }
+    function clearLibraryData() { if (confirm('क्या आप वाकई अपनी पूरी लाइब्रेरी हटाना चाहते हैं? यह क्रिया वापस नहीं की जा सकती।')) { localStorage.removeItem(STORAGE_KEY_LIBRARY); localStorage.removeItem(STORAGE_KEY_PLAYBACK_POSITIONS); localStorage.removeItem(STORAGE_KEY_PLAY_QUEUE); localStorage.removeItem(STORAGE_KEY_SCROLL_POSITIONS); loadLibrary(); updateLibraryCount(); const view = document.getElementById('library-article-view'); if (view) view.style.display = 'none'; audioPlayerState.currentArticle = null; stopTTS(); showToast('लाइब्रेरी साफ़ कर दी गई है।', 'success'); } }
     function clearBookmarksData() { if (confirm('क्या आप वाकई अपने सभी बुकमार्क हटाना चाहते हैं? यह क्रिया वापस नहीं की जा सकती।')) { localStorage.removeItem(STORAGE_KEY_BOOKMARKS); loadBookmarks(); updateBookmarkCount(); showToast('सभी बुकमार्क हटा दिए गए हैं।', 'success'); } }
     function resetAllSettings() { if (confirm('क्या आप वाकई सभी सेटिंग्स और डेटा को डिफ़ॉल्ट पर रीसेट करना चाहते हैं? आपकी लाइब्रेरी और बुकमार्क सहित सब कुछ हटा दिया जाएगा।')) { Object.keys(localStorage).forEach(key => { if (key.startsWith('articleReader')) { localStorage.removeItem(key); } }); showToast('सभी सेटिंग्स रीसेट कर दी गई हैं। पेज रीलोड हो रहा है...', 'success', 3000); setTimeout(() => location.reload(), 3000); } }
     function performGoogleSearch() { const query = document.getElementById('googleSearchQuery').value; if (query.trim()) { const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`; window.open(searchUrl, '_blank'); } }
@@ -1559,9 +1706,7 @@
         const autoPlay = localStorage.getItem(STORAGE_KEY_AUTOPLAY) === 'true';
         if (autoPlay) document.getElementById('autoPlayNextToggle').checked = true;
         
-        document.addEventListener('visibilitychange', () => {
-            // Audio continues playing on tab switch by default
-        });
+        document.addEventListener('visibilitychange', () => {});
 
         window.addEventListener('beforeunload', () => { if (isPlaying || isPaused) { stopTTS(); } });
         
@@ -1595,4 +1740,4 @@
     });
     </script>
 </body>
-</html>
+    </html>
