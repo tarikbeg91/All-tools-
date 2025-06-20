@@ -26,24 +26,24 @@
             --player-red: #8d6e63; --player-gold: #a1887f; --player-light-gray: #d7ccc8;
         }
         .high-contrast-mode {
-            --bg-color: #000000; 
-            --text-color: #FFFFFF; 
-            --container-bg: #0a0a0a; 
-            --primary-color: #FFFF00; 
-            --secondary-color: #00FFFF; 
-            --border-color: #AAAAAA; 
-            --danger-color: #FF4136; 
+            --bg-color: #000000;
+            --text-color: #FFFFFF;
+            --container-bg: #0a0a0a;
+            --primary-color: #FFFF00;
+            --secondary-color: #00FFFF;
+            --border-color: #AAAAAA;
+            --danger-color: #FF4136;
             --success-color: #01FF70;
-            --player-red: #FF4136; 
-            --player-gold: #00FFFF; 
+            --player-red: #FF4136;
+            --player-gold: #00FFFF;
             --player-light-gray: #333333;
         }
         .high-contrast-mode input, .high-contrast-mode select, .high-contrast-mode textarea {
              background-color: #111 !important; color: #FFF !important; border-color: #AAA !important;
         }
-        .high-contrast-mode button.tool-btn, 
+        .high-contrast-mode button.tool-btn,
         .high-contrast-mode .tool-btn-secondary:not(.danger-btn):not([style*="background-color: var(--success-color)"]) {
-            color: #000000 !important; 
+            color: #000000 !important;
         }
         .high-contrast-mode .tool-btn-secondary {
             background-color: var(--secondary-color) !important;
@@ -67,11 +67,13 @@
          .high-contrast-mode .header-buttons .save-btn.saved {
             background-color: var(--danger-color) !important; color: #FFF !important;
         }
-        .high-contrast-mode .header-buttons button[title*="शेयर करें"] { 
+        .high-contrast-mode .header-buttons button[title*="शेयर करें"],
+        .high-contrast-mode #shareLibArticleBtn {
              background-color: var(--success-color) !important; color: #000 !important;
         }
-        .high-contrast-mode #shareLibArticleBtn { /* Specific for library share button */
-             background-color: var(--success-color) !important; color: #000 !important;
+        .high-contrast-mode .original-view-btn,
+        .high-contrast-mode #toggleOriginalViewLibBtn {
+            background-color: var(--secondary-color) !important; color: #000 !important;
         }
 
 
@@ -95,7 +97,8 @@
         .header-buttons { display: flex; gap: 8px; flex-wrap: wrap; align-items: center;}
         .header-buttons button { background-color: var(--secondary-color); color: white; border: none; border-radius: 5px; padding: 6px 12px; font-size: 14px; cursor: pointer; }
         .header-buttons .save-btn.saved { background-color: var(--danger-color); }
-        .theme-toggle-container { position: fixed; top: 15px; right: 20px; z-index: 1000; display:flex; gap: 5px;}
+        .original-view-btn { padding: 6px 10px !important; font-size: 14px !important;}
+        .theme-toggle-container { position: fixed; top: 15px; right: 20px; z-index: 10001; display:flex; gap: 5px;}
         .theme-toggle { background: var(--container-bg); border: 1px solid var(--border-color); border-radius: 50%; width: 40px; height: 40px; cursor: pointer; font-size: 20px; display: flex; justify-content: center; align-items: center; }
         #ae_loading { margin-top: 15px; color: var(--primary-color); font-style: italic; text-align: center; }
         .library-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color); }
@@ -108,11 +111,27 @@
         .item-context-menu { position: absolute; background-color: var(--container-bg); border: 1px solid var(--border-color); border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 1005; display: none; padding: 5px 0; font-size: 0.9em; }
         .item-context-menu button { background: none; border: none; color: var(--text-color); padding: 8px 16px; width: 100%; text-align: left; cursor: pointer; }
         .item-context-menu button:hover { background-color: var(--bg-color); }
-        
-        #lib-article-text-content { white-space: pre-wrap;  background-color: var(--bg-color);  padding: 15px;  border-radius: 6px;  max-height: 50vh;  overflow-y: auto; border: 1px solid var(--border-color); line-height: 1.7; }
+
+        #lib-article-text-content { white-space: pre-wrap;  background-color: var(--bg-color);  padding: 15px;  border-radius: 6px;  max-height: 80vh;  overflow-y: auto; border: 1px solid var(--border-color); line-height: 1.7; }
+        #lib-article-webview-container { margin-top: 15px;}
+        #lib-article-iframe { width:100%; height:80vh; border:1px solid var(--border-color); }
+        .original-webview-iframe { width:100%; height:70vh; border:1px solid var(--border-color); margin-top:15px; }
+
+        .reading-progress-container {
+            position: sticky; top: 0; left: 0; width: 100%; height: 5px;
+            background-color: var(--border-color); z-index: 100; display: none;
+        }
+        .reading-progress-bar {
+            height: 100%; width: 0%; background-color: var(--primary-color);
+            transition: width 0.1s ease-out;
+        }
+        #library-reading-progress-container { z-index: 1000; }
+        .extractor-reading-progress-container { margin-bottom: 5px; }
+
+
         #lib-article-current-tags .tag-item { background-color: var(--secondary-color); color: white; padding: 3px 8px; border-radius: 4px; margin-right: 5px; margin-bottom: 5px; font-size: 0.9em; display: inline-block; }
         #lib-article-current-tags .tag-remove-btn { margin-left: 4px; border: none; background: transparent; color: white; cursor: pointer; font-weight: bold; }
-        
+
         #audioPlayerContainer { display: none; flex-direction: column; gap: 10px; margin-top: 15px; padding: 15px; border-radius: 8px; background-color: var(--bg-color); border: 1px solid var(--border-color); }
         #audioPlayerContainer .visualizer-container { width: 100%; height: 60px; display: flex; align-items: center; justify-content: center; }
         #audioPlayerContainer .progress-container { display: flex; align-items: center; gap: 10px; font-size: 0.8em; color: var(--text-color); }
@@ -124,7 +143,7 @@
         #audioPlayerContainer .controls-container button.play-pause-btn { background-color: var(--player-red); color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.5em; }
         #audioPlayerContainer .controls-container button:disabled { opacity: 0.4; cursor: not-allowed; }
         #audioPlayerContainer .controls-container button.active { color: var(--player-red); }
-        
+
         .queue-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 10020; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
         .queue-modal-overlay.show { display: flex; opacity: 1; }
         .queue-modal-content { background-color: var(--container-bg); color: var(--text-color); padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 80vh; display: flex; flex-direction: column; }
@@ -142,7 +161,7 @@
         .link-list-item .link-title { font-weight: bold; flex-grow: 1; margin-right: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .link-list-item .link-actions button { padding: 6px 10px; font-size: 0.9em; margin-left: 8px; background-color: var(--secondary-color); color: white; border: none; border-radius: 5px; cursor: pointer; }
         .link-list-item .link-actions button:hover { opacity: 0.8; }
-        
+
         .settings-modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.6); z-index: 10010;
@@ -176,7 +195,6 @@
         .danger-zone legend { color: var(--danger-color); }
         .settings-modal-footer { border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 10px; text-align: right; }
 
-        /* Fallback share modal styling */
         .fallback-share-modal {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background-color: var(--container-bg); color: var(--text-color);
@@ -184,8 +202,7 @@
             z-index: 10050; width: 90%; max-width: 400px;
         }
         .fallback-share-modal textarea { width: calc(100% - 20px); min-height: 100px; margin-bottom: 10px; padding: 10px; background-color: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); border-radius: 6px; }
-        
-        /* Toast Notification Styles */
+
         #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 10060; display: flex; flex-direction: column; gap: 10px; }
         .toast-notification { background-color: var(--primary-color); color: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); opacity: 0; transform: translateX(100%); transition: opacity 0.3s ease, transform 0.3s ease; font-size: 0.9em; }
         .toast-notification.show { opacity: 1; transform: translateX(0); }
@@ -194,12 +211,11 @@
         .toast-notification.warning { background-color: var(--player-gold); color: var(--text-color); }
         .toast-actions button { background: rgba(255,255,255,0.2); color: white; border: none; padding: 5px 10px; margin-left: 10px; border-radius: 4px; cursor: pointer; }
 
-        /* Back to top button style */
         #backToTopBtn { display: none; position: fixed; bottom: 20px; left: 20px; z-index: 99; border: none; outline: none; background-color: var(--primary-color); color: white; cursor: pointer; padding: 10px 15px; border-radius: 50%; font-size: 18px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         #backToTopBtn:hover { background-color: var(--secondary-color); }
 
         .library-playlist-controls { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-        .library-playlist-controls button { margin-left: 0 !important; } 
+        .library-playlist-controls button { margin-left: 0 !important; }
         #libVoiceSelectorContainer, #voiceSelectorContainerSetting { display: flex; align-items: center; gap: 10px;}
         .article-body-content img { max-width: 100%; height: auto; display: block; margin: 15px auto; border-radius: 8px; }
         hr { border: 0; height: 1px; background-color: var(--border-color); margin: 20px 0; }
@@ -221,14 +237,90 @@
         #subscribedFeedsList li a { color: var(--primary-color); text-decoration: none; font-weight: bold; flex-grow:1;}
         #subscribedFeedsList li a:hover { text-decoration: underline; }
         #rssArticlesContainer { border-top: 1px solid var(--border-color); margin-top:20px; padding-top:15px;}
-        .rss-article-item { 
+        .rss-article-item {
             display: flex; justify-content: space-between; align-items: center; padding: 10px;
-            border-bottom: 1px solid var(--border-color); cursor:pointer;
+            border-bottom: 1px solid var(--border-color);
         }
+        .rss-article-item .item-title { cursor:pointer; flex-grow: 1; } /* Added cursor pointer */
         .rss-article-item:last-child { border-bottom: none; }
         .rss-article-item:hover { background-color: var(--bg-color); }
-        .rss-article-item .item-title { flex-grow: 1; }
         .rss-article-item small { color: var(--text-color); opacity: 0.7; font-size:0.8em;}
+
+        /* Focus Mode Styles */
+        .focus-mode-active .main-container > h1,
+        .focus-mode-active #googleSearchContainer,
+        .focus-mode-active #internalNavHistoryContainer,
+        .focus-mode-active .tabs,
+        .focus-mode-active #ArticleExtractor > p,
+        .focus-mode-active #ArticleExtractor > div:not(.result-box):not(#ae_loading):not(.single-story .original-webview-container), /* Allow iframe container in focus */
+        .focus-mode-active #ArticleExtractor > button:not([onclick*="ae_startExtraction"]):not([onclick*="clearResults"]),
+        .focus-mode-active #MyLibrary > h2,
+        .focus-mode-active #MyLibrary > .library-controls,
+        .focus-mode-active #MyLibrary > .library-playlist-controls,
+        .focus-mode-active #library-list-container,
+        .focus-mode-active #Bookmarks > h2,
+        .focus-mode-active #Bookmarks > #bookmark-controls,
+        .focus-mode-active #Bookmarks > #bookmark-list-container,
+        .focus-mode-active #RSSFeeds > h2,
+        .focus-mode-active #RSSFeeds > #rss-feed-controls,
+        .focus-mode-active #RSSFeeds > #subscribedFeedsListContainer,
+        .focus-mode-active #backToTopBtn,
+        .focus-mode-active #audioPlayerContainer .progress-container,
+        .focus-mode-active #audioPlayerContainer .controls-container button:not(.play-pause-btn),
+        .focus-mode-active #sleep-timer-controls,
+        .focus-mode-active #lib-article-tags-container,
+        .focus-mode-active #lib-article-original-url,
+        .focus-mode-active #library-article-view > div:first-of-type:not(#lib-article-webview-container),
+        .focus-mode-active #autoScrollControls,
+        .focus-mode-active .reading-progress-container /* Hide reading progress in focus mode unless specifically handled */
+         {
+            display: none !important;
+        }
+        .focus-mode-active .theme-toggle-container {
+            display: flex !important;
+        }
+        .focus-mode-active #focusModeToggleBtn {
+            display: flex !important;
+        }
+        .focus-mode-active .main-container {
+            max-width: 100%;
+            margin-top: 5px;
+            padding: 5px;
+            box-shadow: none;
+            border-radius: 0;
+        }
+        .focus-mode-active #ae_result .single-story,
+        .focus-mode-active #library-article-view {
+            margin: 0 auto;
+            padding: 10px;
+            max-width: 800px;
+            border-bottom: none !important;
+        }
+        .focus-mode-active #ae_result .single-story hr {
+            display:none !important;
+        }
+        .focus-mode-active #lib-article-text-content,
+        .focus-mode-active #lib-article-webview-container,
+        .focus-mode-active .original-webview-container
+         {
+            max-height: calc(100vh - 120px);
+            border: none;
+            padding: 5px;
+        }
+        .focus-mode-active #lib-article-iframe,
+        .focus-mode-active .original-webview-iframe {
+             height: calc(100vh - 120px);
+        }
+        .focus-mode-active #audioPlayerContainer {
+            position: sticky;
+            bottom: 0;
+            background-color: var(--container-bg);
+            border-top: 1px solid var(--border-color);
+            border-radius: 0;
+            padding: 10px;
+            margin-top: 0;
+        }
+        .focus-mode-active #audioPlayerContainer .visualizer-container { height: 40px; }
     </style>
 </head>
 <body>
@@ -238,6 +330,7 @@
         <button class="theme-toggle" onclick="toggleTheme('dark')" title="डार्क मोड">🌓</button>
         <button class="theme-toggle" onclick="toggleTheme('sepia')" title="सेपिया मोड">📜</button>
         <button class="theme-toggle" onclick="toggleTheme('high-contrast')" title="उच्च कंट्रास्ट मोड">👁️‍🗨️</button>
+        <button id="focusModeToggleBtn" class="theme-toggle" onclick="toggleFocusMode()" title="फ़ोकस मोड टॉगल करें">🧘</button>
         <button class="theme-toggle" onclick="openSettingsModal()" title="सेटिंग्स">⚙️</button>
     </div>
     <div class="main-container">
@@ -250,7 +343,7 @@
             <button class="tab-link" onclick="openTool(event, 'Bookmarks')">बुकमार्क <span id="bookmark-count">(0)</span></button>
             <button class="tab-link" onclick="openTool(event, 'RSSFeeds')">RSS फ़ीड्स <span id="rss-feed-count">(0)</span></button>
         </div>
-        
+
         <div id="ArticleExtractor" class="tool-content" style="display:block;">
             <p>किसी भी आर्टिकल का लिंक, कैटेगरी पेज या वेबसाइट का होमपेज लिंक यहाँ डालें।</p>
             <div style="display: flex; align-items: center; gap: 5px;">
@@ -272,7 +365,7 @@
             <div id="ae_loading" style="display:none;"></div>
             <div class="result-box" id="ae_result"></div>
         </div>
-        
+
         <div id="MyLibrary" class="tool-content" style="display:none;">
             <h2>सेव किए गए आर्टिकल</h2>
             <div class="library-controls">
@@ -299,12 +392,23 @@
             <div id="library-content-wrapper" style="margin-top:15px;">
                 <div id="library-list-container"><div id="library-list"></div></div>
                 <div id="library-article-view" style="display: none;">
+                    <div id="library-reading-progress-container" class="reading-progress-container">
+                        <div id="library-reading-progress-bar" class="reading-progress-bar"></div>
+                    </div>
                     <h3 id="lib-article-title"></h3>
                     <p style="margin-top:0; margin-bottom: 5px;"><small>मूल URL: <a id="lib-article-original-url" href="#" target="_blank" rel="noopener noreferrer"></a></small></p>
                     <div style="margin-bottom:15px; margin-top:5px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                         <button onclick="copyLibraryArticleText()" class="tool-btn-secondary" style="padding: 8px 12px; font-size: 0.9em; margin-left:0; margin-top:0;">पूरा टेक्स्ट कॉपी करें</button>
                         <button id="shareLibArticleBtn" class="tool-btn-secondary" style="padding: 8px 12px; font-size: 0.9em; background-color: var(--success-color); margin-top:0;">शेयर करें</button>
-                        <div style="margin-left:auto;"><label for="libFontSize" style="font-size:0.9em;">फ़ॉन्ट: </label><button onclick="changeLibraryFontSize(-1)" title="फ़ॉन्ट घटाएं" style="padding:5px 8px; font-size:0.8em;">A-</button><button onclick="changeLibraryFontSize(1)" title="फ़ॉन्ट बढ़ाएं" style="padding:5px 8px; font-size:0.8em;">A+</button></div>
+                        <button onclick="toggleOriginalWebViewForLibrary()" id="toggleOriginalViewLibBtn" class="tool-btn-secondary original-view-btn" style="padding: 8px 12px; font-size: 0.9em; margin-left:0; margin-top:0;">🌐 वेब व्यू दिखाएं</button>
+                        <div style="margin-left:auto;"><label style="font-size:0.9em;">फ़ॉन्ट: </label><button onclick="adjustFontSizeSetting('library', -1)" title="फ़ॉन्ट घटाएं" style="padding:5px 8px; font-size:0.8em;">A-</button><button onclick="adjustFontSizeSetting('library', 1)" title="फ़ॉन्ट बढ़ाएं" style="padding:5px 8px; font-size:0.8em;">A+</button></div>
+                    </div>
+                     <div id="autoScrollControls" style="margin-top:10px; margin-bottom:10px; padding:10px; border:1px solid var(--border-color); border-radius: 6px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                        <span style="font-weight:bold;">ऑटो-स्क्रॉल:</span>
+                        <button id="autoScrollPlayPauseBtn" onclick="toggleAutoScroll()" class="tool-btn-secondary" style="margin-left:0; margin-top:0; padding: 6px 10px; font-size:0.9em;">▶️ शुरू करें</button>
+                        <button onclick="changeAutoScrollSpeed(-20)" class="tool-btn-secondary" style="margin-left:0; margin-top:0; padding: 6px 10px; font-size:0.9em;">धीमा 🐢</button>
+                        <button onclick="changeAutoScrollSpeed(20)" class="tool-btn-secondary" style="margin-left:0; margin-top:0; padding: 6px 10px; font-size:0.9em;">तेज़ 🐇</button>
+                        <span id="autoScrollSpeedDisplay" style="font-size:0.9em; margin-left:auto;">गति: 50</span>
                     </div>
                     <div id="audioPlayerContainer">
                         <div class="visualizer-container"><canvas id="audioVisualizer" width="300" height="60"></canvas></div>
@@ -320,7 +424,12 @@
                         <button id="cancelSleepTimerBtn" onclick="cancelSleepTimer()" style="display: none; background-color: var(--danger-color); color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.9em; margin-top:0;">रद्द करें</button>
                         <span id="sleepTimerDisplay" style="margin-left: auto; font-size: 0.9em; font-style: italic;"></span>
                     </div>
+
                     <div id="lib-article-text-content"></div>
+                    <div id="lib-article-webview-container" style="display:none;">
+                        <iframe id="lib-article-iframe" src="about:blank" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
+                    </div>
+
                     <div id="lib-article-tags-container" style="margin-top: 15px;">
                         <h4>टैग्स:</h4><div id="lib-article-current-tags" style="margin-bottom:10px;"></div>
                         <div style="display: flex; gap: 5px; align-items:center;">
@@ -331,7 +440,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div id="Bookmarks" class="tool-content" style="display:none;">
             <h2>बुकमार्क</h2>
             <div id="bookmark-controls">
@@ -369,7 +478,7 @@
     </div>
     <button id="backToTopBtn" onclick="scrollToTop()" title="ऊपर जाएं">⬆️</button>
     <div id="toast-container"></div>
-    
+
     <div id="queueModal" class="queue-modal-overlay">
         <div class="queue-modal-content">
             <div class="queue-modal-header"><h3>प्लेबैक क्यू</h3><button class="settings-close-btn" onclick="closeQueueModal()">×</button></div>
@@ -379,7 +488,7 @@
             </div>
         </div>
     </div>
-    
+
     <div id="settingsModal" class="settings-modal-overlay">
         <div class="settings-modal-content">
             <div class="settings-modal-header">
@@ -412,6 +521,25 @@
                     </div>
                 </fieldset>
                 <fieldset>
+                    <legend>टेक्स्ट आकार</legend>
+                    <div class="setting-item">
+                        <label for="extractorFontSizeSetting">एक्सट्रैक्टर आर्टिकल फ़ॉन्ट आकार:</label>
+                        <div class="setting-control range-control">
+                            <button onclick="adjustFontSizeSetting('extractor', -1)" class="tool-btn-secondary" style="margin:0; padding: 6px 10px; font-size:0.9em;">A-</button>
+                            <span id="extractorFontSizeDisplay" style="min-width:40px; text-align:center;">16px</span>
+                            <button onclick="adjustFontSizeSetting('extractor', 1)" class="tool-btn-secondary" style="margin:0; padding: 6px 10px; font-size:0.9em;">A+</button>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label for="libraryFontSizeSetting">लाइब्रेरी आर्टिकल फ़ॉन्ट आकार:</label>
+                        <div class="setting-control range-control">
+                             <button onclick="adjustFontSizeSetting('library', -1)" class="tool-btn-secondary" style="margin:0; padding: 6px 10px; font-size:0.9em;">A-</button>
+                            <span id="libraryFontSizeDisplay" style="min-width:40px; text-align:center;">16px</span>
+                            <button onclick="adjustFontSizeSetting('library', 1)" class="tool-btn-secondary" style="margin:0; padding: 6px 10px; font-size:0.9em;">A+</button>
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset>
                     <legend>टेक्स्ट-टू-स्पीच (TTS)</legend>
                     <div class="setting-item">
                         <label for="ttsMethodSetting">TTS इंजन:</label>
@@ -435,7 +563,7 @@
                             <select id="voiceSelectorSetting" style="margin-top:0;"></select>
                         </div>
                     </div>
-                     <div class="setting-item" id="libVoiceSelectorContainer" style="display:none;"> 
+                     <div class="setting-item" id="libVoiceSelectorContainer" style="display:none;">
                         <label for="libVoiceSelector">आवाज़ (डिवाइस TTS):</label>
                         <div class="setting-control">
                             <select id="libVoiceSelector" onchange="setTTSVoice(this.value)" style="margin-top:0;"></select>
@@ -480,50 +608,108 @@
 
     <script>
     // --- Embedded Service Worker Code ---
+    // Note: For iframe passthrough to work reliably, your Cloudflare worker at MY_PRIVATE_PROXY
+    // needs an endpoint (e.g., /iframe-passthrough?url=...) that fetches the target URL
+    // and removes X-Frame-Options and possibly Content-Security-Policy headers.
+    // Example Cloudflare Worker code for /iframe-passthrough:
+    /*
+    async function handleRequest(request) {
+        const url = new URL(request.url);
+        if (url.pathname === "/iframe-passthrough") {
+            const targetUrl = url.searchParams.get("url");
+            if (!targetUrl) {
+                return new Response("Missing target URL", { status: 400 });
+            }
+            try {
+                let response = await fetch(targetUrl, {
+                    headers: request.headers // Pass original request headers if needed, or customize
+                });
+                let newHeaders = new Headers(response.headers);
+                newHeaders.delete('X-Frame-Options');
+                newHeaders.delete('Content-Security-Policy'); // Often blocks iframes
+                // Allow all origins for this passthrough
+                newHeaders.set('Access-Control-Allow-Origin', '*');
+
+                return new Response(response.body, {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: newHeaders
+                });
+            } catch (e) {
+                return new Response("Error fetching target URL: " + e.message, { status: 500 });
+            }
+        }
+        // ... your other proxy logic for /?url=...
+        // Fallback for other paths or your main proxy logic
+        const target = url.searchParams.get('url');
+        if (!target) return new Response('Please provide a URL parameter.', { status: 400 });
+        return fetch(target, request); // Simplified example
+    }
+    addEventListener('fetch', event => {
+        event.respondWith(handleRequest(event.request))
+    })
+    */
     const serviceWorkerCode = `self.addEventListener('install',e=>e.waitUntil(self.skipWaiting()));self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('fetch',e=>{if(e.request.url.includes('article-proxyy.rockysmail69.workers.dev')){e.respondWith(fetch(e.request))}});`;
 
     // --- Global Variables & Setup ---
-    const MY_PRIVATE_PROXY = 'https://article-proxyy.rockysmail69.workers.dev'; 
+    const MY_PRIVATE_PROXY = 'https://article-proxyy.rockysmail69.workers.dev';
     let allFoundLinks = new Set();
     let currentProcessIndex = 0;
-    let isProcessing = false; 
+    let isProcessing = false;
     const speechApiSupported = 'speechSynthesis' in window;
     const mediaSessionSupported = ('mediaSession' in navigator);
     let localSpeechSynth;
-    let audioQueue = [], currentAudioElement = null, currentStreamController = null;
-    let localTtsQueue = [];
-    
-    let isPlaying = false; 
-    let isPaused = false;  
 
-    let wasSpeakingBeforeTabSwitch = false; 
+    // TTS Stream Preloading
+    let audioQueue = []; // Holds text chunks for legacy stream processing, can be phased out
+    let preloadedAudioBlobs = {}; // { chunkIndex: Blob }
+    let currentlyPlayingChunkIndex = -1; // Index relative to allTextChunksForStream
+    let allTextChunksForStream = []; // All text chunks for the current streaming article
+    const PRELOAD_AHEAD_COUNT = 2; // How many chunks to preload
+
+    let currentAudioElement = null, currentStreamController = null;
+    let localTtsQueue = [];
+
+    let isPlaying = false;
+    let isPaused = false;
+
+    let wasSpeakingBeforeTabSwitch = false;
     let navigationHistory = [], currentHistoryIndex = -1, isNavigatingHistory = false;
-    let currentDisplayMode = 'image-text'; 
-    let isCrawlingPaused = false; 
+    let currentDisplayMode = 'image-text';
+    let isCrawlingPaused = false;
     let sleepTimerId = null, sleepTimerIntervalId = null, sleepTimerEndTime = 0, stopAtArticleEnd = false;
-    
+
     let playQueue = [];
-    let currentQueueIndex = -1; 
-    let currentArticleTotalChunks = 0; 
+    let currentQueueIndex = -1;
+    let currentArticleTotalChunks = 0;
     let visualizerContext = { audioCtx: null, analyser: null, source: null, animationFrameId: null, dataArray: null, bufferLength: 0, canvas: null, canvasCtx: null };
-    let audioPlayerState = { isShuffle: false, repeatMode: 'off', unshuffledQueue: [], currentArticle: null }; 
-    
+    let audioPlayerState = { isShuffle: false, repeatMode: 'off', unshuffledQueue: [], currentArticle: null };
+
     const STORAGE_KEY_THEME = 'articleReaderTheme_s1';
-    const STORAGE_KEY_LIBRARY = 'articleReaderLibrary_s7_pro'; 
+    const STORAGE_KEY_LIBRARY = 'articleReaderLibrary_s7_pro';
     const STORAGE_KEY_FONT_SIZE = 'articleReaderFontSize_s1';
     const STORAGE_KEY_LIBRARY_FONT_SIZE = 'articleReaderLibraryFontSize_s1';
     const STORAGE_KEY_TTS_METHOD = 'articleReaderTTSMethod_v1';
     const STORAGE_KEY_TTS_RATE = 'articleReaderTTSRate_v1';
     const STORAGE_KEY_TTS_VOICE = 'articleReaderTTSVoice_v1';
     const STORAGE_KEY_DISPLAY_MODE = 'articleReaderDisplayMode_s1';
-    const STORAGE_KEY_BOOKMARKS = 'articleReaderBookmarks_s3'; 
-    const STORAGE_KEY_OFFLINE_ARTICLE = 'articleReaderOfflineArticle_s1'; 
+    const STORAGE_KEY_BOOKMARKS = 'articleReaderBookmarks_s3';
+    const STORAGE_KEY_OFFLINE_ARTICLE = 'articleReaderOfflineArticle_s1';
     const STORAGE_KEY_AUTOPLAY = 'articleReaderAutoplay_v1';
     const STORAGE_KEY_PLAYBACK_POSITIONS = 'articleReaderPlaybackPositions_v1';
     const STORAGE_KEY_PLAY_QUEUE = 'articleReaderPlayQueue_v1';
-    const STORAGE_KEY_RSS_FEEDS = 'articleReaderRssFeeds_v2'; 
+    const STORAGE_KEY_RSS_FEEDS = 'articleReaderRssFeeds_v2';
     const STORAGE_KEY_SCROLL_POSITIONS = 'articleReaderScrollPositions_v1';
-    let scrollSaveTimeout = null; 
+    const STORAGE_KEY_FOCUS_MODE = 'articleReaderFocusMode_v1';
+    const STORAGE_KEY_RSS_READ_ITEMS = 'articleReaderRssReadItems_v1';
+
+
+    let scrollSaveTimeout = null;
+    let autoScrollInterval = null;
+    let autoScrollSpeed = 50;
+    const MIN_SCROLL_SPEED = 10;
+    const MAX_SCROLL_SPEED = 200;
+    let isAutoScrolling = false;
 
 
     // --- Helper Functions ---
@@ -535,15 +721,15 @@
     function clearPlaybackPosition(articleUrl) { if (!articleUrl) return; const positions = JSON.parse(localStorage.getItem(STORAGE_KEY_PLAYBACK_POSITIONS) || '{}'); const articleId = btoa(encodeURIComponent(articleUrl)); if (positions[articleId]) { delete positions[articleId]; localStorage.setItem(STORAGE_KEY_PLAYBACK_POSITIONS, JSON.stringify(positions)); } }
     function saveQueue() { const queueToSave = { items: playQueue, currentIndex: currentQueueIndex, isShuffle: audioPlayerState.isShuffle, repeatMode: audioPlayerState.repeatMode, unshuffledQueue: audioPlayerState.unshuffledQueue }; localStorage.setItem(STORAGE_KEY_PLAY_QUEUE, JSON.stringify(queueToSave)); }
     function loadQueue() { const savedQueue = JSON.parse(localStorage.getItem(STORAGE_KEY_PLAY_QUEUE) || 'null'); if (savedQueue && Array.isArray(savedQueue.items)) { playQueue = savedQueue.items; currentQueueIndex = savedQueue.currentIndex; audioPlayerState.isShuffle = savedQueue.isShuffle || false; audioPlayerState.repeatMode = savedQueue.repeatMode || 'off'; audioPlayerState.unshuffledQueue = savedQueue.unshuffledQueue || []; updateQueueDisplay(); } }
-    function setupVisualizer(audioElement) { if (!visualizerContext.audioCtx) { visualizerContext.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } if (visualizerContext.source) { visualizerContext.source.disconnect(); } visualizerContext.canvas = document.getElementById('audioVisualizer'); visualizerContext.canvasCtx = visualizerContext.canvas.getContext('2d'); visualizerContext.source = visualizerContext.audioCtx.createMediaElementSource(audioElement); visualizerContext.analyser = visualizerContext.audioCtx.createAnalyser(); visualizerContext.analyser.fftSize = 256; visualizerContext.bufferLength = visualizerContext.analyser.frequencyBinCount; visualizerContext.dataArray = new Uint8Array(visualizerContext.bufferLength); visualizerContext.source.connect(visualizerContext.analyser); visualizerContext.analyser.connect(visualizerContext.audioCtx.destination); drawVisualization(); }
-    function drawVisualization() { visualizerContext.animationFrameId = requestAnimationFrame(drawVisualization); visualizerContext.analyser.getByteFrequencyData(visualizerContext.dataArray); const { canvas, canvasCtx, bufferLength, dataArray } = visualizerContext; canvasCtx.clearRect(0, 0, canvas.width, canvas.height); const barWidth = (canvas.width / bufferLength) * 2.5; let barHeight; let x = 0; const themeColor = getComputedStyle(document.documentElement).getPropertyValue('--player-red').trim(); for (let i = 0; i < bufferLength; i++) { barHeight = dataArray[i] / 2; canvasCtx.fillStyle = themeColor; canvasCtx.fillRect(x, (canvas.height - barHeight) / 2, barWidth, barHeight); x += barWidth + 1; } }
-    function stopVisualization() { if (visualizerContext.animationFrameId) { cancelAnimationFrame(visualizerContext.animationFrameId); visualizerContext.animationFrameId = null; } const canvas = document.getElementById('audioVisualizer'); if (canvas) { const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height); } }
+    function setupVisualizer(audioElement) { if (!visualizerContext.audioCtx) { visualizerContext.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } if (visualizerContext.source) { visualizerContext.source.disconnect(); } visualizerContext.canvas = document.getElementById('audioVisualizer'); visualizerContext.canvasCtx = visualizerContext.canvas.getContext('2d'); try { visualizerContext.source = visualizerContext.audioCtx.createMediaElementSource(audioElement); visualizerContext.analyser = visualizerContext.audioCtx.createAnalyser(); visualizerContext.analyser.fftSize = 256; visualizerContext.bufferLength = visualizerContext.analyser.frequencyBinCount; visualizerContext.dataArray = new Uint8Array(visualizerContext.bufferLength); visualizerContext.source.connect(visualizerContext.analyser); visualizerContext.analyser.connect(visualizerContext.audioCtx.destination); drawVisualization(); } catch (e) { console.error("Error setting up visualizer:", e); if (e.name === "InvalidStateError" && audioElement.readyState === 0) { console.warn("Visualizer setup failed due to audio element not ready. Retrying on canplay."); audioElement.addEventListener('canplay', () => setupVisualizer(audioElement), {once: true}); } } }
+    function drawVisualization() { if (!visualizerContext.analyser) return; visualizerContext.animationFrameId = requestAnimationFrame(drawVisualization); visualizerContext.analyser.getByteFrequencyData(visualizerContext.dataArray); const { canvas, canvasCtx, bufferLength, dataArray } = visualizerContext; canvasCtx.clearRect(0, 0, canvas.width, canvas.height); const barWidth = (canvas.width / bufferLength) * 2.5; let barHeight; let x = 0; const themeColor = getComputedStyle(document.documentElement).getPropertyValue('--player-red').trim(); for (let i = 0; i < bufferLength; i++) { barHeight = dataArray[i] / 2; canvasCtx.fillStyle = themeColor; canvasCtx.fillRect(x, (canvas.height - barHeight) / 2, barWidth, barHeight); x += barWidth + 1; } }
+    function stopVisualization() { if (visualizerContext.animationFrameId) { cancelAnimationFrame(visualizerContext.animationFrameId); visualizerContext.animationFrameId = null; } const canvas = document.getElementById('audioVisualizer'); if (canvas) { const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height); } if (visualizerContext.source) { visualizerContext.source.disconnect(); visualizerContext.source = null; } if (visualizerContext.analyser) { visualizerContext.analyser.disconnect(); visualizerContext.analyser = null;} }
     function openQueueModal() { updateQueueDisplay(); document.getElementById('queueModal').classList.add('show'); }
     function closeQueueModal() { document.getElementById('queueModal').classList.remove('show'); }
-    function addToQueue(articleData, playNext = false) { if (!articleData || !articleData.url) { showToast("क्यू में जोड़ने के लिए अमान्य लेख डेटा।", "error"); return; } if (playQueue.find(item => item.url === articleData.url)) { showToast("यह आर्टिकल पहले से ही क्यू में है।", "warning"); return; } if (!articleData.title) articleData.title = "अज्ञात शीर्षक"; if (playNext) { playQueue.splice(currentQueueIndex + 1, 0, articleData); showToast(`'${articleData.title.substring(0, 20)}...' अगला बजेगा।`, 'success'); } else { playQueue.push(articleData); showToast(`'${articleData.title.substring(0, 20)}...' क्यू में जोड़ा गया।`, 'success'); } if (!isPlaying && !isPaused && playQueue.length > 0) { startQueuePlayback(); } updateQueueDisplay(); saveQueue(); }
-    function removeFromQueue(index) { if (index > -1 && index < playQueue.length) { const wasCurrentlyPlayingItem = (index === currentQueueIndex); playQueue.splice(index, 1); if (index < currentQueueIndex) { currentQueueIndex--; } else if (index === currentQueueIndex && playQueue.length === 0) { currentQueueIndex = -1; } else if (index === currentQueueIndex && index >= playQueue.length) { currentQueueIndex = playQueue.length > 0 ? playQueue.length -1 : -1; } updateQueueDisplay(); saveQueue(); if (wasCurrentlyPlayingItem) { stopTTS(); if(playQueue.length > 0) { playNextInQueueOrAutoplay(true); } else { hideAudioPlayer(); audioPlayerState.currentArticle = null; } } } }
+    function addToQueue(articleData, playNext = false) { if (!articleData || !articleData.url) { showToast("क्यू में जोड़ने के लिए अमान्य लेख डेटा।", "error"); return; } if (playQueue.find(item => item.url === articleData.url)) { showToast("यह आर्टिकल पहले से ही क्यू में है।", "warning"); return; } if (!articleData.title) articleData.title = "अज्ञात शीर्षक"; if (playNext) { playQueue.splice(currentQueueIndex + 1, 0, articleData); showToast(`'${articleData.title.substring(0, 20)}...' अगला बजेगा।`, 'success'); } else { playQueue.push(articleData); showToast(`'${articleData.title.substring(0, 20)}...' क्यू में जोड़ा गया।`, 'success'); } if (!isPlaying && !isPaused && playQueue.length > 0 && playQueue.length === (playNext ? currentQueueIndex + 2 : playQueue.length)) { startQueuePlayback(); } updateQueueDisplay(); saveQueue(); }
+    function removeFromQueue(index) { if (index > -1 && index < playQueue.length) { const wasCurrentlyPlayingItem = (index === currentQueueIndex); playQueue.splice(index, 1); if (index < currentQueueIndex) { currentQueueIndex--; } else if (index === currentQueueIndex && playQueue.length === 0) { currentQueueIndex = -1; } else if (index === currentQueueIndex && index >= playQueue.length) { currentQueueIndex = playQueue.length > 0 ? playQueue.length -1 : -1; } updateQueueDisplay(); saveQueue(); if (wasCurrentlyPlayingItem) { stopTTS(); if(playQueue.length > 0 && currentQueueIndex !== -1 && currentQueueIndex < playQueue.length) { playNextInQueueOrAutoplay(true); } else if (playQueue.length > 0) { playQueueItem(0); } else { hideAudioPlayer(); audioPlayerState.currentArticle = null; } } } }
     function clearQueue() { playQueue = []; currentQueueIndex = -1; stopTTS(); updateQueueDisplay(); saveQueue(); showToast("क्यू साफ़ कर दिया गया है।", "info"); hideAudioPlayer(); audioPlayerState.currentArticle = null;}
-    
+
     function updateQueueDisplay() {
         const queueList = document.getElementById('queue-list');
         const queueCount = document.getElementById('queue-count');
@@ -561,7 +747,7 @@
             playQueue.forEach((item, index) => {
                 const li = document.createElement('li');
                 li.className = 'queue-item';
-                if (index === currentQueueIndex && (isPlaying || isPaused)) li.classList.add('playing'); 
+                if (index === currentQueueIndex && (isPlaying || isPaused)) li.classList.add('playing');
                 li.dataset.index = index;
                 li.draggable = true;
                 li.innerHTML = `
@@ -576,26 +762,26 @@
     }
 
     function addQueueDragDropListeners() { const items = document.querySelectorAll('#queue-list .queue-item'); let dragStartIndex; items.forEach(item => { item.addEventListener('dragstart', e => { dragStartIndex = parseInt(e.currentTarget.dataset.index); e.currentTarget.classList.add('dragging'); }); item.addEventListener('dragend', e => e.currentTarget.classList.remove('dragging')); item.addEventListener('dragover', e => e.preventDefault()); item.addEventListener('drop', e => { e.preventDefault(); const dragEndIndex = parseInt(e.currentTarget.dataset.index); const [reorderedItem] = playQueue.splice(dragStartIndex, 1); playQueue.splice(dragEndIndex, 0, reorderedItem); if (dragStartIndex === currentQueueIndex) currentQueueIndex = dragEndIndex; else if (dragStartIndex < currentQueueIndex && dragEndIndex >= currentQueueIndex) currentQueueIndex--; else if (dragStartIndex > currentQueueIndex && dragEndIndex <= currentQueueIndex) currentQueueIndex++; updateQueueDisplay(); saveQueue(); }); }); }
-    
-    function startQueuePlayback() { 
+
+    function startQueuePlayback() {
         if (playQueue.length > 0) {
             const indexToPlay = currentQueueIndex !== -1 && currentQueueIndex < playQueue.length ? currentQueueIndex : 0;
-            if (indexToPlay < playQueue.length) { 
+            if (indexToPlay < playQueue.length) {
                 playQueueItem(indexToPlay);
-            } else if (playQueue.length > 0) { 
+            } else if (playQueue.length > 0) {
                 playQueueItem(0);
             }
         }
     }
-    
+
     async function handleQueueItemClick(index) {
         if (index >= 0 && index < playQueue.length) {
             if (index === currentQueueIndex && (isPlaying || isPaused)) {
-                handlePlayPause(); 
+                handlePlayPause();
                 return;
             }
             await playQueueItem(index);
-            closeQueueModal(); 
+            closeQueueModal();
         } else {
             console.error("Invalid index for queue item click:", index);
         }
@@ -604,29 +790,29 @@
     async function playQueueItem(index) {
         if (index >= 0 && index < playQueue.length) {
             currentQueueIndex = index;
-            saveQueue(); 
+            saveQueue();
             const articleData = playQueue[index];
-            await createAudioPlayer(articleData); 
-            updateQueueDisplay(); 
+            await createAudioPlayer(articleData);
+            updateQueueDisplay();
         } else {
             if (audioPlayerState.repeatMode === 'all' && playQueue.length > 0) {
                 await playQueueItem(0);
             } else {
                 currentQueueIndex = -1;
                 saveQueue();
-                if (isPlaying || isPaused) { 
+                if (isPlaying || isPaused) {
                      showToast("प्लेबैक क्यू समाप्त।", "info");
                 }
-                stopTTS(); 
-                updateQueueDisplay(); 
-                hideAudioPlayer(); 
+                stopTTS();
+                updateQueueDisplay();
+                hideAudioPlayer();
                 audioPlayerState.currentArticle = null;
             }
         }
     }
-    
+
     async function createAudioPlayer(articleData) {
-        await showSavedArticle(articleData); 
+        await showSavedArticle(articleData);
         const playerContainer = document.getElementById('audioPlayerContainer');
         playerContainer.style.display = 'flex';
         playerContainer.querySelector('.play-pause-btn').onclick = handlePlayPause;
@@ -635,17 +821,17 @@
         playerContainer.querySelector('.shuffle-btn').onclick = toggleShuffle;
         playerContainer.querySelector('.repeat-btn').onclick = toggleRepeat;
         playerContainer.querySelector('.progress-bar').oninput = (e) => seekAudio(e.target.value);
-        
+
         if (!audioPlayerState.currentArticle || articleData.url !== audioPlayerState.currentArticle.url || (!isPlaying && !isPaused)) {
             playTTS(articleData);
         } else {
-            audioPlayerState.currentArticle = articleData; 
+            audioPlayerState.currentArticle = articleData;
             updatePlayerUI();
         }
     }
 
     function hideAudioPlayer() { const playerContainer = document.getElementById('audioPlayerContainer'); if (playerContainer) { playerContainer.style.display = 'none'; } stopVisualization(); }
-    
+
     function handlePlayPause() {
         if (!audioPlayerState.currentArticle) {
             if (playQueue.length > 0) {
@@ -662,7 +848,7 @@
             pauseTTS();
         } else if (isPaused) {
             resumeTTS();
-        } else { 
+        } else {
             playTTS(audioPlayerState.currentArticle);
         }
     }
@@ -674,7 +860,7 @@
         const playPauseBtn = playerContainer.querySelector('.play-pause-btn');
         let showPauseIcon = isPlaying && audioPlayerState.currentArticle;
         playPauseBtn.innerHTML = showPauseIcon ? '⏸️' : '▶️';
-        
+
         const shuffleBtn = playerContainer.querySelector('.shuffle-btn');
         shuffleBtn.classList.toggle('active', audioPlayerState.isShuffle);
         const repeatBtn = playerContainer.querySelector('.repeat-btn');
@@ -687,18 +873,18 @@
         const prevBtn = playerContainer.querySelector('.prev-btn');
         const nextBtn = playerContainer.querySelector('.next-btn');
 
-        if (playQueue.length > 0 && currentQueueIndex !== -1) { 
+        if (playQueue.length > 0 && currentQueueIndex !== -1) {
             prevBtn.disabled = currentQueueIndex <= 0;
             nextBtn.disabled = currentQueueIndex >= playQueue.length - 1 && audioPlayerState.repeatMode !== 'all';
-        } else { 
+        } else {
             prevBtn.disabled = true;
             nextBtn.disabled = true;
         }
-        updateQueueDisplay(); 
+        updateQueueDisplay();
     }
 
     function playPreviousInQueue() { if (currentQueueIndex > 0) { playQueueItem(currentQueueIndex - 1); } }
-    function toggleShuffle() { audioPlayerState.isShuffle = !audioPlayerState.isShuffle; if (audioPlayerState.isShuffle) { audioPlayerState.unshuffledQueue = [...playQueue]; if (currentQueueIndex !== -1 && currentQueueIndex < playQueue.length) { const head = playQueue.slice(0, currentQueueIndex + 1); const tail = playQueue.slice(currentQueueIndex + 1); for (let i = tail.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [tail[i], tail[j]] = [tail[j], tail[i]]; } playQueue = [...head, ...tail]; } showToast("शफल चालू।", "success"); } else { if (audioPlayerState.unshuffledQueue.length > 0) { const currentUrl = playQueue[currentQueueIndex]?.url; playQueue = [...audioPlayerState.unshuffledQueue]; currentQueueIndex = playQueue.findIndex(item => item.url === currentUrl); if (currentQueueIndex === -1 && playQueue.length > 0) currentQueueIndex = 0; } showToast("शफल बंद।", "info"); } updateQueueDisplay(); saveQueue(); updatePlayerUI(); }
+    function toggleShuffle() { audioPlayerState.isShuffle = !audioPlayerState.isShuffle; if (audioPlayerState.isShuffle) { audioPlayerState.unshuffledQueue = [...playQueue]; if (currentQueueIndex !== -1 && currentQueueIndex < playQueue.length) { const currentItem = playQueue[currentQueueIndex]; const tail = playQueue.filter((_,idx) => idx !== currentQueueIndex); for (let i = tail.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [tail[i], tail[j]] = [tail[j], tail[i]]; } playQueue = [currentItem, ...tail]; currentQueueIndex = 0; } showToast("शफल चालू।", "success"); } else { if (audioPlayerState.unshuffledQueue.length > 0) { const currentUrl = playQueue[currentQueueIndex]?.url; playQueue = [...audioPlayerState.unshuffledQueue]; currentQueueIndex = playQueue.findIndex(item => item.url === currentUrl); if (currentQueueIndex === -1 && playQueue.length > 0) currentQueueIndex = 0; } showToast("शफल बंद।", "info"); } updateQueueDisplay(); saveQueue(); updatePlayerUI(); }
     function toggleRepeat() { const modes = ['off', 'all', 'one']; const currentIndexVal = modes.indexOf(audioPlayerState.repeatMode); audioPlayerState.repeatMode = modes[(currentIndexVal + 1) % modes.length]; if (audioPlayerState.repeatMode === 'off') showToast("रिपीट बंद।"); if (audioPlayerState.repeatMode === 'all') showToast("पूरी प्लेलिस्ट रिपीट करें।"); if (audioPlayerState.repeatMode === 'one') showToast("यह ट्रैक रिपीट करें।"); updatePlayerUI(); saveQueue(); }
     function updateAudioProgress(e) { const { duration, currentTime } = e.target; const playerContainer = document.getElementById('audioPlayerContainer'); if (duration && playerContainer && isFinite(duration) && isFinite(currentTime)) { const progressPercent = (currentTime / duration) * 100; const progressBar = playerContainer.querySelector('.progress-bar'); progressBar.value = progressPercent; progressBar.style.backgroundSize = `${progressPercent}% 100%`; playerContainer.querySelector('.current-time').textContent = formatTime(currentTime); playerContainer.querySelector('.total-time').textContent = formatTime(duration); } else if (playerContainer) { playerContainer.querySelector('.current-time').textContent = formatTime(0); playerContainer.querySelector('.total-time').textContent = formatTime(0); }}
     function seekAudio(value) { if (currentAudioElement && currentAudioElement.duration && isFinite(currentAudioElement.duration)) { currentAudioElement.currentTime = (value / 100) * currentAudioElement.duration; } }
@@ -707,13 +893,13 @@
     function playTTS(article) {
         if (!article) {
             console.warn("playTTS called with null/undefined article");
-            stopTTS(); 
+            stopTTS();
             hideAudioPlayer();
             return;
         }
-        stopTTS(); 
+        stopTTS(); // This will also clear preloads for the previous article
 
-        audioPlayerState.currentArticle = article; 
+        audioPlayerState.currentArticle = article;
         isPlaying = true;
         isPaused = false;
         updateMediaSession(article, 'playing');
@@ -730,45 +916,49 @@
     }
 
     function pauseTTS() {
-        if (!isPlaying) return; 
+        if (!isPlaying) return;
 
         if (localStorage.getItem(STORAGE_KEY_TTS_METHOD) === 'stream' && currentAudioElement) {
             currentAudioElement.pause();
         } else if (localStorage.getItem(STORAGE_KEY_TTS_METHOD) === 'local' && speechApiSupported && localSpeechSynth && localSpeechSynth.speaking) {
             localSpeechSynth.pause();
         }
-        isPlaying = false;
+        isPlaying = false; // Set isPlaying to false AFTER operations
         isPaused = true;
         updatePlayerUI();
         updateMediaSession(audioPlayerState.currentArticle, 'paused');
     }
 
     function resumeTTS() {
-        if (!isPaused || !audioPlayerState.currentArticle) return; 
+        if (!isPaused || !audioPlayerState.currentArticle) return;
+        isPaused = false; // Set isPaused to false BEFORE operations
+        isPlaying = true;
 
         if (localStorage.getItem(STORAGE_KEY_TTS_METHOD) === 'stream' && currentAudioElement) {
             currentAudioElement.play().catch(e => { console.error("Error resuming stream audio:", e); stopTTS();});
         } else if (localStorage.getItem(STORAGE_KEY_TTS_METHOD) === 'local' && speechApiSupported && localSpeechSynth && localSpeechSynth.paused) {
             localSpeechSynth.resume();
         }
-        isPlaying = true;
-        isPaused = false;
         updatePlayerUI();
         updateMediaSession(audioPlayerState.currentArticle, 'playing');
     }
 
     function stopTTS() {
-        const currentArticleForPos = audioPlayerState.currentArticle; 
-        if (currentArticleForPos?.url && playQueue.length === 0 && (isPlaying || isPaused)) { 
+        const currentArticleForPos = audioPlayerState.currentArticle;
+        if (currentArticleForPos?.url && playQueue.length === 0 && (isPlaying || isPaused)) {
             const method = localStorage.getItem(STORAGE_KEY_TTS_METHOD) || 'stream';
-            let chunkIndex = -1;
-            if (method === 'stream' && currentAudioElement) {
-                 chunkIndex = currentArticleTotalChunks - audioQueue.length -1;
+            let positionToSave = -1;
+
+            if (method === 'stream') {
+                positionToSave = currentlyPlayingChunkIndex; // Index of the chunk that was playing/started
             } else if (method === 'local') {
-                 chunkIndex = currentArticleTotalChunks - localTtsQueue.length -1;
+                positionToSave = currentArticleTotalChunks - localTtsQueue.length -1;
             }
-            if (chunkIndex >= 0 && chunkIndex < currentArticleTotalChunks -1 ) {
-                savePlaybackPosition(currentArticleForPos.url, method, chunkIndex);
+
+            if (positionToSave >= 0 && positionToSave < currentArticleTotalChunks -1 ) {
+                savePlaybackPosition(currentArticleForPos.url, method, positionToSave);
+            } else {
+                 clearPlaybackPosition(currentArticleForPos.url);
             }
         }
 
@@ -779,8 +969,8 @@
         }
         if (currentAudioElement) {
             currentAudioElement.pause();
-            currentAudioElement.removeAttribute('src'); 
-            currentAudioElement.load(); 
+            currentAudioElement.removeAttribute('src');
+            currentAudioElement.load();
             currentAudioElement = null;
         }
         if (speechApiSupported && localSpeechSynth) {
@@ -789,20 +979,25 @@
 
         isPlaying = false;
         isPaused = false;
-        audioQueue = [];
+        // audioQueue = []; // Legacy, can be removed if fully transitioned
         localTtsQueue = [];
+
+        preloadedAudioBlobs = {};
+        allTextChunksForStream = [];
+        currentlyPlayingChunkIndex = -1;
+
 
         if (mediaSessionSupported) {
             navigator.mediaSession.playbackState = 'none';
             navigator.mediaSession.metadata = null;
         }
-        updatePlayerUI(); 
+        updatePlayerUI();
     }
 
     function playLocalTTSInternal(article, savedPosition = null) {
         if (!speechApiSupported || !article.textContent) {
             showToast("बोलने के लिए टेक्स्ट नहीं है या डिवाइस TTS समर्थित नहीं है।", "error");
-            stopTTS(); 
+            stopTTS();
             return;
         }
         const fullText = (article.title || "") + ". " + article.textContent;
@@ -822,12 +1017,12 @@
     }
 
     function processLocalTtsQueueInternal() {
-        if (!isPlaying || localTtsQueue.length === 0) { 
-            if (isPlaying && audioPlayerState.currentArticle) { 
+        if (!isPlaying || localTtsQueue.length === 0) {
+            if (isPlaying && audioPlayerState.currentArticle) {
                 const currentArticleUrl = audioPlayerState.currentArticle.url;
                 clearPlaybackPosition(currentArticleUrl);
                 if (audioPlayerState.repeatMode === 'one') {
-                    playTTS(audioPlayerState.currentArticle); 
+                    playTTS(audioPlayerState.currentArticle);
                     return;
                 }
                 if (stopAtArticleEnd) {
@@ -836,11 +1031,11 @@
                     stopTTS();
                 } else {
                     const willPlayNext = playNextInQueueOrAutoplay();
-                    if (!willPlayNext && playQueue.length === 0) { 
-                         stopTTS(); 
+                    if (!willPlayNext && playQueue.length === 0) {
+                         stopTTS();
                          hideAudioPlayer();
                          audioPlayerState.currentArticle = null;
-                    } else if (!willPlayNext) { 
+                    } else if (!willPlayNext) {
                         stopTTS();
                     }
                 }
@@ -861,87 +1056,117 @@
         const rate = parseFloat(localStorage.getItem(STORAGE_KEY_TTS_RATE) || '1');
         const voiceURI = localStorage.getItem(STORAGE_KEY_TTS_VOICE);
         const voices = localSpeechSynth.getVoices();
-        if (voices.length === 0) {
+        if (voices.length === 0 && speechApiSupported) { // Check if supported before showing toast
             showToast("आवाज़ें अभी भी लोड हो रही हैं, कृपया कुछ क्षण प्रतीक्षा करें।", "warning");
-            stopTTS(); 
+            // Optionally, re-queue the chunk and try again after a delay
+            localTtsQueue.unshift(chunk);
+            setTimeout(processLocalTtsQueueInternal, 1000);
             return;
         }
         const selectedVoice = voices.find(v => v.voiceURI === voiceURI);
         utterance.lang = selectedVoice ? selectedVoice.lang : 'hi-IN';
         utterance.rate = rate;
         if (selectedVoice) utterance.voice = selectedVoice;
-        utterance.onend = () => { if(isPlaying) setTimeout(processLocalTtsQueueInternal, 50); }; 
+        utterance.onend = () => { if(isPlaying) setTimeout(processLocalTtsQueueInternal, 50); };
         utterance.onerror = (e) => { if (e.error === 'interrupted') return; console.error("SpeechSynthesisUtterance Error:", e); showToast(`डिवाइस TTS में त्रुटि: ${e.error || 'अज्ञात'}`, 'error', 6000); stopTTS(); };
-        setTimeout(() => { if(isPlaying) localSpeechSynth.speak(utterance); }, 10); 
+        setTimeout(() => { if(isPlaying) localSpeechSynth.speak(utterance); }, 10);
     }
 
     async function playStreamTTSInternal(article, savedPosition = null) {
         const fullText = (article.title || "") + ". " + article.textContent;
-        const allChunks = fullText.replace(/\s+/g, ' ').trim().match(/.{1,180}/g) || [];
-        currentArticleTotalChunks = allChunks.length;
-        let startIndex = 0;
-        if (playQueue.length === 0 && savedPosition && savedPosition.type === 'stream' && savedPosition.position < allChunks.length) {
-            startIndex = savedPosition.position;
-        }
-        audioQueue = allChunks.slice(startIndex);
-        if (audioQueue.length === 0) {
+        allTextChunksForStream = fullText.replace(/\s+/g, ' ').trim().match(/.{1,180}/g) || [];
+        currentArticleTotalChunks = allTextChunksForStream.length;
+
+        if (allTextChunksForStream.length === 0) {
             showToast("बोलने के लिए टेक्स्ट नहीं है।", "error");
             stopTTS();
             return;
         }
+
+        currentlyPlayingChunkIndex = 0;
+        if (playQueue.length === 0 && savedPosition && savedPosition.type === 'stream' && savedPosition.position < currentArticleTotalChunks) {
+            currentlyPlayingChunkIndex = savedPosition.position;
+        }
+
         currentStreamController = new AbortController();
-        processAudioQueueInternal();
+        preloadedAudioBlobs = {}; // Clear preloads for new article
+
+        processAudioStreamQueue();
+    }
+    async function preloadNextAudioChunk(chunkIndexToLoad) {
+        if (chunkIndexToLoad >= allTextChunksForStream.length || preloadedAudioBlobs[chunkIndexToLoad] || !isPlaying || isPaused) {
+            return;
+        }
+        const chunkText = allTextChunksForStream[chunkIndexToLoad];
+        if (!chunkText) return;
+        console.log(`Preloading chunk: ${chunkIndexToLoad}`);
+        try {
+            const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunkText)}&tl=hi&client=tw-ob`;
+            const proxyUrl = `${MY_PRIVATE_PROXY}/?url=${encodeURIComponent(ttsUrl)}`;
+            const response = await fetch(proxyUrl, { signal: currentStreamController?.signal });
+            if (!response.ok) { console.error(`Preload API Error ${response.status} for chunk ${chunkIndexToLoad}`); return; }
+            const blob = await response.blob();
+            if (blob.size === 0) { console.error(`Empty audio data for preloaded chunk ${chunkIndexToLoad}`); return; }
+            preloadedAudioBlobs[chunkIndexToLoad] = blob;
+            console.log(`Successfully preloaded chunk: ${chunkIndexToLoad}`);
+        } catch (error) { if (error.name !== 'AbortError') { console.error(`Error preloading chunk ${chunkIndexToLoad}:`, error.message); } }
     }
 
-    async function processAudioQueueInternal() {
-        if (!isPlaying || audioQueue.length === 0) { 
-             if (isPlaying && audioPlayerState.currentArticle) {
+    async function processAudioStreamQueue() {
+        if (!isPlaying) return;
+        if (currentlyPlayingChunkIndex >= allTextChunksForStream.length) {
+            if (isPlaying && audioPlayerState.currentArticle) {
                 const currentArticleUrl = audioPlayerState.currentArticle.url;
                 clearPlaybackPosition(currentArticleUrl);
-                if (audioPlayerState.repeatMode === 'one') {
-                    playTTS(audioPlayerState.currentArticle);
-                    return;
-                }
-                if (stopAtArticleEnd) {
-                    showToast("आर्टिकल समाप्त। स्लीप टाइमर के अनुसार ऑडियो रोका जा रहा है।", "info");
-                    cancelSleepTimer();
-                    stopTTS();
-                } else {
-                    const willPlayNext = playNextInQueueOrAutoplay();
-                     if (!willPlayNext && playQueue.length === 0) {
-                         stopTTS();
-                         hideAudioPlayer();
-                         audioPlayerState.currentArticle = null;
-                    } else if (!willPlayNext) {
-                        stopTTS();
-                    }
-                }
+                if (audioPlayerState.repeatMode === 'one') { playTTS(audioPlayerState.currentArticle); return; }
+                if (stopAtArticleEnd) { showToast("आर्टिकल समाप्त। स्लीप टाइमर के अनुसार ऑडियो रोका जा रहा है।", "info"); cancelSleepTimer(); stopTTS(); }
+                else { const willPlayNext = playNextInQueueOrAutoplay(); if (!willPlayNext && playQueue.length === 0) { stopTTS(); hideAudioPlayer(); audioPlayerState.currentArticle = null; } else if (!willPlayNext) { stopTTS(); } }
             }
             return;
         }
-        if (isPaused) return; 
+        if (isPaused) return;
 
-        const chunk = audioQueue.shift();
-        try {
-            const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=hi&client=tw-ob`;
-            const proxyUrl = `${MY_PRIVATE_PROXY}/?url=${encodeURIComponent(ttsUrl)}`;
-            const response = await fetch(proxyUrl, { signal: currentStreamController?.signal });
-            if (!response.ok) throw new Error(`API Error ${response.status}`);
-            const blob = await response.blob();
-            if (blob.size === 0) throw new Error("Empty audio data");
-            const audioUrl = URL.createObjectURL(blob);
-            currentAudioElement = new Audio(audioUrl);
-            if (visualizerContext.audioCtx && visualizerContext.audioCtx.state === 'suspended') { visualizerContext.audioCtx.resume(); }
-            setupVisualizer(currentAudioElement);
-            currentAudioElement.addEventListener('timeupdate', updateAudioProgress);
-            currentAudioElement.addEventListener('loadedmetadata', updateAudioProgress);
-            currentAudioElement.playbackRate = parseFloat(localStorage.getItem(STORAGE_KEY_TTS_RATE) || '1');
-            await currentAudioElement.play(); 
-            currentAudioElement.onended = () => { URL.revokeObjectURL(audioUrl); if(isPlaying) processAudioQueueInternal(); };
-            currentAudioElement.onerror = () => { showToast("ऑडियो चलाने में त्रुटि।", "error"); stopTTS(); }
-        } catch (error) { if (error.name !== 'AbortError') { showToast(`स्ट्रीमिंग त्रुटि: ${error.message}`, 'error'); stopTTS(); } }
+        let audioBlobToPlay = preloadedAudioBlobs[currentlyPlayingChunkIndex];
+        let audioUrl;
+
+        if (audioBlobToPlay) {
+            console.log(`Playing preloaded chunk: ${currentlyPlayingChunkIndex}`);
+            audioUrl = URL.createObjectURL(audioBlobToPlay);
+            delete preloadedAudioBlobs[currentlyPlayingChunkIndex];
+        } else {
+            console.log(`Fetching and playing chunk directly: ${currentlyPlayingChunkIndex}`);
+            const chunkText = allTextChunksForStream[currentlyPlayingChunkIndex];
+            if (!chunkText) { currentlyPlayingChunkIndex++; processAudioStreamQueue(); return; }
+            try {
+                const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunkText)}&tl=hi&client=tw-ob`;
+                const proxyUrl = `${MY_PRIVATE_PROXY}/?url=${encodeURIComponent(ttsUrl)}`;
+                const response = await fetch(proxyUrl, { signal: currentStreamController?.signal });
+                if (!response.ok) throw new Error(`API Error ${response.status} for chunk ${currentlyPlayingChunkIndex}`);
+                const blob = await response.blob();
+                if (blob.size === 0) throw new Error(`Empty audio data for chunk ${currentlyPlayingChunkIndex}`);
+                audioUrl = URL.createObjectURL(blob);
+            } catch (error) { if (error.name !== 'AbortError') { showToast(`स्ट्रीमिंग त्रुटि (chunk ${currentlyPlayingChunkIndex}): ${error.message}`, 'error'); stopTTS(); } return; }
+        }
+
+        currentAudioElement = new Audio(audioUrl);
+        if (visualizerContext.audioCtx && visualizerContext.audioCtx.state === 'suspended') { visualizerContext.audioCtx.resume(); }
+        setupVisualizer(currentAudioElement);
+        currentAudioElement.addEventListener('timeupdate', updateAudioProgress);
+        currentAudioElement.addEventListener('loadedmetadata', updateAudioProgress);
+        currentAudioElement.playbackRate = parseFloat(localStorage.getItem(STORAGE_KEY_TTS_RATE) || '1');
+        currentAudioElement.play().catch(err => { showToast(`ऑडियो चलाने में त्रुटि (chunk ${currentlyPlayingChunkIndex}): ${err.message}`, "error"); console.error("Audio play error:", err); stopTTS(); });
+        currentAudioElement.onended = () => { URL.revokeObjectURL(audioUrl); if (isPlaying) { currentlyPlayingChunkIndex++; processAudioStreamQueue(); } };
+        currentAudioElement.onerror = (e) => { URL.revokeObjectURL(audioUrl); showToast(`ऑडियो प्लेबैक त्रुटि (chunk ${currentlyPlayingChunkIndex})`, "error"); console.error("Audio element error event:", e); stopTTS(); };
+
+        for (let i = 1; i <= PRELOAD_AHEAD_COUNT; i++) {
+            const indexToPreload = currentlyPlayingChunkIndex + i;
+            if (indexToPreload < allTextChunksForStream.length && !preloadedAudioBlobs[indexToPreload]) {
+                preloadNextAudioChunk(indexToPreload).catch(err => console.error("Preload promise rejected:", err));
+            }
+        }
     }
-    
+
+
     // --- Core Functions (UI, Data Management etc.) ---
     function removeUrlsFromText(text) {
         if (!text) return "";
@@ -949,58 +1174,65 @@
         return text.replace(urlRegex, '').replace(/\s+/g, ' ').trim();
     }
 
-    function toggleTheme(themeName) { 
-        document.body.classList.remove('dark-mode', 'sepia-mode', 'light-mode', 'high-contrast-mode'); 
-        if (themeName === 'dark') document.body.classList.add('dark-mode'); 
-        else if (themeName === 'sepia') document.body.classList.add('sepia-mode'); 
+    function toggleTheme(themeName) {
+        document.body.classList.remove('dark-mode', 'sepia-mode', 'light-mode', 'high-contrast-mode');
+        if (themeName === 'dark') document.body.classList.add('dark-mode');
+        else if (themeName === 'sepia') document.body.classList.add('sepia-mode');
         else if (themeName === 'high-contrast') document.body.classList.add('high-contrast-mode');
         else document.body.classList.add('light-mode');
-        localStorage.setItem(STORAGE_KEY_THEME, themeName); 
+        localStorage.setItem(STORAGE_KEY_THEME, themeName);
     }
     function applySavedTheme() { const savedTheme = localStorage.getItem(STORAGE_KEY_THEME) || 'light'; toggleTheme(savedTheme); }
-    
-    let previousToolName = ''; 
-    function openTool(evt, toolName) { 
-        const currentActiveTab = document.querySelector('.tab-link.active'); 
-        if (evt && currentActiveTab === evt.currentTarget && document.getElementById(toolName).style.display === 'block') return; 
-        
+
+    let previousToolName = '';
+    function openTool(evt, toolName) {
+        const currentActiveTab = document.querySelector('.tab-link.active');
+        if (evt && currentActiveTab === evt.currentTarget && document.getElementById(toolName).style.display === 'block') return;
+
         if (previousToolName === 'MyLibrary') {
             const contentWrapper = document.getElementById('lib-article-text-content');
-            if (contentWrapper) contentWrapper.onscroll = null; 
-            clearTimeout(scrollSaveTimeout); 
+            if (contentWrapper) contentWrapper.onscroll = null;
+            clearTimeout(scrollSaveTimeout);
+            if (isAutoScrolling) { toggleAutoScroll(); } // Stop autoscroll when leaving library view
+            const libProgressBarContainer = document.getElementById('library-reading-progress-container');
+            if (libProgressBarContainer) libProgressBarContainer.style.display = 'none';
         }
+         // Hide all extractor progress bars when switching tabs
+        document.querySelectorAll('.extractor-reading-progress-container').forEach(el => el.style.display = 'none');
 
-        document.querySelectorAll('.tool-content').forEach(el => el.style.display = 'none'); 
-        document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active')); 
-        const toolElement = document.getElementById(toolName); 
-        if (toolElement) toolElement.style.display = 'block'; 
-        const targetTab = evt ? evt.currentTarget : document.querySelector(`.tab-link[onclick*="'${toolName}'"]`); 
-        if (targetTab) targetTab.classList.add('active'); 
-        
-        if (toolName === 'MyLibrary' || toolName === 'Bookmarks' || toolName === 'RSSFeeds') { 
-            if(toolName === 'MyLibrary') { loadLibrary(); populateTagFilter(); } 
-            if(toolName === 'Bookmarks') { loadBookmarks(); } 
-            if (toolName === 'RSSFeeds') { displaySubscribedFeeds(); if(getSubscribedFeeds().length > 0 && !document.getElementById('rssArticlesList').hasChildNodes()){ displayRssFeedArticles(getSubscribedFeeds()[0]); } updateRssFeedCount(); } 
-            document.getElementById('internalNavHistoryContainer').style.display = 'none'; 
-            document.getElementById('toggleCrawlBtn').style.display = 'none'; 
-        } else if (toolName === 'ArticleExtractor') { 
-            updateHistoryButtons(); 
+
+        document.querySelectorAll('.tool-content').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.tab-link').forEach(el => el.classList.remove('active'));
+        const toolElement = document.getElementById(toolName);
+        if (toolElement) toolElement.style.display = 'block';
+        const targetTab = evt ? evt.currentTarget : document.querySelector(`.tab-link[onclick*="'${toolName}'"]`);
+        if (targetTab) targetTab.classList.add('active');
+
+        if (toolName === 'MyLibrary' || toolName === 'Bookmarks' || toolName === 'RSSFeeds') {
+            if(toolName === 'MyLibrary') { loadLibrary(); populateTagFilter(); }
+            if(toolName === 'Bookmarks') { loadBookmarks(); }
+            if (toolName === 'RSSFeeds') { displaySubscribedFeeds(); if(getSubscribedFeeds().length > 0 && !document.getElementById('rssArticlesList').hasChildNodes()){ displayRssFeedArticles(getSubscribedFeeds()[0]); } updateRssFeedCount(); }
+            document.getElementById('internalNavHistoryContainer').style.display = 'none';
+            document.getElementById('toggleCrawlBtn').style.display = 'none';
+        } else if (toolName === 'ArticleExtractor') {
+            updateHistoryButtons();
         }
-        previousToolName = toolName; 
+        previousToolName = toolName;
     }
     async function fetchWithProxy(url) { const proxyUrl = `${MY_PRIVATE_PROXY}/?url=${encodeURIComponent(url)}`; try { const response = await fetch(proxyUrl, { signal: AbortSignal.timeout(20000) }); if (!response.ok) throw new Error(`प्रॉक्सी सर्वर से जवाब नहीं मिला (स्टेटस: ${response.status})`); return await response.text(); } catch (error) { if (error.name === 'AbortError' || error.name === 'TimeoutError') { throw new Error('अनुरोध में बहुत अधिक समय लगा (टाइमआउट)।'); } throw error; } }
-    
+
     function createStoryElement(article, sourceUrl) {
         const storyDiv = document.createElement('div');
         storyDiv.className = 'single-story';
-        storyDiv.dataset.textContentForSearch = (article.textContent || "").toLowerCase(); 
+        storyDiv.dataset.textContentForSearch = (article.textContent || "").toLowerCase();
+        storyDiv.dataset.sourceUrl = sourceUrl;
 
-        const articleDataForStorage = { 
+        const articleDataForStorage = {
             title: article.title || "शीर्षक उपलब्ध नहीं",
-            content: article.content || "",      
-            textContent: article.textContent || "", 
+            content: article.content || "",
+            textContent: article.textContent || "",
             byline: article.byline || "उपलब्ध नहीं",
-            url: sourceUrl, 
+            url: sourceUrl,
             length: article.length,
             excerpt: article.excerpt,
             siteName: article.siteName
@@ -1013,27 +1245,27 @@
         titleH3.textContent = article.title || "शीर्षक उपलब्ध नहीं";
         const headerButtons = document.createElement('div');
         headerButtons.className = 'header-buttons';
-        
+
         const listenBtn = document.createElement('button');
         listenBtn.textContent = '▶️ सुनें';
         listenBtn.title = 'आर्टिकल सुनें';
-        listenBtn.onclick = () => { 
-            clearQueue(); 
+        listenBtn.onclick = () => {
+            clearQueue();
             const dataFromElement = JSON.parse(storyDiv.dataset.articleData);
-            addToQueue(dataFromElement); 
+            addToQueue(dataFromElement);
         };
 
         const mp3Btn = document.createElement('button');
         mp3Btn.innerHTML = '🗣️ MP3';
         mp3Btn.title = 'MP3 ऑडियो डाउनलोड करें';
         mp3Btn.onclick = (e) => { if (!article.textContent) { showToast("MP3 बनाने के लिए टेक्स्ट उपलब्ध नहीं है।", "error"); return; } downloadTextAsMp3(article.textContent, article.title || "audio", e.currentTarget); };
-        
+
         const saveBtn = document.createElement('button');
         saveBtn.className = 'save-btn';
         saveBtn.innerHTML = isSaved(sourceUrl) ? '❤️ सेव है' : '🤍 सेव करें';
         saveBtn.title = isSaved(sourceUrl) ? 'लाइब्रेरी से हटाएं' : 'लाइब्रेरी में सेव करें';
         if (isSaved(sourceUrl)) saveBtn.classList.add('saved');
-        saveBtn.onclick = () => toggleSaveArticle(articleDataForStorage, sourceUrl, saveBtn); 
+        saveBtn.onclick = () => toggleSaveArticle(articleDataForStorage, sourceUrl, saveBtn);
 
         const copyBtn = document.createElement('button');
         copyBtn.innerHTML = '📄 कॉपी';
@@ -1044,20 +1276,37 @@
         shareBtn.innerHTML = '🔗 शेयर';
         shareBtn.title = 'आर्टिकल (बिना URLs के) शेयर करें';
         shareBtn.style.backgroundColor = 'var(--success-color)';
-        shareBtn.onclick = () => shareLibraryArticle(articleDataForStorage); 
+        shareBtn.onclick = () => shareLibraryArticle(articleDataForStorage);
+
+        const originalViewBtn = document.createElement('button');
+        originalViewBtn.className = 'original-view-btn';
+        originalViewBtn.innerHTML = '🌐 वेब';
+        originalViewBtn.title = 'ओरिजिनल वेबपेज देखें';
+        originalViewBtn.onclick = (e) => {
+            toggleOriginalWebViewInExtractor(e.target.closest('.single-story'), sourceUrl);
+        };
 
         const moreOptionsBtn = document.createElement('button');
         moreOptionsBtn.innerHTML = '⋮';
         moreOptionsBtn.title = 'और विकल्प';
         moreOptionsBtn.style.fontSize = '1.2em';
-        moreOptionsBtn.onclick = (e) => { e.stopPropagation(); showItemContextMenu(e.currentTarget, articleDataForStorage); }; 
-        
-        headerButtons.append(listenBtn, mp3Btn, saveBtn, copyBtn, shareBtn, moreOptionsBtn);
+        moreOptionsBtn.onclick = (e) => { e.stopPropagation(); showItemContextMenu(e.currentTarget, articleDataForStorage); };
+
+        headerButtons.append(listenBtn, mp3Btn, saveBtn, copyBtn, shareBtn, originalViewBtn, moreOptionsBtn);
         headerDiv.append(titleH3, headerButtons);
         const wordCount = article.textContent ? article.textContent.split(/\s+/).filter(Boolean).length : 0;
         const readingTime = Math.ceil(wordCount / 200);
         const authorP = document.createElement('p');
         authorP.innerHTML = `<em style="font-size: 0.9em;">लेखक: ${article.byline || 'उपलब्ध नहीं'} | पढ़ने का समय: ~${readingTime} मिनट</em>`;
+
+        // Reading Progress Bar for Extractor
+        const readingProgressContainer = document.createElement('div');
+        readingProgressContainer.className = 'extractor-reading-progress-container reading-progress-container';
+        const readingProgressBar = document.createElement('div');
+        readingProgressBar.className = 'extractor-reading-progress-bar reading-progress-bar';
+        readingProgressContainer.appendChild(readingProgressBar);
+
+
         const contentDiv = document.createElement('div');
         contentDiv.className = 'article-body-content';
         if (article.content) {
@@ -1095,15 +1344,93 @@
         } else {
             contentDiv.innerHTML = "<p><em>इस आर्टिकल का कंटेंट लोड नहीं हो सका।</em></p>";
         }
-        storyDiv.innerHTML = ''; 
-        storyDiv.append(headerDiv, authorP, document.createElement('hr'), contentDiv);
-        
+
+        // Add scroll listener for extractor's content (if it's scrollable itself)
+        // This is tricky if the whole page scrolls. For now, let's assume contentDiv might be scrollable.
+        // If contentDiv will have its own scroll (e.g. max-height and overflow: auto):
+        contentDiv.addEventListener('scroll', function() {
+            if (this.scrollHeight > this.clientHeight) {
+                const scrollPercent = this.scrollTop / (this.scrollHeight - this.clientHeight);
+                const progress = Math.min(1, Math.max(0, scrollPercent)) * 100;
+                readingProgressBar.style.width = `${progress}%`;
+                readingProgressContainer.style.display = 'block';
+            } else {
+                readingProgressContainer.style.display = 'none';
+            }
+        });
+        // Initial check
+        setTimeout(() => { // Timeout to allow DOM to render and calculate scrollHeight
+             if (contentDiv.scrollHeight > contentDiv.clientHeight) {
+                readingProgressContainer.style.display = 'block';
+             } else {
+                readingProgressContainer.style.display = 'none';
+             }
+        }, 100);
+
+
+        storyDiv.innerHTML = '';
+        storyDiv.append(headerDiv, authorP, readingProgressContainer, document.createElement('hr'), contentDiv);
+
         const playAllBtn = document.getElementById('playAllExtractedBtn');
-        if (playAllBtn && playAllBtn.style.display === 'none' && document.querySelectorAll('#ae_result .single-story').length >=0 ) { 
+        if (playAllBtn && playAllBtn.style.display === 'none' && document.querySelectorAll('#ae_result .single-story').length >=0 ) {
             playAllBtn.style.display = 'inline-block';
         }
         return storyDiv;
     }
+
+    function toggleOriginalWebViewInExtractor(storyElement, articleUrl) {
+        if (!storyElement || !articleUrl) return;
+
+        const readableContent = storyElement.querySelector('.article-body-content');
+        let webviewContainer = storyElement.querySelector('.original-webview-container');
+        let iframe = storyElement.querySelector('.original-webview-iframe');
+        const toggleBtn = storyElement.querySelector('.original-view-btn');
+        const extractorProgress = storyElement.querySelector('.extractor-reading-progress-container');
+
+
+        if (!webviewContainer) {
+            webviewContainer = document.createElement('div');
+            webviewContainer.className = 'original-webview-container';
+            webviewContainer.style.display = 'none';
+
+            iframe = document.createElement('iframe');
+            iframe.className = 'original-webview-iframe';
+            iframe.sandbox = "allow-scripts allow-same-origin allow-popups allow-forms";
+            iframe.src = 'about:blank';
+
+            webviewContainer.appendChild(iframe);
+            storyElement.appendChild(webviewContainer);
+        }
+
+        if (webviewContainer.style.display === 'none') {
+            if (readableContent) readableContent.style.display = 'none';
+            if (extractorProgress) extractorProgress.style.display = 'none'; // Hide reader progress
+
+            const iframeSrc = `${MY_PRIVATE_PROXY}/iframe-passthrough?url=${encodeURIComponent(articleUrl)}`;
+            if (iframe.src !== iframeSrc) {
+                showToast("ओरिजिनल पेज लोड हो रहा है...", "info");
+                iframe.src = iframeSrc;
+            }
+            webviewContainer.style.display = 'block';
+            if (toggleBtn) {
+                toggleBtn.innerHTML = '📖 रीडर';
+                toggleBtn.title = 'रीडर व्यू पर वापस जाएं';
+            }
+        } else {
+            webviewContainer.style.display = 'none';
+            iframe.src = 'about:blank'; // Clear iframe
+            if (readableContent) readableContent.style.display = 'block';
+            if (extractorProgress && readableContent && readableContent.scrollHeight > readableContent.clientHeight) {
+                 extractorProgress.style.display = 'block'; // Show reader progress if scrollable
+            }
+
+            if (toggleBtn) {
+                toggleBtn.innerHTML = '🌐 वेब';
+                toggleBtn.title = 'ओरिजिनल वेबपेज देखें';
+            }
+        }
+    }
+
 
     async function copyArticleContent(articleData) {
         if (!articleData || !articleData.title || !articleData.textContent) {
@@ -1112,7 +1439,7 @@
         }
         const filteredTextContent = removeUrlsFromText(articleData.textContent);
         const textToCopy = `शीर्षक: ${articleData.title}\n\n${filteredTextContent}`;
-        
+
         try {
             if (navigator.clipboard && window.isSecureContext) {
                 await navigator.clipboard.writeText(textToCopy);
@@ -1120,8 +1447,8 @@
             } else {
                 const textArea = document.createElement('textarea');
                 textArea.value = textToCopy;
-                textArea.style.position = 'fixed'; 
-                textArea.style.opacity = '0'; 
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
                 document.body.appendChild(textArea);
                 textArea.focus();
                 textArea.select();
@@ -1135,7 +1462,7 @@
                 } catch (err) {
                     console.error('Fallback copy error:', err);
                     showToast('कॉपी विफल। ब्राउज़र ने अनुमति नहीं दी। मैन्युअल रूप से कॉपी करें।', 'error', 5000);
-                    displayFallbackShareOptions({text: textToCopy, title: articleData.title}, true); 
+                    displayFallbackShareOptions({text: textToCopy, title: articleData.title}, true);
                 }
                 document.body.removeChild(textArea);
             }
@@ -1172,8 +1499,8 @@
             return;
         }
 
-        clearQueue(); 
-        showToast(`सभी ${articleUrlsToProcess.length} आर्टिकल को प्रोसेस किया जा रहा है... कृपया प्रतीक्षा करें।`, "info", articleUrlsToProcess.length * 2000); 
+        clearQueue();
+        showToast(`सभी ${articleUrlsToProcess.length} आर्टिकल को प्रोसेस किया जा रहा है... कृपया प्रतीक्षा करें।`, "info", articleUrlsToProcess.length * 2000);
 
         let articlesAddedToQueueCount = 0;
         const playAllBtn = document.getElementById('playAllExtractedBtn');
@@ -1197,9 +1524,9 @@
                     addToQueue({
                         title: readableArticle.title,
                         textContent: readableArticle.textContent,
-                        content: readableArticle.content, 
+                        content: readableArticle.content,
                         byline: readableArticle.byline,
-                        url: url 
+                        url: url
                     });
                     articlesAddedToQueueCount++;
                 } else {
@@ -1214,14 +1541,14 @@
                  await new Promise(resolve => setTimeout(resolve, 200));
             }
         }
-        
+
         playAllBtn.innerHTML = originalBtnText;
         playAllBtn.disabled = false;
 
         if (articlesAddedToQueueCount > 0) {
-            startQueuePlayback(); 
+            startQueuePlayback();
             showToast(`${articlesAddedToQueueCount} आर्टिकल सफलतापूर्वक क्यू में जोड़े गए और प्लेबैक शुरू हुआ!`, "success");
-            openTool(null, 'MyLibrary'); 
+            openTool(null, 'MyLibrary');
         } else {
             showToast("कोई भी आर्टिकल प्लेबैक के लिए क्यू में नहीं जोड़ा जा सका।", "error");
         }
@@ -1240,91 +1567,187 @@
     function getLibrary() { return JSON.parse(localStorage.getItem(STORAGE_KEY_LIBRARY) || '{}'); }
     function saveLibrary(library) { localStorage.setItem(STORAGE_KEY_LIBRARY, JSON.stringify(library)); updateLibraryCount(); populateTagFilter(); if(document.getElementById('MyLibrary').style.display === 'block') loadLibrary(); }
     function isSaved(url) { return !!getLibrary()[btoa(encodeURIComponent(url))]; }
-    function toggleSaveArticle(articleData, url, btn) { 
-        const lib = getLibrary(); 
-        const id = btoa(encodeURIComponent(url)); 
-        if (lib[id]) { 
-            delete lib[id]; 
-            btn.innerHTML = '🤍 सेव करें'; btn.classList.remove('saved'); 
-        } else { 
-            lib[id] = { ...articleData, savedAt: new Date().toISOString(), tags: [], isRead: false }; 
-            btn.innerHTML = '❤️ सेव है'; btn.classList.add('saved'); 
-        } 
-        saveLibrary(lib); 
+    function toggleSaveArticle(articleData, url, btn) {
+        const lib = getLibrary();
+        const id = btoa(encodeURIComponent(url));
+        if (lib[id]) {
+            delete lib[id];
+            btn.innerHTML = '🤍 सेव करें'; btn.classList.remove('saved');
+        } else {
+            lib[id] = { ...articleData, savedAt: new Date().toISOString(), tags: [], isRead: false };
+            btn.innerHTML = '❤️ सेव है'; btn.classList.add('saved');
+        }
+        saveLibrary(lib);
     }
-    function toggleReadStatus(storyId, articleUrl) { const lib = getLibrary(); if (lib[storyId]) { lib[storyId].isRead = !lib[storyId].isRead; saveLibrary(lib); loadLibrary(); } }
+    function toggleReadStatus(storyId, articleUrl) { const lib = getLibrary(); if (lib[storyId]) { lib[storyId].isRead = !lib[storyId].isRead; saveLibrary(lib); loadLibrary(); } } // loadLibrary will update UI
     function loadLibrary() { const library = getLibrary(); const listDiv = document.getElementById('library-list'); const searchTerm = document.getElementById('librarySearch').value.toLowerCase(); const sortOrder = document.getElementById('librarySort').value; const selectedTag = document.getElementById('libraryTagFilter')?.value || ""; const selectedReadStatus = document.getElementById('libraryReadStatusFilter')?.value || "all"; const clearFiltersBtn = document.getElementById('clearLibraryFiltersBtn'); if (clearFiltersBtn) { clearFiltersBtn.style.display = (searchTerm || selectedTag || selectedReadStatus !== 'all') ? 'inline-block' : 'none'; } let itemsArray = Object.values(library).map(item => ({...item, id: btoa(encodeURIComponent(item.url))})); if (searchTerm) itemsArray = itemsArray.filter(item => item.title?.toLowerCase().includes(searchTerm)); if (selectedTag) itemsArray = itemsArray.filter(item => item.tags?.includes(selectedTag)); if (selectedReadStatus === "read") itemsArray = itemsArray.filter(item => item.isRead === true); else if (selectedReadStatus === "unread") itemsArray = itemsArray.filter(item => !item.isRead); itemsArray.sort((a, b) => { switch (sortOrder) { case 'date_asc': return new Date(a.savedAt) - new Date(b.savedAt); case 'title_asc': return (a.title || "").localeCompare(b.title || "", 'hi'); case 'title_desc': return (b.title || "").localeCompare(a.title || "", 'hi'); default: return new Date(b.savedAt) - new Date(a.savedAt); } }); listDiv.innerHTML = ''; if (itemsArray.length === 0) { listDiv.innerHTML = '<p>लाइब्रेरी खाली है या कोई परिणाम नहीं मिला।</p>'; } else { itemsArray.forEach(itemData => { const itemDiv = document.createElement('div'); itemDiv.className = 'library-item'; itemDiv.id = `lib-item-${itemData.id}`; itemDiv.innerHTML = ` <input type="checkbox" class="playlist-checkbox" data-url="${itemData.url}" onchange="updatePlaylistControls()" title="प्लेलिस्ट में जोड़ें"> <span class="item-title">${itemData.title || "N/A"}</span> <div class="item-controls"> <span class="read-status-toggle" title="${itemData.isRead ? 'अपठित करें' : 'पढ़ा करें'}">${itemData.isRead ? '✅' : '📖'}</span> <button class="item-more-options-btn">⋮</button> <button class="delete-btn">हटाएँ</button> </div> `; itemDiv.querySelector('.item-title').onclick = () => {
         const existingQueueIndex = playQueue.findIndex(pqItem => pqItem.url === itemData.url);
-        if (existingQueueIndex !== -1) {
-            playQueueItem(existingQueueIndex);
+        if (existingQueueIndex !== -1 && (isPlaying || isPaused) && audioPlayerState.currentArticle?.url === itemData.url) {
+            // If it's already the current playing/paused article in queue, just show it
+            showSavedArticle(itemData);
+        } else if (existingQueueIndex !== -1) {
+            playQueueItem(existingQueueIndex); // Play it from queue
         } else {
-            clearQueue(); 
-            addToQueue(itemData); 
+            clearQueue();
+            addToQueue(itemData); // Add and play
         }
     }; itemDiv.querySelector('.read-status-toggle').onclick = (e) => { e.stopPropagation(); toggleReadStatus(itemData.id, itemData.url); }; itemDiv.querySelector('.delete-btn').onclick = (e) => { e.stopPropagation(); deleteLibraryItem(itemData.id, itemData.url); }; itemDiv.querySelector('.item-more-options-btn').onclick = (e) => { e.stopPropagation(); showItemContextMenu(e.currentTarget, itemData); }; listDiv.appendChild(itemDiv); }); } updatePlaylistControls(); }
     function showItemContextMenu(button, articleData) { document.querySelectorAll('.item-context-menu').forEach(menu => menu.remove()); const menu = document.createElement('div'); menu.className = 'item-context-menu'; menu.innerHTML = ` <button class="play-next-btn">▶️ अगला चलाएं</button> <button class="add-to-queue-btn">⏯️ क्यू में जोड़ें</button> `; document.body.appendChild(menu); menu.querySelector('.play-next-btn').addEventListener('click', () => { addToQueue(articleData, true); menu.remove(); }); menu.querySelector('.add-to-queue-btn').addEventListener('click', () => { addToQueue(articleData, false); menu.remove(); }); const rect = button.getBoundingClientRect(); const menuHeight = menu.offsetHeight; const menuWidth = menu.offsetWidth; let top = rect.bottom; let left = rect.right - menuWidth; if (top + menuHeight > window.innerHeight) { top = rect.top - menuHeight; } if (left < 0) { left = rect.left; } menu.style.top = `${top + window.scrollY}px`; menu.style.left = `${left + window.scrollX}px`; menu.style.display = 'block'; setTimeout(() => { document.addEventListener('click', () => menu.remove(), { once: true }); }, 0); }
     function deleteLibraryItem(storyId, url) { const lib = getLibrary(); delete lib[storyId]; if (navigator.serviceWorker?.controller) { navigator.serviceWorker.controller.postMessage({ action: 'delete-article-from-cache', url: url }); } saveLibrary(lib); const view = document.getElementById('library-article-view'); if (view && view.dataset.currentArticleUrl === url) { view.style.display = 'none'; view.dataset.hasContent = 'false'; hideAudioPlayer(); if(audioPlayerState.currentArticle && audioPlayerState.currentArticle.url === url) { stopTTS(); audioPlayerState.currentArticle = null; } } showToast("हटाया गया।"); }
     function clearLibraryFilters() { document.getElementById('librarySearch').value = ''; document.getElementById('libraryTagFilter').value = ''; document.getElementById('libraryReadStatusFilter').value = 'all'; loadLibrary(); showToast("सभी फ़िल्टर साफ़।"); }
-    async function showSavedArticle(articleData) { 
-        const view = document.getElementById('library-article-view'); 
-        const textEl = document.getElementById('lib-article-text-content'); 
-        document.getElementById('lib-article-title').textContent = articleData.title; 
-        document.getElementById('lib-article-original-url').href = articleData.url; 
-        document.getElementById('lib-article-original-url').textContent = articleData.url.substring(0, 60) + '...'; 
-        textEl.textContent = articleData.textContent || "टेक्स्ट नहीं मिला।"; 
-        document.getElementById('shareLibArticleBtn').onclick = () => shareLibraryArticle(articleData); 
-        const tagContainer = document.getElementById('lib-article-tags-container'); 
-        const isLibraryArticle = isSaved(articleData.url); 
-        if (isLibraryArticle) { 
-            tagContainer.style.display = 'block'; 
-            const library = getLibrary(); 
-            const libraryItem = library[btoa(encodeURIComponent(articleData.url))]; 
-            displayArticleTags(articleData.url, libraryItem ? libraryItem.tags : []); 
-        } else { 
-            tagContainer.style.display = 'none'; 
-        } 
-        applySavedLibraryFontSize(); 
-        view.style.display = 'block'; 
-        view.dataset.currentArticleUrl = articleData.url; 
-        view.dataset.hasContent = 'true'; 
-        document.querySelectorAll('.library-item.selected').forEach(el => el.classList.remove('selected')); 
-        if (isLibraryArticle) { 
-            document.getElementById(`lib-item-${btoa(encodeURIComponent(articleData.url))}`)?.classList.add('selected'); 
-            if (!getLibrary()[btoa(encodeURIComponent(articleData.url))].isRead) { 
-                toggleReadStatus(btoa(encodeURIComponent(articleData.url)), articleData.url); 
-            } 
-        } 
+    async function showSavedArticle(articleData) {
+        const view = document.getElementById('library-article-view');
+        const textEl = document.getElementById('lib-article-text-content');
+        const webviewContainer = document.getElementById('lib-article-webview-container');
+        const iframeEl = document.getElementById('lib-article-iframe');
+        const toggleOriginalBtn = document.getElementById('toggleOriginalViewLibBtn');
+        const libProgressBarContainer = document.getElementById('library-reading-progress-container');
+        const libProgressBar = document.getElementById('library-reading-progress-bar');
 
-        const contentWrapper = document.getElementById('lib-article-text-content');
-        contentWrapper.onscroll = () => {
+
+        document.getElementById('lib-article-title').textContent = articleData.title;
+        document.getElementById('lib-article-original-url').href = articleData.url;
+        document.getElementById('lib-article-original-url').textContent = articleData.url.substring(0, 60) + '...';
+        textEl.textContent = articleData.textContent || "टेक्स्ट नहीं मिला।";
+        document.getElementById('shareLibArticleBtn').onclick = () => shareLibraryArticle(articleData);
+        const tagContainer = document.getElementById('lib-article-tags-container');
+        const isLibraryArticle = isSaved(articleData.url);
+        if (isLibraryArticle) {
+            tagContainer.style.display = 'block';
+            const library = getLibrary();
+            const libraryItem = library[btoa(encodeURIComponent(articleData.url))];
+            displayArticleTags(articleData.url, libraryItem ? libraryItem.tags : []);
+        } else {
+            tagContainer.style.display = 'none';
+        }
+        applySavedLibraryFontSize();
+        view.style.display = 'block';
+        view.dataset.currentArticleUrl = articleData.url;
+        view.dataset.hasContent = 'true';
+
+        textEl.style.display = 'block';
+        webviewContainer.style.display = 'none';
+        iframeEl.src = 'about:blank';
+        toggleOriginalBtn.textContent = '🌐 वेब व्यू दिखाएं';
+        document.getElementById('audioPlayerContainer').style.display = (isPlaying || isPaused) && audioPlayerState.currentArticle?.url === articleData.url ? 'flex' : 'none';
+        document.getElementById('autoScrollControls').style.display = 'flex';
+
+
+        textEl.onscroll = () => {
+            if (textEl.scrollHeight > textEl.clientHeight) {
+                const scrollPercent = textEl.scrollTop / (textEl.scrollHeight - textEl.clientHeight);
+                const progress = Math.min(1, Math.max(0, scrollPercent)) * 100;
+                libProgressBar.style.width = `${progress}%`;
+                libProgressBarContainer.style.display = 'block';
+            } else {
+                libProgressBarContainer.style.display = 'none';
+            }
             clearTimeout(scrollSaveTimeout);
             scrollSaveTimeout = setTimeout(() => {
-                if (contentWrapper.scrollHeight > contentWrapper.clientHeight) { 
-                    const scrollPercent = contentWrapper.scrollTop / (contentWrapper.scrollHeight - contentWrapper.clientHeight);
-                    if (isFinite(scrollPercent) && scrollPercent >= 0 && scrollPercent <= 1) {
-                        saveScrollPosition(articleData.url, scrollPercent);
+                if (textEl.scrollHeight > textEl.clientHeight) {
+                    const scrollPercentForSave = textEl.scrollTop / (textEl.scrollHeight - textEl.clientHeight);
+                    if (isFinite(scrollPercentForSave) && scrollPercentForSave >= 0 && scrollPercentForSave <= 1) {
+                        saveScrollPosition(articleData.url, scrollPercentForSave);
                     }
                 }
-            }, 500); 
+            }, 500);
         };
 
+        libProgressBar.style.width = '0%'; // Reset progress bar
         const savedScroll = getSavedScrollPosition(articleData.url);
-        if (savedScroll !== null && contentWrapper.scrollHeight > contentWrapper.clientHeight) {
+        if (savedScroll !== null && textEl.scrollHeight > textEl.clientHeight) {
             setTimeout(() => {
-                contentWrapper.scrollTop = savedScroll * (contentWrapper.scrollHeight - contentWrapper.clientHeight);
-            }, 100); 
+                textEl.scrollTop = savedScroll * (textEl.scrollHeight - textEl.clientHeight);
+                // Trigger scroll event manually to update progress bar after setting scrollTop
+                const event = new Event('scroll');
+                textEl.dispatchEvent(event);
+            }, 100);
         } else {
-            contentWrapper.scrollTop = 0; 
+            textEl.scrollTop = 0;
+             if(textEl.scrollHeight <= textEl.clientHeight) {
+                libProgressBarContainer.style.display = 'none';
+            } else {
+                libProgressBarContainer.style.display = 'block'; // Show if scrollable even at 0 scroll
+                libProgressBar.style.width = '0%';
+            }
         }
-        openTool(null, 'MyLibrary'); 
-        document.getElementById('library-content-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' }); 
+
+
+        document.querySelectorAll('.library-item.selected').forEach(el => el.classList.remove('selected'));
+        if (isLibraryArticle) {
+            const libItemEl = document.getElementById(`lib-item-${btoa(encodeURIComponent(articleData.url))}`);
+            if (libItemEl) libItemEl.classList.add('selected');
+            const libEntry = getLibrary()[btoa(encodeURIComponent(articleData.url))];
+            if (libEntry && !libEntry.isRead) { // Check if libEntry exists
+                 toggleReadStatus(btoa(encodeURIComponent(articleData.url)), articleData.url);
+            }
+        }
+
+        openTool(null, 'MyLibrary');
+        document.getElementById('library-content-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-    function populateTagFilter() { const tags = new Set(); Object.values(getLibrary()).forEach(item => item.tags?.forEach(tag => tags.add(tag))); const sel = document.getElementById('libraryTagFilter'); const val = sel.value; sel.innerHTML = '<option value="">सभी टैग</option>'; Array.from(tags).sort().forEach(tag => sel.innerHTML += `<option value="${tag}">${tag}</option>`); sel.value = val; }
+
+    function toggleOriginalWebViewForLibrary() {
+        const readableContent = document.getElementById('lib-article-text-content');
+        const webviewContainer = document.getElementById('lib-article-webview-container');
+        const iframe = document.getElementById('lib-article-iframe');
+        const toggleBtn = document.getElementById('toggleOriginalViewLibBtn');
+        const articleUrl = document.getElementById('lib-article-original-url').href;
+        const libProgressBarContainer = document.getElementById('library-reading-progress-container');
+
+        const audioPlayer = document.getElementById('audioPlayerContainer');
+        const autoScroll = document.getElementById('autoScrollControls');
+        const fontControlsContainer = toggleBtn.closest('div').querySelector('div[style*="margin-left:auto"]');
+
+
+        if (!articleUrl || articleUrl === 'about:blank' || articleUrl === '#') {
+            showToast("ओरिजिनल URL नहीं मिला।", "error");
+            return;
+        }
+
+        if (webviewContainer.style.display === 'none') {
+            readableContent.style.display = 'none';
+            libProgressBarContainer.style.display = 'none'; // Hide reader progress
+
+            const iframeSrc = `${MY_PRIVATE_PROXY}/iframe-passthrough?url=${encodeURIComponent(articleUrl)}`;
+            if (iframe.src !== iframeSrc) {
+                showToast("ओरिजिनल पेज लोड हो रहा है...", "info");
+                iframe.src = iframeSrc;
+            }
+            webviewContainer.style.display = 'block';
+            toggleBtn.textContent = '📖 रीडर व्यू दिखाएं';
+
+            if (isPlaying || isPaused) pauseTTS();
+            if (isAutoScrolling) toggleAutoScroll();
+            audioPlayer.style.display = 'none';
+            autoScroll.style.display = 'none';
+            if (fontControlsContainer) fontControlsContainer.style.visibility = 'hidden';
+
+
+        } else {
+            webviewContainer.style.display = 'none';
+            iframe.src = 'about:blank';
+            readableContent.style.display = 'block';
+            // Show reader progress if content is scrollable
+            if (readableContent.scrollHeight > readableContent.clientHeight) {
+                libProgressBarContainer.style.display = 'block';
+            } else {
+                libProgressBarContainer.style.display = 'none';
+            }
+
+            toggleBtn.textContent = '🌐 वेब व्यू दिखाएं';
+            autoScroll.style.display = 'flex';
+             if (fontControlsContainer) fontControlsContainer.style.visibility = 'visible';
+        }
+    }
+
+
+    function populateTagFilter() { const tags = new Set(); Object.values(getLibrary()).forEach(item => item.tags?.forEach(tag => tags.add(tag))); const sel = document.getElementById('libraryTagFilter'); const val = sel.value; sel.innerHTML = '<option value="">सभी टैग</option>'; Array.from(tags).sort((a,b) => a.localeCompare(b,'hi')).forEach(tag => sel.innerHTML += `<option value="${tag}">${tag}</option>`); sel.value = val; }
     function displayArticleTags(url, tags) { const div = document.getElementById('lib-article-current-tags'); div.innerHTML = tags?.length ? '' : '<em>कोई टैग नहीं।</em>'; tags?.forEach(tag => { const span = document.createElement('span'); span.className = 'tag-item'; span.textContent = tag; const btn = document.createElement('button'); btn.className = 'tag-remove-btn'; btn.textContent = '✗'; btn.onclick = () => removeTagFromCurrentLibraryArticle(tag); span.appendChild(btn); div.appendChild(span); }); }
     function addTagToCurrentLibraryArticle() { const input = document.getElementById('lib-new-tag-input'); const url = document.getElementById('library-article-view').dataset.currentArticleUrl; const name = input.value.trim().toLowerCase(); if (!url || !name) return; const lib = getLibrary(); const id = btoa(encodeURIComponent(url)); if (lib[id]) { lib[id].tags = lib[id].tags || []; if (!lib[id].tags.includes(name)) { lib[id].tags.push(name); saveLibrary(lib); displayArticleTags(url, lib[id].tags); input.value = ''; } } }
     function removeTagFromCurrentLibraryArticle(tagName) { const url = document.getElementById('library-article-view').dataset.currentArticleUrl; if (!url || !tagName) return; const lib = getLibrary(); const id = btoa(encodeURIComponent(url)); if (lib[id]?.tags) { lib[id].tags = lib[id].tags.filter(t => t !== tagName); saveLibrary(lib); displayArticleTags(url, lib[id].tags); } }
-    
-    async function copyLibraryArticleText() { 
+
+    async function copyLibraryArticleText() {
         const titleEl = document.getElementById('lib-article-title');
         const contentEl = document.getElementById('lib-article-text-content');
 
@@ -1332,41 +1755,44 @@
             showToast('कॉपी करने के लिए आवश्यक तत्व नहीं मिले।', 'error');
             return;
         }
-        const articleDataForCopy = { 
+        const articleDataForCopy = {
             title: titleEl.textContent,
             textContent: contentEl.textContent
-            // url is not needed for copyArticleContent's current logic
         };
-        await copyArticleContent(articleDataForCopy); 
+        await copyArticleContent(articleDataForCopy);
     }
 
-    async function shareLibraryArticle(articleData) { 
+    async function shareLibraryArticle(articleData) {
         if (!articleData || !articleData.title || !articleData.textContent) {
             showToast('शेयर करने के लिए आवश्यक डेटा नहीं मिला।', 'error');
             return;
         }
-        
-        const filteredTextContent = removeUrlsFromText(articleData.textContent);
-        let shareText = `शीर्षक: ${articleData.title}\n\n${filteredTextContent}`; 
-        
-        const dataToShare = { 
-            title: articleData.title, 
-            text: shareText, 
-            // url: articleData.url // URL is intentionally omitted from dataToShare if we don't want it AT ALL.
-                                 // If some platforms might use it, keep it. For now, removed.
-        };
 
-        if (navigator.share) { 
-            try { 
-                await navigator.share(dataToShare); 
+        const filteredTextContent = removeUrlsFromText(articleData.textContent);
+        let shareText = `शीर्षक: ${articleData.title}\n\n${filteredTextContent}`;
+
+        const dataToShare = {
+            title: articleData.title,
+            text: shareText,
+        };
+        if (articleData.url && !articleData.url.startsWith('blob:')) {
+            dataToShare.url = articleData.url;
+        }
+
+
+        if (navigator.share) {
+            try {
+                await navigator.share(dataToShare);
             } catch (e) {
                 console.warn("Share API error:", e);
-                showToast('शेयरिंग विफल हुई या रद्द कर दी गई। फॉलबैक का उपयोग किया जा रहा है।', 'warning');
-                displayFallbackShareOptions(dataToShare, true); 
-            } 
+                if (e.name !== 'AbortError') {
+                    showToast('शेयरिंग विफल हुई। फॉलबैक का उपयोग किया जा रहा है।', 'warning');
+                    displayFallbackShareOptions(dataToShare, true);
+                }
+            }
         } else {
             displayFallbackShareOptions(dataToShare, true);
-        } 
+        }
     }
 
     function displayFallbackShareOptions(data, isBulkShare = false) { const existingModal = document.querySelector('.fallback-share-modal'); if (existingModal) existingModal.remove(); const cont = document.createElement('div'); cont.className = 'fallback-share-modal'; let modalContent = `<button class="settings-close-btn" style="float:right; padding:0; line-height:1;" onclick="this.parentElement.remove()">×</button><h4>शेयर करें</h4><textarea id="fallback-share-text" readonly>${data.text}</textarea><div style="margin-top: 10px;"><button class="tool-btn" style="margin-top:0; background-color:var(--success-color);" onclick="copyFallbackText()">टेक्स्ट कॉपी करें</button>`; if (!isBulkShare && data.url) { modalContent += `<a href="mailto:?subject=${encodeURIComponent(data.title)}&body=${encodeURIComponent(data.url)}" class="tool-btn-secondary" style="margin-top:0;">ईमेल</a><a href="https://wa.me/?text=${encodeURIComponent(data.title + '\n' + data.url)}" data-action="share/whatsapp/share" target="_blank" class="tool-btn-secondary" style="margin-top:0;">व्हाट्सएप</a>`; } modalContent += `</div>`; cont.innerHTML = modalContent; document.body.appendChild(cont); }
@@ -1376,14 +1802,26 @@
     function saveBookmarks(bookmarks) { localStorage.setItem(STORAGE_KEY_BOOKMARKS, JSON.stringify(bookmarks)); updateBookmarkCount(); loadBookmarks(); populateBookmarkFolderSelectors(); }
     function addBookmark() { const nameInput = document.getElementById('bookmarkName'); const urlInput = document.getElementById('bookmarkUrl'); const folderSelect = document.getElementById('bookmarkAssignFolder'); const name = nameInput.value.trim(); const url = urlInput.value.trim(); const folder = folderSelect.value; if (!url) { showToast('कृपया URL डालें', 'error'); return; } const bookmarks = getBookmarks(); bookmarks.push({ name: name || url, url: url, addedAt: new Date().toISOString(), folder: folder }); saveBookmarks(bookmarks); nameInput.value = ''; urlInput.value = ''; showToast('बुकमार्क जोड़ा गया!', 'success'); }
     function loadBookmarks() { const folderFilter = document.getElementById('bookmarkFolderFilter').value; let bookmarks = getBookmarks(); if (folderFilter) { bookmarks = bookmarks.filter(bm => bm.folder === folderFilter); } const list = document.getElementById('bookmark-list'); list.innerHTML = ''; if (bookmarks.length === 0) { list.innerHTML = '<p>कोई बुकमार्क नहीं मिला।</p>'; } else { bookmarks.forEach((bm, index) => { const div = document.createElement('div'); div.className = 'bookmark-item'; div.innerHTML = `<span class="item-title" title="${bm.url}">${bm.name}</span><button class="delete-btn">हटाएँ</button>`; div.querySelector('.item-title').onclick = () => { document.getElementById('articleUrl').value = bm.url; openTool(null, 'ArticleExtractor'); ae_startExtraction(); }; div.querySelector('.delete-btn').onclick = () => { const allBms = getBookmarks(); allBms.splice(allBms.findIndex(b => b.url === bm.url && b.addedAt === bm.addedAt), 1); saveBookmarks(allBms); }; list.appendChild(div); }); } updateBookmarkCount(); }
-    function getBookmarkFolders() { const bookmarks = getBookmarks(); const folders = new Set(['Default']); bookmarks.forEach(bm => { if(bm.folder) folders.add(bm.folder) }); return Array.from(folders).sort(); }
+    function getBookmarkFolders() { const bookmarks = getBookmarks(); const folders = new Set(['Default']); bookmarks.forEach(bm => { if(bm.folder) folders.add(bm.folder) }); return Array.from(folders).sort((a,b) => a.localeCompare(b,'hi')); }
     function populateBookmarkFolderSelectors() { const folders = getBookmarkFolders(); const filterSelect = document.getElementById('bookmarkFolderFilter'); const assignSelect = document.getElementById('bookmarkAssignFolder'); const currentFilter = filterSelect.value; const currentAssign = assignSelect.value; filterSelect.innerHTML = '<option value="">सभी फ़ोल्डर</option>'; assignSelect.innerHTML = ''; folders.forEach(folder => { filterSelect.innerHTML += `<option value="${folder}">${folder}</option>`; assignSelect.innerHTML += `<option value="${folder}">${folder}</option>`; }); filterSelect.value = currentFilter; assignSelect.value = currentAssign || 'Default'; }
     function createBookmarkFolder() { const nameInput = document.getElementById('newBookmarkFolderName'); const newFolder = nameInput.value.trim(); if (newFolder) { const folders = getBookmarkFolders(); if (!folders.includes(newFolder)) { const filterSelect = document.getElementById('bookmarkFolderFilter'); const assignSelect = document.getElementById('bookmarkAssignFolder'); filterSelect.innerHTML += `<option value="${newFolder}">${newFolder}</option>`; assignSelect.innerHTML += `<option value="${newFolder}">${newFolder}</option>`; showToast(`फ़ोल्डर '${newFolder}' बनाया गया!`, 'success'); nameInput.value = ''; } else { showToast('यह फ़ोल्डर पहले से मौजूद है।', 'warning'); } } }
     function updateBookmarkCount() { document.getElementById('bookmark-count').textContent = `(${getBookmarks().length})`; }
-    function changeFontSize(d) { const el = document.getElementById('ae_result'); let s = parseFloat(window.getComputedStyle(el).fontSize) + d; el.style.fontSize = `${Math.max(10, Math.min(30, s))}px`; localStorage.setItem(STORAGE_KEY_FONT_SIZE, el.style.fontSize); }
-    function applySavedFontSize() { const size = localStorage.getItem(STORAGE_KEY_FONT_SIZE); if (size) document.getElementById('ae_result').style.fontSize = size; }
-    function changeLibraryFontSize(d) { const el = document.getElementById('lib-article-text-content'); let s = parseFloat(window.getComputedStyle(el).fontSize) + d; el.style.fontSize = `${Math.max(10, Math.min(30, s))}px`; localStorage.setItem(STORAGE_KEY_LIBRARY_FONT_SIZE, el.style.fontSize); }
-    function applySavedLibraryFontSize() { const size = localStorage.getItem(STORAGE_KEY_LIBRARY_FONT_SIZE); if (size) document.getElementById('lib-article-text-content').style.fontSize = size; }
+
+    function adjustFontSizeSetting(area, delta) {
+        let targetElementId, storageKey, displayElementId;
+        if (area === 'extractor') { targetElementId = 'ae_result'; storageKey = STORAGE_KEY_FONT_SIZE; displayElementId = 'extractorFontSizeDisplay';}
+        else if (area === 'library') { targetElementId = 'lib-article-text-content'; storageKey = STORAGE_KEY_LIBRARY_FONT_SIZE; displayElementId = 'libraryFontSizeDisplay';}
+        else { return; }
+        const targetElement = document.getElementById(targetElementId); const displayElement = document.getElementById(displayElementId);
+        if (!targetElement || !displayElement) return;
+        let currentSize = parseFloat(window.getComputedStyle(targetElement).fontSize);
+        if (isNaN(currentSize)) currentSize = 16;
+        let newSize = Math.max(10, Math.min(30, currentSize + delta));
+        targetElement.style.fontSize = `${newSize}px`; localStorage.setItem(storageKey, `${newSize}px`); displayElement.textContent = `${newSize}px`;
+    }
+    function applySavedFontSize() { const size = localStorage.getItem(STORAGE_KEY_FONT_SIZE) || '16px'; if (document.getElementById('ae_result')) document.getElementById('ae_result').style.fontSize = size; if(document.getElementById('extractorFontSizeDisplay')) document.getElementById('extractorFontSizeDisplay').textContent = size; }
+    function applySavedLibraryFontSize() { const size = localStorage.getItem(STORAGE_KEY_LIBRARY_FONT_SIZE) || '16px'; if (document.getElementById('lib-article-text-content')) document.getElementById('lib-article-text-content').style.fontSize = size; if(document.getElementById('libraryFontSizeDisplay')) document.getElementById('libraryFontSizeDisplay').textContent = size;}
+
     function setDisplayMode(m) { currentDisplayMode = m; localStorage.setItem(STORAGE_KEY_DISPLAY_MODE,m); showToast(`डिस्प्ले मोड बदला गया। कंटेंट को फिर से निकालने पर लागू होगा।`, 'info');}
     function applySavedDisplayMode() { const m=localStorage.getItem(STORAGE_KEY_DISPLAY_MODE)||'image-text'; currentDisplayMode = m; document.getElementById('displayModeSetting').value = m;}
     function showToast(msg, type='info', dur=3000, actions=null) { const cont = document.getElementById('toast-container'); const t = document.createElement('div'); t.className = `toast-notification ${type}`; t.textContent = msg; if (actions) { const actionsDiv = document.createElement('div'); actionsDiv.className = 'toast-actions'; actions.forEach(action => { const btn = document.createElement('button'); btn.textContent = action.text; btn.onclick = () => { action.callback(); t.remove(); }; actionsDiv.appendChild(btn); }); t.appendChild(actionsDiv); } cont.appendChild(t); setTimeout(() => t.classList.add('show'), 100); setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 500); }, dur); }
@@ -1408,15 +1846,15 @@
     function playNextInQueueOrAutoplay(fromRemoval = false) {
         let nextIndexToPlay = -1;
 
-        if (!fromRemoval && currentQueueIndex < playQueue.length - 1) { 
+        if (!fromRemoval && currentQueueIndex < playQueue.length - 1) {
             nextIndexToPlay = currentQueueIndex + 1;
-        } else if (fromRemoval && currentQueueIndex < playQueue.length) { 
-            nextIndexToPlay = currentQueueIndex; 
-        } else if (audioPlayerState.repeatMode === 'all' && playQueue.length > 0) { 
+        } else if (fromRemoval && currentQueueIndex < playQueue.length) { // After removal, play current index if valid
+            nextIndexToPlay = currentQueueIndex;
+        } else if (audioPlayerState.repeatMode === 'all' && playQueue.length > 0) {
             nextIndexToPlay = 0;
         }
-        
-        if (nextIndexToPlay !== -1 && nextIndexToPlay < playQueue.length) { 
+
+        if (nextIndexToPlay !== -1 && nextIndexToPlay < playQueue.length) {
             playQueueItem(nextIndexToPlay);
             return true;
         }
@@ -1425,29 +1863,33 @@
         if (isAutoplayOn && audioPlayerState.currentArticle) {
             const currentUrl = audioPlayerState.currentArticle.url;
             const allItemElements = Array.from(document.querySelectorAll('#library-list .library-item'));
-            const currentIndexInDom = allItemElements.findIndex(el => el.id === `lib-item-${btoa(encodeURIComponent(currentUrl))}`);
+            const currentIndexInDom = allItemElements.findIndex(el => {
+                const checkbox = el.querySelector('.playlist-checkbox');
+                return checkbox && checkbox.dataset.url === currentUrl;
+            });
+
             if (currentIndexInDom > -1 && currentIndexInDom < allItemElements.length - 1) {
                 const nextItemEl = allItemElements[currentIndexInDom + 1];
                 const nextUrl = nextItemEl.querySelector('.playlist-checkbox')?.dataset.url;
                 if (nextUrl) {
                     const nextArticleData = getLibrary()[btoa(encodeURIComponent(nextUrl))];
                     if (nextArticleData) {
-                        clearQueue(); 
-                        addToQueue(nextArticleData); 
+                        clearQueue();
+                        addToQueue(nextArticleData);
                         return true;
                     }
                 }
             }
         }
-        
-        if (isPlaying || isPaused) { 
+
+        if (isPlaying || isPaused) {
              showToast("प्लेबैक क्यू समाप्त।", "info");
         }
-        stopTTS(); 
+        stopTTS();
         hideAudioPlayer();
-        currentQueueIndex = -1; 
-        audioPlayerState.currentArticle = null; 
-        updateQueueDisplay(); 
+        currentQueueIndex = -1;
+        audioPlayerState.currentArticle = null;
+        updateQueueDisplay();
         saveQueue();
         return false;
     }
@@ -1458,13 +1900,16 @@
     function closeSettingsModal() { settingsModal.classList.remove('show'); setTimeout(() => { settingsModal.style.pointerEvents = 'none'; }, 300); window.removeEventListener('keydown', handleSettingsEscKey); }
     function handleSettingsEscKey(e) { if (e.key === 'Escape') { closeSettingsModal(); } }
     settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) { closeSettingsModal(); } });
-    function loadSettingsIntoModal() { 
-        const currentTheme = localStorage.getItem(STORAGE_KEY_THEME) || 'light'; 
+    function loadSettingsIntoModal() {
+        const currentTheme = localStorage.getItem(STORAGE_KEY_THEME) || 'light';
         const themeRadio = document.querySelector(`input[name="theme_setting"][value="${currentTheme}"]`);
         if(themeRadio) themeRadio.checked = true;
-        else document.querySelector(`input[name="theme_setting"][value="light"]`).checked = true; 
-        applySavedDisplayMode(); 
-        applySavedTTSSettings(); 
+        else document.querySelector(`input[name="theme_setting"][value="light"]`).checked = true;
+
+        applySavedDisplayMode();
+        applySavedTTSSettings();
+        applySavedFontSize();
+        applySavedLibraryFontSize();
     }
     document.querySelectorAll('input[name="theme_setting"]').forEach(radio => { radio.addEventListener('change', (e) => toggleTheme(e.target.value)); });
     document.getElementById('displayModeSetting').addEventListener('change', (e) => { setDisplayMode(e.target.value); });
@@ -1479,6 +1924,13 @@
     function performGoogleSearch() { const query = document.getElementById('googleSearchQuery').value; if (query.trim()) { const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`; window.open(searchUrl, '_blank'); } }
 
     // --- RSS Feed Functions ---
+    function getRssReadItems() { return JSON.parse(localStorage.getItem(STORAGE_KEY_RSS_READ_ITEMS) || '{}'); }
+    function saveRssReadItems(readItems) { localStorage.setItem(STORAGE_KEY_RSS_READ_ITEMS, JSON.stringify(readItems));}
+    function isRssArticleRead(feedUrl, articleLink) { const readItems = getRssReadItems(); return readItems[feedUrl] && readItems[feedUrl].includes(articleLink); }
+    function markRssArticleAsRead(feedUrl, articleLink) { const readItems = getRssReadItems(); if (!readItems[feedUrl]) { readItems[feedUrl] = []; } if (!readItems[feedUrl].includes(articleLink)) { readItems[feedUrl].push(articleLink); saveRssReadItems(readItems); displaySubscribedFeeds(); } }
+    function markRssArticleAsUnread(feedUrl, articleLink) { const readItems = getRssReadItems(); if (readItems[feedUrl] && readItems[feedUrl].includes(articleLink)) { readItems[feedUrl] = readItems[feedUrl].filter(link => link !== articleLink); if (readItems[feedUrl].length === 0) { delete readItems[feedUrl]; } saveRssReadItems(readItems); displaySubscribedFeeds(); } }
+    function markAllRssFeedArticles(feedUrl, feedItems, asRead = true) { const readItems = getRssReadItems(); if (asRead) { if (!readItems[feedUrl]) { readItems[feedUrl] = []; } feedItems.forEach(item => { if (item && item.link && !readItems[feedUrl].includes(item.link)) { readItems[feedUrl].push(item.link); } }); } else { showToast("यह सुविधा अभी लागू नहीं है।", "warning"); return; } saveRssReadItems(readItems); const feeds = getSubscribedFeeds(); const currentFeed = feeds.find(f => f.url === feedUrl); if (currentFeed && document.getElementById('rssFeedTitleDisplay').textContent.includes(currentFeed.title || currentFeed.url) ) { displayRssFeedArticles(currentFeed); } displaySubscribedFeeds(); showToast(`फ़ीड के सभी लेख "${currentFeed ? (currentFeed.title || currentFeed.url).substring(0,20)+'...' : ''}" पढ़े हुए चिह्नित।`, "success");}
+
     function getSubscribedFeeds() { return JSON.parse(localStorage.getItem(STORAGE_KEY_RSS_FEEDS) || '[]'); }
     function saveSubscribedFeeds(feeds) { localStorage.setItem(STORAGE_KEY_RSS_FEEDS, JSON.stringify(feeds)); displaySubscribedFeeds(); updateRssFeedCount(); }
     function updateRssFeedCount() { document.getElementById('rss-feed-count').textContent = `(${getSubscribedFeeds().length})`;}
@@ -1489,7 +1941,7 @@
         showToast("RSS फ़ीड खोजा जा रहा है...", "info");
         try {
             let feedUrl = urlInput;
-            if (!urlInput.toLowerCase().endsWith('.xml') && !urlInput.toLowerCase().endsWith('.rss') && !urlInput.toLowerCase().includes('/feed')) {
+            if (!urlInput.toLowerCase().endsWith('.xml') && !urlInput.toLowerCase().endsWith('.rss') && !urlInput.toLowerCase().includes('/feed')  && !urlInput.toLowerCase().includes('rss.xml')) {
                 const foundFeedUrl = await findRssFeedUrlOnPage(urlInput);
                 if (foundFeedUrl) { feedUrl = foundFeedUrl; showToast(`RSS फ़ीड मिला: ${feedUrl}`, "info"); }
                 else { showToast("इस पेज पर कोई स्पष्ट RSS फ़ीड नहीं मिला। दिए गए URL को फ़ीड के रूप में इस्तेमाल करने का प्रयास किया जा रहा है।", "warning"); }
@@ -1498,7 +1950,7 @@
             if (!parsedFeed || !parsedFeed.items || parsedFeed.items.length === 0) { showToast("RSS फ़ीड को पार्स नहीं किया जा सका या उसमें कोई आइटम नहीं है।", "error"); return; }
             const feeds = getSubscribedFeeds();
             if (feeds.some(f => f.url === feedUrl)) { showToast("यह फ़ीड पहले से सब्सक्राइब किया हुआ है।", "warning"); return; }
-            feeds.push({ title: parsedFeed.title || feedUrl, url: feedUrl, lastFetched: new Date().toISOString(), items: parsedFeed.items.slice(0, 30) }); 
+            feeds.push({ title: parsedFeed.title || feedUrl, url: feedUrl, lastFetched: new Date().toISOString(), items: parsedFeed.items.slice(0, 30) });
             saveSubscribedFeeds(feeds);
             urlInputEl.value = '';
             showToast(`फ़ीड "${parsedFeed.title || feedUrl}" सफलतापूर्वक जोड़ा गया!`, "success");
@@ -1522,12 +1974,12 @@
         const xmlText = await fetchWithProxy(feedUrl);
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlText, "application/xml");
-        const errorNode = xmlDoc.querySelector("parsererror"); 
+        const errorNode = xmlDoc.querySelector("parsererror");
         if (errorNode) { console.error("XML पार्सिंग त्रुटि:", errorNode.textContent); throw new Error("फ़ीड XML को पार्स नहीं किया जा सका।");}
         const feed = { title: '', items: [] };
-        let channelTitleElement = xmlDoc.querySelector("feed > title"); 
+        let channelTitleElement = xmlDoc.querySelector("feed > title");
         let itemElementsSelector = "feed > entry";
-        if (!channelTitleElement) { 
+        if (!channelTitleElement) {
             channelTitleElement = xmlDoc.querySelector("channel > title");
             itemElementsSelector = "channel > item";
         }
@@ -1537,17 +1989,18 @@
         xmlDoc.querySelectorAll(itemElementsSelector).forEach(itemElem => {
             let title = itemElem.querySelector("title")?.textContent.trim();
             let link;
-            if (itemElementsSelector === "feed > entry") { 
+            if (itemElementsSelector === "feed > entry") {
                 link = itemElem.querySelector("link[rel='alternate']")?.getAttribute('href') || itemElem.querySelector("link")?.getAttribute('href');
-            } else { 
+            } else {
                 link = itemElem.querySelector("link")?.textContent.trim();
             }
-            if (link && !link.startsWith('http') && !link.includes('://')) { 
+            if(link && link.startsWith("//")) link = "https:" + link; // Handle protocol-relative URLs
+            if (link && !link.startsWith('http') && !link.includes('://')) {
                  try { link = new URL(link, feedUrl).href; } catch(e){ console.warn("Invalid link in feed:", link); link = null;}
             }
             const pubDate = itemElem.querySelector("pubDate")?.textContent.trim() || itemElem.querySelector("published")?.textContent.trim() || itemElem.querySelector("updated")?.textContent.trim();
             let description = itemElem.querySelector("description")?.textContent.trim() || itemElem.querySelector("summary")?.textContent.trim() || itemElem.querySelector("content")?.textContent.trim();
-            if (description) { 
+            if (description) {
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = description;
                 description = tempDiv.textContent || tempDiv.innerText || "";
@@ -1562,49 +2015,149 @@
         const feeds = getSubscribedFeeds();
         const listDiv = document.getElementById('subscribedFeedsList');
         listDiv.innerHTML = '<h4>सब्सक्राइब किए गए फ़ीड्स:</h4>';
-        if (feeds.length === 0) { listDiv.innerHTML += '<p>अभी कोई फ़ीड सब्सक्राइब नहीं किया गया है।</p>'; document.getElementById('rssFeedTitleDisplay').textContent = ''; document.getElementById('rssArticlesList').innerHTML = ''; return; }
+        if (feeds.length === 0) {
+            listDiv.innerHTML += '<p>अभी कोई फ़ीड सब्सक्राइब नहीं किया गया है।</p>';
+            document.getElementById('rssFeedTitleDisplay').textContent = '';
+            document.getElementById('rssArticlesList').innerHTML = '';
+            return;
+        }
         const ul = document.createElement('ul');
         feeds.forEach((feed, index) => {
+            if (!feed || !feed.url) { console.warn("Skipping invalid feed object in subscribed list:", feed); return; }
             const li = document.createElement('li');
-            const feedTitleText = feed.title.length > 60 ? feed.title.substring(0, 57) + '...' : feed.title;
+            const feedTitleText = (feed.title || feed.url).length > 60 ? (feed.title || feed.url).substring(0, 57) + '...' : (feed.title || feed.url);
+
+            let unreadCount = 0;
+            if (feed.items && Array.isArray(feed.items)) {
+                unreadCount = feed.items.filter(item => item && item.link && !isRssArticleRead(feed.url, item.link)).length;
+            }
+
+            let feedTitleDisplay = feedTitleText;
+            if (unreadCount > 0) {
+                feedTitleDisplay += ` <strong style="color:var(--success-color);">(${unreadCount})</strong>`;
+            }
+
             li.innerHTML = `
-                <a href="#" onclick="displayRssFeedArticles(getSubscribedFeeds()[${index}]); return false;" title="${feed.title}">${feedTitleText}</a>
+                <a href="#" onclick="displayRssFeedArticles(getSubscribedFeeds()[${index}]); return false;" title="${feed.title || feed.url}">${feedTitleDisplay}</a>
                 <div>
-                    <button onclick="refreshRssFeed(${index})" title="रिफ्रेश" style="margin-left:5px; font-size:0.8em; padding: 3px 6px;">🔄</button>
-                    <button onclick="deleteRssFeed(${index})" title="हटाएं" style="margin-left:5px; font-size:0.8em; padding: 3px 6px; background-color:var(--danger-color); color:white; border:none; border-radius:3px;">✗</button>
+                    <button class="tool-btn-secondary" onclick="refreshRssFeed(${index})" title="रिफ्रेश" style="margin-left:5px; font-size:0.8em; padding: 3px 6px; margin-top:0;">🔄</button>
+                    <button class="tool-btn-secondary danger-btn" onclick="deleteRssFeed(${index})" title="हटाएं" style="margin-left:5px; font-size:0.8em; padding: 3px 6px; margin-top:0;">✗</button>
                 </div>`;
             ul.appendChild(li);
         });
         listDiv.appendChild(ul);
     }
     function displayRssFeedArticles(feed) {
-        if (!feed) return;
-        document.getElementById('rssFeedTitleDisplay').textContent = `आर्टिकल: ${feed.title}`;
+        if (!feed || !feed.url) {
+            document.getElementById('rssFeedTitleDisplay').textContent = 'फ़ीड लोड करने में त्रुटि।';
+            document.getElementById('rssArticlesList').innerHTML = '<p>कोई फ़ीड चयनित नहीं है या फ़ीड अमान्य है।</p>';
+            return;
+        }
+        document.getElementById('rssFeedTitleDisplay').textContent = `आर्टिकल: ${feed.title || feed.url}`;
         const articlesListDiv = document.getElementById('rssArticlesList');
         articlesListDiv.innerHTML = '';
-        if (!feed.items || feed.items.length === 0) { articlesListDiv.innerHTML = '<p>इस फ़ीड में कोई आर्टिकल नहीं है या अभी लोड नहीं हुए हैं।</p>'; return; }
+
+        if (!feed.items || feed.items.length === 0) {
+            articlesListDiv.innerHTML += '<p>इस फ़ीड में कोई आर्टिकल नहीं है या अभी लोड नहीं हुए हैं।</p>';
+            return;
+        }
+
+        const headerControlsDiv = document.createElement('div');
+        headerControlsDiv.style.marginBottom = '10px';
+        headerControlsDiv.style.display = 'flex';
+        headerControlsDiv.style.gap = '10px';
+
+        const markAllReadBtn = document.createElement('button');
+        markAllReadBtn.textContent = 'सभी को पढ़ा चिह्नित करें';
+        markAllReadBtn.className = 'tool-btn-secondary';
+        markAllReadBtn.style.fontSize = '0.8em';
+        markAllReadBtn.style.padding = '5px 10px';
+        markAllReadBtn.style.marginLeft = '0';
+        markAllReadBtn.style.marginTop = '0';
+        markAllReadBtn.onclick = () => {
+            markAllRssFeedArticles(feed.url, feed.items, true);
+        };
+        headerControlsDiv.appendChild(markAllReadBtn);
+        articlesListDiv.appendChild(headerControlsDiv);
+
+
         feed.items.forEach(item => {
+            if (!item || !item.link || !item.title) { console.warn("Skipping invalid RSS item:", item); return; }
             const articleDiv = document.createElement('div');
             articleDiv.className = 'rss-article-item';
-            let itemHtml = `<span class="item-title" title="${item.title}">${item.title}</span>`;
-            if (item.pubDate) itemHtml += `<br><small>प्रकाशित: ${new Date(item.pubDate).toLocaleString()}</small>`;
+            const isRead = isRssArticleRead(feed.url, item.link);
+
+            articleDiv.style.opacity = isRead ? '0.6' : '1';
+            articleDiv.style.backgroundColor = isRead ? 'var(--bg-color)' : 'transparent';
+
+            let itemHtml = `<span class="item-title" title="${item.title}" style="font-weight:${isRead ? 'normal' : 'bold'};">${item.title}</span>`;
+            if (item.pubDate) {
+                itemHtml += `<br><small>प्रकाशित: ${new Date(item.pubDate).toLocaleString()}</small>`;
+            }
+            itemHtml += `<button class="rss-read-toggle-btn tool-btn-secondary" style="float:right; font-size:0.7em; padding: 3px 6px; margin-left:5px; margin-top:0;">${isRead ? 'अपठित करें' : 'पढ़ा करें'}</button>`;
+
             articleDiv.innerHTML = itemHtml;
-            articleDiv.onclick = () => { document.getElementById('articleUrl').value = item.link; openTool(null, 'ArticleExtractor'); ae_startExtraction(true); window.scrollTo(0,0); };
+
+            const titleSpan = articleDiv.querySelector('.item-title');
+            if (titleSpan) {
+                titleSpan.onclick = () => {
+                    markRssArticleAsRead(feed.url, item.link); // Mark as read before opening
+                     // No need to call displayRssFeedArticles here, as it will be re-rendered when coming back or if it's already the active feed.
+                     // The markRssArticleAsRead function already calls displaySubscribedFeeds to update counts.
+
+                    document.getElementById('articleUrl').value = item.link;
+                    openTool(null, 'ArticleExtractor');
+                    ae_startExtraction(true);
+                    window.scrollTo(0, 0);
+                };
+            }
+
+
+            const toggleButton = articleDiv.querySelector('.rss-read-toggle-btn');
+            if (toggleButton) {
+                toggleButton.onclick = (e) => {
+                    e.stopPropagation();
+                    if (isRssArticleRead(feed.url, item.link)) {
+                        markRssArticleAsUnread(feed.url, item.link);
+                    } else {
+                        markRssArticleAsRead(feed.url, item.link);
+                    }
+                    displayRssFeedArticles(feed); // Re-render this specific feed's articles
+                };
+            }
             articlesListDiv.appendChild(articleDiv);
         });
+
         const rssFeedsTab = document.getElementById('RSSFeeds');
-        if (rssFeedsTab && rssFeedsTab.style.display !== 'none') { document.getElementById('rssArticlesContainer').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        if (rssFeedsTab && rssFeedsTab.style.display !== 'none' && articlesListDiv.children.length > 1) {
+            articlesListDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
     function deleteRssFeed(index) {
         if (!confirm("क्या आप वाकई इस RSS फ़ीड को हटाना चाहते हैं?")) return;
         const feeds = getSubscribedFeeds();
+        if (index < 0 || index >= feeds.length) { showToast("अमान्य फ़ीड इंडेक्स।", "error"); return; }
+        const feedToDelete = feeds[index];
+
         feeds.splice(index, 1);
-        saveSubscribedFeeds(feeds); 
-        if (feeds.length === 0) { 
+        saveSubscribedFeeds(feeds);
+
+        if (feedToDelete && feedToDelete.url) {
+            const readItems = getRssReadItems();
+            if (readItems[feedToDelete.url]) {
+                delete readItems[feedToDelete.url];
+                saveRssReadItems(readItems);
+            }
+        }
+
+        if (feeds.length === 0) {
             document.getElementById('rssFeedTitleDisplay').textContent = '';
             document.getElementById('rssArticlesList').innerHTML = '';
-        } else if (document.getElementById('rssArticlesList').innerHTML !== '' && !feeds.find(f => document.getElementById('rssFeedTitleDisplay').textContent.includes(f.title))) {
-             displayRssFeedArticles(feeds[0]);
+        } else {
+            const currentDisplayTitle = document.getElementById('rssFeedTitleDisplay').textContent;
+            if (feedToDelete && currentDisplayTitle.includes(feedToDelete.title || feedToDelete.url)) {
+                displayRssFeedArticles(feeds[0]);
+            }
         }
         showToast("RSS फ़ीड हटाया गया।", "success");
     }
@@ -1616,17 +2169,17 @@
         const originalBtnContent = refreshBtn ? refreshBtn.innerHTML : '🔄';
         if(refreshBtn) {refreshBtn.innerHTML = 'लोड हो रहा है...'; refreshBtn.disabled = true;}
 
-        showToast(`फ़ीड "${feedToRefresh.title.substring(0,30)}..." रिफ्रेश हो रहा है...`, "info");
+        showToast(`फ़ीड "${(feedToRefresh.title || feedToRefresh.url).substring(0,30)}..." रिफ्रेश हो रहा है...`, "info");
         try {
             const parsedFeed = await parseRssFeed(feedToRefresh.url);
             if (!parsedFeed || !parsedFeed.items) { showToast("फ़ीड को पार्स नहीं किया जा सका या कोई आइटम नहीं मिला।", "error"); return; }
             feeds[index].items = parsedFeed.items.slice(0, 30);
             feeds[index].lastFetched = new Date().toISOString();
             feeds[index].title = parsedFeed.title || feeds[index].title;
-            saveSubscribedFeeds(feeds); 
-            showToast(`फ़ीड "${feeds[index].title.substring(0,30)}..." सफलतापूर्वक रिफ्रेश किया गया!`, "success");
-            if (document.getElementById('rssFeedTitleDisplay').textContent.includes(feeds[index].title) || 
-                (feeds.length === 1 && index === 0) ) { 
+            saveSubscribedFeeds(feeds);
+            showToast(`फ़ीड "${(feeds[index].title || feeds[index].url).substring(0,30)}..." सफलतापूर्वक रिफ्रेश किया गया!`, "success");
+            if (document.getElementById('rssFeedTitleDisplay').textContent.includes(feeds[index].title || feeds[index].url) ||
+                (feeds.length === 1 && index === 0) ) {
                 displayRssFeedArticles(feeds[index]);
             }
         } catch (error) { console.error("फ़ीड रिफ्रेश करने में त्रुटि:", error); showToast(`फ़ीड रिफ्रेश करने में त्रुटि: ${error.message}`, "error", 5000); }
@@ -1635,7 +2188,7 @@
     async function refreshAllRssFeeds() {
         const feeds = getSubscribedFeeds();
         if (feeds.length === 0) { showToast("रिफ्रेश करने के लिए कोई फ़ीड नहीं है।", "info"); return; }
-        
+
         const mainRefreshBtn = document.getElementById('refreshAllRssFeedsBtn');
         const originalMainBtnText = mainRefreshBtn.innerHTML;
         mainRefreshBtn.innerHTML = 'प्रोसेसिंग...';
@@ -1650,7 +2203,7 @@
             const listItemRefreshBtn = document.querySelector(`#subscribedFeedsList li:nth-child(${i + 1}) button[title="रिफ्रेश"]`);
             const originalListItemBtnContent = listItemRefreshBtn ? listItemRefreshBtn.innerHTML : '🔄';
             if(listItemRefreshBtn) { listItemRefreshBtn.innerHTML = 'लोड...'; listItemRefreshBtn.disabled = true;}
-            
+
             try {
                 const parsedFeed = await parseRssFeed(feedToRefresh.url);
                 if (parsedFeed && parsedFeed.items) {
@@ -1667,49 +2220,145 @@
             } finally {
                  if(listItemRefreshBtn) { listItemRefreshBtn.innerHTML = originalListItemBtnContent; listItemRefreshBtn.disabled = false;}
             }
-            if (document.getElementById('rssFeedTitleDisplay').textContent.includes(feeds[i].title)) {
-                displayRssFeedArticles(feeds[i]); 
+            if (document.getElementById('rssFeedTitleDisplay').textContent.includes(feeds[i].title || feeds[i].url)) {
+                displayRssFeedArticles(feeds[i]);
             }
-             await new Promise(resolve => setTimeout(resolve, 300)); 
+             await new Promise(resolve => setTimeout(resolve, 300));
         }
-        saveSubscribedFeeds(feeds); 
+        saveSubscribedFeeds(feeds);
         mainRefreshBtn.innerHTML = originalMainBtnText;
         mainRefreshBtn.disabled = false;
         showToast(`${successCount} फ़ीड सफलतापूर्वक रिफ्रेश हुए। ${errorCount > 0 ? errorCount + ' में त्रुटि।' : ''}`, successCount > 0 ? "success" : "warning", 5000);
     }
 
-    function clearRssFeedsData() { if (confirm('क्या आप वाकई अपने सभी RSS फ़ीड्स हटाना चाहते हैं?')) { localStorage.removeItem(STORAGE_KEY_RSS_FEEDS); displaySubscribedFeeds(); updateRssFeedCount(); document.getElementById('rssFeedTitleDisplay').textContent = ''; document.getElementById('rssArticlesList').innerHTML = ''; showToast('सभी RSS फ़ीड्स हटा दिए गए हैं।', 'success'); } }
+    function clearRssFeedsData() { if (confirm('क्या आप वाकई अपने सभी RSS फ़ीड्स और पढ़े हुए आइटम का डेटा हटाना चाहते हैं?')) { localStorage.removeItem(STORAGE_KEY_RSS_FEEDS); localStorage.removeItem(STORAGE_KEY_RSS_READ_ITEMS); displaySubscribedFeeds(); updateRssFeedCount(); document.getElementById('rssFeedTitleDisplay').textContent = ''; document.getElementById('rssArticlesList').innerHTML = ''; showToast('सभी RSS फ़ीड्स और संबंधित डेटा हटा दिए गए हैं।', 'success'); } }
+
+    // --- Focus Mode & Auto Scroll ---
+    function toggleFocusMode(forceState) {
+        const body = document.body;
+        const focusBtn = document.getElementById('focusModeToggleBtn');
+        let isActive;
+
+        if (typeof forceState === 'boolean') {
+            isActive = forceState;
+        } else {
+            isActive = !body.classList.contains('focus-mode-active');
+        }
+
+        if (isActive) {
+            body.classList.add('focus-mode-active');
+            if(focusBtn) focusBtn.innerHTML = '🧘‍♀️';
+            showToast("फ़ोकस मोड सक्रिय।", "info", 2000);
+        } else {
+            body.classList.remove('focus-mode-active');
+            if(focusBtn) focusBtn.innerHTML = '🧘';
+            showToast("फ़ोकस मोड निष्क्रिय।", "info", 2000);
+        }
+        localStorage.setItem(STORAGE_KEY_FOCUS_MODE, isActive);
+    }
+
+    function applySavedFocusMode() {
+        const savedFocusState = localStorage.getItem(STORAGE_KEY_FOCUS_MODE) === 'true';
+        const focusBtn = document.getElementById('focusModeToggleBtn');
+        if (savedFocusState) {
+            document.body.classList.add('focus-mode-active');
+            if (focusBtn) focusBtn.innerHTML = '🧘‍♀️';
+        } else {
+             if (focusBtn) focusBtn.innerHTML = '🧘';
+        }
+    }
+
+    function toggleAutoScroll() {
+        const contentElement = document.getElementById('lib-article-text-content');
+        const btn = document.getElementById('autoScrollPlayPauseBtn');
+
+        if (isAutoScrolling) {
+            clearInterval(autoScrollInterval);
+            isAutoScrolling = false;
+            btn.textContent = '▶️ शुरू करें';
+            showToast("ऑटो-स्क्रॉल रोका गया।", "info");
+        } else {
+            if (!contentElement || contentElement.scrollHeight <= contentElement.clientHeight) {
+                showToast("स्क्रॉल करने के लिए पर्याप्त कंटेंट नहीं है।", "warning");
+                return;
+            }
+            if (document.getElementById('lib-article-webview-container').style.display !== 'none') {
+                showToast("ऑटो-स्क्रॉल केवल रीडर व्यू में काम करता है।", "warning");
+                return;
+            }
+            isAutoScrolling = true;
+            btn.textContent = '⏸️ रोकें';
+            showToast("ऑటో-स्क्रॉल शुरू।", "success");
+            autoScrollInterval = setInterval(() => {
+                if (contentElement.scrollTop + contentElement.clientHeight < contentElement.scrollHeight) {
+                    contentElement.scrollTop += 1;
+                } else {
+                    clearInterval(autoScrollInterval);
+                    isAutoScrolling = false;
+                    btn.textContent = '▶️ शुरू करें';
+                    showToast("लेख का अंत। ऑटो-स्क्रॉल समाप्त।", "info");
+                }
+            }, Math.max(10, 210 - autoScrollSpeed));
+        }
+    }
+
+    function changeAutoScrollSpeed(delta) {
+        autoScrollSpeed += delta;
+        if (autoScrollSpeed < MIN_SCROLL_SPEED) autoScrollSpeed = MIN_SCROLL_SPEED;
+        if (autoScrollSpeed > MAX_SCROLL_SPEED) autoScrollSpeed = MAX_SCROLL_SPEED;
+        document.getElementById('autoScrollSpeedDisplay').textContent = `गति: ${autoScrollSpeed}`;
+
+        if (isAutoScrolling) {
+            clearInterval(autoScrollInterval);
+            const contentElement = document.getElementById('lib-article-text-content');
+            const btn = document.getElementById('autoScrollPlayPauseBtn');
+             autoScrollInterval = setInterval(() => {
+                if (contentElement.scrollTop + contentElement.clientHeight < contentElement.scrollHeight) {
+                    contentElement.scrollTop += 1;
+                } else {
+                    clearInterval(autoScrollInterval);
+                    isAutoScrolling = false;
+                    if(btn) btn.textContent = '▶️ शुरू करें';
+                }
+            }, Math.max(10, 210 - autoScrollSpeed));
+        }
+    }
 
 
     // --- Initialization ---
     document.addEventListener('DOMContentLoaded', () => {
         loadQueue();
-        migrateLibraryData(); applySavedTheme(); updateLibraryCount(); updateBookmarkCount(); updateRssFeedCount();
-        applySavedFontSize(); applySavedLibraryFontSize(); applySavedDisplayMode(); 
-        toggleDepthSelector(); populateTagFilter(); populateBookmarkFolderSelectors(); 
+        migrateLibraryData();
+        applySavedTheme();
+        updateLibraryCount(); updateBookmarkCount(); updateRssFeedCount();
+        applySavedFontSize(); applySavedLibraryFontSize(); applySavedDisplayMode();
+        applySavedFocusMode();
+        toggleDepthSelector(); populateTagFilter(); populateBookmarkFolderSelectors();
         if (speechApiSupported) {
             localSpeechSynth = window.speechSynthesis;
-            const loadVoices = () => { 
-                const voices = localSpeechSynth.getVoices(); 
-                if (voices.length > 0) { 
-                    populateVoiceSelector(); 
-                } else if (localSpeechSynth.onvoiceschanged === undefined) { 
+            const loadVoices = () => {
+                const voices = localSpeechSynth.getVoices();
+                if (voices.length > 0) {
+                    populateVoiceSelector();
+                } else if (localSpeechSynth.onvoiceschanged === undefined) { // Fallback for browsers that don't support onvoiceschanged
                     setTimeout(loadVoices, 200);
                 }
             };
+            // Try to load voices immediately
             loadVoices();
-            if (localSpeechSynth.onvoiceschanged !== undefined) { 
-                localSpeechSynth.onvoiceschanged = loadVoices; 
+            // And also listen for the event if available
+            if (localSpeechSynth.onvoiceschanged !== undefined) {
+                localSpeechSynth.onvoiceschanged = loadVoices;
             }
         }
         applySavedTTSSettings();
         const autoPlay = localStorage.getItem(STORAGE_KEY_AUTOPLAY) === 'true';
         if (autoPlay) document.getElementById('autoPlayNextToggle').checked = true;
-        
-        document.addEventListener('visibilitychange', () => {});
+
+        document.addEventListener('visibilitychange', () => {}); // Placeholder, can be used for pausing audio on tab switch
 
         window.addEventListener('beforeunload', () => { if (isPlaying || isPaused) { stopTTS(); } });
-        
+
         if (mediaSessionSupported) {
             navigator.mediaSession.setActionHandler('play', () => handlePlayPause());
             navigator.mediaSession.setActionHandler('pause', () => handlePlayPause());
@@ -1723,17 +2372,17 @@
         if(url){if(i)i.value=url;ae_startExtraction();}
         const tab=document.querySelector('.tab-link');if(tab&&!url)openTool({currentTarget:tab},'ArticleExtractor');else if(url)openTool({currentTarget:document.querySelector('.tab-link[onclick*="ArticleExtractor"]')},'ArticleExtractor');
         updateHistoryButtons();
-        updatePlayerUI(); 
-        
+        updatePlayerUI();
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                try { 
-                    const blob = new Blob([serviceWorkerCode], { type: 'application/javascript' }); 
+                try {
+                    const blob = new Blob([serviceWorkerCode], { type: 'application/javascript' });
                     navigator.serviceWorker.register(URL.createObjectURL(blob))
                         .then(reg => console.log('ServiceWorker registered.'))
-                        .catch(err => console.error('ServiceWorker registration failed:', err)); 
-                } catch (e) { 
-                    console.error('Blob SW creation failed:', e); 
+                        .catch(err => console.error('ServiceWorker registration failed:', err));
+                } catch (e) {
+                    console.error('Blob SW creation failed:', e);
                 }
             });
         }
